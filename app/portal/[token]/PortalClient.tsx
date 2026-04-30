@@ -78,7 +78,7 @@ export function PortalClient({
   return (
     <div className="min-h-screen bg-white">
       {/* Hero - Black */}
-      <section className="bg-black text-white relative overflow-hidden">
+      <section className="bg-neutral-900 text-white relative overflow-hidden" style={{background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)'}}>
         <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 pt-8 sm:pt-12 pb-16 sm:pb-24 md:pb-32">
           {/* Top bar */}
           <div className="flex items-center justify-between mb-16 sm:mb-24 md:mb-32">
@@ -205,7 +205,7 @@ export function PortalClient({
       </section>
 
       {/* Footer */}
-      <footer className="bg-black text-white">
+      <footer className="text-white" style={{background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)'}}>
         <div className="max-w-5xl mx-auto px-6 md:px-10 py-12 md:py-16">
           <p className="text-2xl md:text-4xl font-bold tracking-tight leading-tight mb-8">
             No stage is too big.
