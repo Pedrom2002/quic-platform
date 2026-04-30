@@ -79,32 +79,32 @@ export function PortalClient({
     <div className="min-h-screen bg-white">
       {/* Hero - Black */}
       <section className="bg-black text-white relative overflow-hidden">
-        <div className="max-w-5xl mx-auto px-6 md:px-10 pt-10 pb-20 md:pt-14 md:pb-32">
+        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 pt-8 sm:pt-12 pb-16 sm:pb-24 md:pb-32">
           {/* Top bar */}
-          <div className="flex items-center justify-between mb-20 md:mb-32">
-            <Image src="/logo branco (1).png" alt="Quic" width={90} height={36} priority />
-            <span className="text-[10px] md:text-xs font-medium tracking-[0.25em] uppercase text-white/50">
+          <div className="flex items-center justify-between mb-16 sm:mb-24 md:mb-32">
+            <Image src="/logo branco (1).png" alt="Quic" width={80} height={32} priority />
+            <span className="text-xs font-medium tracking-widest uppercase text-white/70 border border-white/20 px-3 py-1">
               Em Preparação
             </span>
           </div>
 
           {/* Slogan */}
-          <p className="text-[10px] md:text-xs font-medium tracking-[0.4em] uppercase text-white/40 mb-6">
+          <p className="text-xs font-medium tracking-[0.35em] uppercase text-white/40 mb-5">
             No Stage Is Too Big
           </p>
 
-          {/* Event name - massive */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-8 md:mb-10 break-words">
+          {/* Event name - massive, fluid */}
+          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-8 break-words hyphens-auto">
             {eventName}
           </h1>
 
           {/* Meta */}
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-white/60 text-sm">
-            <span className="tracking-wide">{eventDate}</span>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-white/50 text-sm">
+            <span>{eventDate}</span>
             {venueName && (
               <>
-                <span className="w-1 h-1 rounded-full bg-white/30" />
-                <span className="tracking-wide">{venueName}</span>
+                <span className="w-px h-3 bg-white/20" />
+                <span>{venueName}</span>
               </>
             )}
           </div>
@@ -112,13 +112,13 @@ export function PortalClient({
 
         {/* Progress bar - bottom of hero */}
         <div className="border-t border-white/10">
-          <div className="max-w-5xl mx-auto px-6 md:px-10 py-6 md:py-8">
+          <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-6 sm:py-8">
             <div className="flex items-baseline justify-between mb-3">
-              <span className="text-[10px] md:text-xs font-medium tracking-[0.25em] uppercase text-white/50">
+              <span className="text-xs font-medium tracking-widest uppercase text-white/50">
                 Progresso
               </span>
-              <div className="flex items-baseline gap-3">
-                <span className="text-3xl md:text-4xl font-bold tracking-tight">{progress.percent}</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-bold tracking-tight">{progress.percent}</span>
                 <span className="text-sm text-white/50">%</span>
               </div>
             </div>
@@ -128,7 +128,7 @@ export function PortalClient({
                 style={{ width: `${progress.percent}%` }}
               />
             </div>
-            <p className="text-xs text-white/40 mt-3 tracking-wide">
+            <p className="text-xs text-white/40 mt-3">
               {progress.completed} de {progress.total} etapas concluídas
             </p>
           </div>
@@ -136,28 +136,28 @@ export function PortalClient({
       </section>
 
       {/* Content */}
-      <section className="max-w-5xl mx-auto px-6 md:px-10 py-16 md:py-24">
+      <section className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-16 md:py-24">
         {completedItems.length > 0 && (
-          <div className="mb-20 md:mb-24">
-            <div className="flex items-baseline justify-between mb-10 md:mb-12 pb-4 border-b border-stone-900">
-              <h2 className="text-xs md:text-sm font-medium tracking-[0.3em] uppercase text-stone-900">
+          <div className="mb-16 sm:mb-20 md:mb-24">
+            <div className="flex items-baseline justify-between mb-8 sm:mb-10 pb-4 border-b border-stone-900">
+              <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">
                 Concluído
               </h2>
               <span className="text-xs text-stone-400 tabular-nums">
                 {String(completedItems.length).padStart(2, '0')}
               </span>
             </div>
-            <ul className="space-y-0">
+            <ul>
               {completedItems.map((item, idx) => (
                 <li
                   key={item.id}
-                  className="grid grid-cols-[auto_1fr_auto] gap-6 md:gap-10 py-6 md:py-7 border-b border-stone-100 last:border-0 items-baseline"
+                  className="flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6 border-b border-stone-100 last:border-0"
                 >
-                  <span className="text-xs text-stone-300 tabular-nums tracking-wider font-medium">
+                  <span className="text-xs text-stone-300 tabular-nums tracking-wider font-medium pt-0.5">
                     {String(idx + 1).padStart(2, '0')}
                   </span>
                   <div>
-                    <p className="text-stone-900 text-base md:text-lg font-medium tracking-tight">
+                    <p className="text-stone-900 text-base sm:text-lg font-medium tracking-tight">
                       {item.client_label ?? item.title}
                     </p>
                     {item.completion_note && (
@@ -165,7 +165,7 @@ export function PortalClient({
                     )}
                   </div>
                   {item.completed_at && (
-                    <span className="text-xs text-stone-400 tabular-nums whitespace-nowrap">
+                    <span className="text-xs text-stone-400 tabular-nums whitespace-nowrap self-start sm:text-right">
                       {format(new Date(item.completed_at), "d MMM · HH'h'mm", { locale: pt })}
                     </span>
                   )}
@@ -177,24 +177,24 @@ export function PortalClient({
 
         {pendingItems.length > 0 && (
           <div>
-            <div className="flex items-baseline justify-between mb-10 md:mb-12 pb-4 border-b border-stone-200">
-              <h2 className="text-xs md:text-sm font-medium tracking-[0.3em] uppercase text-stone-400">
+            <div className="flex items-baseline justify-between mb-8 sm:mb-10 pb-4 border-b border-stone-200">
+              <h2 className="text-xs font-medium tracking-widest uppercase text-stone-500">
                 Em Preparação
               </h2>
               <span className="text-xs text-stone-300 tabular-nums">
                 {String(pendingItems.length).padStart(2, '0')}
               </span>
             </div>
-            <ul className="space-y-0">
+            <ul>
               {pendingItems.map((item, idx) => (
                 <li
                   key={item.id}
-                  className="grid grid-cols-[auto_1fr] gap-6 md:gap-10 py-5 md:py-6 border-b border-stone-100 last:border-0 items-baseline"
+                  className="flex flex-col sm:grid sm:grid-cols-[2rem_1fr] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6 border-b border-stone-100 last:border-0"
                 >
-                  <span className="text-xs text-stone-200 tabular-nums tracking-wider font-medium">
+                  <span className="text-xs text-stone-200 tabular-nums tracking-wider font-medium pt-0.5">
                     {String(idx + 1).padStart(2, '0')}
                   </span>
-                  <p className="text-stone-400 text-base md:text-lg tracking-tight">
+                  <p className="text-stone-500 text-base sm:text-lg tracking-tight">
                     {item.client_label ?? item.title}
                   </p>
                 </li>
