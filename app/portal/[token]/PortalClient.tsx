@@ -151,7 +151,7 @@ export function PortalClient({
               {completedItems.map((item, idx) => (
                 <li
                   key={item.id}
-                  className="flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6 px-4 -mx-4 rounded-lg bg-green-50 border-b border-green-100 last:border-0 mb-1"
+                  className="flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6 px-4 -mx-4 rounded-lg bg-emerald-50 border-b border-emerald-100 last:border-0 mb-1"
                 >
                   <span className="text-xs text-stone-500 tabular-nums tracking-wider font-medium pt-0.5">
                     {String(idx + 1).padStart(2, '0')}
