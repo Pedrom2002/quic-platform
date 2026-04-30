@@ -84,7 +84,7 @@ export function PortalClient({
           <div className="flex items-center justify-between mb-20 md:mb-32">
             <Image src="/logo branco (1).png" alt="Quic" width={90} height={36} priority />
             <span className="text-[10px] md:text-xs font-medium tracking-[0.25em] uppercase text-white/50">
-              {status === 'active' ? 'Em Preparação' : 'A Planear'}
+              Em Preparação
             </span>
           </div>
 
