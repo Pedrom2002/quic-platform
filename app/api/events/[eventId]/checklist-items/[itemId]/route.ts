@@ -1,0 +1,128 @@
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { updateChecklistItemSchema } from '@/schemas/checklist.schema'
+import { dispatchNotificationsForItem } from '@/lib/notifications/dispatcher'
+
+async function resolveOrgMember(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const { data } = await supabase
+    .from('team_members')
+    .select('id, full_name, organization_id')
+    .eq('auth_user_id', userId)
+    .single()
+  return data
+}
+
+async function assertEventOwnership(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  eventId: string,
+  organizationId: string
+) {
+  const { data } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('organization_id', organizationId)
+    .single()
+  return !!data
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ eventId: string; itemId: string }> }
+) {
+  const { eventId, itemId } = await params
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+  const member = await resolveOrgMember(supabase, user.id)
+  if (!member) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) return NextResponse.json({ error: 'Evento não encontrado' }, { status: 404 })
+
+  const body = await request.json()
+  const parsed = updateChecklistItemSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
+  }
+
+  const updates: Record<string, unknown> = { ...parsed.data }
+  const isCompleting = parsed.data.status === 'completed'
+
+  if (isCompleting) {
+    updates.completed_at = new Date().toISOString()
+    updates.completed_by = member.id
+    const { data: current } = await supabase
+      .from('event_checklist_items')
+      .select('started_at')
+      .eq('id', itemId)
+      .single()
+    if (!current?.started_at) {
+      updates.started_at = new Date().toISOString()
+    }
+  }
+
+  if (parsed.data.status === 'in_progress') {
+    updates.started_at = new Date().toISOString()
+  }
+
+  const { data: item, error } = await supabase
+    .from('event_checklist_items')
+    .update(updates)
+    .eq('id', itemId)
+    .eq('event_id', eventId)
+    .select()
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  if (isCompleting) {
+    const adminClient = createAdminClient()
+    const { data: event } = await adminClient
+      .from('events')
+      .select('*')
+      .eq('id', eventId)
+      .single()
+
+    if (event) {
+      dispatchNotificationsForItem({
+        event,
+        item,
+        completedByName: member.full_name ?? 'Equipa Quic',
+      }).catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error('[dispatcher] falha ao despachar notificações:', msg)
+      })
+    }
+  }
+
+  return NextResponse.json({ item })
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ eventId: string; itemId: string }> }
+) {
+  const { eventId, itemId } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+  const member = await resolveOrgMember(supabase, user.id)
+  if (!member) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) return NextResponse.json({ error: 'Evento não encontrado' }, { status: 404 })
+
+  const { error } = await supabase
+    .from('event_checklist_items')
+    .delete()
+    .eq('id', itemId)
+    .eq('event_id', eventId)
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ success: true })
+}
