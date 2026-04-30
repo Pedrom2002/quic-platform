@@ -191,7 +191,7 @@ export function PortalClient({
                   key={item.id}
                   className="flex flex-col sm:grid sm:grid-cols-[2rem_1fr] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6 border-b border-stone-100 last:border-0"
                 >
-                  <span className="text-xs text-stone-200 tabular-nums tracking-wider font-medium pt-0.5">
+                  <span className="text-xs text-stone-400 tabular-nums tracking-wider font-medium pt-0.5">
                     {String(idx + 1).padStart(2, '0')}
                   </span>
                   <p className="text-stone-500 text-base sm:text-lg tracking-tight">
