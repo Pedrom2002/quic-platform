@@ -153,7 +153,7 @@ export function PortalClient({
                   key={item.id}
                   className="flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6 border-b border-stone-100 last:border-0"
                 >
-                  <span className="text-xs text-stone-300 tabular-nums tracking-wider font-medium pt-0.5">
+                  <span className="text-xs text-stone-500 tabular-nums tracking-wider font-medium pt-0.5">
                     {String(idx + 1).padStart(2, '0')}
                   </span>
                   <div>
@@ -181,7 +181,7 @@ export function PortalClient({
               <h2 className="text-xs font-medium tracking-widest uppercase text-stone-500">
                 Em Preparação
               </h2>
-              <span className="text-xs text-stone-300 tabular-nums">
+              <span className="text-xs text-stone-500 tabular-nums">
                 {String(pendingItems.length).padStart(2, '0')}
               </span>
             </div>
