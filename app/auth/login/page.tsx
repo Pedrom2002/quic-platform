@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,7 +38,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <span className="text-white text-3xl font-bold tracking-tight">Quic</span>
+          <Image src="/logo branco (1).png" alt="Quic" width={100} height={40} className="mx-auto" />
           <p className="text-zinc-400 text-sm mt-1">Plataforma de Gestão de Eventos</p>
         </div>
 

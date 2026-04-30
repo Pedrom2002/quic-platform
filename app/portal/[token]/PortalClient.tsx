@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { CheckCircle2, Circle, Clock, MapPin } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -83,7 +84,7 @@ export function PortalClient({
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-2xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-slate-900 font-bold text-lg">Quic</span>
+            <Image src="/logo preto.png" alt="Quic" width={72} height={28} />
             <div className={cn(
               'text-xs font-medium px-3 py-1 rounded-full',
               status === 'active' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'

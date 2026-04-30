@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { Calendar, Users, LayoutDashboard, FileText, Settings, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -41,13 +42,8 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
     <aside className="w-60 min-h-screen bg-zinc-950 border-r border-zinc-800 flex flex-col">
       {/* Logo / Org */}
       <div className="h-16 flex items-center gap-3 px-4 border-b border-zinc-800 shrink-0">
-        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0">
-          <span className="text-zinc-950 text-sm font-bold">Q</span>
-        </div>
-        <div className="min-w-0">
-          <p className="text-white text-sm font-semibold leading-tight truncate">Quic</p>
-          <p className="text-zinc-500 text-xs truncate">{orgName}</p>
-        </div>
+        <Image src="/logo branco (1).png" alt="Quic" width={72} height={28} className="shrink-0" />
+        <p className="text-zinc-500 text-xs truncate">{orgName}</p>
       </div>
 
       {/* Nav */}
