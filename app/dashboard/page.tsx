@@ -132,7 +132,7 @@ export default async function DashboardPage() {
                   <Calendar className="w-8 h-8 text-slate-300 mx-auto mb-3" />
                   <p className="text-slate-400 text-sm">Nenhum evento em preparação</p>
                   <Link href="/dashboard/events/new" className="text-xs text-slate-400 hover:text-slate-700 mt-2 inline-block transition-colors">
-                    Criar primeiro evento →
+                    Criar primeiro evento
                   </Link>
                 </div>
               ) : (

@@ -88,7 +88,7 @@ export function PortalClient({
               'text-xs font-medium px-3 py-1 rounded-full',
               status === 'active' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
             )}>
-              {status === 'active' ? '● Em Preparação' : '● A Planear'}
+              {status === 'active' ? 'Em Preparação' : 'A Planear'}
             </div>
           </div>
 

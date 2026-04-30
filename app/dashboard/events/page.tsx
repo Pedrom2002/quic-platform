@@ -43,11 +43,9 @@ export default async function EventsPage() {
                 className="flex items-center gap-4 p-4 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all group"
               >
                 <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-lg"
-                  style={{ backgroundColor: et?.color + '20' }}
-                >
-                  <span style={{ color: et?.color }}>◆</span>
-                </div>
+                  className="w-10 h-10 rounded-lg shrink-0"
+                  style={{ backgroundColor: et?.color + '20', borderLeft: `3px solid ${et?.color}` }}
+                />
 
                 <div className="flex-1 min-w-0">
                   <p className="text-slate-800 font-medium truncate">{event.name}</p>
