@@ -82,7 +82,7 @@ export function PortalClient({
         <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 pt-8 sm:pt-12 pb-16 sm:pb-24 md:pb-32">
           {/* Top bar */}
           <div className="flex items-center justify-between mb-16 sm:mb-24 md:mb-32">
-            <Image src="/logo branco (1).png" alt="Quic" width={80} height={32} priority />
+            <Image src="/logo-branco.png" alt="Quic" width={80} height={32} priority />
             <span className="text-xs font-medium tracking-widest uppercase text-white/70 border border-white/20 px-3 py-1">
               Em Preparação
             </span>
@@ -211,7 +211,7 @@ export function PortalClient({
             No stage is too big.
           </p>
           <div className="flex flex-wrap items-center justify-between gap-4 pt-8 border-t border-white/10">
-            <Image src="/logo branco (1).png" alt="Quic" width={70} height={28} />
+            <Image src="/logo-branco.png" alt="Quic" width={70} height={28} />
             <div className="text-right">
               <p className="text-[10px] tracking-[0.25em] uppercase text-white/40">
                 Portal Exclusivo · Tempo Real
