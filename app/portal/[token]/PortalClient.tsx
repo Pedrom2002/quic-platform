@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-import { Clock, MapPin } from 'lucide-react'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { calcProgress } from '@/lib/event-status'
@@ -78,115 +77,154 @@ export function PortalClient({
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="border-b border-stone-100">
-        <div className="max-w-xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <Image src="/logo preto.png" alt="Quic" width={80} height={32} />
-            <span className="text-xs font-medium tracking-widest uppercase text-stone-400">
+      {/* Hero - Black */}
+      <section className="bg-black text-white relative overflow-hidden">
+        <div className="max-w-5xl mx-auto px-6 md:px-10 pt-10 pb-20 md:pt-14 md:pb-32">
+          {/* Top bar */}
+          <div className="flex items-center justify-between mb-20 md:mb-32">
+            <Image src="/logo branco (1).png" alt="Quic" width={90} height={36} priority />
+            <span className="text-[10px] md:text-xs font-medium tracking-[0.25em] uppercase text-white/50">
               {status === 'active' ? 'Em Preparação' : 'A Planear'}
             </span>
           </div>
 
-          <h1 className="text-3xl font-bold tracking-tight text-stone-900 leading-tight">{eventName}</h1>
+          {/* Slogan */}
+          <p className="text-[10px] md:text-xs font-medium tracking-[0.4em] uppercase text-white/40 mb-6">
+            No Stage Is Too Big
+          </p>
 
-          <div className="flex items-center gap-5 mt-3 text-stone-400 text-sm">
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5" />
-              {eventDate}
-            </span>
+          {/* Event name - massive */}
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-8 md:mb-10 break-words">
+            {eventName}
+          </h1>
+
+          {/* Meta */}
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-white/60 text-sm">
+            <span className="tracking-wide">{eventDate}</span>
             {venueName && (
-              <span className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5" />
-                {venueName}
-              </span>
+              <>
+                <span className="w-1 h-1 rounded-full bg-white/30" />
+                <span className="tracking-wide">{venueName}</span>
+              </>
             )}
           </div>
+        </div>
 
-          {/* Progress */}
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs tracking-widest uppercase text-stone-400 font-medium">Progresso</span>
-              <span className="text-2xl font-bold text-stone-900">{progress.percent}%</span>
+        {/* Progress bar - bottom of hero */}
+        <div className="border-t border-white/10">
+          <div className="max-w-5xl mx-auto px-6 md:px-10 py-6 md:py-8">
+            <div className="flex items-baseline justify-between mb-3">
+              <span className="text-[10px] md:text-xs font-medium tracking-[0.25em] uppercase text-white/50">
+                Progresso
+              </span>
+              <div className="flex items-baseline gap-3">
+                <span className="text-3xl md:text-4xl font-bold tracking-tight">{progress.percent}</span>
+                <span className="text-sm text-white/50">%</span>
+              </div>
             </div>
-            <div className="h-1 bg-stone-100 overflow-hidden">
+            <div className="h-px bg-white/10 overflow-hidden">
               <div
-                className="h-full bg-stone-900 transition-all duration-700 ease-out"
+                className="h-full bg-white transition-all duration-1000 ease-out"
                 style={{ width: `${progress.percent}%` }}
               />
             </div>
-            <p className="text-xs text-stone-400 mt-2">
+            <p className="text-xs text-white/40 mt-3 tracking-wide">
               {progress.completed} de {progress.total} etapas concluídas
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-xl mx-auto px-6 py-10 space-y-10">
-        {/* Etapas concluídas */}
+      {/* Content */}
+      <section className="max-w-5xl mx-auto px-6 md:px-10 py-16 md:py-24">
         {completedItems.length > 0 && (
-          <div>
-            <p className="text-xs font-medium tracking-widest uppercase text-stone-400 mb-5">
-              Concluído
-            </p>
-            <div className="space-y-px">
-              {completedItems.map(item => (
-                <div
+          <div className="mb-20 md:mb-24">
+            <div className="flex items-baseline justify-between mb-10 md:mb-12 pb-4 border-b border-stone-900">
+              <h2 className="text-xs md:text-sm font-medium tracking-[0.3em] uppercase text-stone-900">
+                Concluído
+              </h2>
+              <span className="text-xs text-stone-400 tabular-nums">
+                {String(completedItems.length).padStart(2, '0')}
+              </span>
+            </div>
+            <ul className="space-y-0">
+              {completedItems.map((item, idx) => (
+                <li
                   key={item.id}
-                  className="flex items-start gap-4 py-4 border-b border-stone-100 last:border-0"
+                  className="grid grid-cols-[auto_1fr_auto] gap-6 md:gap-10 py-6 md:py-7 border-b border-stone-100 last:border-0 items-baseline"
                 >
-                  <div className="w-1.5 h-1.5 rounded-full bg-stone-900 mt-2 shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-stone-900 text-sm font-medium">
+                  <span className="text-xs text-stone-300 tabular-nums tracking-wider font-medium">
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <div>
+                    <p className="text-stone-900 text-base md:text-lg font-medium tracking-tight">
                       {item.client_label ?? item.title}
                     </p>
-                    {item.completed_at && (
-                      <p className="text-stone-400 text-xs mt-0.5">
-                        {format(new Date(item.completed_at), "d MMM · HH'h'mm", { locale: pt })}
-                      </p>
-                    )}
                     {item.completion_note && (
-                      <p className="text-stone-500 text-xs mt-1">{item.completion_note}</p>
+                      <p className="text-stone-500 text-sm mt-1.5 leading-relaxed">{item.completion_note}</p>
                     )}
                   </div>
-                </div>
+                  {item.completed_at && (
+                    <span className="text-xs text-stone-400 tabular-nums whitespace-nowrap">
+                      {format(new Date(item.completed_at), "d MMM · HH'h'mm", { locale: pt })}
+                    </span>
+                  )}
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         )}
 
-        {/* Etapas em preparação */}
         {pendingItems.length > 0 && (
           <div>
-            <p className="text-xs font-medium tracking-widest uppercase text-stone-400 mb-5">
-              Em Preparação
-            </p>
-            <div className="space-y-px">
-              {pendingItems.map(item => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-4 py-4 border-b border-stone-100 last:border-0"
-                >
-                  <div className="w-1.5 h-1.5 rounded-full border border-stone-300 shrink-0" />
-                  <p className="text-stone-400 text-sm">{item.client_label ?? item.title}</p>
-                </div>
-              ))}
+            <div className="flex items-baseline justify-between mb-10 md:mb-12 pb-4 border-b border-stone-200">
+              <h2 className="text-xs md:text-sm font-medium tracking-[0.3em] uppercase text-stone-400">
+                Em Preparação
+              </h2>
+              <span className="text-xs text-stone-300 tabular-nums">
+                {String(pendingItems.length).padStart(2, '0')}
+              </span>
             </div>
+            <ul className="space-y-0">
+              {pendingItems.map((item, idx) => (
+                <li
+                  key={item.id}
+                  className="grid grid-cols-[auto_1fr] gap-6 md:gap-10 py-5 md:py-6 border-b border-stone-100 last:border-0 items-baseline"
+                >
+                  <span className="text-xs text-stone-200 tabular-nums tracking-wider font-medium">
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <p className="text-stone-400 text-base md:text-lg tracking-tight">
+                    {item.client_label ?? item.title}
+                  </p>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
+      </section>
 
-        {/* Footer */}
-        <div className="pt-6 border-t border-stone-100">
-          <p className="text-stone-300 text-xs">
-            Portal exclusivo Quic · Atualizado em tempo real
+      {/* Footer */}
+      <footer className="bg-black text-white">
+        <div className="max-w-5xl mx-auto px-6 md:px-10 py-12 md:py-16">
+          <p className="text-2xl md:text-4xl font-bold tracking-tight leading-tight mb-8">
+            No stage is too big.
           </p>
-          {lastUpdate && (
-            <p className="text-stone-200 text-xs mt-1">
-              Última atualização: {format(lastUpdate, "HH'h'mm'min'ss's'", { locale: pt })}
-            </p>
-          )}
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-8 border-t border-white/10">
+            <Image src="/logo branco (1).png" alt="Quic" width={70} height={28} />
+            <div className="text-right">
+              <p className="text-[10px] tracking-[0.25em] uppercase text-white/40">
+                Portal Exclusivo · Tempo Real
+              </p>
+              {lastUpdate && (
+                <p className="text-[10px] text-white/30 mt-1 tabular-nums">
+                  Atualizado · {format(lastUpdate, "HH'h'mm'min'ss's'", { locale: pt })}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      </footer>
     </div>
   )
 }
