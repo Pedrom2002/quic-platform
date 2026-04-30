@@ -1,5 +1,5 @@
 const URL = 'https://zzxgumtzehfkxzqyjqjf.supabase.co'
-const KEY = 'SUPABASE_SECRET_REDACTED'
+const KEY = process.env.SUPABASE_SECRET_KEY
 const ORG = '00000000-0000-0000-0000-000000000001'
 
 const headers = {
