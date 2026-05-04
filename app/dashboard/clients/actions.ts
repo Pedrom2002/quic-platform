@@ -70,3 +70,21 @@ export async function deactivateClientAction(clientId: string) {
     .eq('id', clientId)
   if (error) throw new Error(error.message)
 }
+
+export async function loadClientsAction() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  const member = await resolveOrgMember(supabase, user.id)
+  if (!member) throw new Error('Não autorizado')
+
+  const { data } = await supabase
+    .from('clients')
+    .select('*')
+    .eq('organization_id', member.organization_id)
+    .eq('is_active', true)
+    .order('full_name')
+
+  return data ?? []
+}
