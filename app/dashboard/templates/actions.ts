@@ -31,7 +31,7 @@ export async function loadMessageTemplatesAction() {
 
 export async function createMessageTemplateAction(input: MessageTemplateInput) {
   const parsed = messageTemplateSchema.safeParse(input)
-  if (!parsed.success) throw new Error(parsed.error.errors[0].message)
+  if (!parsed.success) throw new Error(parsed.error.issues[0].message)
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -48,7 +48,7 @@ export async function createMessageTemplateAction(input: MessageTemplateInput) {
 
 export async function updateMessageTemplateAction(id: string, input: MessageTemplateInput) {
   const parsed = messageTemplateSchema.safeParse(input)
-  if (!parsed.success) throw new Error(parsed.error.errors[0].message)
+  if (!parsed.success) throw new Error(parsed.error.issues[0].message)
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
