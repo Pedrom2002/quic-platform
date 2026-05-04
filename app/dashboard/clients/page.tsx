@@ -71,7 +71,7 @@ export default function ClientsPage() {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900">Clientes</h1>
-        <p className="text-slate-500 mt-1">{clients.length} contactos no directório</p>
+        <p className="text-slate-500 mt-1">{loading ? '' : `${clients.length} contactos no directório`}</p>
       </div>
 
       {loading ? (
@@ -114,7 +114,7 @@ export default function ClientsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Button size="sm" variant="ghost" onClick={() => openEdit(client)} className="text-slate-400 hover:text-slate-700">
+                <Button size="sm" variant="ghost" onClick={() => openEdit(client)} disabled={isPending} className="text-slate-400 hover:text-slate-700">
                   <Pencil className="w-4 h-4" />
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => deactivate(client.id)} disabled={isPending} className="text-slate-300 hover:text-red-500">

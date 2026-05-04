@@ -50,6 +50,7 @@ export async function updateClientAction(
       company: updates.company.trim() || null,
     })
     .eq('id', clientId)
+    .eq('organization_id', member.organization_id)
   if (error) throw new Error(error.message)
 }
 
@@ -68,6 +69,7 @@ export async function deactivateClientAction(clientId: string) {
     .from('clients')
     .update({ is_active: false })
     .eq('id', clientId)
+    .eq('organization_id', member.organization_id)
   if (error) throw new Error(error.message)
 }
 
