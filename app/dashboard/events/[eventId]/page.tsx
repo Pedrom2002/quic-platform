@@ -6,6 +6,7 @@ import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { EVENT_STATUS_LABEL, EVENT_STATUS_COLOR, calcProgress } from '@/lib/event-status'
 import type { EventTypeJoin } from '@/types/app'
+import { SendPortalButton } from '@/components/events/SendPortalButton'
 
 export default async function EventDetailPage({
   params,
@@ -69,6 +70,7 @@ export default async function EventDetailPage({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <SendPortalButton eventId={eventId} />
             <Link
               href={`/dashboard/events/${eventId}/edit`}
               className="inline-flex items-center gap-1.5 h-8 px-3 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
