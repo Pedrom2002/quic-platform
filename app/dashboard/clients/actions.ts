@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 
-async function resolveOrg(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+async function resolveOrgMember(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data } = await supabase
     .from('team_members')
     .select('organization_id')
@@ -35,7 +35,7 @@ export async function updateClientAction(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
 
-  const member = await resolveOrg(supabase, user.id)
+  const member = await resolveOrgMember(supabase, user.id)
   if (!member) throw new Error('Não autorizado')
 
   const owns = await assertClientOwnership(supabase, clientId, member.organization_id)
@@ -58,7 +58,7 @@ export async function deactivateClientAction(clientId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
 
-  const member = await resolveOrg(supabase, user.id)
+  const member = await resolveOrgMember(supabase, user.id)
   if (!member) throw new Error('Não autorizado')
 
   const owns = await assertClientOwnership(supabase, clientId, member.organization_id)
