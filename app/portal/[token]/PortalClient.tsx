@@ -19,22 +19,24 @@ interface Props {
   portalToken: string
 }
 
-function useCountUp(target: number, duration = 900): number {
+function useCountUp(target: number, duration = 900, delay = 0): number {
   const [displayed, setDisplayed] = useState(0)
 
   useEffect(() => {
     if (target === 0) { setDisplayed(0); return }
-    const start = performance.now()
     let raf: number
-    function step(now: number) {
-      const t = Math.min((now - start) / duration, 1)
-      const eased = 1 - Math.pow(1 - t, 3)
-      setDisplayed(Math.round(eased * target))
-      if (t < 1) raf = requestAnimationFrame(step)
-    }
-    raf = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(raf)
-  }, [target, duration])
+    const timeout = setTimeout(() => {
+      const start = performance.now()
+      function step(now: number) {
+        const t = Math.min((now - start) / duration, 1)
+        const eased = 1 - Math.pow(1 - t, 3)
+        setDisplayed(Math.round(eased * target))
+        if (t < 1) raf = requestAnimationFrame(step)
+      }
+      raf = requestAnimationFrame(step)
+    }, delay)
+    return () => { clearTimeout(timeout); cancelAnimationFrame(raf) }
+  }, [target, duration, delay])
 
   return displayed
 }
@@ -77,7 +79,7 @@ export function PortalClient({
   const [justCompleted, setJustCompleted] = useState<Set<string>>(new Set())
   const [isConnected, setIsConnected] = useState(false)
 
-  const displayedPercent = useCountUp(progress.percent, 2200)
+  const displayedPercent = useCountUp(progress.percent, 2200, 1100)
 
   useEffect(() => {
     const supabase = createClient()
