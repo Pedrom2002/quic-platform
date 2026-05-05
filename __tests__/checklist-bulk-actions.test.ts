@@ -31,7 +31,7 @@ vi.mock('@/lib/supabase/actions', () => ({ resolveOrgMember: vi.fn() }))
 global.fetch = mockFetch as unknown as typeof fetch
 
 describe('bulkUpdateChecklistStatusAction', () => {
-  let bulkUpdateChecklistStatusAction: (eventId: string, ids: string[], status: string) => Promise<void>
+  let bulkUpdateChecklistStatusAction: (eventId: string, ids: string[], status: 'pending' | 'in_progress' | 'completed' | 'skipped') => Promise<void>
   let resolveOrgMember: ReturnType<typeof vi.fn>
 
   beforeEach(async () => {
