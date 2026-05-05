@@ -281,7 +281,16 @@ export function PortalClient({
       )}
 
       {/* Content */}
-      <section className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-16 md:py-24">
+      <section className="relative">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-[0.04] pointer-events-none"
+          src="https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/4043-176748917.mp4"
+        />
+      <section className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-16 md:py-24">
         {completedItems.length > 0 && (
           <div className="mb-16 sm:mb-20 md:mb-24">
             <div className="flex items-baseline justify-between mb-8 sm:mb-10 pb-4 border-b border-stone-900">
@@ -360,6 +369,7 @@ export function PortalClient({
             </ul>
           </div>
         )}
+      </section>
       </section>
 
       {/* Footer */}
