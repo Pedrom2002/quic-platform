@@ -158,7 +158,7 @@ export function PortalClient({
     <div className="min-h-screen bg-white">
       <style>{`
         @keyframes fade-up {
-          from { opacity: 0; transform: translateY(18px); }
+          from { opacity: 0; transform: translateY(12px); }
           to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes fade-in {
@@ -174,10 +174,12 @@ export function PortalClient({
           50%      { background-color: rgb(167 243 208); border-color: rgb(110 231 183); }
         }
         .anim-fade-up {
-          animation: fade-up 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+          opacity: 0;
+          animation: fade-up 0.9s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
         .anim-fade-in {
-          animation: fade-in 0.9s ease-out both;
+          opacity: 0;
+          animation: fade-in 0.7s ease-out forwards;
         }
         .anim-pulse-green {
           animation: pulse-green 0.6s ease-in-out 1;
@@ -188,7 +190,8 @@ export function PortalClient({
           transition: opacity 0.25s ease-out, transform 0.25s ease-out;
         }
         .anim-item-enter {
-          animation: fade-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+          opacity: 0;
+          animation: fade-up 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
       `}</style>
 
