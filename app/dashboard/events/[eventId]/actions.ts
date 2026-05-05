@@ -26,7 +26,8 @@ export async function sendPortalLinkAction(eventId: string) {
     .eq('event_id', eventId)
     .eq('opted_out', false)
 
-  const portalBase = process.env.NEXT_PUBLIC_PORTAL_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const portalBase = process.env.NEXT_PUBLIC_PORTAL_URL ?? process.env.NEXT_PUBLIC_APP_URL
+  if (!portalBase) throw new Error('NEXT_PUBLIC_APP_URL não configurado')
   const portalUrl = `${portalBase}/portal/${event.portal_token}`
 
   type EmailableClient = { full_name: string; email: string }
