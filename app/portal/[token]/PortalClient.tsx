@@ -77,7 +77,7 @@ export function PortalClient({
   const [justCompleted, setJustCompleted] = useState<Set<string>>(new Set())
   const [isConnected, setIsConnected] = useState(false)
 
-  const displayedPercent = useCountUp(progress.percent)
+  const displayedPercent = useCountUp(progress.percent, 1400)
 
   useEffect(() => {
     const supabase = createClient()
@@ -235,8 +235,8 @@ export function PortalClient({
             </div>
             <div className="h-px bg-white/10 overflow-hidden">
               <div
-                className="h-full bg-white transition-all duration-1000 ease-out"
-                style={{ width: `${progress.percent}%` }}
+                className="h-full bg-white"
+                style={{ width: `${displayedPercent}%`, transition: 'width 50ms linear' }}
               />
             </div>
             <p className="text-xs text-white/40 mt-3">
