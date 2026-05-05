@@ -169,9 +169,9 @@ export function PortalClient({
           0%, 100% { opacity: 1; transform: scale(1); }
           50%      { opacity: 0.4; transform: scale(1.35); }
         }
-        @keyframes pulse-green {
-          0%, 100% { background-color: rgb(209 250 229); border-color: rgb(167 243 208); }
-          50%      { background-color: rgb(167 243 208); border-color: rgb(110 231 183); }
+        @keyframes pulse-gold {
+          0%, 100% { border-color: rgba(180, 140, 60, 0.3); }
+          50%      { border-color: rgba(180, 140, 60, 0.7); }
         }
         .anim-fade-up {
           opacity: 0;
@@ -181,8 +181,8 @@ export function PortalClient({
           opacity: 0;
           animation: fade-in 0.7s ease-out forwards;
         }
-        .anim-pulse-green {
-          animation: pulse-green 0.6s ease-in-out 1;
+        .anim-pulse-gold {
+          animation: pulse-gold 0.6s ease-in-out 1;
         }
         .anim-item-exit {
           opacity: 0;
@@ -308,14 +308,14 @@ export function PortalClient({
                 return (
                   <li
                     key={item.id}
-                    className={`flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6 px-4 -mx-4 rounded-lg border last:border-0 mb-2 ${
+                    className={`flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6 pl-4 border-l-2 border-b border-stone-100 last:border-b-0 mb-0 ${
                       isNew
-                        ? 'anim-item-enter anim-pulse-green border-emerald-300'
-                        : 'bg-emerald-100 border-emerald-300 anim-fade-in'
+                        ? 'anim-item-enter anim-pulse-gold border-l-amber-400'
+                        : 'border-l-amber-400/50 anim-fade-in'
                     }`}
                     style={isNew ? undefined : { animationDelay: `${300 + idx * 40}ms` }}
                   >
-                    <span className="text-xs text-stone-500 tabular-nums tracking-wider font-medium pt-0.5">
+                    <span className="text-xs text-amber-600/70 tabular-nums tracking-wider font-medium pt-0.5">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <div>
