@@ -77,7 +77,7 @@ export function PortalClient({
   const [justCompleted, setJustCompleted] = useState<Set<string>>(new Set())
   const [isConnected, setIsConnected] = useState(false)
 
-  const displayedPercent = useCountUp(progress.percent, 1400)
+  const displayedPercent = useCountUp(progress.percent, 2200)
 
   useEffect(() => {
     const supabase = createClient()
@@ -172,10 +172,10 @@ export function PortalClient({
           50%      { background-color: rgb(167 243 208); border-color: rgb(110 231 183); }
         }
         .anim-fade-up {
-          animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+          animation: fade-up 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
         .anim-fade-in {
-          animation: fade-in 0.4s ease-out both;
+          animation: fade-in 0.9s ease-out both;
         }
         .anim-pulse-green {
           animation: pulse-green 0.6s ease-in-out 1;
@@ -194,23 +194,23 @@ export function PortalClient({
       <section className="bg-neutral-900 text-white relative overflow-hidden" style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
         <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 pt-8 sm:pt-12 pb-16 sm:pb-24 md:pb-32">
           {/* Top bar */}
-          <div className="flex items-center justify-between mb-16 sm:mb-24 md:mb-32 anim-fade-up" style={{ animationDelay: '0ms' }}>
+          <div className="flex items-center justify-between mb-16 sm:mb-24 md:mb-32 anim-fade-up" style={{ animationDelay: '100ms' }}>
             <Image src="/logo-branco.png" alt="Quic" width={80} height={32} priority />
             <StatusBadge status={status} />
           </div>
 
           {/* Slogan */}
-          <p className="text-xs font-medium tracking-[0.35em] uppercase text-white/40 mb-5 anim-fade-up" style={{ animationDelay: '80ms' }}>
+          <p className="text-xs font-medium tracking-[0.35em] uppercase text-white/40 mb-5 anim-fade-up" style={{ animationDelay: '350ms' }}>
             No Stage Is Too Big
           </p>
 
           {/* Event name */}
-          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-8 break-words hyphens-auto anim-fade-up" style={{ animationDelay: '160ms' }}>
+          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-8 break-words hyphens-auto anim-fade-up" style={{ animationDelay: '600ms' }}>
             {eventName}
           </h1>
 
           {/* Meta */}
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-white/50 text-sm anim-fade-up" style={{ animationDelay: '240ms' }}>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-white/50 text-sm anim-fade-up" style={{ animationDelay: '850ms' }}>
             <span>{eventDate}</span>
             {venueName && (
               <>
@@ -222,7 +222,7 @@ export function PortalClient({
         </div>
 
         {/* Progress bar */}
-        <div className="border-t border-white/10 anim-fade-up" style={{ animationDelay: '320ms' }}>
+        <div className="border-t border-white/10 anim-fade-up" style={{ animationDelay: '1100ms' }}>
           <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-6 sm:py-8">
             <div className="flex items-baseline justify-between mb-3">
               <span className="text-xs font-medium tracking-widest uppercase text-white/50">
