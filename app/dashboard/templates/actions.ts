@@ -2,15 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { messageTemplateSchema, type MessageTemplateInput } from '@/schemas/template.schema'
-
-async function resolveOrgMember(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', userId)
-    .single()
-  return data
-}
+import { resolveOrgMember } from '@/lib/supabase/actions'
 
 export async function loadMessageTemplatesAction() {
   const supabase = await createClient()

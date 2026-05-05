@@ -1,15 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-
-async function resolveOrgMember(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', userId)
-    .single()
-  return data
-}
+import { resolveOrgMember } from '@/lib/supabase/actions'
 
 async function assertClientOwnership(
   supabase: Awaited<ReturnType<typeof createClient>>,
