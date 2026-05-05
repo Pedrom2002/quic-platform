@@ -27,6 +27,44 @@ export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [newItemTitle, setNewItemTitle] = useState('')
   const [addingItem, setAddingItem] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkLoading, setBulkLoading] = useState(false)
+
+  function toggleSelect(id: string) {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function clearSelection() {
+    setSelected(new Set())
+  }
+
+  async function bulkUpdate(status: 'completed' | 'in_progress' | 'skipped') {
+    if (!selected.size) return
+    setBulkLoading(true)
+    const count = selected.size
+    try {
+      const { bulkUpdateChecklistStatusAction } = await import(
+        '@/app/dashboard/events/[eventId]/checklist/actions'
+      )
+      await bulkUpdateChecklistStatusAction(eventId, Array.from(selected), status)
+      setItems(prev => prev.map(i =>
+        selected.has(i.id)
+          ? { ...i, status, completed_at: status === 'completed' ? new Date().toISOString() : null }
+          : i
+      ))
+      clearSelection()
+      toast.success(`${count} etapa${count !== 1 ? 's' : ''} atualizadas`)
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erro inesperado')
+    } finally {
+      setBulkLoading(false)
+    }
+  }
 
   const total = items.length
   const completed = items.filter(i => i.status === 'completed').length
@@ -118,6 +156,35 @@ export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
         </div>
       </div>
 
+      {/* Bulk toolbar */}
+      {selected.size > 0 && (
+        <div className="sticky top-2 z-10 flex items-center gap-2 mb-3 p-3 bg-slate-900 text-white rounded-xl shadow-lg">
+          <span className="text-sm font-medium flex-1">
+            {selected.size} selecionado{selected.size !== 1 ? 's' : ''}
+          </span>
+          <Button size="sm" disabled={bulkLoading}
+            className="h-7 px-3 text-xs bg-green-600 hover:bg-green-500 text-white border-0"
+            onClick={() => bulkUpdate('completed')}>
+            <CheckCircle2 className="w-3.5 h-3.5 mr-1" />Concluído
+          </Button>
+          <Button size="sm" disabled={bulkLoading}
+            className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-500 text-white border-0"
+            onClick={() => bulkUpdate('in_progress')}>
+            Em Progresso
+          </Button>
+          <Button size="sm" disabled={bulkLoading}
+            className="h-7 px-3 text-xs bg-slate-600 hover:bg-slate-500 text-white border-0"
+            onClick={() => bulkUpdate('skipped')}>
+            <SkipForward className="w-3.5 h-3.5 mr-1" />Saltar
+          </Button>
+          <Button size="sm" variant="ghost" disabled={bulkLoading}
+            className="h-7 px-2 text-white/60 hover:text-white hover:bg-slate-700"
+            onClick={clearSelection}>
+            <X className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      )}
+
       {/* Items */}
       <div className="space-y-2 mb-4">
         {items.map(item =>
@@ -134,6 +201,8 @@ export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
               key={item.id}
               item={item}
               isLoading={loadingId === item.id}
+              isSelected={selected.has(item.id)}
+              onToggleSelect={() => toggleSelect(item.id)}
               onComplete={() => updateStatus(item.id, 'completed')}
               onStart={() => updateStatus(item.id, 'in_progress')}
               onSkip={() => updateStatus(item.id, 'skipped')}
@@ -250,6 +319,8 @@ function EditRow({ item, onSave, onCancel, isLoading }: EditRowProps) {
 interface ChecklistItemProps {
   item: ItemWithMember
   isLoading: boolean
+  isSelected: boolean
+  onToggleSelect: () => void
   onComplete: () => void
   onStart: () => void
   onSkip: () => void
@@ -258,7 +329,7 @@ interface ChecklistItemProps {
   onDelete: () => void
 }
 
-function ChecklistItem({ item, isLoading, onComplete, onStart, onSkip, onReset, onEdit, onDelete }: ChecklistItemProps) {
+function ChecklistItem({ item, isLoading, isSelected, onToggleSelect, onComplete, onStart, onSkip, onReset, onEdit, onDelete }: ChecklistItemProps) {
   const isCompleted = item.status === 'completed'
   const isSkipped = item.status === 'skipped'
   const isInProgress = item.status === 'in_progress'
@@ -277,6 +348,15 @@ function ChecklistItem({ item, isLoading, onComplete, onStart, onSkip, onReset, 
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
+      {/* Checkbox */}
+      <input
+        type="checkbox"
+        checked={isSelected}
+        onChange={onToggleSelect}
+        className="w-4 h-4 rounded border-slate-300 text-slate-700 cursor-pointer shrink-0 opacity-0 group-hover:opacity-100 transition-opacity checked:opacity-100"
+        onClick={e => e.stopPropagation()}
+      />
+
       {/* Status icon */}
       <button onClick={isCompleted || isSkipped ? onReset : onComplete} disabled={isLoading} className="shrink-0">
         {isLoading ? <Loader2 className="w-5 h-5 text-slate-300 animate-spin" />
