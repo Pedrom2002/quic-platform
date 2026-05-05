@@ -375,12 +375,12 @@ export function PortalClient({
 
       {/* Footer */}
       <footer className="text-white" style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
-        <div className="max-w-5xl mx-auto px-6 md:px-10 py-12 md:py-16">
-          <p className="text-2xl md:text-4xl font-bold tracking-tight leading-tight mb-8">
-            No stage is too big.
-          </p>
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-8 border-t border-white/10">
-            <Image src="/logo-branco.png" alt="Quic" width={100} height={40} />
+        <div className="max-w-5xl mx-auto px-6 md:px-10 py-8 md:py-10">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
+            <div className="flex items-center gap-4">
+              <Image src="/logo-branco.png" alt="Quic" width={80} height={32} />
+              <span className="text-xs tracking-[0.25em] uppercase text-white/30">No stage is too big</span>
+            </div>
             <div className="flex items-center gap-2 justify-end">
               {isConnected ? (
                 <>
