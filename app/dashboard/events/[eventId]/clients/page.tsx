@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import type { Client } from '@/types/database'
+import type { EventClientWithDetails, NotificationChannel } from '@/types/app'
 import {
   loadEventClientsAction,
   addExistingClientAction,
@@ -29,7 +30,7 @@ export default function EventClientsPage() {
   const params = useParams<{ eventId: string }>()
   const eventId = params.eventId
 
-  const [eventClients, setEventClients] = useState<any[]>([])
+  const [eventClients, setEventClients] = useState<EventClientWithDetails[]>([])
   const [allClients, setAllClients] = useState<Client[]>([])
   const [open, setOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
@@ -92,7 +93,7 @@ export default function EventClientsPage() {
 
     // Optimistic update
     setEventClients(prev => prev.map(ec =>
-      ec.id === ecId ? { ...ec, notification_prefs: { channels: updated, language: 'pt' } } : ec
+      ec.id === ecId ? { ...ec, notification_prefs: { channels: updated as NotificationChannel[], language: 'pt' } } : ec
     ))
 
     startTransition(async () => {
@@ -101,7 +102,7 @@ export default function EventClientsPage() {
       } catch (err: unknown) {
         // Revert optimistic update on failure
         setEventClients(prev => prev.map(ec =>
-          ec.id === ecId ? { ...ec, notification_prefs: { channels: currentChannels, language: 'pt' } } : ec
+          ec.id === ecId ? { ...ec, notification_prefs: { channels: currentChannels as NotificationChannel[], language: 'pt' } } : ec
         ))
         toast.error(err instanceof Error ? err.message : 'Erro inesperado')
       }
@@ -120,7 +121,7 @@ export default function EventClientsPage() {
     })
   }
 
-  const availableClients = allClients.filter(c => !eventClients.some(ec => ec.client_id === c.id))
+  const availableClients = allClients.filter(c => !eventClients.some(ec => ec.client.id === c.id))
 
   return (
     <div className="p-8">
