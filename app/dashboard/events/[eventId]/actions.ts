@@ -5,6 +5,9 @@ import { sendEmail, buildEmailHtml } from '@/lib/notifications/channels/email'
 import { resolveOrgMember } from '@/lib/supabase/actions'
 
 export async function sendPortalLinkAction(eventId: string) {
+  const portalBase = process.env.NEXT_PUBLIC_PORTAL_URL ?? process.env.NEXT_PUBLIC_APP_URL
+  if (!portalBase) throw new Error('NEXT_PUBLIC_PORTAL_URL ou NEXT_PUBLIC_APP_URL não configurado')
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
@@ -26,8 +29,6 @@ export async function sendPortalLinkAction(eventId: string) {
     .eq('event_id', eventId)
     .eq('opted_out', false)
 
-  const portalBase = process.env.NEXT_PUBLIC_PORTAL_URL ?? process.env.NEXT_PUBLIC_APP_URL
-  if (!portalBase) throw new Error('NEXT_PUBLIC_APP_URL não configurado')
   const portalUrl = `${portalBase}/portal/${event.portal_token}`
 
   type EmailableClient = { full_name: string; email: string }
