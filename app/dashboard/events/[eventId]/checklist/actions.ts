@@ -23,15 +23,15 @@ export async function bulkUpdateChecklistStatusAction(
   ids: string[],
   status: ChecklistItemStatus
 ) {
-  if (!ids.length) throw new Error('Nenhum item selecionado')
-  if (ids.length > 50) throw new Error('Máximo 50 items por operação')
-
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
 
   const member = await resolveOrgMember(supabase, user.id)
   if (!member) throw new Error('Não autorizado')
+
+  if (!ids.length) throw new Error('Nenhum item selecionado')
+  if (ids.length > 50) throw new Error('Máximo 50 items por operação')
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) throw new Error('Evento não encontrado')

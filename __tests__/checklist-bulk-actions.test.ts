@@ -74,6 +74,13 @@ describe('bulkUpdateChecklistStatusAction', () => {
     await expect(bulkUpdateChecklistStatusAction('e1', [], 'completed')).rejects.toThrow('Nenhum item selecionado')
   })
 
+  it('throws when ids array exceeds 50', async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
+    resolveOrgMember.mockResolvedValue({ organization_id: 'org1' })
+    const manyIds = Array.from({ length: 51 }, (_, i) => `id${i}`)
+    await expect(bulkUpdateChecklistStatusAction('e1', manyIds, 'completed')).rejects.toThrow('Máximo 50')
+  })
+
   it('calls update with correct status for valid request', async () => {
     supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
     resolveOrgMember.mockResolvedValue({ organization_id: 'org1' })
