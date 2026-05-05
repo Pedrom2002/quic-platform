@@ -1,4 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
+'use server'
+
+import type { createClient } from '@/lib/supabase/server'
 
 export async function resolveOrgMember(
   supabase: Awaited<ReturnType<typeof createClient>>,
