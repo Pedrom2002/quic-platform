@@ -57,8 +57,10 @@ export default async function NotificationsPage({
       ) : (
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm divide-y divide-slate-100">
           {jobs.map(job => {
-            const client = job.client as any
-            const item = job.checklist_item as any
+            type JobClient = { full_name: string; email: string | null } | null
+            type JobItem = { title: string; client_label: string | null } | null
+            const client = job.client as JobClient
+            const item = job.checklist_item as JobItem
             const cfg = statusConfig[job.status] ?? statusConfig.queued
             const Icon = cfg.icon
             return (
