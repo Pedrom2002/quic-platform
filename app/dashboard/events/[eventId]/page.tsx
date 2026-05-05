@@ -7,6 +7,9 @@ import { pt } from 'date-fns/locale'
 import { EVENT_STATUS_LABEL, EVENT_STATUS_COLOR, calcProgress } from '@/lib/event-status'
 import type { EventTypeJoin } from '@/types/app'
 import { SendPortalButton } from '@/components/events/SendPortalButton'
+import { ActivityFeed } from '@/components/events/ActivityFeed'
+import { mergeTimelineEvents } from '@/lib/timeline'
+import type { ChecklistTimelineEvent, NotificationTimelineEvent, ClientTimelineEvent } from '@/lib/timeline'
 
 export default async function EventDetailPage({
   params,
@@ -39,6 +42,63 @@ export default async function EventDetailPage({
     .from('event_clients')
     .select('*', { count: 'exact', head: true })
     .eq('event_id', eventId)
+
+  const [{ data: checklistActivity }, { data: notifActivity }, { data: clientActivity }] = await Promise.all([
+    supabase
+      .from('event_checklist_items')
+      .select('id, title, client_label, status, updated_at')
+      .eq('event_id', eventId)
+      .not('status', 'eq', 'pending')
+      .order('updated_at', { ascending: false })
+      .limit(30),
+    supabase
+      .from('notification_jobs')
+      .select('id, channel, status, sent_at, created_at, clients(full_name)')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false })
+      .limit(30),
+    supabase
+      .from('event_clients')
+      .select('id, role, created_at, clients(full_name)')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false })
+      .limit(30),
+  ])
+
+  const checklistEvents: ChecklistTimelineEvent[] = (checklistActivity ?? []).map(r => ({
+    type: 'checklist',
+    id: r.id,
+    item_title: (r as Record<string, string | null>).client_label ?? r.title,
+    status: r.status,
+    member_name: null,
+    timestamp: r.updated_at,
+  }))
+
+  const notifEvents: NotificationTimelineEvent[] = (notifActivity ?? []).map(r => {
+    const client = r.clients as unknown as { full_name: string } | null
+    return {
+      type: 'notification',
+      id: r.id,
+      client_name: client?.full_name ?? 'Cliente',
+      channel: r.channel,
+      status: r.status,
+      timestamp: r.sent_at ?? r.created_at,
+    }
+  })
+
+  const clientEvents: ClientTimelineEvent[] = (clientActivity ?? []).map(r => {
+    const client = r.clients as unknown as { full_name: string } | null
+    return {
+      type: 'client',
+      id: r.id,
+      client_name: client?.full_name ?? 'Cliente',
+      action: 'added',
+      role: r.role,
+      timestamp: r.created_at,
+    }
+  })
+
+  const initialTimelineEvents = mergeTimelineEvents(checklistEvents, notifEvents, clientEvents)
 
   const portalUrl = `${process.env.NEXT_PUBLIC_PORTAL_URL ?? ''}/portal/${event.portal_token}`
   const et = event.event_types
@@ -147,6 +207,9 @@ export default async function EventDetailPage({
           </div>
         </Link>
       </div>
+
+      {/* Activity Feed */}
+      <ActivityFeed eventId={eventId} initialEvents={initialTimelineEvents} />
     </div>
   )
 }
