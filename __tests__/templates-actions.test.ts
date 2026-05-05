@@ -36,8 +36,8 @@ vi.mock('@/lib/supabase/actions', () => ({
 describe('templates actions', () => {
   let resolveOrgMember: ReturnType<typeof vi.fn>
   let loadMessageTemplatesAction: () => Promise<unknown[]>
-  let createMessageTemplateAction: (input: unknown) => Promise<void>
-  let updateMessageTemplateAction: (id: string, input: unknown) => Promise<void>
+  let createMessageTemplateAction: (input: { name: string; channel: 'email' | 'whatsapp' | 'sms' | 'portal'; language: 'pt' | 'en'; subject?: string; body_template: string }) => Promise<void>
+  let updateMessageTemplateAction: (id: string, input: { name: string; channel: 'email' | 'whatsapp' | 'sms' | 'portal'; language: 'pt' | 'en'; subject?: string; body_template: string }) => Promise<void>
   let deactivateMessageTemplateAction: (id: string) => Promise<void>
 
   const validInput = {

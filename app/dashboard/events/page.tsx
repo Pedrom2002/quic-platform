@@ -5,6 +5,7 @@ import { ButtonLink } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { EVENT_STATUS_LABEL, EVENT_STATUS_COLOR } from '@/lib/event-status'
+import type { EventTypeJoin } from '@/types/app'
 
 export default async function EventsPage() {
   const supabase = await createClient()
@@ -35,7 +36,7 @@ export default async function EventsPage() {
       ) : (
         <div className="grid gap-2">
           {events.map(event => {
-            const et = event.event_types as any
+            const et = event.event_types as EventTypeJoin | null
             return (
               <Link
                 key={event.id}
