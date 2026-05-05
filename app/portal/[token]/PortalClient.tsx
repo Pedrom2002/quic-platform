@@ -196,16 +196,25 @@ export function PortalClient({
       `}</style>
 
       {/* Hero */}
-      <section className="min-h-screen bg-neutral-900 text-white relative overflow-hidden flex flex-col justify-between" style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
+      <section className="min-h-screen text-white relative overflow-hidden flex flex-col justify-between" style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
+        {/* Background video */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
+          src="https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/144156-784280927.mp4"
+        />
         {/* Top bar — full-width border */}
-        <div className="border-b border-white/10 anim-fade-up" style={{ animationDelay: '100ms' }}>
+        <div className="relative z-10 border-b border-white/10 anim-fade-up" style={{ animationDelay: '100ms' }}>
           <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-6 sm:py-8 flex items-center justify-between">
             <Image src="/logo-branco.png" alt="Quic" width={80} height={32} priority />
             <StatusBadge status={status} />
           </div>
         </div>
 
-        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-16 sm:py-24 md:py-32">
+        <div className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-16 sm:py-24 md:py-32">
           {/* Slogan */}
           <p className="text-xs font-medium tracking-[0.35em] uppercase text-white/40 mb-5 anim-fade-up" style={{ animationDelay: '350ms' }}>
             No Stage Is Too Big
@@ -229,7 +238,7 @@ export function PortalClient({
         </div>
 
         {/* Progress bar */}
-        <div className="border-t border-white/10 anim-fade-up" style={{ animationDelay: '1100ms' }}>
+        <div className="relative z-10 border-t border-white/10 anim-fade-up" style={{ animationDelay: '1100ms' }}>
           <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-6 sm:py-8">
             <div className="flex items-baseline justify-between mb-3">
               <span className="text-xs font-medium tracking-widest uppercase text-white/50">
