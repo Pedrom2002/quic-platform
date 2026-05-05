@@ -63,3 +63,31 @@ export async function bulkUpdateChecklistStatusAction(
     )
   }
 }
+
+export async function reorderChecklistItemsAction(
+  eventId: string,
+  orderedIds: string[]
+) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  const member = await resolveOrgMember(supabase, user.id)
+  if (!member) throw new Error('Não autorizado')
+
+  if (!orderedIds.length) throw new Error('Nenhum item para reordenar')
+  if (orderedIds.length > 200) throw new Error('Máximo 200 items por operação')
+
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) throw new Error('Evento não encontrado')
+
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase
+        .from('event_checklist_items')
+        .update({ position: (index + 1) * 10 })
+        .eq('id', id)
+        .eq('event_id', eventId)
+    )
+  )
+}
