@@ -55,6 +55,7 @@ describe('clients actions', () => {
 
     const actionsHelpers = await import('@/lib/supabase/actions')
     resolveOrgMember = actionsHelpers.resolveOrgMember as ReturnType<typeof vi.fn>
+    resolveOrgMember.mockReset()
   })
 
   describe('updateClientAction', () => {
@@ -103,6 +104,24 @@ describe('clients actions', () => {
   })
 
   describe('deactivateClientAction', () => {
+    it('throws when not authenticated', async () => {
+      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: null } })
+      await expect(deactivateClientAction('c1')).rejects.toThrow('Não autenticado')
+    })
+
+    it('throws when not org member', async () => {
+      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
+      resolveOrgMember.mockResolvedValue(null)
+      await expect(deactivateClientAction('c1')).rejects.toThrow('Não autorizado')
+    })
+
+    it('throws when client not owned by org', async () => {
+      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
+      resolveOrgMember.mockResolvedValue({ organization_id: 'org-1' })
+      fromResults = [{ data: null, error: null }]
+      await expect(deactivateClientAction('c1')).rejects.toThrow('Cliente não encontrado')
+    })
+
     it('sets is_active false on owned client', async () => {
       supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
       resolveOrgMember.mockResolvedValue({ organization_id: 'org-1' })
