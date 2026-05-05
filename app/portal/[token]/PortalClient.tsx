@@ -287,7 +287,7 @@ export function PortalClient({
           muted
           loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.04] pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover opacity-[0.03] pointer-events-none"
           src="https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/4043-176748917.mp4"
         />
       <section className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-16 md:py-24">
