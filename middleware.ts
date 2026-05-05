@@ -83,5 +83,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // Exclude static assets but include /api/portal/* for rate limiting
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)', '/api/portal/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg|.*\\.ico|.*\\.webp).*)', '/api/portal/:path*'],
 }
