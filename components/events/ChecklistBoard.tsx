@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { calcProgress } from '@/lib/event-status'
-import { CheckCircle2, Circle, SkipForward, Plus, Eye, EyeOff, Loader2, Pencil, Trash2, X, Check, Mail, Globe } from 'lucide-react'
+import { CheckCircle2, Circle, SkipForward, Plus, Eye, EyeOff, Loader2, Pencil, Trash2, X, Check, Mail, Globe, GripVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -11,6 +11,23 @@ import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import type { EventChecklistItem } from '@/types/database'
 import type { NotificationRule } from '@/types/app'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 type ItemWithMember = EventChecklistItem & {
   assigned_member?: { id: string; full_name: string; avatar_url: string | null } | null
@@ -29,6 +46,32 @@ export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
   const [addingItem, setAddingItem] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkLoading, setBulkLoading] = useState(false)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const previousItems = items
+    const oldIndex = items.findIndex(i => i.id === active.id)
+    const newIndex = items.findIndex(i => i.id === over.id)
+    const reordered = arrayMove(items, oldIndex, newIndex)
+    setItems(reordered)
+
+    try {
+      const { reorderChecklistItemsAction } = await import(
+        '@/app/dashboard/events/[eventId]/checklist/actions'
+      )
+      await reorderChecklistItemsAction(eventId, reordered.map(i => i.id))
+    } catch (err: unknown) {
+      setItems(previousItems)
+      toast.error(err instanceof Error ? err.message : 'Erro ao reordenar')
+    }
+  }
 
   function toggleSelect(id: string) {
     setSelected(prev => {
@@ -186,36 +229,40 @@ export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
       )}
 
       {/* Items */}
-      <div className="space-y-2 mb-4">
-        {items.map(item =>
-          editingId === item.id ? (
-            <EditRow
-              key={item.id}
-              item={item}
-              onSave={edits => saveEdit(item.id, edits)}
-              onCancel={() => setEditingId(null)}
-              isLoading={loadingId === item.id}
-            />
-          ) : (
-            <ChecklistItem
-              key={item.id}
-              item={item}
-              isLoading={loadingId === item.id}
-              isSelected={selected.has(item.id)}
-              onToggleSelect={() => toggleSelect(item.id)}
-              onComplete={() => updateStatus(item.id, 'completed')}
-              onStart={() => updateStatus(item.id, 'in_progress')}
-              onSkip={() => updateStatus(item.id, 'skipped')}
-              onReset={() => updateStatus(item.id, 'pending')}
-              onEdit={() => setEditingId(item.id)}
-              onDelete={() => deleteItem(item.id)}
-            />
-          )
-        )}
-        {!items.length && (
-          <p className="text-slate-400 text-sm text-center py-8">Nenhuma etapa adicionada ainda.</p>
-        )}
-      </div>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
+          <div className="space-y-2 mb-4">
+            {items.map(item =>
+              editingId === item.id ? (
+                <EditRow
+                  key={item.id}
+                  item={item}
+                  onSave={edits => saveEdit(item.id, edits)}
+                  onCancel={() => setEditingId(null)}
+                  isLoading={loadingId === item.id}
+                />
+              ) : (
+                <SortableChecklistItem
+                  key={item.id}
+                  item={item}
+                  isLoading={loadingId === item.id}
+                  isSelected={selected.has(item.id)}
+                  onToggleSelect={() => toggleSelect(item.id)}
+                  onComplete={() => updateStatus(item.id, 'completed')}
+                  onStart={() => updateStatus(item.id, 'in_progress')}
+                  onSkip={() => updateStatus(item.id, 'skipped')}
+                  onReset={() => updateStatus(item.id, 'pending')}
+                  onEdit={() => setEditingId(item.id)}
+                  onDelete={() => deleteItem(item.id)}
+                />
+              )
+            )}
+            {!items.length && (
+              <p className="text-slate-400 text-sm text-center py-8">Nenhuma etapa adicionada ainda.</p>
+            )}
+          </div>
+        </SortableContext>
+      </DndContext>
 
       {/* Add item */}
       <div className="flex gap-2">
@@ -314,7 +361,7 @@ function EditRow({ item, onSave, onCancel, isLoading }: EditRowProps) {
   )
 }
 
-// ─── Checklist Item ───────────────────────────────────────────────────────────
+// ─── Sortable Checklist Item ──────────────────────────────────────────────────
 
 interface ChecklistItemProps {
   item: ItemWithMember
@@ -327,9 +374,47 @@ interface ChecklistItemProps {
   onReset: () => void
   onEdit: () => void
   onDelete: () => void
+  dragHandleProps: {
+    ref: (node: HTMLElement | null) => void
+    style: React.CSSProperties
+    isDragging: boolean
+    listeners: Record<string, Function> | undefined
+    attributes: import('@dnd-kit/core').DraggableAttributes
+  }
 }
 
-function ChecklistItem({ item, isLoading, isSelected, onToggleSelect, onComplete, onStart, onSkip, onReset, onEdit, onDelete }: ChecklistItemProps) {
+function SortableChecklistItem(props: Omit<ChecklistItemProps, 'dragHandleProps'>) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: props.item.id })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  return (
+    <ChecklistItem
+      {...props}
+      dragHandleProps={{
+        ref: setNodeRef,
+        style,
+        isDragging,
+        listeners,
+        attributes,
+      }}
+    />
+  )
+}
+
+// ─── Checklist Item ───────────────────────────────────────────────────────────
+
+function ChecklistItem({ item, isLoading, isSelected, onToggleSelect, onComplete, onStart, onSkip, onReset, onEdit, onDelete, dragHandleProps }: ChecklistItemProps) {
   const isCompleted = item.status === 'completed'
   const isSkipped = item.status === 'skipped'
   const isInProgress = item.status === 'in_progress'
@@ -338,8 +423,11 @@ function ChecklistItem({ item, isLoading, isSelected, onToggleSelect, onComplete
 
   return (
     <div
+      ref={dragHandleProps.ref}
+      style={dragHandleProps.style}
       className={cn(
         'flex items-center gap-3 p-4 rounded-xl border transition-all group',
+        dragHandleProps.isDragging ? 'opacity-50 shadow-lg' : '',
         isCompleted ? 'bg-green-50 border-green-200'
           : isSkipped ? 'bg-slate-50 border-slate-200 opacity-60'
           : isInProgress ? 'bg-blue-50 border-blue-200'
@@ -348,6 +436,17 @@ function ChecklistItem({ item, isLoading, isSelected, onToggleSelect, onComplete
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
+      {/* Drag handle */}
+      <button
+        {...(dragHandleProps.listeners ?? {})}
+        {...dragHandleProps.attributes}
+        className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 touch-none"
+        onClick={e => e.stopPropagation()}
+        aria-label="Reordenar"
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+
       {/* Checkbox */}
       <input
         type="checkbox"
