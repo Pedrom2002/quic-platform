@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { useParams } from 'next/navigation'
-import { Plus, Mail, Phone, Trash2, UserCircle, Globe } from 'lucide-react'
+import { Plus, Mail, Phone, Trash2, UserCircle, Globe, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { CsvImportDialog } from '@/components/events/CsvImportDialog'
 import type { Client } from '@/types/database'
 import type { EventClientWithDetails, NotificationChannel } from '@/types/app'
 import {
@@ -36,6 +37,8 @@ export default function EventClientsPage() {
   const [addOpen, setAddOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [isPending, startTransition] = useTransition()
+
+  const [csvOpen, setCsvOpen] = useState(false)
 
   const [newClient, setNewClient] = useState({ full_name: '', email: '', phone: '', company: '' })
   const [selectedClientId, setSelectedClientId] = useState('')
@@ -165,6 +168,15 @@ export default function EventClientsPage() {
             </>
           )}
 
+          <Button variant="outline" onClick={() => setCsvOpen(true)}>
+            <Upload className="w-4 h-4 mr-2" />Importar CSV
+          </Button>
+          <CsvImportDialog
+            eventId={eventId}
+            open={csvOpen}
+            onOpenChange={setCsvOpen}
+            onImported={loadData}
+          />
           <Button onClick={() => setOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />Novo Cliente
           </Button>
