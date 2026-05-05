@@ -290,10 +290,10 @@ export function PortalClient({
           className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           src="https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/45961-447087612.mp4"
         />
-        <div className="absolute inset-0 bg-white/70 pointer-events-none" />
+        <div className="absolute inset-0 bg-white/30 pointer-events-none" />
       <section className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-16 md:py-24">
         {completedItems.length > 0 && (
-          <div className="mb-16 sm:mb-20 md:mb-24">
+          <div className="mb-16 sm:mb-20 md:mb-24 bg-white/70 backdrop-blur-md rounded-2xl px-6 py-8">
             <div className="flex items-baseline justify-between mb-8 sm:mb-10 pb-4 border-b border-stone-900">
               <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">
                 Concluído
@@ -341,7 +341,7 @@ export function PortalClient({
         )}
 
         {pendingItems.length > 0 && (
-          <div>
+          <div className="bg-white/70 backdrop-blur-md rounded-2xl px-6 py-8">
             <div className="flex items-baseline justify-between mb-8 sm:mb-10 pb-4 border-b border-stone-200">
               <h2 className="text-xs font-medium tracking-widest uppercase text-stone-500">
                 Em Preparação
