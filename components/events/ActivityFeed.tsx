@@ -6,7 +6,6 @@ import { formatDistanceToNow } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { CheckCircle2, Bell, UserPlus } from 'lucide-react'
 import type { TimelineEvent, ChecklistTimelineEvent, NotificationTimelineEvent, ClientTimelineEvent } from '@/lib/timeline'
-import { mergeTimelineEvents } from '@/lib/timeline'
 
 const STATUS_PT: Record<string, string> = {
   completed: 'concluído',
@@ -126,8 +125,8 @@ export function ActivityFeed({ eventId, initialEvents }: ActivityFeedProps) {
     <div className="mt-6 bg-white border border-slate-200 rounded-xl shadow-sm p-5">
       <h2 className="text-sm font-semibold text-slate-700 mb-4">Atividade Recente</h2>
       <ul className="space-y-3">
-        {events.map((event, idx) => (
-          <li key={`${event.type}-${event.id}-${idx}`} className="flex gap-3">
+        {events.map((event) => (
+          <li key={`${event.type}-${event.id}`} className="flex gap-3">
             <EventIcon type={event.type} />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-slate-700">{eventLabel(event)}</p>
