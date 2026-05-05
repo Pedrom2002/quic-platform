@@ -209,7 +209,7 @@ export function PortalClient({
         {/* Top bar — full-width border */}
         <div className="relative z-10 border-b border-white/10 anim-fade-up" style={{ animationDelay: '100ms' }}>
           <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-6 sm:py-8 flex items-center justify-between">
-            <Image src="/logo-branco.png" alt="Quic" width={80} height={32} priority />
+            <Image src="/logo-branco.png" alt="Quic" width={120} height={48} priority />
             <StatusBadge status={status} />
           </div>
         </div>
@@ -221,7 +221,7 @@ export function PortalClient({
           </p>
 
           {/* Event name */}
-          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-8 break-words hyphens-auto anim-fade-up" style={{ animationDelay: '600ms' }}>
+          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-8 break-words hyphens-auto anim-fade-up" style={{ animationDelay: '600ms', fontFamily: 'var(--font-playfair), Georgia, serif' }}>
             {eventName}
           </h1>
 
@@ -369,7 +369,7 @@ export function PortalClient({
             No stage is too big.
           </p>
           <div className="flex flex-wrap items-center justify-between gap-4 pt-8 border-t border-white/10">
-            <Image src="/logo-branco.png" alt="Quic" width={70} height={28} />
+            <Image src="/logo-branco.png" alt="Quic" width={100} height={40} />
             <div className="flex items-center gap-2 justify-end">
               {isConnected ? (
                 <>
