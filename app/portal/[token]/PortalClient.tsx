@@ -197,17 +197,17 @@ export function PortalClient({
 
       {/* Hero */}
       <section className="min-h-screen bg-neutral-900 text-white relative overflow-hidden flex flex-col justify-between" style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
-        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 pt-8 sm:pt-12 pb-16 sm:pb-24 md:pb-32">
-          {/* Top bar */}
-          <div className="anim-fade-up" style={{ animationDelay: '100ms' }}>
-            <div className="flex items-center justify-between pb-6 border-b border-white/10">
-              <Image src="/logo-branco.png" alt="Quic" width={80} height={32} priority />
-              <StatusBadge status={status} />
-            </div>
+        {/* Top bar — full-width border */}
+        <div className="border-b border-white/10 anim-fade-up" style={{ animationDelay: '100ms' }}>
+          <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-6 sm:py-8 flex items-center justify-between">
+            <Image src="/logo-branco.png" alt="Quic" width={80} height={32} priority />
+            <StatusBadge status={status} />
           </div>
+        </div>
 
+        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-16 sm:py-24 md:py-32">
           {/* Slogan */}
-          <p className="text-xs font-medium tracking-[0.35em] uppercase text-white/40 mb-5 mt-16 sm:mt-24 md:mt-32 anim-fade-up" style={{ animationDelay: '350ms' }}>
+          <p className="text-xs font-medium tracking-[0.35em] uppercase text-white/40 mb-5 anim-fade-up" style={{ animationDelay: '350ms' }}>
             No Stage Is Too Big
           </p>
 
