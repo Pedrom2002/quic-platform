@@ -237,30 +237,31 @@ export function PortalClient({
           </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="relative z-10 border-t border-white/10 anim-fade-up" style={{ animationDelay: '1100ms' }}>
-          <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-6 sm:py-8">
-            <div className="flex items-baseline justify-between mb-3">
-              <span className="text-xs font-medium tracking-widest uppercase text-white/50">
-                Progresso
-              </span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-bold tracking-tight">{displayedPercent}</span>
-                <span className="text-sm text-white/50">%</span>
-              </div>
-            </div>
-            <div className="h-px bg-white/10 overflow-hidden">
-              <div
-                className="h-full bg-white"
-                style={{ width: `${displayedPercent}%`, transition: 'width 50ms linear' }}
-              />
-            </div>
-            <p className="text-xs text-white/40 mt-3">
-              {progress.completed} de {progress.total} etapas concluídas
-            </p>
-          </div>
-        </div>
       </section>
+
+      {/* Progress bar */}
+      <div className="border-t border-white/10 anim-fade-up" style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)', animationDelay: '1100ms' }}>
+        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-6 sm:py-8">
+          <div className="flex items-baseline justify-between mb-3">
+            <span className="text-xs font-medium tracking-widest uppercase text-white/50">
+              Progresso
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl sm:text-4xl font-bold tracking-tight text-white">{displayedPercent}</span>
+              <span className="text-sm text-white/50">%</span>
+            </div>
+          </div>
+          <div className="h-px bg-white/10 overflow-hidden">
+            <div
+              className="h-full bg-white"
+              style={{ width: `${displayedPercent}%`, transition: 'width 50ms linear' }}
+            />
+          </div>
+          <p className="text-xs text-white/40 mt-3">
+            {progress.completed} de {progress.total} etapas concluídas
+          </p>
+        </div>
+      </div>
 
       {/* Completed event celebration band */}
       {status === 'completed' && (
