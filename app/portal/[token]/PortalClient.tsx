@@ -377,7 +377,7 @@ export function PortalClient({
       <footer className="text-white" style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
         <div className="max-w-5xl mx-auto px-6 md:px-10 py-8 md:py-10">
           <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-4">
               <Image src="/Design sem nome(1).png" alt="Quic Vertex" width={140} height={56} />
               <span className="text-xs tracking-[0.25em] uppercase text-white/30">No stage is too big</span>
             </div>
