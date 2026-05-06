@@ -378,7 +378,7 @@ export function PortalClient({
         <div className="max-w-5xl mx-auto px-6 md:px-10 py-8 md:py-10">
           <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
             <div className="flex flex-col items-center gap-2">
-              <Image src="/Design sem nome(1).png" alt="Quic Vertex" width={100} height={40} />
+              <Image src="/Design sem nome(1).png" alt="Quic Vertex" width={140} height={56} />
               <span className="text-xs tracking-[0.25em] uppercase text-white/30">No stage is too big</span>
             </div>
             <div className="flex items-center gap-2 justify-end">
