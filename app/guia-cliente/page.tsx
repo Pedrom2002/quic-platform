@@ -76,8 +76,8 @@ export default function GuiaClientePage() {
             <Image
               src="/Design sem nome(1).png"
               alt="Quic"
-              width={150}
-              height={60}
+              width={188}
+              height={75}
               priority
             />
             <span className="text-[10px] tracking-[0.35em] uppercase text-white/30 hidden sm:block">
@@ -345,8 +345,8 @@ export default function GuiaClientePage() {
 
       {/* ── Footer ── */}
       <footer style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
-        <div className="max-w-4xl mx-auto px-6 md:px-10 py-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
+        <div className="max-w-4xl mx-auto px-6 md:px-10 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
             <Image src="/Design sem nome(1).png" alt="Quic" width={120} height={48} />
             <span className="text-[10px] tracking-[0.25em] uppercase text-white/30">
               Portal Exclusivo · Tempo Real
