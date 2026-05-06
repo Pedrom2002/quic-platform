@@ -40,7 +40,7 @@ export async function saveChecklistDraftsAction(
     .single()
   if (!event) throw new Error('Evento não encontrado')
 
-  const rows = items.map(item => {
+  const rows = items.map((item, index) => {
     const channels: string[] = []
     if (item.notify_email) channels.push('email')
     if (item.notify_portal) channels.push('portal')
@@ -54,6 +54,7 @@ export async function saveChecklistDraftsAction(
       client_label: item.client_label || item.title,
       is_client_visible: item.is_client_visible,
       notification_rules: notificationRules,
+      position: (index + 1) * 10,
     }
   })
 
