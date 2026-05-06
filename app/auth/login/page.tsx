@@ -38,7 +38,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Image src="/logo-branco.png" alt="Quic" width={100} height={40} className="mx-auto" />
+          <Image src="/Design sem nome(1).png" alt="Quic Vertex" width={160} height={64} className="mx-auto" />
           <p className="text-zinc-400 text-sm mt-1">Plataforma de Gestão de Eventos</p>
         </div>
 
