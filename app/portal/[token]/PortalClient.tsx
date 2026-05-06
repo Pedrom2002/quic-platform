@@ -196,7 +196,7 @@ export function PortalClient({
       `}</style>
 
       {/* Hero */}
-      <section className="min-h-screen text-white relative overflow-hidden flex flex-col justify-between" style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
+      <section className="h-screen text-white relative overflow-hidden flex flex-col justify-between" style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
         {/* Background video */}
         <video
           autoPlay
@@ -214,7 +214,7 @@ export function PortalClient({
           </div>
         </div>
 
-        <div className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-16 sm:py-24 md:py-32">
+        <div className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-8 sm:py-12 flex-1 flex flex-col justify-center">
           {/* Slogan */}
           <p className="text-xs font-medium tracking-[0.35em] uppercase text-white/40 mb-5 anim-fade-up" style={{ animationDelay: '350ms' }}>
             No Stage Is Too Big
