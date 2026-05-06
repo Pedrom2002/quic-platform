@@ -76,8 +76,8 @@ export default function GuiaClientePage() {
             <Image
               src="/Design sem nome(1).png"
               alt="Quic"
-              width={120}
-              height={48}
+              width={150}
+              height={60}
               priority
             />
             <span className="text-[10px] tracking-[0.35em] uppercase text-white/30 hidden sm:block">
@@ -86,15 +86,15 @@ export default function GuiaClientePage() {
           </div>
 
           {/* Hero text */}
-          <div className="py-10 sm:py-14">
-            <p className="text-[10px] font-medium tracking-[0.4em] uppercase text-white/40 mb-5">
+          <div className="py-4 sm:py-5">
+            <p className="text-[10px] font-medium tracking-[0.4em] uppercase text-white/40 mb-2">
               Guia do Cliente
             </p>
             <h1
-              className="text-5xl sm:text-6xl font-bold tracking-tight text-white leading-[1.0] mb-5"
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-[1.0] mb-2"
               style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
             >
-              Como funciona<br />a plataforma
+              Como funciona a plataforma
             </h1>
             <p className="text-white/45 text-sm leading-relaxed max-w-sm">
               Tudo o que precisa saber sobre o acompanhamento do seu evento na Quic.
