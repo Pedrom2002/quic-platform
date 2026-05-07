@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { ChevronRight, ChevronDown, Plus, Trash2 } from 'lucide-react'
+import { ChevronRight, ChevronDown, Plus, Trash2, GripVertical } from 'lucide-react'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { format, differenceInCalendarDays, isToday, isPast } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { createTaskAction, updateTaskAction, deleteTaskAction } from '@/app/dashboard/events/[eventId]/tasks/actions'
@@ -43,11 +45,12 @@ interface TaskTreeNodeProps {
   onUpdate: (updated: Partial<EventTask> & { id: string }) => void
   onDelete: (id: string) => void
   onCreated: (task: EventTask) => void
+  sortable?: boolean
 }
 
 export default function TaskTreeNode({
   node, depth, eventId, orgMembers, expandedIds, selectedTaskId,
-  onToggleExpand, onSelect, onUpdate, onDelete, onCreated,
+  onToggleExpand, onSelect, onUpdate, onDelete, onCreated, sortable,
 }: TaskTreeNodeProps) {
   const isExpanded = expandedIds.has(node.id)
   const hasChildren = node.children.length > 0
@@ -63,6 +66,17 @@ export default function TaskTreeNode({
     && isPast(new Date(node.due_at)) && !isToday(new Date(node.due_at)))
 
   const indentPx = Math.min(depth, 8) * 20
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: node.id,
+    disabled: !sortable || depth > 0,
+  })
+
+  const dragStyle = sortable && depth === 0 ? {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  } : undefined
 
   function handleStatusClick(e: React.MouseEvent) {
     e.stopPropagation()
@@ -94,7 +108,7 @@ export default function TaskTreeNode({
   }
 
   return (
-    <div>
+    <div ref={sortable && depth === 0 ? setNodeRef : undefined} style={dragStyle}>
       {/* Row */}
       <div
         onClick={() => onSelect(node.id)}
@@ -103,6 +117,19 @@ export default function TaskTreeNode({
         }`}
         style={{ paddingLeft: `${indentPx + 8}px` }}
       >
+        {/* Drag handle */}
+        {sortable && depth === 0 && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="shrink-0 w-4 h-4 flex items-center justify-center text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing"
+            onClick={e => e.stopPropagation()}
+            aria-label="Reordenar"
+          >
+            <GripVertical className="w-3.5 h-3.5" />
+          </button>
+        )}
+
         {/* Expand chevron */}
         <button
           onClick={e => { e.stopPropagation(); if (hasChildren) onToggleExpand(node.id) }}

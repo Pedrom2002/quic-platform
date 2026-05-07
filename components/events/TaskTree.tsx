@@ -7,6 +7,22 @@ import type { EventTask, EventTaskNode } from '@/types/app'
 import TaskTreeNode from './TaskTreeNode'
 import TaskSidePanel from './TaskSidePanel'
 import TaskCalendar from './TaskCalendar'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { reorderTasksAction } from '@/app/dashboard/events/[eventId]/tasks/actions'
 
 export function buildTree(flat: EventTask[]): EventTaskNode[] {
   const map = new Map<string, EventTaskNode>()
@@ -58,6 +74,33 @@ export function TaskTree({ eventId, initialTasks, orgMembers, currentMemberId, c
   const [search, setSearch] = useState('')
   const [, startTransition] = useTransition()
   const newRootInputRef = useRef<HTMLInputElement>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const rootTasks = tasks.filter(t => t.parent_id === null).sort((a, b) => a.position - b.position)
+    const oldIndex = rootTasks.findIndex(t => t.id === active.id)
+    const newIndex = rootTasks.findIndex(t => t.id === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = arrayMove(rootTasks, oldIndex, newIndex)
+    const updatedPositions = reordered.map((t, i) => ({ ...t, position: i }))
+
+    setTasks(prev => prev.map(t => {
+      const updated = updatedPositions.find(u => u.id === t.id)
+      return updated ?? t
+    }))
+
+    startTransition(async () => {
+      await reorderTasksAction(eventId, null, reordered.map(t => t.id))
+    })
+  }
 
   const tree = buildTree(tasks)
 
@@ -212,24 +255,32 @@ export function TaskTree({ eventId, initialTasks, orgMembers, currentMemberId, c
                 {search ? 'Sem tarefas encontradas.' : 'Sem tarefas ainda. Cria a primeira tarefa.'}
               </p>
             ) : (
-              <div className="space-y-0.5">
-                {filteredTree.map(node => (
-                  <TaskTreeNode
-                    key={node.id}
-                    node={node}
-                    depth={0}
-                    eventId={eventId}
-                    orgMembers={orgMembers}
-                    expandedIds={expandedIds}
-                    selectedTaskId={selectedTaskId}
-                    onToggleExpand={toggleExpanded}
-                    onSelect={setSelectedTaskId}
-                    onUpdate={handleTaskUpdate}
-                    onDelete={handleTaskDelete}
-                    onCreated={handleTaskCreated}
-                  />
-                ))}
-              </div>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext
+                  items={filteredTree.map(n => n.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-0.5">
+                    {filteredTree.map(node => (
+                      <TaskTreeNode
+                        key={node.id}
+                        node={node}
+                        depth={0}
+                        eventId={eventId}
+                        orgMembers={orgMembers}
+                        expandedIds={expandedIds}
+                        selectedTaskId={selectedTaskId}
+                        onToggleExpand={toggleExpanded}
+                        onSelect={setSelectedTaskId}
+                        onUpdate={handleTaskUpdate}
+                        onDelete={handleTaskDelete}
+                        onCreated={handleTaskCreated}
+                        sortable={true}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             )}
           </>
         )}
