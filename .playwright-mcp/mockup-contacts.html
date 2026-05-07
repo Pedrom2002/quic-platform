@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contactos - Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f11; color: #e4e4e7; height: 100vh; display: flex; }
+
+  /* Sidebar simulada */
+  .app-sidebar {
+    width: 56px; background: #18181b; border-right: 1px solid #27272a;
+    display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 4px;
+  }
+  .app-sidebar .logo { width: 32px; height: 32px; background: #6366f1; border-radius: 8px; margin-bottom: 12px; }
+  .app-sidebar .nav-item { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #71717a; }
+  .app-sidebar .nav-item.active { background: #27272a; color: #e4e4e7; }
+  .app-sidebar .nav-item svg { width: 18px; height: 18px; }
+
+  /* Layout principal */
+  .main { flex: 1; display: flex; overflow: hidden; }
+
+  /* Painel grupos */
+  .groups-panel {
+    width: 240px; background: #18181b; border-right: 1px solid #27272a;
+    display: flex; flex-direction: column;
+  }
+  .groups-panel-header {
+    padding: 16px; border-bottom: 1px solid #27272a;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .groups-panel-header h2 { font-size: 14px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em; }
+  .btn-icon { width: 28px; height: 28px; border-radius: 6px; background: #27272a; border: none; color: #a1a1aa; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .btn-icon:hover { background: #3f3f46; color: #e4e4e7; }
+  .btn-icon svg { width: 14px; height: 14px; }
+
+  .groups-list { flex: 1; overflow-y: auto; padding: 8px; }
+  .group-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px;
+    cursor: pointer; color: #a1a1aa; font-size: 14px; margin-bottom: 2px;
+    position: relative;
+  }
+  .group-item:hover { background: #27272a; color: #e4e4e7; }
+  .group-item.active { background: #27272a; color: #e4e4e7; }
+  .group-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .group-name { flex: 1; }
+  .group-count { font-size: 12px; color: #52525b; background: #27272a; padding: 1px 7px; border-radius: 99px; }
+  .group-item.active .group-count { background: #3f3f46; color: #a1a1aa; }
+  .admin-badge {
+    font-size: 10px; color: #f59e0b; background: #451a0340; border: 1px solid #78350f60;
+    padding: 1px 5px; border-radius: 4px; font-weight: 600;
+  }
+  .section-label { font-size: 11px; color: #52525b; padding: 8px 10px 4px; text-transform: uppercase; letter-spacing: 0.07em; }
+
+  /* Painel contactos */
+  .contacts-panel { flex: 1; display: flex; flex-direction: column; background: #09090b; }
+
+  .contacts-header {
+    padding: 16px 20px; border-bottom: 1px solid #27272a;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .contacts-header h1 { font-size: 18px; font-weight: 600; flex: 1; }
+  .search-box {
+    display: flex; align-items: center; gap: 8px; background: #18181b; border: 1px solid #27272a;
+    border-radius: 8px; padding: 6px 12px; font-size: 13px; color: #71717a; width: 220px;
+  }
+  .search-box svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .btn-primary {
+    background: #6366f1; color: white; border: none; border-radius: 8px;
+    padding: 7px 14px; font-size: 13px; font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary svg { width: 14px; height: 14px; }
+
+  .contacts-list { flex: 1; overflow-y: auto; padding: 12px 20px; }
+
+  .contact-card {
+    display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 10px;
+    border: 1px solid #27272a; background: #18181b; margin-bottom: 8px; cursor: pointer;
+  }
+  .contact-card:hover { border-color: #3f3f46; background: #1c1c1f; }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0;
+  }
+  .contact-info { flex: 1; min-width: 0; }
+  .contact-name { font-size: 14px; font-weight: 500; color: #e4e4e7; }
+  .contact-meta { font-size: 12px; color: #71717a; display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+  .contact-meta span { display: flex; align-items: center; gap: 3px; }
+  .contact-meta svg { width: 11px; height: 11px; }
+  .contact-groups { display: flex; gap: 4px; flex-wrap: wrap; }
+  .group-tag {
+    font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 500;
+  }
+  .contact-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; }
+  .contact-card:hover .contact-actions { opacity: 1; }
+
+  /* Empty state */
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 8px; color: #52525b; padding: 40px; text-align: center; }
+  .empty-state svg { width: 40px; height: 40px; margin-bottom: 4px; }
+  .empty-state p { font-size: 14px; }
+
+  /* Modal overlay hint */
+  .modal-hint {
+    position: fixed; bottom: 20px; right: 20px; background: #18181b; border: 1px solid #27272a;
+    border-radius: 12px; padding: 14px 18px; font-size: 13px; color: #a1a1aa; max-width: 260px;
+  }
+  .modal-hint strong { color: #e4e4e7; display: block; margin-bottom: 4px; }
+
+  .divider { height: 1px; background: #27272a; margin: 6px 8px; }
+</style>
+</head>
+<body>
+
+<!-- App Sidebar -->
+<div class="app-sidebar">
+  <div class="logo"></div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+  </div>
+  <div class="nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="23" y2="17"/><line x1="20" y1="14" x2="26" y2="14"/></svg>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Groups Panel -->
+  <div class="groups-panel">
+    <div class="groups-panel-header">
+      <h2>Grupos</h2>
+      <button class="btn-icon" title="Novo grupo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+    <div class="groups-list">
+
+      <div class="group-item active">
+        <svg style="width:16px;height:16px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="group-name">Todos</span>
+        <span class="group-count">24</span>
+      </div>
+
+      <div class="group-item">
+        <svg style="width:16px;height:16px;flex-shrink:0;color:#52525b" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span class="group-name" style="color:#71717a">Sem grupo</span>
+        <span class="group-count">5</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label">Grupos</div>
+
+      <div class="group-item">
+        <div class="group-dot" style="background:#6366f1"></div>
+        <span class="group-name">CTT</span>
+        <span class="group-count">8</span>
+      </div>
+
+      <div class="group-item">
+        <div class="group-dot" style="background:#10b981"></div>
+        <span class="group-name">Fornecedores</span>
+        <span class="group-count">6</span>
+      </div>
+
+      <div class="group-item">
+        <div class="group-dot" style="background:#f59e0b"></div>
+        <span class="group-name">VIPs</span>
+        <span class="group-count">3</span>
+      </div>
+
+      <div class="group-item">
+        <div class="group-dot" style="background:#ef4444"></div>
+        <span class="group-name">Administrativo</span>
+        <span class="admin-badge">Admin</span>
+        <span class="group-count">4</span>
+      </div>
+
+      <div class="group-item">
+        <div class="group-dot" style="background:#8b5cf6"></div>
+        <span class="group-name">Parceiros</span>
+        <span class="group-count">3</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Contacts Panel -->
+  <div class="contacts-panel">
+    <div class="contacts-header">
+      <h1>Contactos</h1>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Pesquisar...
+      </div>
+      <button class="btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo contacto
+      </button>
+    </div>
+
+    <div class="contacts-list">
+
+      <!-- Contact 1 -->
+      <div class="contact-card">
+        <div class="avatar" style="background:#6366f120;color:#818cf8">JF</div>
+        <div class="contact-info">
+          <div class="contact-name">João Ferreira</div>
+          <div class="contact-meta">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> joao.ferreira@ctt.pt</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> +351 912 345 678</span>
+          </div>
+        </div>
+        <div class="contact-groups">
+          <span class="group-tag" style="background:#6366f120;color:#818cf8">CTT</span>
+          <span class="group-tag" style="background:#ef444420;color:#f87171">Administrativo</span>
+        </div>
+        <div class="contact-actions">
+          <button class="btn-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contact 2 -->
+      <div class="contact-card">
+        <div class="avatar" style="background:#10b98120;color:#34d399">AS</div>
+        <div class="contact-info">
+          <div class="contact-name">Ana Silva</div>
+          <div class="contact-meta">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> ana.silva@fornecedor.pt</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> +351 962 111 222</span>
+          </div>
+        </div>
+        <div class="contact-groups">
+          <span class="group-tag" style="background:#10b98120;color:#34d399">Fornecedores</span>
+        </div>
+        <div class="contact-actions">
+          <button class="btn-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contact 3 -->
+      <div class="contact-card">
+        <div class="avatar" style="background:#f59e0b20;color:#fbbf24">MC</div>
+        <div class="contact-info">
+          <div class="contact-name">Miguel Costa</div>
+          <div class="contact-meta">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> miguel@empresa.pt</span>
+          </div>
+        </div>
+        <div class="contact-groups">
+          <span class="group-tag" style="background:#f59e0b20;color:#fbbf24">VIPs</span>
+          <span class="group-tag" style="background:#6366f120;color:#818cf8">CTT</span>
+        </div>
+        <div class="contact-actions">
+          <button class="btn-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contact 4 - no group -->
+      <div class="contact-card">
+        <div class="avatar" style="background:#27272a;color:#a1a1aa">RL</div>
+        <div class="contact-info">
+          <div class="contact-name">Rita Lopes</div>
+          <div class="contact-meta">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> rita.lopes@mail.com</span>
+          </div>
+        </div>
+        <div class="contact-groups">
+          <span class="group-tag" style="background:#27272a;color:#71717a">Sem grupo</span>
+        </div>
+        <div class="contact-actions">
+          <button class="btn-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Hint -->
+<div class="modal-hint">
+  <strong>Vista: Admin</strong>
+  Vê todos os grupos incluindo "Administrativo". Members não veem grupos <span style="color:#f59e0b">Admin</span>.
+</div>
+
+</body>
+</html>

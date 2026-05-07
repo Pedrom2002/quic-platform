@@ -1,0 +1,20 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - text: Quic
+      - paragraph [ref=e5]: Plataforma de Gestão de Eventos
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: Entrar
+        - generic [ref=e9]: Acesso exclusivo à equipa Quic
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - generic [ref=e13]: Email
+          - textbox "Email" [ref=e14]:
+            - /placeholder: nome@quic.pt
+        - generic [ref=e15]:
+          - generic [ref=e16]: Password
+          - textbox "Password" [ref=e17]:
+            - /placeholder: ••••••••
+        - button "Entrar" [ref=e18]
+  - alert [ref=e19]

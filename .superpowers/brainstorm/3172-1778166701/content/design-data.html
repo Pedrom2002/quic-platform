@@ -1,0 +1,55 @@
+<h2>Design — Dados do Portal</h2>
+<p class="subtitle">O que muda em lib/portal/data.ts</p>
+
+<div class="section">
+  <h3>PortalItem (actualizado)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Campos novos em PortalItem</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.8">
+      <span style="color:#aaa">// existente</span><br>
+      id, title, client_label, status, completed_at, completion_note, position<br><br>
+      <span style="color:#4a9eff">// novo</span><br>
+      due_at: string | null &nbsp;&nbsp;<span style="color:#666">← já existe na tabela, só faltava seleccionar</span><br>
+      files: PortalItemFile[] &nbsp;<span style="color:#666">← join com checklist_item_files + event_files</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>PortalItemFile (novo tipo)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Interface</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.8">
+      id: string<br>
+      file_name: string<br>
+      file_size: number | null<br>
+      mime_type: string | null<br>
+      blob_url: string &nbsp;&nbsp;<span style="color:#666">← download directo</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>PortalEventData (actualizado)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Campo novo</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.8">
+      <span style="color:#4a9eff">eventFiles: PortalItemFile[]</span> &nbsp;<span style="color:#666">← ficheiros de nível evento (event_files)</span><br>
+      <span style="color:#aaa">items: PortalItem[] &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← cada item já traz os seus ficheiros</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Query strategy</h3>
+  <div class="mockup">
+    <div class="mockup-header">getPortalData — 3 queries (já faz 2)</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.8">
+      1. events → (existente)<br>
+      2. event_checklist_items &nbsp;<span style="color:#4a9eff">+ due_at</span> → (expandida)<br>
+      3. <span style="color:#4a9eff">checklist_item_files JOIN event_files WHERE event_id = X</span><br>
+      4. <span style="color:#4a9eff">event_files WHERE event_id = X AND NOT linked to item</span><br><br>
+      <span style="color:#666">Agrupa ficheiros por item em memória (JS Map). Sem N+1.</span>
+    </div>
+  </div>
+</div>

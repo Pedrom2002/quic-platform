@@ -1,0 +1,101 @@
+<h2>Tabs flutuantes na zona branca</h2>
+<p class="subtitle">Hero ocupa ecrã completo → scroll revela tabs sticky → conteúdo da tab activa</p>
+
+<div class="mockup">
+  <div class="mockup-header">Portal — após scroll do hero</div>
+  <div class="mockup-body" style="max-width:380px;margin:0 auto;font-family:monospace;font-size:11px">
+
+    <!-- Hero (cortado) -->
+    <div style="background:#111;color:#fff;padding:12px 16px;border-radius:8px 8px 0 0;opacity:0.4">
+      <div style="font-size:18px;font-weight:bold">Festival XYZ</div>
+      <div style="font-size:9px;color:#555;margin-top:2px">62% · 5 de 8 etapas</div>
+    </div>
+
+    <!-- Tabs sticky -->
+    <div style="background:#fff;border-bottom:1px solid #e5e5e5;padding:0 16px;display:flex;gap:0;position:relative;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+      <div style="padding:12px 16px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid #111;color:#111;cursor:pointer">Progresso</div>
+      <div style="padding:12px 16px;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid transparent;color:#aaa;cursor:pointer">Documentos</div>
+      <div style="padding:12px 16px;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid transparent;color:#aaa;cursor:pointer">Detalhes</div>
+    </div>
+
+    <!-- Tab: Progresso (activa) -->
+    <div style="background:#fff;padding:16px;border-radius:0 0 8px 8px">
+      <!-- concluído -->
+      <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #111;padding-bottom:8px;margin-bottom:12px">
+        <span style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Concluído</span>
+        <span style="font-size:9px;color:#aaa">03</span>
+      </div>
+      <div style="border-left:2px solid #b8860b;padding-left:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+          <span style="font-size:12px;font-weight:500">Som principal</span>
+          <span style="font-size:9px;color:#aaa">3 Mai</span>
+        </div>
+        <div style="font-size:10px;color:#666;margin-bottom:5px">Setup confirmado com fornecedor.</div>
+        <div style="display:flex;align-items:center;gap:6px;background:#fafafa;border:1px solid #eee;padding:4px 8px;border-radius:4px">
+          <span style="font-size:9px;color:#aaa">📎</span>
+          <span style="font-size:9px;color:#555;flex:1">confirmacao-som.pdf</span>
+          <span style="font-size:9px;color:#aaa;border:1px solid #e5e5e5;padding:2px 5px">↓</span>
+        </div>
+      </div>
+      <div style="border-left:2px solid #b8860b50;padding-left:12px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid #f5f5f5">
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:12px;font-weight:500">Licenças IGAC</span>
+          <span style="font-size:9px;color:#aaa">28 Abr</span>
+        </div>
+      </div>
+      <!-- em preparação -->
+      <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #e5e5e5;padding-bottom:8px;margin-bottom:12px;margin-top:16px">
+        <span style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888">Em Preparação</span>
+        <span style="font-size:9px;color:#aaa">05</span>
+      </div>
+      <div style="padding-left:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#888">Iluminação</span>
+          <span style="font-size:9px;color:#b8860b;background:#b8860b15;padding:2px 6px;border-radius:10px">Previsto 15 Mai</span>
+        </div>
+      </div>
+      <div style="padding-left:12px">
+        <span style="font-size:12px;color:#888">Catering</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>Tab: Documentos</h3>
+  <div class="mockup">
+    <div class="mockup-header">Conteúdo quando activa</div>
+    <div class="mockup-body" style="max-width:380px;margin:0 auto;font-size:11px">
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid #111;padding-bottom:8px;margin-bottom:12px">
+        <span style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Documentos do Evento</span>
+        <span style="font-size:9px;color:#aaa">02</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5">
+        <div><div style="font-size:12px;font-weight:500">contrato-servicos.pdf</div><div style="font-size:9px;color:#aaa">PDF · 245 KB</div></div>
+        <a style="font-size:9px;color:#aaa;border:1px solid #e5e5e5;padding:4px 10px;border-radius:2px;text-decoration:none">↓ Download</a>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+        <div><div style="font-size:12px;font-weight:500">rider-tecnico.pdf</div><div style="font-size:9px;color:#aaa">PDF · 128 KB</div></div>
+        <a style="font-size:9px;color:#aaa;border:1px solid #e5e5e5;padding:4px 10px;border-radius:2px;text-decoration:none">↓ Download</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:16px">
+  <h3>Tab: Detalhes</h3>
+  <div class="mockup">
+    <div class="mockup-header">Informação do evento</div>
+    <div class="mockup-body" style="max-width:380px;margin:0 auto;font-size:11px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div><div style="font-size:9px;color:#aaa;letter-spacing:1px;margin-bottom:4px">DATA</div><div style="font-size:12px;font-weight:500">22 Mai 2026</div></div>
+        <div><div style="font-size:9px;color:#aaa;letter-spacing:1px;margin-bottom:4px">LOCAL</div><div style="font-size:12px;font-weight:500">Pavilhão Atlântico</div></div>
+        <div><div style="font-size:9px;color:#aaa;letter-spacing:1px;margin-bottom:4px">ESTADO</div><div style="font-size:12px;font-weight:500">Em Curso</div></div>
+        <div><div style="font-size:9px;color:#aaa;letter-spacing:1px;margin-bottom:4px">PROGRESSO</div><div style="font-size:12px;font-weight:500">62%</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:24px">Tabs ficam sticky no topo da zona branca ao fazer scroll. Tab "Progresso" activa por defeito. Sem scroll entre secções — conteúdo troca dentro do mesmo container.</p>

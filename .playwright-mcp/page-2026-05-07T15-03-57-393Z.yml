@@ -1,0 +1,103 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - img [ref=e5] [cursor=pointer]
+    - img [ref=e11] [cursor=pointer]
+    - img [ref=e14] [cursor=pointer]
+    - img [ref=e20] [cursor=pointer]
+  - generic [ref=e23]:
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - heading "Grupos" [level=2] [ref=e26]
+        - button "Novo grupo" [ref=e27] [cursor=pointer]:
+          - img [ref=e28]
+      - generic [ref=e29]:
+        - generic [ref=e30] [cursor=pointer]:
+          - img [ref=e31]
+          - generic [ref=e36]: Todos
+          - generic [ref=e37]: "24"
+        - generic [ref=e38] [cursor=pointer]:
+          - img [ref=e39]
+          - generic [ref=e41]: Sem grupo
+          - generic [ref=e42]: "5"
+        - generic [ref=e44]: Grupos
+        - generic [ref=e45] [cursor=pointer]:
+          - generic [ref=e47]: CTT
+          - generic [ref=e48]: "8"
+        - generic [ref=e49] [cursor=pointer]:
+          - generic [ref=e51]: Fornecedores
+          - generic [ref=e52]: "6"
+        - generic [ref=e53] [cursor=pointer]:
+          - generic [ref=e55]: VIPs
+          - generic [ref=e56]: "3"
+        - generic [ref=e57] [cursor=pointer]:
+          - generic [ref=e59]: Administrativo
+          - generic [ref=e60]: Admin
+          - generic [ref=e61]: "4"
+        - generic [ref=e62] [cursor=pointer]:
+          - generic [ref=e64]: Parceiros
+          - generic [ref=e65]: "3"
+    - generic [ref=e66]:
+      - generic [ref=e67]:
+        - heading "Contactos" [level=1] [ref=e68]
+        - generic [ref=e69]:
+          - img [ref=e70]
+          - text: Pesquisar...
+        - button "Novo contacto" [ref=e73] [cursor=pointer]:
+          - img [ref=e74]
+          - text: Novo contacto
+      - generic [ref=e75]:
+        - generic [ref=e76] [cursor=pointer]:
+          - generic [ref=e77]: JF
+          - generic [ref=e78]:
+            - generic [ref=e79]: João Ferreira
+            - generic [ref=e80]:
+              - generic [ref=e81]:
+                - img [ref=e82]
+                - text: joao.ferreira@ctt.pt
+              - generic [ref=e85]:
+                - img [ref=e86]
+                - text: +351 912 345 678
+          - generic [ref=e88]:
+            - generic [ref=e89]: CTT
+            - generic [ref=e90]: Administrativo
+          - button [ref=e92]:
+            - img [ref=e93]
+        - generic [ref=e96] [cursor=pointer]:
+          - generic [ref=e97]: AS
+          - generic [ref=e98]:
+            - generic [ref=e99]: Ana Silva
+            - generic [ref=e100]:
+              - generic [ref=e101]:
+                - img [ref=e102]
+                - text: ana.silva@fornecedor.pt
+              - generic [ref=e105]:
+                - img [ref=e106]
+                - text: +351 962 111 222
+          - generic [ref=e109]: Fornecedores
+          - button [ref=e111]:
+            - img [ref=e112]
+        - generic [ref=e115] [cursor=pointer]:
+          - generic [ref=e116]: MC
+          - generic [ref=e117]:
+            - generic [ref=e118]: Miguel Costa
+            - generic [ref=e120]:
+              - img [ref=e121]
+              - text: miguel@empresa.pt
+          - generic [ref=e124]:
+            - generic [ref=e125]: VIPs
+            - generic [ref=e126]: CTT
+          - button [ref=e128]:
+            - img [ref=e129]
+        - generic [ref=e132] [cursor=pointer]:
+          - generic [ref=e133]: RL
+          - generic [ref=e134]:
+            - generic [ref=e135]: Rita Lopes
+            - generic [ref=e137]:
+              - img [ref=e138]
+              - text: rita.lopes@mail.com
+          - generic [ref=e142]: Sem grupo
+          - button [ref=e144]:
+            - img [ref=e145]
+  - generic [ref=e148]:
+    - strong [ref=e149]: "Vista: Admin"
+    - text: Vê todos os grupos incluindo "Administrativo". Members não veem grupos Admin.

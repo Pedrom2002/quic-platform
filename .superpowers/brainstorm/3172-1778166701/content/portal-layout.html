@@ -1,0 +1,83 @@
+<h2>Estrutura do Portal do Cliente</h2>
+<p class="subtitle">Como organizar as novas secções além da checklist?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#111;color:#fff;padding:16px;font-size:11px;font-family:monospace;min-height:160px;border-radius:8px 8px 0 0">
+      <div style="border-bottom:1px solid #333;padding-bottom:8px;margin-bottom:8px;color:#aaa;letter-spacing:2px;font-size:10px">HERO — nome evento + progresso</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div style="background:#1e1e1e;padding:8px;border-radius:4px;border-left:2px solid #b8860b">
+          <div style="color:#b8860b;font-size:9px;margin-bottom:4px">📁 FICHEIROS</div>
+          <div style="color:#666;font-size:9px">contracts.pdf<br/>brief.pdf<br/>rider.docx</div>
+        </div>
+        <div style="background:#1e1e1e;padding:8px;border-radius:4px;border-left:2px solid #4a9eff">
+          <div style="color:#4a9eff;font-size:9px;margin-bottom:4px">📅 DATAS CHAVE</div>
+          <div style="color:#666;font-size:9px">15 Mai — Ensaio<br/>20 Mai — Setup<br/>22 Mai — Evento</div>
+        </div>
+      </div>
+      <div style="background:#1e1e1e;padding:8px;border-radius:4px;border-left:2px solid #555">
+        <div style="color:#888;font-size:9px;margin-bottom:4px">✅ CHECKLIST (existente)</div>
+        <div style="color:#666;font-size:9px">Concluído (3) · Em preparação (5)</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Secções Paralelas</h3>
+      <p>Ficheiros e datas ao mesmo nível da checklist. Navegação por scroll, tudo visível.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#111;color:#fff;padding:16px;font-size:11px;font-family:monospace;min-height:160px;border-radius:8px 8px 0 0">
+      <div style="border-bottom:1px solid #333;padding-bottom:8px;margin-bottom:8px;color:#aaa;letter-spacing:2px;font-size:10px">HERO — nome evento + progresso</div>
+      <div style="display:flex;gap:4px;margin-bottom:8px">
+        <div style="flex:1;background:#1a1a1a;padding:6px;border-radius:4px;text-align:center;border-bottom:2px solid #b8860b;color:#b8860b;font-size:9px">PROGRESSO</div>
+        <div style="flex:1;background:#1a1a1a;padding:6px;border-radius:4px;text-align:center;color:#555;font-size:9px">FICHEIROS</div>
+        <div style="flex:1;background:#1a1a1a;padding:6px;border-radius:4px;text-align:center;color:#555;font-size:9px">CALENDÁRIO</div>
+      </div>
+      <div style="background:#1e1e1e;padding:10px;border-radius:4px;min-height:80px">
+        <div style="color:#888;font-size:9px;margin-bottom:6px">Conteúdo da tab activa</div>
+        <div style="color:#444;font-size:8px">✅ Som principal — concluído<br/>⏳ Iluminação — em preparação<br/>⏳ Catering — em preparação</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Tabs / Navegação</h3>
+      <p>Um painel com abas. Cada tab mostra uma secção: Progresso, Ficheiros, Calendário. Mais compacto.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="C" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#111;color:#fff;padding:16px;font-size:11px;font-family:monospace;min-height:160px;border-radius:8px 8px 0 0">
+      <div style="border-bottom:1px solid #333;padding-bottom:8px;margin-bottom:8px;color:#aaa;letter-spacing:2px;font-size:10px">HERO — nome evento + progresso</div>
+      <div style="margin-bottom:8px">
+        <div style="background:#1e1e1e;border-radius:4px;overflow:hidden;margin-bottom:6px">
+          <div style="background:#1a1a1a;padding:6px 8px;display:flex;justify-content:space-between;cursor:pointer">
+            <span style="color:#b8860b;font-size:9px">📁 Ficheiros do evento</span>
+            <span style="color:#555;font-size:9px">3 ficheiros ›</span>
+          </div>
+        </div>
+        <div style="background:#1e1e1e;border-radius:4px;overflow:hidden;margin-bottom:6px">
+          <div style="background:#1a1a1a;padding:6px 8px;display:flex;justify-content:space-between">
+            <span style="color:#4a9eff;font-size:9px">📅 Datas e prazos</span>
+            <span style="color:#555;font-size:9px">4 datas ›</span>
+          </div>
+          <div style="padding:6px 8px">
+            <div style="display:flex;justify-content:space-between;color:#888;font-size:8px;margin-bottom:3px"><span>15 Mai — Ensaio geral</span><span style="color:#b8860b">● 3 dias</span></div>
+            <div style="display:flex;justify-content:space-between;color:#888;font-size:8px"><span>22 Mai — Evento</span><span style="color:#4a9eff">● 10 dias</span></div>
+          </div>
+        </div>
+        <div style="background:#1e1e1e;border-radius:4px;overflow:hidden">
+          <div style="background:#1a1a1a;padding:6px 8px;display:flex;justify-content:space-between">
+            <span style="color:#888;font-size:9px">✅ Checklist (8 itens)</span>
+            <span style="color:#555;font-size:9px">›</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Accordions / Expandíveis</h3>
+      <p>Cada secção é um accordion. O cliente expande o que quer ver. Hierarquia clara, menos scroll.</p>
+    </div>
+  </div>
+
+</div>
