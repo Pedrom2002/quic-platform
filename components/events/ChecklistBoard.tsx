@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { calcProgress } from '@/lib/event-status'
 import { CheckCircle2, Circle, SkipForward, Plus, Eye, EyeOff, Loader2, Pencil, Trash2, X, Check, Mail, Globe, GripVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -46,6 +46,14 @@ export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
   const [addingItem, setAddingItem] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkLoading, setBulkLoading] = useState(false)
+  const [orgMembers, setOrgMembers] = useState<{ id: string; full_name: string }[]>([])
+
+  useEffect(() => {
+    import('@/app/dashboard/events/[eventId]/checklist/actions')
+      .then(({ loadOrgTeamMembersAction }) => loadOrgTeamMembersAction(eventId))
+      .then(members => setOrgMembers(members))
+      .catch(() => {})
+  }, [eventId])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -237,6 +245,7 @@ export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
                 <EditRow
                   key={item.id}
                   item={item}
+                  orgMembers={orgMembers}
                   onSave={edits => saveEdit(item.id, edits)}
                   onCancel={() => setEditingId(null)}
                   isLoading={loadingId === item.id}
@@ -285,12 +294,13 @@ export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
 
 interface EditRowProps {
   item: ItemWithMember
+  orgMembers: { id: string; full_name: string }[]
   onSave: (edits: Partial<ItemWithMember>) => void
   onCancel: () => void
   isLoading: boolean
 }
 
-function EditRow({ item, onSave, onCancel, isLoading }: EditRowProps) {
+function EditRow({ item, orgMembers, onSave, onCancel, isLoading }: EditRowProps) {
   const rules = (item.notification_rules as unknown as NotificationRule[]) ?? []
   const existingChannels: string[] = rules[0]?.channels ?? []
 
@@ -299,6 +309,7 @@ function EditRow({ item, onSave, onCancel, isLoading }: EditRowProps) {
   const [visible, setVisible] = useState(item.is_client_visible ?? true)
   const [notifyEmail, setNotifyEmail] = useState(existingChannels.includes('email'))
   const [notifyPortal, setNotifyPortal] = useState(existingChannels.includes('portal'))
+  const [assignedTo, setAssignedTo] = useState<string>(item.assigned_to ?? '')
 
   function handleSave() {
     const channels: string[] = []
@@ -312,6 +323,7 @@ function EditRow({ item, onSave, onCancel, isLoading }: EditRowProps) {
       client_label: clientLabel || title,
       is_client_visible: visible,
       notification_rules: notificationRules as any,
+      assigned_to: assignedTo || null,
     })
   }
 
@@ -330,6 +342,18 @@ function EditRow({ item, onSave, onCancel, isLoading }: EditRowProps) {
           placeholder="Label visível pelo cliente (ex: Palco montado)"
           className="bg-white border-slate-200 text-xs text-slate-600"
         />
+        {orgMembers.length > 0 && (
+          <select
+            value={assignedTo}
+            onChange={e => setAssignedTo(e.target.value)}
+            className="w-full rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400"
+          >
+            <option value="">— Sem atribuição —</option>
+            {orgMembers.map(m => (
+              <option key={m.id} value={m.id}>{m.full_name}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       <div className="flex items-center gap-2">
@@ -474,6 +498,19 @@ function ChecklistItem({ item, isLoading, isSelected, onToggleSelect, onComplete
             <span className="text-xs text-slate-400">({item.client_label})</span>
           )}
           {!item.is_client_visible && <EyeOff className="w-3 h-3 text-slate-300 shrink-0" />}
+          {item.assigned_member && (
+            <span
+              title={item.assigned_member.full_name}
+              className="w-5 h-5 rounded-full bg-slate-100 text-[9px] font-semibold text-slate-600 flex items-center justify-center shrink-0"
+            >
+              {item.assigned_member.full_name
+                .split(' ')
+                .filter(Boolean)
+                .slice(0, 2)
+                .map(n => n[0].toUpperCase())
+                .join('')}
+            </span>
+          )}
         </div>
         {isCompleted && item.completed_at && (
           <p className="text-xs text-slate-400 mt-0.5">

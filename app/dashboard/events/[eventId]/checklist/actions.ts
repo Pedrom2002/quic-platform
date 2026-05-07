@@ -64,6 +64,28 @@ export async function bulkUpdateChecklistStatusAction(
   }
 }
 
+export async function loadOrgTeamMembersAction(eventId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data: member } = await supabase
+    .from('team_members')
+    .select('organization_id')
+    .eq('auth_user_id', user.id)
+    .single()
+  if (!member) return []
+
+  const { data } = await supabase
+    .from('team_members')
+    .select('id, full_name')
+    .eq('organization_id', member.organization_id)
+    .eq('is_active', true)
+    .order('full_name', { ascending: true })
+
+  return data ?? []
+}
+
 export async function reorderChecklistItemsAction(
   eventId: string,
   orderedIds: string[]
