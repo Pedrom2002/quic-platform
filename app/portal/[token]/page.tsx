@@ -24,6 +24,7 @@ export default async function PortalPage({
       portalToken={token}
       heroVideo={data.heroVideo}
       contentVideo={data.contentVideo}
+      eventFiles={data.eventFiles}
     />
   )
 }
