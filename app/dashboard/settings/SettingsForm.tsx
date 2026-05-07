@@ -7,14 +7,17 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Building2, User, Lock } from 'lucide-react'
+import type { TeamMember, Organization } from '@/types/database'
+
+type MemberWithOrg = TeamMember & { organizations: Pick<Organization, 'name' | 'slug'> | null }
 
 interface Props {
-  member: any
+  member: MemberWithOrg | null
   userEmail: string
 }
 
 export function SettingsForm({ member, userEmail }: Props) {
-  const org = member?.organizations as any
+  const org = member?.organizations
   const [name, setName] = useState(member?.full_name ?? '')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -28,7 +31,7 @@ export function SettingsForm({ member, userEmail }: Props) {
     const { error } = await supabase
       .from('team_members')
       .update({ full_name: name })
-      .eq('id', member.id)
+      .eq('id', member!.id)
     setSavingProfile(false)
     if (error) { toast.error(error.message); return }
     toast.success('Perfil atualizado')

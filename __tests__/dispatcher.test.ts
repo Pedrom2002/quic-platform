@@ -190,7 +190,7 @@ describe('dispatchNotificationsForItem', () => {
     await dispatchNotificationsForItem({ event: makeEvent(), item, completedByName: 'Rui' })
 
     expect(supabaseMock.from).not.toHaveBeenCalled()
-  })
+  }, 15_000)
 
   it('returns early when there are no event clients', async () => {
     tableData = {

@@ -44,19 +44,21 @@ export default async function TeamPage() {
   // Load all active team members for the org
   const { data: members } = await supabase
     .from('team_members')
-    .select('id, full_name, email, role, avatar_url')
+    .select('id, full_name, email, role')
     .eq('organization_id', member.organization_id)
     .eq('is_active', true)
     .order('full_name', { ascending: true })
 
   // Load all team assignments with event info (RLS already scopes by org)
+  type AssignmentRow = { team_member_id: string; event: { id: string; name: string; status: string } | null }
   const { data: allAssignments } = await supabase
     .from('event_team_assignments')
     .select('team_member_id, event:events!event_id(id, name, status)')
+    .returns<AssignmentRow[]>()
 
   const assignmentMap = new Map<string, { id: string; name: string; status: string }[]>()
   for (const a of allAssignments ?? []) {
-    const ev = a.event as unknown as { id: string; name: string; status: string } | null
+    const ev = a.event
     if (!ev) continue
     const list = assignmentMap.get(a.team_member_id) ?? []
     list.push(ev)
