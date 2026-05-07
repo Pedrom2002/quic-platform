@@ -212,15 +212,17 @@ export default async function EventDetailPage({
           </div>
         </Link>
 
-        <Link href={`/dashboard/events/${eventId}/team`} className="bg-white border border-stone-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
-              <UserCog className="w-4 h-4 text-orange-600" />
-            </div>
-            <span className="text-sm font-medium text-stone-700">Equipa</span>
+        <Link
+          href={`/dashboard/events/${eventId}/team`}
+          className="flex items-center gap-3 p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 hover:shadow transition-all"
+        >
+          <div className="p-2 bg-orange-50 rounded-lg">
+            <UserCog className="w-5 h-5 text-orange-600" />
           </div>
-          <p className="text-2xl font-bold text-stone-900">{teamCount ?? 0}</p>
-          <p className="text-xs text-stone-400 mt-0.5">membros</p>
+          <div>
+            <p className="text-slate-800 font-medium">Equipa</p>
+            <p className="text-slate-400 text-xs">{teamCount ?? 0} membros</p>
+          </div>
         </Link>
       </div>
 
