@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { updatePortalVideosAction } from '@/app/dashboard/events/[eventId]/edit/actions'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { Video, Check } from 'lucide-react'
+import { Video, Check, Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const AVAILABLE_VIDEOS = [
@@ -18,6 +18,77 @@ const AVAILABLE_VIDEOS = [
   { id: 'blob-hero', label: 'Luzes de palco', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/144156-784280927.mp4' },
   { id: 'blob-content', label: 'Ambiente noturno', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/45961-447087612.mp4' },
 ]
+
+function VideoCard({
+  video,
+  isSelected,
+  onSelect,
+}: {
+  video: typeof AVAILABLE_VIDEOS[0]
+  isSelected: boolean
+  onSelect: () => void
+}) {
+  const ref = useRef<HTMLVideoElement>(null)
+  const [hovering, setHovering] = useState(false)
+
+  function handleMouseEnter() {
+    setHovering(true)
+    if (ref.current) {
+      ref.current.play().catch(() => {})
+    }
+  }
+
+  function handleMouseLeave() {
+    setHovering(false)
+    if (ref.current) {
+      ref.current.pause()
+      ref.current.currentTime = 0
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className={cn(
+        'relative rounded-lg overflow-hidden aspect-video border-2 transition-all focus:outline-none bg-slate-900',
+        isSelected
+          ? 'border-slate-900 ring-2 ring-slate-900/20'
+          : 'border-slate-200 hover:border-slate-400',
+      )}
+    >
+      <video
+        ref={ref}
+        src={video.url}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        className="w-full h-full object-cover"
+      />
+
+      {/* dark overlay + play icon when not hovering */}
+      <div className={cn(
+        'absolute inset-0 flex items-center justify-center transition-opacity duration-200',
+        hovering ? 'opacity-0' : 'opacity-100 bg-black/40',
+      )}>
+        <Play className="w-6 h-6 text-white/60 fill-white/60" />
+      </div>
+
+      <span className="absolute bottom-1.5 left-2 text-[10px] text-white font-medium tracking-wide drop-shadow">
+        {video.label}
+      </span>
+
+      {isSelected && (
+        <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-slate-900 flex items-center justify-center">
+          <Check className="w-3 h-3 text-white" strokeWidth={3} />
+        </span>
+      )}
+    </button>
+  )
+}
 
 function VideoPicker({
   label,
@@ -32,43 +103,14 @@ function VideoPicker({
     <div>
       <p className="text-xs font-semibold text-slate-700 mb-3">{label}</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {AVAILABLE_VIDEOS.map(video => {
-          const isSelected = selected === video.url
-          return (
-            <button
-              key={video.id}
-              type="button"
-              onClick={() => onSelect(video.url)}
-              className={cn(
-                'relative rounded-lg overflow-hidden aspect-video border-2 transition-all focus:outline-none',
-                isSelected
-                  ? 'border-slate-900 ring-2 ring-slate-900/20'
-                  : 'border-slate-200 hover:border-slate-400',
-              )}
-            >
-              <video
-                src={video.url}
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="w-full h-full object-cover"
-              />
-              <div className={cn(
-                'absolute inset-0 transition-colors',
-                isSelected ? 'bg-black/20' : 'bg-black/10 hover:bg-black/0',
-              )} />
-              <span className="absolute bottom-1.5 left-2 text-[10px] text-white font-medium tracking-wide drop-shadow">
-                {video.label}
-              </span>
-              {isSelected && (
-                <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-slate-900 flex items-center justify-center">
-                  <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                </span>
-              )}
-            </button>
-          )
-        })}
+        {AVAILABLE_VIDEOS.map(video => (
+          <VideoCard
+            key={video.id}
+            video={video}
+            isSelected={selected === video.url}
+            onSelect={() => onSelect(video.url)}
+          />
+        ))}
       </div>
     </div>
   )
@@ -120,7 +162,7 @@ export function PortalVideoSettings({ eventId }: { eventId: string }) {
         <h2 className="text-sm font-semibold text-slate-800">Vídeos do portal</h2>
       </div>
       <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-        Escolhe o vídeo de fundo para cada secção do portal do cliente.
+        Passa o rato por cima para pré-visualizar. Clica para selecionar.
       </p>
 
       <div className="space-y-6">
