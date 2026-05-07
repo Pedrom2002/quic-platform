@@ -21,13 +21,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
     : (orgRaw as { name: string } | null) ?? null
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex h-screen bg-slate-50">
       <Sidebar
         userName={member?.full_name ?? user.email ?? 'Utilizador'}
         userEmail={user.email ?? ''}
         orgName={org?.name ?? 'Quic'}
       />
-      <main className="flex-1 overflow-auto h-full">
+      <main className="flex-1 overflow-auto flex flex-col">
         {children}
       </main>
       <Toaster richColors theme="light" />
