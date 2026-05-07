@@ -9,6 +9,9 @@ import { Video, Check, Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const AVAILABLE_VIDEOS = [
+  { id: 'va', label: 'Vídeo A', url: '/a.mp4' },
+  { id: 'vb', label: 'Vídeo B', url: '/b.mp4' },
+  { id: 'vc', label: 'Vídeo C', url: '/c.mp4' },
   { id: 'v1', label: 'Vídeo 1', url: '/1630-148614385.mp4' },
   { id: 'v2', label: 'Vídeo 2', url: '/166707-835224055_medium.mp4' },
   { id: 'v3', label: 'Vídeo 3', url: '/169951-842348732_medium.mp4' },
