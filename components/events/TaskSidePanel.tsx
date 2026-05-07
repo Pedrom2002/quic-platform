@@ -89,6 +89,19 @@ export default function TaskSidePanel({
   const [addingSubTask, setAddingSubTask] = useState(false)
   const [subTaskTitle, setSubTaskTitle] = useState('')
   const [, startTransition] = useTransition()
+
+  const [suggestionState, setSuggestionState] = useState<
+    | { status: 'idle' }
+    | { status: 'loading' }
+    | { status: 'suggested'; memberId: string; memberName: string; reason: string }
+  >({ status: 'idle' })
+
+  const [describeState, setDescribeState] = useState<
+    | { status: 'idle' }
+    | { status: 'streaming' }
+    | { status: 'done'; subtasks: string[] }
+  >({ status: 'idle' })
+  const [selectedSubtasks, setSelectedSubtasks] = useState<Set<number>>(new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -113,6 +126,9 @@ export default function TaskSidePanel({
     setFileLinks(null)
     loadTaskNotesAction(eventId, task.id).then(setNotes)
     loadTaskFilesAction(eventId, task.id).then(setFileLinks)
+    setSuggestionState({ status: 'idle' })
+    setDescribeState({ status: 'idle' })
+    setSelectedSubtasks(new Set())
   }, [task.id, eventId, task.title, task.description, task.status, task.assigned_to, task.due_at, task.checklist_item_id])
 
   function saveField(fields: Parameters<typeof updateTaskAction>[2]) {
@@ -258,6 +274,64 @@ export default function TaskSidePanel({
                 <option value="">Sem atribuição</option>
                 {orgMembers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
               </select>
+              {assignedTo === '' && orgMembers.length > 1 && (
+                <div className="mt-1.5">
+                  {suggestionState.status === 'idle' && (
+                    <button
+                      onClick={async () => {
+                        setSuggestionState({ status: 'loading' })
+                        try {
+                          const res = await fetch('/api/ai/suggest-assignee', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ taskId: task.id, eventId }),
+                          })
+                          const data = await res.json() as { memberId: string; memberName: string; reason: string } | null
+                          if (data) {
+                            setSuggestionState({ status: 'suggested', ...data })
+                          } else {
+                            setSuggestionState({ status: 'idle' })
+                          }
+                        } catch {
+                          setSuggestionState({ status: 'idle' })
+                        }
+                      }}
+                      className="text-xs text-indigo-500 hover:text-indigo-700 transition-colors"
+                    >
+                      ✨ Sugerir responsável
+                    </button>
+                  )}
+                  {suggestionState.status === 'loading' && (
+                    <span className="text-xs text-slate-400 flex items-center gap-1">
+                      <Loader2 className="w-3 h-3 animate-spin" /> A sugerir...
+                    </span>
+                  )}
+                  {suggestionState.status === 'suggested' && (
+                    <div className="text-xs">
+                      <span className="text-slate-600 font-medium">{suggestionState.memberName}</span>
+                      <span className="text-slate-400"> — {suggestionState.reason}</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <button
+                          onClick={() => {
+                            setAssignedTo(suggestionState.memberId)
+                            saveField({ assigned_to: suggestionState.memberId })
+                            setSuggestionState({ status: 'idle' })
+                          }}
+                          className="text-xs font-medium text-green-600 hover:text-green-700"
+                        >
+                          Aceitar
+                        </button>
+                        <button
+                          onClick={() => setSuggestionState({ status: 'idle' })}
+                          className="text-xs text-slate-400 hover:text-slate-600"
+                        >
+                          Dispensar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -291,6 +365,108 @@ export default function TaskSidePanel({
               onBlur={() => saveField({ description: description || null })}
               rows={3} placeholder="Adicionar descrição..."
               className="w-full text-sm text-slate-700 placeholder-slate-300 border border-slate-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-slate-300" />
+            <div className="mt-1.5">
+              <button
+                onClick={async () => {
+                  setDescribeState({ status: 'streaming' })
+                  setDescription('')
+                  try {
+                    const res = await fetch('/api/ai/describe-task', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ taskId: task.id, eventId }),
+                    })
+                    if (!res.ok || !res.body) {
+                      setDescribeState({ status: 'idle' })
+                      return
+                    }
+                    const reader = res.body.getReader()
+                    const decoder = new TextDecoder()
+                    let accumulated = ''
+                    const SENTINEL = '---SUBTASKS---'
+
+                    while (true) {
+                      const { done, value } = await reader.read()
+                      if (done) break
+                      accumulated += decoder.decode(value, { stream: true })
+
+                      const sentinelIdx = accumulated.indexOf(SENTINEL)
+                      if (sentinelIdx === -1) {
+                        setDescription(accumulated)
+                      } else {
+                        setDescription(accumulated.slice(0, sentinelIdx).trimEnd())
+                      }
+                    }
+
+                    const sentinelIdx = accumulated.indexOf(SENTINEL)
+                    if (sentinelIdx !== -1) {
+                      const descPart = accumulated.slice(0, sentinelIdx).trimEnd()
+                      const subtasksPart = accumulated.slice(sentinelIdx + SENTINEL.length).trim()
+                      saveField({ description: descPart })
+                      try {
+                        const subtasks = JSON.parse(subtasksPart) as string[]
+                        setSelectedSubtasks(new Set(subtasks.map((_, i) => i)))
+                        setDescribeState({ status: 'done', subtasks })
+                      } catch {
+                        setDescribeState({ status: 'done', subtasks: [] })
+                      }
+                    } else {
+                      saveField({ description: accumulated })
+                      setDescribeState({ status: 'idle' })
+                    }
+                  } catch {
+                    setDescribeState({ status: 'idle' })
+                  }
+                }}
+                disabled={describeState.status === 'streaming'}
+                className="text-xs text-indigo-500 hover:text-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-1"
+              >
+                {describeState.status === 'streaming'
+                  ? <><Loader2 className="w-3 h-3 animate-spin" /> A gerar...</>
+                  : <>✨ {description ? 'Regenerar descrição' : 'Gerar descrição'}</>
+                }
+              </button>
+            </div>
+
+            {describeState.status === 'done' && describeState.subtasks.length > 0 && (
+              <div className="mt-3 border border-indigo-100 rounded-lg p-3 bg-indigo-50/50">
+                <p className="text-xs font-medium text-indigo-700 mb-2">Sub-tarefas sugeridas</p>
+                <div className="space-y-1.5">
+                  {describeState.subtasks.map((sub, i) => (
+                    <label key={i} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedSubtasks.has(i)}
+                        onChange={() => {
+                          setSelectedSubtasks(prev => {
+                            const next = new Set(prev)
+                            next.has(i) ? next.delete(i) : next.add(i)
+                            return next
+                          })
+                        }}
+                        className="w-3.5 h-3.5 rounded text-indigo-600"
+                      />
+                      <span className="text-xs text-slate-700">{sub}</span>
+                    </label>
+                  ))}
+                </div>
+                <button
+                  onClick={async () => {
+                    if (describeState.status !== 'done') return
+                    const toCreate = describeState.subtasks.filter((_, i) => selectedSubtasks.has(i))
+                    for (const title of toCreate) {
+                      const created = await createTaskAction(eventId, { title, parentId: task.id })
+                      if (created) onCreated(created)
+                    }
+                    setDescribeState({ status: 'idle' })
+                  }}
+                  disabled={selectedSubtasks.size === 0}
+                  className="mt-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  Criar sub-tarefas selecionadas
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Progress */}
