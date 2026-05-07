@@ -16,9 +16,6 @@ export async function addNoteAction(eventId: string, content: string): Promise<E
     .single()
   if (!member) return null
 
-  const parsed = createNoteSchema.safeParse({ content })
-  if (!parsed.success) return null
-
   const { data: event } = await supabase
     .from('events')
     .select('id')
@@ -26,6 +23,9 @@ export async function addNoteAction(eventId: string, content: string): Promise<E
     .eq('organization_id', member.organization_id)
     .single()
   if (!event) return null
+
+  const parsed = createNoteSchema.safeParse({ content })
+  if (!parsed.success) return null
 
   const { data } = await supabase
     .from('event_notes')
@@ -54,12 +54,12 @@ export async function deleteNoteAction(eventId: string, noteId: string): Promise
     .single()
   if (!member) return false
 
-  const { error } = await supabase
+  const { error, count } = await supabase
     .from('event_notes')
-    .delete()
+    .delete({ count: 'exact' })
     .eq('id', noteId)
     .eq('event_id', eventId)
     .eq('organization_id', member.organization_id)
 
-  return !error
+  return !error && (count ?? 0) > 0
 }
