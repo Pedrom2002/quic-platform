@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { format } from 'date-fns'
+import { format, differenceInCalendarDays, isToday, isPast } from 'date-fns'
 import { pt } from 'date-fns/locale'
-import type { EventChecklistItem } from '@/types/database'
-import type { NotificationRule } from '@/types/app'
+import type { NotificationRule, ItemWithMemberAndCounts, ChecklistItemStatus } from '@/types/app'
+import { updateChecklistItemAction } from '@/app/dashboard/events/[eventId]/checklist/actions'
+import TaskDetailPanel from './TaskDetailPanel'
 import {
   DndContext,
   closestCenter,
@@ -29,17 +30,18 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
-type ItemWithMember = EventChecklistItem & {
-  assigned_member?: { id: string; full_name: string; avatar_url: string | null } | null
-}
+type ItemWithMember = ItemWithMemberAndCounts
 
 interface ChecklistBoardProps {
   eventId: string
-  initialItems: ItemWithMember[]
+  initialItems: ItemWithMemberAndCounts[]
+  currentMemberId: string | null
 }
 
-export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
-  const [items, setItems] = useState(initialItems)
+export function ChecklistBoard({ eventId, initialItems, currentMemberId }: ChecklistBoardProps) {
+  const [items, setItems] = useState<ItemWithMemberAndCounts[]>(initialItems)
+  const [view, setView] = useState<'list' | 'board'>('list')
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [newItemTitle, setNewItemTitle] = useState('')
@@ -78,6 +80,30 @@ export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
     } catch (err: unknown) {
       setItems(previousItems)
       toast.error(err instanceof Error ? err.message : 'Erro ao reordenar')
+    }
+  }
+
+  async function handleBoardDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const statuses: ChecklistItemStatus[] = ['pending', 'in_progress', 'completed', 'skipped']
+    const targetStatus = statuses.includes(over.id as ChecklistItemStatus)
+      ? (over.id as ChecklistItemStatus)
+      : items.find(i => i.id === over.id)?.status
+
+    if (!targetStatus) return
+
+    const draggedItem = items.find(i => i.id === active.id)
+    if (!draggedItem || draggedItem.status === targetStatus) return
+
+    const previousStatus = draggedItem.status
+    setItems(prev => prev.map(i => i.id === active.id ? { ...i, status: targetStatus } : i))
+
+    try {
+      await updateChecklistItemAction(eventId, active.id as string, { status: targetStatus })
+    } catch {
+      setItems(prev => prev.map(i => i.id === active.id ? { ...i, status: previousStatus } : i))
     }
   }
 
@@ -207,6 +233,28 @@ export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
         </div>
       </div>
 
+      {/* View toggle */}
+      <div className="flex items-center justify-end mb-3">
+        <div className="flex items-center gap-1 border border-slate-200 rounded-lg p-0.5">
+          <button
+            onClick={() => setView('list')}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              view === 'list' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Lista
+          </button>
+          <button
+            onClick={() => setView('board')}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              view === 'board' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Board
+          </button>
+        </div>
+      </div>
+
       {/* Bulk toolbar */}
       {selected.size > 0 && (
         <div className="sticky top-2 z-10 flex items-center gap-2 mb-3 p-3 bg-slate-900 text-white rounded-xl shadow-lg">
@@ -236,43 +284,96 @@ export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
         </div>
       )}
 
-      {/* Items */}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2 mb-4">
-            {items.map(item =>
-              editingId === item.id ? (
-                <EditRow
-                  key={item.id}
-                  item={item}
-                  orgMembers={orgMembers}
-                  onSave={edits => saveEdit(item.id, edits)}
-                  onCancel={() => setEditingId(null)}
-                  isLoading={loadingId === item.id}
-                />
-              ) : (
-                <SortableChecklistItem
-                  key={item.id}
-                  item={item}
-                  orgMembers={orgMembers}
-                  isLoading={loadingId === item.id}
-                  isSelected={selected.has(item.id)}
-                  onToggleSelect={() => toggleSelect(item.id)}
-                  onComplete={() => updateStatus(item.id, 'completed')}
-                  onStart={() => updateStatus(item.id, 'in_progress')}
-                  onSkip={() => updateStatus(item.id, 'skipped')}
-                  onReset={() => updateStatus(item.id, 'pending')}
-                  onEdit={() => setEditingId(item.id)}
-                  onDelete={() => deleteItem(item.id)}
-                />
+      {/* List view */}
+      {view === 'list' && (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2 mb-4">
+              {items.map(item =>
+                editingId === item.id ? (
+                  <EditRow
+                    key={item.id}
+                    item={item}
+                    orgMembers={orgMembers}
+                    onSave={edits => saveEdit(item.id, edits)}
+                    onCancel={() => setEditingId(null)}
+                    isLoading={loadingId === item.id}
+                  />
+                ) : (
+                  <SortableChecklistItem
+                    key={item.id}
+                    item={item}
+                    orgMembers={orgMembers}
+                    isLoading={loadingId === item.id}
+                    isSelected={selected.has(item.id)}
+                    onToggleSelect={() => toggleSelect(item.id)}
+                    onComplete={() => updateStatus(item.id, 'completed')}
+                    onStart={() => updateStatus(item.id, 'in_progress')}
+                    onSkip={() => updateStatus(item.id, 'skipped')}
+                    onReset={() => updateStatus(item.id, 'pending')}
+                    onEdit={() => setEditingId(item.id)}
+                    onDelete={() => deleteItem(item.id)}
+                    onOpenDetail={() => setSelectedItemId(item.id)}
+                  />
+                )
+              )}
+              {!items.length && (
+                <p className="text-slate-400 text-sm text-center py-8">Nenhuma etapa adicionada ainda.</p>
+              )}
+            </div>
+          </SortableContext>
+        </DndContext>
+      )}
+
+      {/* Board view */}
+      {view === 'board' && (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleBoardDragEnd}
+        >
+          <div className="grid grid-cols-4 gap-4 mb-4">
+            {(['pending', 'in_progress', 'completed', 'skipped'] as ChecklistItemStatus[]).map(col => {
+              const colItems = items.filter(i => i.status === col)
+              const colLabels: Record<ChecklistItemStatus, string> = {
+                pending: 'A fazer',
+                in_progress: 'Em progresso',
+                completed: 'Concluído',
+                skipped: 'Ignorado',
+              }
+              const colColors: Record<ChecklistItemStatus, string> = {
+                pending: 'border-amber-200 bg-amber-50/40',
+                in_progress: 'border-blue-200 bg-blue-50/40',
+                completed: 'border-green-200 bg-green-50/40',
+                skipped: 'border-slate-200 bg-slate-50/40',
+              }
+              return (
+                <div key={col} className={`rounded-xl border ${colColors[col]} p-3 min-h-[200px]`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-semibold text-slate-600">{colLabels[col]}</span>
+                    <span className="text-xs text-slate-400 ml-auto">{colItems.length}</span>
+                  </div>
+                  <SortableContext items={colItems.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                    {colItems.length === 0 ? (
+                      <div className="border border-dashed border-slate-200 rounded-lg p-3 text-center text-xs text-slate-300">
+                        Sem tarefas
+                      </div>
+                    ) : (
+                      colItems.map(item => (
+                        <KanbanCard
+                          key={item.id}
+                          item={item}
+                          onClick={() => setSelectedItemId(item.id)}
+                        />
+                      ))
+                    )}
+                  </SortableContext>
+                </div>
               )
-            )}
-            {!items.length && (
-              <p className="text-slate-400 text-sm text-center py-8">Nenhuma etapa adicionada ainda.</p>
-            )}
+            })}
           </div>
-        </SortableContext>
-      </DndContext>
+        </DndContext>
+      )}
 
       {/* Add item */}
       <div className="flex gap-2">
@@ -287,6 +388,24 @@ export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
           {addingItem ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
         </Button>
       </div>
+
+      {/* Task detail panel */}
+      {selectedItemId && (() => {
+        const selectedItem = items.find(i => i.id === selectedItemId)
+        if (!selectedItem) return null
+        return (
+          <TaskDetailPanel
+            eventId={eventId}
+            item={selectedItem}
+            orgMembers={orgMembers}
+            currentMemberId={currentMemberId}
+            onClose={() => setSelectedItemId(null)}
+            onUpdate={updated => {
+              setItems(prev => prev.map(i => i.id === updated.id ? { ...i, ...updated } : i))
+            }}
+          />
+        )
+      })()}
     </div>
   )
 }
@@ -386,6 +505,43 @@ function EditRow({ item, orgMembers, onSave, onCancel, isLoading }: EditRowProps
   )
 }
 
+// ─── Kanban Card ──────────────────────────────────────────────────────────────
+
+function KanbanCard({ item, onClick }: { item: ItemWithMemberAndCounts; onClick: () => void }) {
+  const isOverdue = !!(item.due_at && item.status !== 'completed' && item.status !== 'skipped'
+    && isPast(new Date(item.due_at)) && !isToday(new Date(item.due_at)))
+  const daysOverdue = isOverdue && item.due_at
+    ? Math.abs(differenceInCalendarDays(new Date(item.due_at), new Date()))
+    : 0
+
+  return (
+    <div
+      onClick={onClick}
+      className="bg-white border border-slate-200 rounded-lg p-3 mb-2 cursor-pointer hover:shadow-sm hover:border-slate-300 transition-all"
+    >
+      <p className="text-sm font-medium text-slate-800 line-clamp-2 mb-2">{item.title}</p>
+      <div className="flex items-center gap-2 flex-wrap">
+        {item.assigned_member && (
+          <span className="w-5 h-5 rounded-full bg-slate-100 text-[9px] font-semibold text-slate-600 flex items-center justify-center shrink-0">
+            {item.assigned_member.full_name.split(' ').filter(Boolean).slice(0,2).map(n => n[0].toUpperCase()).join('')}
+          </span>
+        )}
+        {item.due_at && (
+          <span className={`text-[10px] font-medium ${isOverdue ? 'text-red-500' : 'text-slate-400'}`}>
+            {isOverdue ? `${daysOverdue}d atraso` : format(new Date(item.due_at), "d MMM", { locale: pt })}
+          </span>
+        )}
+        {item.note_count > 0 && (
+          <span className="text-[10px] text-slate-400 ml-auto">{item.note_count} nota{item.note_count !== 1 ? 's' : ''}</span>
+        )}
+        {item.file_count > 0 && (
+          <span className="text-[10px] text-slate-400">{item.file_count} fich.</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── Sortable Checklist Item ──────────────────────────────────────────────────
 
 interface ChecklistItemProps {
@@ -400,6 +556,7 @@ interface ChecklistItemProps {
   onReset: () => void
   onEdit: () => void
   onDelete: () => void
+  onOpenDetail: () => void
   dragHandleProps: {
     ref: (node: HTMLElement | null) => void
     style: React.CSSProperties
@@ -440,7 +597,7 @@ function SortableChecklistItem(props: Omit<ChecklistItemProps, 'dragHandleProps'
 
 // ─── Checklist Item ───────────────────────────────────────────────────────────
 
-function ChecklistItem({ item, orgMembers, isLoading, isSelected, onToggleSelect, onComplete, onStart, onSkip, onReset, onEdit, onDelete, dragHandleProps }: ChecklistItemProps) {
+function ChecklistItem({ item, orgMembers, isLoading, isSelected, onToggleSelect, onComplete, onStart, onSkip, onReset, onEdit, onDelete, onOpenDetail, dragHandleProps }: ChecklistItemProps) {
   const isCompleted = item.status === 'completed'
   const isSkipped = item.status === 'skipped'
   const isInProgress = item.status === 'in_progress'
@@ -451,8 +608,9 @@ function ChecklistItem({ item, orgMembers, isLoading, isSelected, onToggleSelect
     <div
       ref={dragHandleProps.ref}
       style={dragHandleProps.style}
+      onClick={onOpenDetail}
       className={cn(
-        'flex items-center gap-3 p-4 rounded-xl border transition-all group',
+        'flex items-center gap-3 p-4 rounded-xl border transition-all group cursor-pointer',
         dragHandleProps.isDragging ? 'opacity-50 shadow-lg' : '',
         isCompleted ? 'bg-green-50 border-green-200'
           : isSkipped ? 'bg-slate-50 border-slate-200 opacity-60'
@@ -483,7 +641,11 @@ function ChecklistItem({ item, orgMembers, isLoading, isSelected, onToggleSelect
       />
 
       {/* Status icon */}
-      <button onClick={isCompleted || isSkipped ? onReset : onComplete} disabled={isLoading} className="shrink-0">
+      <button
+        onClick={e => { e.stopPropagation(); (isCompleted || isSkipped ? onReset : onComplete)() }}
+        disabled={isLoading}
+        className="shrink-0"
+      >
         {isLoading ? <Loader2 className="w-5 h-5 text-slate-300 animate-spin" />
           : isCompleted ? <CheckCircle2 className="w-5 h-5 text-green-500" />
           : isSkipped ? <SkipForward className="w-5 h-5 text-slate-400" />
@@ -524,7 +686,7 @@ function ChecklistItem({ item, orgMembers, isLoading, isSelected, onToggleSelect
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
         {!isCompleted && !isSkipped && (
           <>
             {isPending && (
