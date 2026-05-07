@@ -46,13 +46,16 @@ export default function ItemFilesSection({ eventId, itemId, initialFiles }: Item
 
   async function handleUpload(fileList: FileList) {
     setUploading(true)
-    for (const file of Array.from(fileList)) {
-      const fd = new FormData()
-      fd.append('file', file)
-      const linked = await uploadFileToItemAction(eventId, itemId, fd)
-      if (linked) setFiles(prev => [linked, ...prev])
+    try {
+      for (const file of Array.from(fileList)) {
+        const fd = new FormData()
+        fd.append('file', file)
+        const linked = await uploadFileToItemAction(eventId, itemId, fd)
+        if (linked) setFiles(prev => [linked, ...prev])
+      }
+    } finally {
+      setUploading(false)
     }
-    setUploading(false)
   }
 
   function handleUnlink(linkId: string) {

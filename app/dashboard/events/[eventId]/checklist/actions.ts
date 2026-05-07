@@ -356,8 +356,10 @@ export async function uploadFileToItemAction(
   if (!file || file.size === 0) return null
   if (file.size > MAX_FILE_SIZE) return null
 
-  const blob = await put(file.name, file, {
+  const fileBuffer = await file.arrayBuffer()
+  const blob = await put(file.name, fileBuffer, {
     access: 'public',
+    contentType: file.type || 'application/octet-stream',
     token: process.env.BLOB_READ_WRITE_TOKEN,
   })
 
