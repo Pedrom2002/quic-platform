@@ -45,7 +45,6 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
       {/* Logo / Org */}
       <div className="h-16 flex items-center gap-3 px-4 border-b border-zinc-800 shrink-0">
         <Image src="/Design sem nome(1).png" alt="Quic" width={100} height={40} className="shrink-0" />
-        <p className="text-zinc-500 text-xs truncate">{orgName}</p>
       </div>
 
       {/* Nav */}
