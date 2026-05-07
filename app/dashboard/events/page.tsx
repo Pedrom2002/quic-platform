@@ -88,9 +88,6 @@ export default async function EventsPage() {
                 href={`/dashboard/events/${event.id}`}
                 className="group bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md hover:border-slate-300 transition-all overflow-hidden flex flex-col"
               >
-                {/* Top accent bar — always dark */}
-                <div className="h-0.5 w-full bg-slate-900" />
-
                 <div className="p-5 flex flex-col flex-1 gap-4">
                   {/* Top row */}
                   <div className="flex items-start justify-between gap-3">
