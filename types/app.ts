@@ -218,3 +218,31 @@ export interface EventFileWithUploader {
   created_at: string
   uploader: { id: string; full_name: string; avatar_url: string | null } | null
 }
+
+export interface ChecklistItemNote {
+  id: string
+  checklist_item_id: string
+  event_id: string
+  organization_id: string
+  author_id: string | null
+  content: string
+  created_at: string
+  updated_at: string
+  author: { id: string; full_name: string; avatar_url: string | null } | null
+}
+
+export interface ChecklistItemFileLink {
+  id: string
+  checklist_item_id: string
+  event_file_id: string
+  organization_id: string
+  linked_by: string | null
+  created_at: string
+  file: EventFileWithUploader
+}
+
+export type ItemWithMemberAndCounts = import('./database').EventChecklistItem & {
+  assigned_member?: { id: string; full_name: string; avatar_url: string | null } | null
+  note_count: number
+  file_count: number
+}

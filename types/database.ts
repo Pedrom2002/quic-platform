@@ -635,6 +635,53 @@ export type Database = {
         }
         Relationships: []
       }
+      checklist_item_notes: {
+        Row: {
+          id: string
+          checklist_item_id: string
+          event_id: string
+          organization_id: string
+          author_id: string | null
+          content: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          checklist_item_id: string
+          event_id: string
+          organization_id: string
+          author_id?: string | null
+          content: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      checklist_item_files: {
+        Row: {
+          id: string
+          checklist_item_id: string
+          event_file_id: string
+          organization_id: string
+          linked_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          checklist_item_id: string
+          event_file_id: string
+          organization_id: string
+          linked_by?: string | null
+          created_at?: string
+        }
+        Update: Record<string, never>
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -659,3 +706,5 @@ export type NotificationLogEntry = Database['public']['Tables']['notification_lo
 export type WebhookEvent = Database['public']['Tables']['webhook_events']['Row']
 export type EventNote = Database['public']['Tables']['event_notes']['Row']
 export type EventFile = Database['public']['Tables']['event_files']['Row']
+export type ChecklistItemNoteRow = Database['public']['Tables']['checklist_item_notes']['Row']
+export type ChecklistItemFileLinkRow = Database['public']['Tables']['checklist_item_files']['Row']
