@@ -90,51 +90,49 @@ export default function EventTeamPage() {
           <p className="text-slate-500 mt-1">Membros atribuídos a este evento</p>
         </div>
         {availableMembers.length > 0 && (
-          <>
-            <Button onClick={() => setOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />Adicionar Membro
-            </Button>
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogContent className="bg-white border-slate-200">
-                <DialogHeader>
-                  <DialogTitle className="text-slate-900">Adicionar à Equipa</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 mt-2">
-                  <div className="space-y-1.5">
-                    <Label className="text-slate-700">Membro</Label>
-                    <Select onValueChange={(val: string | null) => { if (val) setSelectedMemberId(val) }}>
-                      <SelectTrigger className="bg-white border-slate-200 text-slate-800">
-                        <SelectValue placeholder="Selecionar membro..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableMembers.map(m => (
-                          <SelectItem key={m.id} value={m.id}>
-                            {m.full_name} — {roleLabels[m.role] ?? m.role}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-slate-700">Papel no evento (opcional)</Label>
-                    <Input
-                      value={roleInEvent}
-                      onChange={e => setRoleInEvent(e.target.value)}
-                      placeholder="ex: Coordenador, Fotógrafo..."
-                    />
-                  </div>
-                  <Button
-                    onClick={assignMember}
-                    disabled={!selectedMemberId || isPending}
-                    className="w-full"
-                  >
-                    Adicionar
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </>
+          <Button onClick={() => setOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />Adicionar Membro
+          </Button>
         )}
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="bg-white border-slate-200">
+            <DialogHeader>
+              <DialogTitle className="text-slate-900">Adicionar à Equipa</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-2">
+              <div className="space-y-1.5">
+                <Label className="text-slate-700">Membro</Label>
+                <Select onValueChange={(val: string | null) => { if (val) setSelectedMemberId(val) }}>
+                  <SelectTrigger className="bg-white border-slate-200 text-slate-800">
+                    <SelectValue placeholder="Selecionar membro..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableMembers.map(m => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.full_name} / {roleLabels[m.role] ?? m.role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-slate-700">Papel no evento (opcional)</Label>
+                <Input
+                  value={roleInEvent}
+                  onChange={e => setRoleInEvent(e.target.value)}
+                  placeholder="ex: Coordenador, Fotografo..."
+                />
+              </div>
+              <Button
+                onClick={assignMember}
+                disabled={!selectedMemberId || isPending}
+                className="w-full"
+              >
+                Adicionar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {loading ? (

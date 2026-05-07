@@ -22,6 +22,7 @@ export async function loadEventTeamAction(eventId: string): Promise<{
     .select('id, event_id, team_member_id, role_in_event, created_at, team_member:team_members!team_member_id(id, full_name, email, role, avatar_url)')
     .eq('event_id', eventId)
     .order('created_at', { ascending: true })
+    .returns<EventTeamAssignmentWithMember[]>()
 
   const { data: orgMembers } = await supabase
     .from('team_members')
@@ -31,7 +32,7 @@ export async function loadEventTeamAction(eventId: string): Promise<{
     .order('full_name', { ascending: true })
 
   return {
-    assignments: (assignments ?? []) as unknown as EventTeamAssignmentWithMember[],
+    assignments: assignments ?? [],
     orgMembers: orgMembers ?? [],
   }
 }
@@ -91,25 +92,3 @@ export async function removeTeamMemberAction(
   if (error) throw new Error('Erro ao remover membro')
 }
 
-export async function updateTeamMemberRoleAction(
-  eventId: string,
-  assignmentId: string,
-  roleInEvent: string
-): Promise<void> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
-
-  const owned = await assertEventOwnership(supabase, eventId, member.organization_id)
-  if (!owned) throw new Error('Evento não encontrado')
-
-  const { error } = await supabase
-    .from('event_team_assignments')
-    .update({ role_in_event: roleInEvent })
-    .eq('id', assignmentId)
-    .eq('event_id', eventId)
-
-  if (error) throw new Error('Erro ao actualizar papel')
-}
