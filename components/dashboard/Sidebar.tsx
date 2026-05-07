@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/dashboard/events', label: 'Eventos', icon: Calendar },
-  { href: '/dashboard/clients', label: 'Clientes', icon: Users },
+  { href: '/dashboard/contacts', label: 'Contactos', icon: Users },
   { href: '/dashboard/team', label: 'Equipa', icon: Users2 },
   { href: '/dashboard/templates', label: 'Templates', icon: FileText },
   { href: '/dashboard/files', label: 'Ficheiros', icon: FolderOpen },
