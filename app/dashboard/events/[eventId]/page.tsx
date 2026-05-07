@@ -7,6 +7,7 @@ import { pt } from 'date-fns/locale'
 import { EVENT_STATUS_LABEL, EVENT_STATUS_COLOR, calcProgress } from '@/lib/event-status'
 import type { EventTypeJoin, EventNoteWithAuthor } from '@/types/app'
 import { SendPortalButton } from '@/components/events/SendPortalButton'
+import AIButtons from '@/components/events/AIButtons'
 import { ActivityFeed } from '@/components/events/ActivityFeed'
 import NotesSection from '@/components/events/NotesSection'
 import { mergeTimelineEvents } from '@/lib/timeline'
@@ -281,6 +282,8 @@ export default async function EventDetailPage({
           </div>
         </Link>
       </div>
+
+      <AIButtons eventId={eventId} />
 
       {/* Internal Notes */}
       <div className="mt-6">
