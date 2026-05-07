@@ -13,3 +13,17 @@ export async function resolveOrgMember(
     .single()
   return data
 }
+
+export async function assertEventOwnership(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  eventId: string,
+  organizationId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('organization_id', organizationId)
+    .single()
+  return !!data
+}
