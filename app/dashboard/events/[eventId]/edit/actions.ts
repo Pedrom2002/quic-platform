@@ -37,3 +37,43 @@ export async function updateEventAction(eventId: string, data: UpdateEventInput)
 
   if (error) throw new Error(error.message)
 }
+
+export async function updatePortalVideosAction(
+  eventId: string,
+  heroVideo: string,
+  contentVideo: string,
+): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  const { data: member } = await supabase
+    .from('team_members')
+    .select('organization_id')
+    .eq('auth_user_id', user.id)
+    .single()
+  if (!member) throw new Error('Não autorizado')
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, settings')
+    .eq('id', eventId)
+    .eq('organization_id', member.organization_id)
+    .single()
+  if (!event) throw new Error('Evento não encontrado')
+
+  const currentSettings = (event.settings ?? {}) as Record<string, unknown>
+  const newSettings = {
+    ...currentSettings,
+    portal_hero_video: heroVideo || null,
+    portal_content_video: contentVideo || null,
+  }
+
+  const { error } = await supabase
+    .from('events')
+    .update({ settings: newSettings })
+    .eq('id', eventId)
+    .eq('organization_id', member.organization_id)
+
+  if (error) throw new Error(error.message)
+}

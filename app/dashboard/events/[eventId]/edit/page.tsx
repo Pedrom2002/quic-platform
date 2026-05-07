@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import { PortalVideoSettings } from '@/components/events/PortalVideoSettings'
 
 export default function EditEventPage() {
   const params = useParams<{ eventId: string }>()
@@ -70,7 +71,9 @@ export default function EditEventPage() {
         <h1 className="text-2xl font-bold text-slate-900">Editar Evento</h1>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+      <PortalVideoSettings eventId={params.eventId} />
+
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6 mt-6">
         <h2 className="text-sm font-semibold text-slate-800 mb-5">Detalhes do evento</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div className="space-y-1.5">

@@ -25,6 +25,8 @@ export interface PortalEventData {
   eventDateStr: string
   items: PortalItem[]
   progress: { total: number; completed: number; percent: number }
+  heroVideo: string | null
+  contentVideo: string | null
 }
 
 /**
@@ -40,11 +42,15 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
 
   const { data: eventRaw } = await supabase
     .from('events')
-    .select('id, name, venue_name, start_datetime, status')
+    .select('id, name, venue_name, start_datetime, status, settings')
     .eq('id', payload.eventId)
     .single()
 
   if (!eventRaw) return null
+
+  const eventSettings = (eventRaw.settings ?? {}) as Record<string, unknown>
+  const heroVideo = typeof eventSettings.portal_hero_video === 'string' ? eventSettings.portal_hero_video : null
+  const contentVideo = typeof eventSettings.portal_content_video === 'string' ? eventSettings.portal_content_video : null
 
   const event = eventRaw as PortalEventData['event']
 
@@ -64,5 +70,7 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
     eventDateStr: format(new Date(event.start_datetime), "EEEE, d 'de' MMMM 'de' yyyy", { locale: pt }),
     items,
     progress: { total, completed, percent: calcProgress(completed, total) },
+    heroVideo,
+    contentVideo,
   }
 }

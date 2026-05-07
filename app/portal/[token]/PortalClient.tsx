@@ -8,6 +8,9 @@ import { pt } from 'date-fns/locale'
 import { calcProgress } from '@/lib/event-status'
 import type { PortalItem } from '@/lib/portal/data'
 
+const FALLBACK_HERO_VIDEO = 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/144156-784280927.mp4'
+const FALLBACK_CONTENT_VIDEO = 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/45961-447087612.mp4'
+
 interface Props {
   eventId: string
   eventName: string
@@ -17,6 +20,8 @@ interface Props {
   initialItems: PortalItem[]
   initialProgress: { total: number; completed: number; percent: number }
   portalToken: string
+  heroVideo: string | null
+  contentVideo: string | null
 }
 
 function useCountUp(target: number, duration = 900, delay = 0): number {
@@ -71,6 +76,8 @@ export function PortalClient({
   status,
   initialItems,
   initialProgress,
+  heroVideo,
+  contentVideo,
 }: Props) {
   const [items, setItems] = useState(initialItems)
   const [progress, setProgress] = useState(initialProgress)
@@ -204,7 +211,7 @@ export function PortalClient({
           loop
           playsInline
           className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
-          src="https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/144156-784280927.mp4"
+          src={heroVideo ?? FALLBACK_HERO_VIDEO}
         />
         {/* Top bar — full-width border */}
         <div className="relative z-10 border-b border-white/10 anim-fade-up" style={{ animationDelay: '100ms' }}>
@@ -288,7 +295,7 @@ export function PortalClient({
           loop
           playsInline
           className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-          src="https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/45961-447087612.mp4"
+          src={contentVideo ?? FALLBACK_CONTENT_VIDEO}
         />
         <div className="absolute inset-0 bg-white/30 pointer-events-none" />
       <section className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-16 md:py-24">
