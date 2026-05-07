@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isContactVisibleToMember } from '@/app/dashboard/contacts/actions'
+import { isContactVisibleToMember } from '@/lib/contacts/visibility'
 
 describe('isContactVisibleToMember', () => {
   it('returns true when contact has no groups', () => {
