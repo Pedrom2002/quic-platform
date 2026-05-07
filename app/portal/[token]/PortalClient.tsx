@@ -112,6 +112,8 @@ function TabBar({
     ...(hasDocuments ? [{ key: 'documents' as const, label: 'Documentos' }] : []),
   ]
 
+  if (tabs.length < 2) return null
+
   return (
     <div className="sticky top-0 z-20 bg-white border-b border-stone-100 shadow-sm">
       <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 flex">
