@@ -317,6 +317,15 @@ export async function syncContactGroupsAction(
     if ((groups ?? []).some(g => g.admin_only)) throw new Error('Sem permissão')
   }
 
+  // Verify contact belongs to this org
+  const { data: contactCheck } = await supabase
+    .from('clients')
+    .select('id')
+    .eq('id', contactId)
+    .eq('organization_id', member.organization_id)
+    .single()
+  if (!contactCheck) throw new Error('Contacto não encontrado')
+
   // Delete all existing memberships then re-insert
   await supabase.from('contact_group_members').delete().eq('contact_id', contactId)
 
