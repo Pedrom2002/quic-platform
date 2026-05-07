@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition, useEffect, useRef } from 'react'
-import { Plus, List, CalendarDays, Search, X } from 'lucide-react'
+import { Plus, List, CalendarDays, Search, X, Sparkles } from 'lucide-react'
 import { createTaskAction } from '@/app/dashboard/events/[eventId]/tasks/actions'
 import type { EventTask, EventTaskNode } from '@/types/app'
 import TaskTreeNode from './TaskTreeNode'
@@ -23,6 +23,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { reorderTasksAction } from '@/app/dashboard/events/[eventId]/tasks/actions'
+import GenerateTasksModal from './GenerateTasksModal'
 
 export function buildTree(flat: EventTask[]): EventTaskNode[] {
   const map = new Map<string, EventTaskNode>()
@@ -73,6 +74,7 @@ export function TaskTree({ eventId, initialTasks, orgMembers, currentMemberId, c
   const [view, setView] = useState<'tree' | 'calendar'>('tree')
   const [search, setSearch] = useState('')
   const [, startTransition] = useTransition()
+  const [showGenerateModal, setShowGenerateModal] = useState(false)
   const newRootInputRef = useRef<HTMLInputElement>(null)
 
   const sensors = useSensors(
@@ -218,6 +220,15 @@ export function TaskTree({ eventId, initialTasks, orgMembers, currentMemberId, c
 
             {view === 'tree' && (
               <button
+                onClick={() => setShowGenerateModal(true)}
+                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 border border-indigo-200 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors"
+                title="Gerar tarefas com IA"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> Gerar com IA
+              </button>
+            )}
+            {view === 'tree' && (
+              <button
                 onClick={() => setAddingRoot(true)}
                 className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-slate-900 text-white rounded-lg hover:bg-slate-700 transition-colors"
                 title="Nova tarefa (N)"
@@ -306,6 +317,16 @@ export function TaskTree({ eventId, initialTasks, orgMembers, currentMemberId, c
           onClose={() => setSelectedTaskId(null)}
           onUpdate={handleTaskUpdate}
           onCreated={handleTaskCreated}
+        />
+      )}
+
+      {showGenerateModal && (
+        <GenerateTasksModal
+          eventId={eventId}
+          onClose={() => setShowGenerateModal(false)}
+          onTasksCreated={(newTasks) => {
+            newTasks.forEach(handleTaskCreated)
+          }}
         />
       )}
     </div>
