@@ -103,14 +103,13 @@ function TabBar({
   hasDocuments,
   onChange,
 }: {
-  active: 'progress' | 'documents' | 'details'
+  active: 'progress' | 'documents'
   hasDocuments: boolean
-  onChange: (tab: 'progress' | 'documents' | 'details') => void
+  onChange: (tab: 'progress' | 'documents') => void
 }) {
-  const tabs: Array<{ key: 'progress' | 'documents' | 'details'; label: string }> = [
+  const tabs: Array<{ key: 'progress' | 'documents'; label: string }> = [
     { key: 'progress', label: 'Progresso' },
     ...(hasDocuments ? [{ key: 'documents' as const, label: 'Documentos' }] : []),
-    { key: 'details', label: 'Detalhes' },
   ]
 
   return (
@@ -129,47 +128,6 @@ function TabBar({
             {tab.label}
           </button>
         ))}
-      </div>
-    </div>
-  )
-}
-
-function DetailsTab({
-  eventDate,
-  venueName,
-  status,
-  progress,
-}: {
-  eventDate: string
-  venueName: string | null
-  status: string
-  progress: { total: number; completed: number; percent: number }
-}) {
-  const statusLabel =
-    status === 'completed' ? 'Concluído' :
-    status === 'active' ? 'Em Curso' : 'Em Preparação'
-
-  return (
-    <div className="anim-tab-fade">
-      <div className="grid grid-cols-2 gap-6 sm:gap-8">
-        <div>
-          <p className="text-xs font-medium tracking-widest uppercase text-stone-400 mb-2">Data</p>
-          <p className="text-stone-900 text-sm font-medium">{eventDate}</p>
-        </div>
-        {venueName && (
-          <div>
-            <p className="text-xs font-medium tracking-widest uppercase text-stone-400 mb-2">Local</p>
-            <p className="text-stone-900 text-sm font-medium">{venueName}</p>
-          </div>
-        )}
-        <div>
-          <p className="text-xs font-medium tracking-widest uppercase text-stone-400 mb-2">Estado</p>
-          <p className="text-stone-900 text-sm font-medium">{statusLabel}</p>
-        </div>
-        <div>
-          <p className="text-xs font-medium tracking-widest uppercase text-stone-400 mb-2">Progresso</p>
-          <p className="text-stone-900 text-sm font-medium">{progress.percent}% · {progress.completed}/{progress.total}</p>
-        </div>
       </div>
     </div>
   )
@@ -208,6 +166,17 @@ function ProgressTab({
   animatingOut: Set<string>
   justCompleted: Set<string>
 }) {
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+  function toggle(id: string) {
+    setExpandedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
   return (
     <div className="anim-tab-fade">
       {completedItems.length > 0 && (
@@ -223,40 +192,52 @@ function ProgressTab({
           <ul>
             {completedItems.map((item, idx) => {
               const isNew = justCompleted.has(item.id)
+              const hasContent = !!(item.completion_note || item.files.length > 0 || item.completed_at)
+              const isExpanded = expandedIds.has(item.id)
               return (
                 <li
                   key={item.id}
-                  className={`flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6 pl-4 border-l-2 border-b border-stone-100 last:border-b-0 mb-0 ${
+                  onClick={hasContent ? () => toggle(item.id) : undefined}
+                  className={`pl-4 border-l-2 border-b border-stone-100 last:border-b-0 mb-0 ${
                     isNew
                       ? 'anim-item-enter anim-pulse-gold border-l-amber-400'
                       : 'border-l-amber-400/50 anim-fade-in'
-                  }`}
+                  } ${hasContent ? 'cursor-pointer' : ''}`}
                   style={isNew ? undefined : { animationDelay: `${300 + idx * 40}ms` }}
                 >
-                  <span className="text-xs text-amber-600/70 tabular-nums tracking-wider font-medium pt-0.5">
-                    {String(idx + 1).padStart(2, '0')}
-                  </span>
-                  <div>
+                  <div className="flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6">
+                    <span className="text-xs text-amber-600/70 tabular-nums tracking-wider font-medium pt-0.5">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
                     <p className="text-stone-900 text-base sm:text-lg font-medium tracking-tight">
                       {item.client_label ?? item.title}
                     </p>
-                    {item.completion_note && (
-                      <p className="text-stone-500 text-sm mt-1.5 leading-relaxed anim-fade-in" style={{ animationDelay: isNew ? '150ms' : `${300 + idx * 40 + 150}ms` }}>
-                        {item.completion_note}
-                      </p>
-                    )}
-                    {item.files.length > 0 && (
-                      <div className="mt-3 space-y-2">
-                        {item.files.map(file => (
-                          <FileRow key={file.id} file={file} />
-                        ))}
-                      </div>
-                    )}
+                    {hasContent ? (
+                      <span className={`text-stone-400 text-xs self-start sm:self-center transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
+                        ▶
+                      </span>
+                    ) : null}
                   </div>
-                  {item.completed_at && (
-                    <span className="text-xs text-stone-400 tabular-nums whitespace-nowrap self-start sm:text-right">
-                      {format(new Date(item.completed_at), "d MMM · HH'h'mm", { locale: pt })}
-                    </span>
+                  {isExpanded && (
+                    <div className="pb-5 sm:pl-[calc(2rem+1.5rem)]">
+                      {item.completion_note && (
+                        <p className="text-stone-500 text-sm italic leading-relaxed mt-2">
+                          {item.completion_note}
+                        </p>
+                      )}
+                      {item.files.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          {item.files.map(file => (
+                            <FileRow key={file.id} file={file} />
+                          ))}
+                        </div>
+                      )}
+                      {item.completed_at && (
+                        <p className="text-xs text-stone-400 mt-2">
+                          Concluído a {format(new Date(item.completed_at), "d MMM · HH'h'mm", { locale: pt })}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </li>
               )
@@ -276,27 +257,47 @@ function ProgressTab({
             </span>
           </div>
           <ul>
-            {pendingItems.map((item, idx) => (
-              <li
-                key={item.id}
-                className={`flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6 border-b border-stone-100 last:border-0 anim-fade-in ${
-                  animatingOut.has(item.id) ? 'anim-item-exit' : ''
-                }`}
-                style={{ animationDelay: `${300 + idx * 40}ms` }}
-              >
-                <span className="text-xs text-stone-400 tabular-nums tracking-wider font-medium pt-0.5">
-                  {String(idx + 1).padStart(2, '0')}
-                </span>
-                <p className="text-stone-500 text-base sm:text-lg tracking-tight">
-                  {item.client_label ?? item.title}
-                </p>
-                {(item.status === 'pending' || item.status === 'in_progress') && item.due_at && (
-                  <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full whitespace-nowrap self-start">
-                    Previsto {format(new Date(item.due_at), 'd MMM', { locale: pt })}
-                  </span>
-                )}
-              </li>
-            ))}
+            {pendingItems.map((item, idx) => {
+              const hasFiles = item.files.length > 0
+              const isExpanded = expandedIds.has(item.id)
+              return (
+                <li
+                  key={item.id}
+                  onClick={hasFiles ? () => toggle(item.id) : undefined}
+                  className={`border-b border-stone-100 last:border-0 anim-fade-in ${
+                    animatingOut.has(item.id) ? 'anim-item-exit' : ''
+                  } ${hasFiles ? 'cursor-pointer' : ''}`}
+                  style={{ animationDelay: `${300 + idx * 40}ms` }}
+                >
+                  <div className="flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6">
+                    <span className="text-xs text-stone-400 tabular-nums tracking-wider font-medium pt-0.5">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
+                    <p className="text-stone-500 text-base sm:text-lg tracking-tight">
+                      {item.client_label ?? item.title}
+                    </p>
+                    {hasFiles ? (
+                      <span className={`text-stone-400 text-xs self-start sm:self-center transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
+                        ▶
+                      </span>
+                    ) : (item.status === 'pending' || item.status === 'in_progress') && item.due_at ? (
+                      <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full whitespace-nowrap self-start">
+                        Previsto {format(new Date(item.due_at), 'd MMM', { locale: pt })}
+                      </span>
+                    ) : null}
+                  </div>
+                  {isExpanded && hasFiles && (
+                    <div className="pb-5 sm:pl-[calc(2rem+1.5rem)]">
+                      <div className="space-y-2">
+                        {item.files.map(file => (
+                          <FileRow key={file.id} file={file} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         </div>
       )}
@@ -322,7 +323,7 @@ export function PortalClient({
   const [animatingOut, setAnimatingOut] = useState<Set<string>>(new Set())
   const [justCompleted, setJustCompleted] = useState<Set<string>>(new Set())
   const [isConnected, setIsConnected] = useState(false)
-  const [activeTab, setActiveTab] = useState<'progress' | 'documents' | 'details'>('progress')
+  const [activeTab, setActiveTab] = useState<'progress' | 'documents'>('progress')
 
   const displayedPercent = useCountUp(progress.percent, 2200, 1100)
 
@@ -561,14 +562,6 @@ export function PortalClient({
           )}
           {activeTab === 'documents' && eventFiles.length > 0 && (
             <DocumentsTab files={eventFiles} />
-          )}
-          {activeTab === 'details' && (
-            <DetailsTab
-              eventDate={eventDate}
-              venueName={venueName}
-              status={status}
-              progress={progress}
-            />
           )}
         </section>
       </section>
