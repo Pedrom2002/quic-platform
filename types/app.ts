@@ -246,3 +246,46 @@ export type ItemWithMemberAndCounts = import('./database').EventChecklistItem & 
   note_count: number
   file_count: number
 }
+
+export interface EventTask {
+  id: string
+  event_id: string
+  organization_id: string
+  parent_id: string | null
+  checklist_item_id: string | null
+  title: string
+  description: string | null
+  status: ChecklistItemStatus
+  assigned_to: string | null
+  due_at: string | null
+  position: number
+  created_at: string
+  updated_at: string
+  assigned_member?: { id: string; full_name: string; avatar_url: string | null } | null
+}
+
+export interface EventTaskNode extends EventTask {
+  children: EventTaskNode[]
+}
+
+export interface EventTaskNote {
+  id: string
+  task_id: string
+  event_id: string
+  organization_id: string
+  author_id: string | null
+  content: string
+  created_at: string
+  updated_at: string
+  author: { id: string; full_name: string; avatar_url: string | null } | null
+}
+
+export interface EventTaskFileLink {
+  id: string
+  task_id: string
+  event_file_id: string
+  organization_id: string
+  linked_by: string | null
+  created_at: string
+  file: EventFileWithUploader
+}

@@ -682,6 +682,97 @@ export type Database = {
         Update: Record<string, never>
         Relationships: []
       }
+      event_tasks: {
+        Row: {
+          id: string
+          event_id: string
+          organization_id: string
+          parent_id: string | null
+          checklist_item_id: string | null
+          title: string
+          description: string | null
+          status: string
+          assigned_to: string | null
+          due_at: string | null
+          position: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          organization_id: string
+          parent_id?: string | null
+          checklist_item_id?: string | null
+          title: string
+          description?: string | null
+          status?: string
+          assigned_to?: string | null
+          due_at?: string | null
+          position?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          parent_id?: string | null
+          checklist_item_id?: string | null
+          title?: string
+          description?: string | null
+          status?: string
+          assigned_to?: string | null
+          due_at?: string | null
+          position?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      event_task_notes: {
+        Row: {
+          id: string
+          task_id: string
+          event_id: string
+          organization_id: string
+          author_id: string | null
+          content: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          task_id: string
+          event_id: string
+          organization_id: string
+          author_id?: string | null
+          content: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      event_task_files: {
+        Row: {
+          id: string
+          task_id: string
+          event_file_id: string
+          organization_id: string
+          linked_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          task_id: string
+          event_file_id: string
+          organization_id: string
+          linked_by?: string | null
+          created_at?: string
+        }
+        Update: Record<string, never>
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -708,3 +799,6 @@ export type EventNote = Database['public']['Tables']['event_notes']['Row']
 export type EventFile = Database['public']['Tables']['event_files']['Row']
 export type ChecklistItemNoteRow = Database['public']['Tables']['checklist_item_notes']['Row']
 export type ChecklistItemFileLinkRow = Database['public']['Tables']['checklist_item_files']['Row']
+export type EventTask = Database['public']['Tables']['event_tasks']['Row']
+export type EventTaskNote = Database['public']['Tables']['event_task_notes']['Row']
+export type EventTaskFileRow = Database['public']['Tables']['event_task_files']['Row']
