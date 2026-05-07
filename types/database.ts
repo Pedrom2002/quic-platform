@@ -597,6 +597,44 @@ export type Database = {
         }
         Relationships: []
       }
+      event_files: {
+        Row: {
+          id: string
+          event_id: string
+          organization_id: string
+          uploaded_by: string | null
+          file_name: string
+          file_size: number | null
+          mime_type: string | null
+          blob_url: string
+          blob_pathname: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          organization_id: string
+          uploaded_by?: string | null
+          file_name: string
+          file_size?: number | null
+          mime_type?: string | null
+          blob_url: string
+          blob_pathname: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          organization_id?: string
+          uploaded_by?: string | null
+          file_name?: string
+          file_size?: number | null
+          mime_type?: string | null
+          blob_url?: string
+          blob_pathname?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -620,3 +658,4 @@ export type NotificationJob = Database['public']['Tables']['notification_jobs'][
 export type NotificationLogEntry = Database['public']['Tables']['notification_log']['Row']
 export type WebhookEvent = Database['public']['Tables']['webhook_events']['Row']
 export type EventNote = Database['public']['Tables']['event_notes']['Row']
+export type EventFile = Database['public']['Tables']['event_files']['Row']

@@ -204,3 +204,17 @@ export interface EventNoteWithAuthor {
   updated_at: string
   author: { id: string; full_name: string; avatar_url: string | null } | null
 }
+
+export interface EventFileWithUploader {
+  id: string
+  event_id: string
+  organization_id: string
+  uploaded_by: string | null
+  file_name: string
+  file_size: number | null
+  mime_type: string | null
+  blob_url: string
+  blob_pathname: string
+  created_at: string
+  uploader: { id: string; full_name: string; avatar_url: string | null } | null
+}
