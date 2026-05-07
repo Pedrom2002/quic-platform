@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Users, Bell, ExternalLink, MapPin, Pencil } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Users, Bell, ExternalLink, MapPin, Pencil, UserCog } from 'lucide-react'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { EVENT_STATUS_LABEL, EVENT_STATUS_COLOR, calcProgress } from '@/lib/event-status'
@@ -41,6 +41,11 @@ export default async function EventDetailPage({
   const { count: clientCount } = await supabase
     .from('event_clients')
     .select('*', { count: 'exact', head: true })
+    .eq('event_id', eventId)
+
+  const { count: teamCount } = await supabase
+    .from('event_team_assignments')
+    .select('id', { count: 'exact', head: true })
     .eq('event_id', eventId)
 
   const [{ data: checklistActivity }, { data: notifActivity }, { data: clientActivity }] = await Promise.all([
@@ -167,7 +172,7 @@ export default async function EventDetailPage({
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <Link
           href={`/dashboard/events/${eventId}/checklist`}
           className="flex items-center gap-3 p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 hover:shadow transition-all"
@@ -205,6 +210,17 @@ export default async function EventDetailPage({
             <p className="text-slate-800 font-medium">Notificações</p>
             <p className="text-slate-400 text-xs">Log de envios</p>
           </div>
+        </Link>
+
+        <Link href={`/dashboard/events/${eventId}/team`} className="bg-white border border-stone-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+              <UserCog className="w-4 h-4 text-orange-600" />
+            </div>
+            <span className="text-sm font-medium text-stone-700">Equipa</span>
+          </div>
+          <p className="text-2xl font-bold text-stone-900">{teamCount ?? 0}</p>
+          <p className="text-xs text-stone-400 mt-0.5">membros</p>
         </Link>
       </div>
 
