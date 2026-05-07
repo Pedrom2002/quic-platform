@@ -254,6 +254,7 @@ export function ChecklistBoard({ eventId, initialItems }: ChecklistBoardProps) {
                 <SortableChecklistItem
                   key={item.id}
                   item={item}
+                  orgMembers={orgMembers}
                   isLoading={loadingId === item.id}
                   isSelected={selected.has(item.id)}
                   onToggleSelect={() => toggleSelect(item.id)}
@@ -389,6 +390,7 @@ function EditRow({ item, orgMembers, onSave, onCancel, isLoading }: EditRowProps
 
 interface ChecklistItemProps {
   item: ItemWithMember
+  orgMembers: { id: string; full_name: string }[]
   isLoading: boolean
   isSelected: boolean
   onToggleSelect: () => void
@@ -438,7 +440,7 @@ function SortableChecklistItem(props: Omit<ChecklistItemProps, 'dragHandleProps'
 
 // ─── Checklist Item ───────────────────────────────────────────────────────────
 
-function ChecklistItem({ item, isLoading, isSelected, onToggleSelect, onComplete, onStart, onSkip, onReset, onEdit, onDelete, dragHandleProps }: ChecklistItemProps) {
+function ChecklistItem({ item, orgMembers, isLoading, isSelected, onToggleSelect, onComplete, onStart, onSkip, onReset, onEdit, onDelete, dragHandleProps }: ChecklistItemProps) {
   const isCompleted = item.status === 'completed'
   const isSkipped = item.status === 'skipped'
   const isInProgress = item.status === 'in_progress'
@@ -498,19 +500,19 @@ function ChecklistItem({ item, isLoading, isSelected, onToggleSelect, onComplete
             <span className="text-xs text-slate-400">({item.client_label})</span>
           )}
           {!item.is_client_visible && <EyeOff className="w-3 h-3 text-slate-300 shrink-0" />}
-          {item.assigned_member && (
-            <span
-              title={item.assigned_member.full_name}
-              className="w-5 h-5 rounded-full bg-slate-100 text-[9px] font-semibold text-slate-600 flex items-center justify-center shrink-0"
-            >
-              {item.assigned_member.full_name
-                .split(' ')
-                .filter(Boolean)
-                .slice(0, 2)
-                .map(n => n[0].toUpperCase())
-                .join('')}
-            </span>
-          )}
+          {(() => {
+            const member = item.assigned_member ?? orgMembers.find(m => m.id === item.assigned_to) ?? null
+            if (!member) return null
+            const initials = member.full_name.split(' ').filter(Boolean).slice(0, 2).map(n => n[0].toUpperCase()).join('')
+            return (
+              <span
+                title={member.full_name}
+                className="w-5 h-5 rounded-full bg-slate-100 text-[9px] font-semibold text-slate-600 flex items-center justify-center shrink-0"
+              >
+                {initials}
+              </span>
+            )
+          })()}
         </div>
         {isCompleted && item.completed_at && (
           <p className="text-xs text-slate-400 mt-0.5">
