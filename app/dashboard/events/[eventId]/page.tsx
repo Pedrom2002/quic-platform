@@ -5,9 +5,10 @@ import { ArrowLeft, CheckCircle2, Users, Bell, ExternalLink, MapPin, Pencil, Use
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { EVENT_STATUS_LABEL, EVENT_STATUS_COLOR, calcProgress } from '@/lib/event-status'
-import type { EventTypeJoin } from '@/types/app'
+import type { EventTypeJoin, EventNoteWithAuthor } from '@/types/app'
 import { SendPortalButton } from '@/components/events/SendPortalButton'
 import { ActivityFeed } from '@/components/events/ActivityFeed'
+import NotesSection from '@/components/events/NotesSection'
 import { mergeTimelineEvents } from '@/lib/timeline'
 import type { ChecklistTimelineEvent, NotificationTimelineEvent, ClientTimelineEvent } from '@/lib/timeline'
 
@@ -104,6 +105,24 @@ export default async function EventDetailPage({
   })
 
   const initialTimelineEvents = mergeTimelineEvents(checklistEvents, notifEvents, clientEvents)
+
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: currentMember } = user
+    ? await supabase
+        .from('team_members')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single()
+    : { data: null }
+  const currentMemberId = currentMember?.id ?? null
+
+  const { data: eventNotes } = await supabase
+    .from('event_notes')
+    .select('*, author:team_members!author_id(id, full_name, avatar_url)')
+    .eq('event_id', eventId)
+    .order('created_at', { ascending: false })
+    .limit(50)
+    .returns<EventNoteWithAuthor[]>()
 
   const portalUrl = `${process.env.NEXT_PUBLIC_PORTAL_URL ?? ''}/portal/${event.portal_token}`
   const et = event.event_types
@@ -224,6 +243,15 @@ export default async function EventDetailPage({
             <p className="text-slate-400 text-xs">{teamCount ?? 0} membros</p>
           </div>
         </Link>
+      </div>
+
+      {/* Internal Notes */}
+      <div className="mt-6">
+        <NotesSection
+          eventId={eventId}
+          initialNotes={eventNotes ?? []}
+          currentMemberId={currentMemberId}
+        />
       </div>
 
       {/* Activity Feed */}
