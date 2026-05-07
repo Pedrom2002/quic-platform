@@ -115,7 +115,7 @@ function TabBar({
   if (tabs.length < 2) return null
 
   return (
-    <div className="sticky top-0 z-20 bg-white border-b border-stone-100 shadow-sm">
+    <div className="relative z-10 border-b border-stone-900/10 backdrop-blur-md bg-white/20">
       <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 flex">
         {tabs.map(tab => (
           <button
@@ -124,7 +124,7 @@ function TabBar({
             className={`px-4 py-4 text-xs font-semibold tracking-widest uppercase transition-colors border-b-2 ${
               active === tab.key
                 ? 'border-stone-900 text-stone-900'
-                : 'border-transparent text-stone-400 hover:text-stone-600'
+                : 'border-transparent text-stone-500 hover:text-stone-700'
             }`}
           >
             {tab.label}
@@ -535,13 +535,6 @@ export function PortalClient({
         </div>
       )}
 
-      {/* Tab navigation */}
-      <TabBar
-        active={activeTab}
-        hasDocuments={eventFiles.length > 0}
-        onChange={setActiveTab}
-      />
-
       {/* Tab content */}
       <section className="relative">
         <video
@@ -553,6 +546,11 @@ export function PortalClient({
           src={contentVideo ?? FALLBACK_CONTENT_VIDEO}
         />
         <div className="absolute inset-0 bg-white/30 pointer-events-none" />
+        <TabBar
+          active={activeTab}
+          hasDocuments={eventFiles.length > 0}
+          onChange={setActiveTab}
+        />
         <section className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-16 md:py-24">
           {activeTab === 'progress' && (
             <ProgressTab
