@@ -6,9 +6,9 @@ export const EVENT_STATUS_LABEL: Record<string, string> = {
 }
 
 export const EVENT_STATUS_COLOR: Record<string, string> = {
-  planning: 'bg-yellow-50 text-yellow-700 border border-yellow-200',
-  active: 'bg-green-50 text-green-700 border border-green-200',
-  completed: 'bg-slate-100 text-slate-500 border border-slate-200',
+  planning: 'bg-slate-100 text-slate-600 border border-slate-200',
+  active: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  completed: 'bg-slate-100 text-slate-400 border border-slate-200',
   cancelled: 'bg-red-50 text-red-600 border border-red-200',
 }
 

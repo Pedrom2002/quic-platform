@@ -94,16 +94,11 @@ export default async function EventsPage() {
                 <div className="p-5 flex flex-col flex-1 gap-4">
                   {/* Top row */}
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center text-sm font-bold bg-slate-100 text-slate-700">
-                        {event.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-slate-900 truncate leading-tight">{event.name}</p>
-                        {et?.name && (
-                          <p className="text-xs text-slate-400 mt-0.5">{et.name}</p>
-                        )}
-                      </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-slate-900 truncate leading-tight">{event.name}</p>
+                      {et?.name && (
+                        <p className="text-xs text-slate-400 mt-0.5">{et.name}</p>
+                      )}
                     </div>
                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${EVENT_STATUS_COLOR[event.status] ?? ''}`}>
                       {EVENT_STATUS_LABEL[event.status]}
