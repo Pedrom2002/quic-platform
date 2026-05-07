@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Users, Bell, ExternalLink, MapPin, Pencil, UserCog, Paperclip } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Users, Bell, ExternalLink, MapPin, Pencil, UserCog, Paperclip, ListTree } from 'lucide-react'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { EVENT_STATUS_LABEL, EVENT_STATUS_COLOR, calcProgress } from '@/lib/event-status'
@@ -53,6 +53,12 @@ export default async function EventDetailPage({
     .from('event_files')
     .select('id', { count: 'exact', head: true })
     .eq('event_id', eventId)
+
+  const { count: taskCount } = await supabase
+    .from('event_tasks')
+    .select('id', { count: 'exact', head: true })
+    .eq('event_id', eventId)
+    .is('parent_id', null)
 
   const [{ data: checklistActivity }, { data: notifActivity }, { data: clientActivity }] = await Promise.all([
     supabase
@@ -196,7 +202,7 @@ export default async function EventDetailPage({
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-6 gap-4">
         <Link
           href={`/dashboard/events/${eventId}/checklist`}
           className="flex items-center gap-3 p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 hover:shadow transition-all"
@@ -259,6 +265,19 @@ export default async function EventDetailPage({
           <div>
             <p className="text-slate-800 font-medium">Ficheiros</p>
             <p className="text-slate-400 text-xs">{fileCount ?? 0} ficheiros</p>
+          </div>
+        </Link>
+
+        <Link
+          href={`/dashboard/events/${eventId}/tasks`}
+          className="flex items-center gap-3 p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 hover:shadow transition-all"
+        >
+          <div className="p-2 bg-indigo-50 rounded-lg">
+            <ListTree className="w-5 h-5 text-indigo-600" />
+          </div>
+          <div>
+            <p className="text-slate-800 font-medium">Tarefas</p>
+            <p className="text-slate-400 text-xs">{taskCount ?? 0} tarefas</p>
           </div>
         </Link>
       </div>
