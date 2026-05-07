@@ -50,31 +50,29 @@ export function NewGroupDialog({ open, onOpenChange, isAdmin, onCreated }: Props
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) reset(); onOpenChange(v) }}>
-      <DialogContent className="bg-zinc-900 border-zinc-800">
+      <DialogContent className="bg-white border-slate-200">
         <DialogHeader>
-          <DialogTitle className="text-zinc-100">Novo Grupo</DialogTitle>
+          <DialogTitle className="text-slate-900">Novo Grupo</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 mt-2">
           <div className="space-y-1.5">
-            <Label className="text-zinc-400">Nome *</Label>
+            <Label className="text-slate-700">Nome *</Label>
             <Input
               value={form.name}
               onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-              className="bg-zinc-800 border-zinc-700 text-zinc-100"
               placeholder="Ex: CTT, Fornecedores..."
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-zinc-400">Descrição</Label>
+            <Label className="text-slate-700">Descrição</Label>
             <Input
               value={form.description}
               onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-              className="bg-zinc-800 border-zinc-700 text-zinc-100"
               placeholder="Opcional"
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-zinc-400">Cor</Label>
+            <Label className="text-slate-700">Cor</Label>
             <div className="flex gap-2">
               {PRESET_COLORS.map(c => (
                 <button
@@ -94,19 +92,25 @@ export function NewGroupDialog({ open, onOpenChange, isAdmin, onCreated }: Props
           </div>
 
           {isAdmin && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <button
                 type="button"
                 onClick={() => setForm(p => ({ ...p, admin_only: !p.admin_only }))}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${form.admin_only ? 'bg-amber-500' : 'bg-zinc-700'}`}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${form.admin_only ? 'bg-amber-500' : 'bg-slate-300'}`}
               >
                 <span
                   className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${form.admin_only ? 'translate-x-[18px]' : 'translate-x-0.5'}`}
                 />
               </button>
-              <Label className="text-zinc-400 cursor-pointer" onClick={() => setForm(p => ({ ...p, admin_only: !p.admin_only }))}>
-                Visível apenas a admins
-              </Label>
+              <div>
+                <Label
+                  className="text-slate-700 cursor-pointer font-medium"
+                  onClick={() => setForm(p => ({ ...p, admin_only: !p.admin_only }))}
+                >
+                  Visível apenas a admins
+                </Label>
+                <p className="text-xs text-slate-500 mt-0.5">Members não verão este grupo nem os seus contactos</p>
+              </div>
             </div>
           )}
 
