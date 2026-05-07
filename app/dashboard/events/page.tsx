@@ -76,7 +76,6 @@ export default async function EventsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {events.map(event => {
             const et = event.event_types as EventTypeJoin | null
-            const color = et?.color ?? '#6366f1'
             const prog = progressMap[event.id] ?? { total: 0, completed: 0 }
             const percent = calcProgress(prog.completed, prog.total)
             const daysUntil = differenceInDays(new Date(event.start_datetime), now)
@@ -89,17 +88,14 @@ export default async function EventsPage() {
                 href={`/dashboard/events/${event.id}`}
                 className="group bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md hover:border-slate-300 transition-all overflow-hidden flex flex-col"
               >
-                {/* Color band */}
-                <div className="h-1 w-full" style={{ backgroundColor: color }} />
+                {/* Top accent bar — always dark */}
+                <div className="h-0.5 w-full bg-slate-900" />
 
                 <div className="p-5 flex flex-col flex-1 gap-4">
                   {/* Top row */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center text-sm font-bold"
-                        style={{ backgroundColor: color + '18', color }}
-                      >
+                      <div className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center text-sm font-bold bg-slate-100 text-slate-700">
                         {event.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
@@ -137,8 +133,8 @@ export default async function EventsPage() {
                       </div>
                       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full transition-all"
-                          style={{ width: `${percent}%`, backgroundColor: color }}
+                          className="h-full rounded-full bg-slate-800 transition-all"
+                          style={{ width: `${percent}%` }}
                         />
                       </div>
                     </div>
