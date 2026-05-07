@@ -27,7 +27,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         userEmail={user.email ?? ''}
         orgName={org?.name ?? 'Quic'}
       />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto h-full">
         {children}
       </main>
       <Toaster richColors theme="light" />
