@@ -178,3 +178,18 @@ export interface PortalEventData {
     percent: number
   }
 }
+
+export interface EventTeamAssignmentWithMember {
+  id: string
+  event_id: string
+  team_member_id: string
+  role_in_event: string | null
+  created_at: string
+  team_member: {
+    id: string
+    full_name: string
+    email: string
+    role: string
+    avatar_url: string | null
+  }
+}
