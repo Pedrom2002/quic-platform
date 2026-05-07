@@ -20,9 +20,10 @@ CREATE TABLE contact_group_members (
   UNIQUE (group_id, contact_id)
 );
 
-CREATE INDEX ON contact_groups (organization_id);
-CREATE INDEX ON contact_group_members (group_id);
-CREATE INDEX ON contact_group_members (contact_id);
+CREATE INDEX idx_contact_groups_org ON contact_groups (organization_id);
+CREATE INDEX idx_contact_group_members_group ON contact_group_members (group_id);
+CREATE INDEX idx_contact_group_members_contact ON contact_group_members (contact_id);
+CREATE INDEX idx_contact_group_members_contact_group ON contact_group_members (contact_id, group_id);
 
 CREATE TRIGGER contact_groups_updated_at BEFORE UPDATE ON contact_groups
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
