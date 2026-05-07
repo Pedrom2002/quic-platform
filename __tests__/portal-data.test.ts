@@ -9,9 +9,9 @@ describe('groupFilesByItem', () => {
 
   it('groups files by checklist_item_id', () => {
     const rows = [
-      { checklist_item_id: 'item-1', event_files: { id: 'f1', file_name: 'a.pdf', file_size: 100, mime_type: 'application/pdf', blob_url: 'https://x/a.pdf' } },
-      { checklist_item_id: 'item-1', event_files: { id: 'f2', file_name: 'b.pdf', file_size: 200, mime_type: 'application/pdf', blob_url: 'https://x/b.pdf' } },
-      { checklist_item_id: 'item-2', event_files: { id: 'f3', file_name: 'c.pdf', file_size: 300, mime_type: 'application/pdf', blob_url: 'https://x/c.pdf' } },
+      { checklist_item_id: 'item-1', event_file: { id: 'f1', file_name: 'a.pdf', file_size: 100, mime_type: 'application/pdf', blob_url: 'https://x/a.pdf' } },
+      { checklist_item_id: 'item-1', event_file: { id: 'f2', file_name: 'b.pdf', file_size: 200, mime_type: 'application/pdf', blob_url: 'https://x/b.pdf' } },
+      { checklist_item_id: 'item-2', event_file: { id: 'f3', file_name: 'c.pdf', file_size: 300, mime_type: 'application/pdf', blob_url: 'https://x/c.pdf' } },
     ]
     const result = groupFilesByItem(rows)
     expect(result.get('item-1')).toHaveLength(2)
@@ -21,7 +21,7 @@ describe('groupFilesByItem', () => {
 
   it('handles items with single file', () => {
     const rows = [
-      { checklist_item_id: 'item-a', event_files: { id: 'fx', file_name: 'x.jpg', file_size: null, mime_type: 'image/jpeg', blob_url: 'https://x/x.jpg' } },
+      { checklist_item_id: 'item-a', event_file: { id: 'fx', file_name: 'x.jpg', file_size: null, mime_type: 'image/jpeg', blob_url: 'https://x/x.jpg' } },
     ]
     const result = groupFilesByItem(rows)
     expect(result.get('item-a')).toHaveLength(1)

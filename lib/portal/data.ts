@@ -43,13 +43,13 @@ export interface PortalEventData {
 export function groupFilesByItem(
   rows: Array<{
     checklist_item_id: string
-    event_files: PortalItemFile
+    event_file: PortalItemFile
   }>
 ): Map<string, PortalItemFile[]> {
   const map = new Map<string, PortalItemFile[]>()
   for (const row of rows) {
     const existing = map.get(row.checklist_item_id) ?? []
-    existing.push(row.event_files)
+    existing.push(row.event_file)
     map.set(row.checklist_item_id, existing)
   }
   return map
@@ -91,27 +91,29 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
 
   const itemIds = (itemsRaw ?? []).map(i => i.id)
 
-  const { data: itemFilesRaw } = itemIds.length > 0
+  const { data: itemFilesRaw, error: itemFilesError } = itemIds.length > 0
     ? await supabase
         .from('checklist_item_files')
-        .select('checklist_item_id, event_files(id, file_name, file_size, mime_type, blob_url)')
+        .select('checklist_item_id, event_file:event_files!event_file_id(id, file_name, file_size, mime_type, blob_url)')
         .in('checklist_item_id', itemIds)
-    : { data: [] }
+    : { data: [], error: null }
+  if (itemFilesError) console.error('[getPortalData] itemFiles query failed', itemFilesError)
 
-  const { data: allEventFilesRaw } = await supabase
+  const { data: allEventFilesRaw, error: eventFilesError } = await supabase
     .from('event_files')
     .select('id, file_name, file_size, mime_type, blob_url')
     .eq('event_id', payload.eventId)
     .order('created_at', { ascending: true })
+  if (eventFilesError) console.error('[getPortalData] eventFiles query failed', eventFilesError)
 
   const itemFilesRows = (itemFilesRaw ?? []) as unknown as Array<{
     checklist_item_id: string
-    event_files: PortalItemFile
+    event_file: PortalItemFile
   }>
 
   const filesByItem = groupFilesByItem(itemFilesRows)
 
-  const linkedFileIds = new Set(itemFilesRows.map(r => r.event_files.id))
+  const linkedFileIds = new Set(itemFilesRows.map(r => r.event_file.id))
   const allEventFiles = (allEventFilesRaw ?? []) as PortalItemFile[]
   const eventFiles = filterEventLevelFiles(allEventFiles, linkedFileIds)
 
