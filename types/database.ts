@@ -568,6 +568,35 @@ export type Database = {
         }
         Relationships: []
       }
+      event_notes: {
+        Row: {
+          id: string
+          event_id: string
+          organization_id: string
+          author_id: string | null
+          content: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          organization_id: string
+          author_id?: string | null
+          content: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          organization_id?: string
+          author_id?: string | null
+          content?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -590,3 +619,4 @@ export type EventChecklistItem = Database['public']['Tables']['event_checklist_i
 export type NotificationJob = Database['public']['Tables']['notification_jobs']['Row']
 export type NotificationLogEntry = Database['public']['Tables']['notification_log']['Row']
 export type WebhookEvent = Database['public']['Tables']['webhook_events']['Row']
+export type EventNote = Database['public']['Tables']['event_notes']['Row']

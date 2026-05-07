@@ -193,3 +193,14 @@ export interface EventTeamAssignmentWithMember {
     avatar_url: string | null
   }
 }
+
+export interface EventNoteWithAuthor {
+  id: string
+  event_id: string
+  organization_id: string
+  author_id: string | null
+  content: string
+  created_at: string
+  updated_at: string
+  author: { id: string; full_name: string; avatar_url: string | null } | null
+}
