@@ -21,7 +21,7 @@ CREATE INDEX idx_et_org        ON event_tasks(organization_id);
 CREATE INDEX idx_et_parent     ON event_tasks(parent_id);
 CREATE INDEX idx_et_event_par  ON event_tasks(event_id, parent_id);
 ALTER TABLE event_tasks ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "members_select_et" ON event_tasks FOR SELECT USING (organization_id = get_user_org_id());
+CREATE POLICY "members_read_et" ON event_tasks FOR SELECT USING (organization_id = get_user_org_id());
 CREATE POLICY "members_insert_et" ON event_tasks FOR INSERT WITH CHECK (organization_id = get_user_org_id());
 CREATE POLICY "members_update_et" ON event_tasks FOR UPDATE USING (organization_id = get_user_org_id());
 CREATE POLICY "members_delete_et" ON event_tasks FOR DELETE USING (organization_id = get_user_org_id());
@@ -42,7 +42,7 @@ CREATE TRIGGER event_task_notes_updated_at BEFORE UPDATE ON event_task_notes
 CREATE INDEX idx_etn_task ON event_task_notes(task_id);
 CREATE INDEX idx_etn_org  ON event_task_notes(organization_id);
 ALTER TABLE event_task_notes ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "members_select_etn" ON event_task_notes FOR SELECT USING (organization_id = get_user_org_id());
+CREATE POLICY "members_read_etn" ON event_task_notes FOR SELECT USING (organization_id = get_user_org_id());
 CREATE POLICY "members_insert_etn" ON event_task_notes FOR INSERT WITH CHECK (organization_id = get_user_org_id());
 CREATE POLICY "members_delete_etn" ON event_task_notes FOR DELETE USING (
   organization_id = get_user_org_id()
@@ -66,6 +66,6 @@ CREATE TABLE event_task_files (
 CREATE INDEX idx_etf_task ON event_task_files(task_id);
 CREATE INDEX idx_etf_org  ON event_task_files(organization_id);
 ALTER TABLE event_task_files ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "members_select_etf" ON event_task_files FOR SELECT USING (organization_id = get_user_org_id());
+CREATE POLICY "members_read_etf" ON event_task_files FOR SELECT USING (organization_id = get_user_org_id());
 CREATE POLICY "members_insert_etf" ON event_task_files FOR INSERT WITH CHECK (organization_id = get_user_org_id());
 CREATE POLICY "members_delete_etf" ON event_task_files FOR DELETE USING (organization_id = get_user_org_id());
