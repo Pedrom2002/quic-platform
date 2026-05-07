@@ -1,19 +1,22 @@
 'use client'
 
 import { useState } from 'react'
-import { Sparkles, ShieldAlert } from 'lucide-react'
+import { Sparkles, ShieldAlert, MessageSquare } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 const EventSummaryModal = dynamic(() => import('./EventSummaryModal'))
 const RiskAnalysisModal = dynamic(() => import('./RiskAnalysisModal'))
+const ClientUpdateModal = dynamic(() => import('./ClientUpdateModal'))
 
 interface Props {
   eventId: string
+  clientCount: number
 }
 
-export default function AIButtons({ eventId }: Props) {
+export default function AIButtons({ eventId, clientCount }: Props) {
   const [showSummary, setShowSummary] = useState(false)
   const [showRisk, setShowRisk] = useState(false)
+  const [showUpdate, setShowUpdate] = useState(false)
 
   return (
     <>
@@ -30,6 +33,12 @@ export default function AIButtons({ eventId }: Props) {
         >
           <ShieldAlert className="w-4 h-4" /> Analisar Risco
         </button>
+        <button
+          onClick={() => setShowUpdate(true)}
+          className="flex items-center gap-1.5 text-sm font-medium px-3 py-2 border border-green-200 text-green-600 rounded-lg hover:bg-green-50 transition-colors"
+        >
+          <MessageSquare className="w-4 h-4" /> Atualizar Cliente
+        </button>
       </div>
 
       {showSummary && (
@@ -37,6 +46,13 @@ export default function AIButtons({ eventId }: Props) {
       )}
       {showRisk && (
         <RiskAnalysisModal eventId={eventId} onClose={() => setShowRisk(false)} />
+      )}
+      {showUpdate && (
+        <ClientUpdateModal
+          eventId={eventId}
+          clientCount={clientCount}
+          onClose={() => setShowUpdate(false)}
+        />
       )}
     </>
   )

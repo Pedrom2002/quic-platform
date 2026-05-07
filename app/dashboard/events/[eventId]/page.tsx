@@ -283,7 +283,7 @@ export default async function EventDetailPage({
         </Link>
       </div>
 
-      <AIButtons eventId={eventId} />
+      <AIButtons eventId={eventId} clientCount={clientCount ?? 0} />
 
       {/* Internal Notes */}
       <div className="mt-6">
