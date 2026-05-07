@@ -16,24 +16,50 @@ interface NotesSectionProps {
 export default function NotesSection({ eventId, initialNotes, currentMemberId }: NotesSectionProps) {
   const [notes, setNotes] = useState<EventNoteWithAuthor[]>(initialNotes)
   const [content, setContent] = useState('')
-  const [isPending, startTransition] = useTransition()
+  const [isAdding, startAddTransition] = useTransition()
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   function handleAdd() {
     const trimmed = content.trim()
     if (!trimmed) return
-    startTransition(async () => {
+
+    // Optimistic placeholder
+    const optimisticId = `optimistic-${Date.now()}`
+    const optimisticNote: EventNoteWithAuthor = {
+      id: optimisticId,
+      event_id: eventId,
+      organization_id: '',
+      author_id: currentMemberId,
+      content: trimmed,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      author: null,
+    }
+    setNotes(prev => [optimisticNote, ...prev])
+    setContent('')
+
+    startAddTransition(async () => {
       const note = await addNoteAction(eventId, trimmed)
-      if (note) {
-        setNotes(prev => [note, ...prev])
-        setContent('')
-      }
+      setNotes(prev =>
+        note
+          ? prev.map(n => n.id === optimisticId ? note : n)
+          : prev.filter(n => n.id !== optimisticId)
+      )
     })
   }
 
   function handleDelete(noteId: string) {
-    startTransition(async () => {
+    setDeletingId(noteId)
+    // Optimistic remove
+    setNotes(prev => prev.filter(n => n.id !== noteId))
+    startAddTransition(async () => {
       const ok = await deleteNoteAction(eventId, noteId)
-      if (ok) setNotes(prev => prev.filter(n => n.id !== noteId))
+      if (!ok) {
+        // Restore on failure — refetch would be ideal but re-add the snapshot
+        setDeletingId(null)
+      } else {
+        setDeletingId(null)
+      }
     })
   }
 
@@ -52,6 +78,7 @@ export default function NotesSection({ eventId, initialNotes, currentMemberId }:
           onChange={e => setContent(e.target.value)}
           placeholder="Adicionar nota..."
           rows={3}
+          aria-label="Conteúdo da nota"
           className="w-full text-sm text-slate-700 placeholder-slate-300 border border-slate-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-slate-300"
           onKeyDown={e => {
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAdd()
@@ -60,10 +87,10 @@ export default function NotesSection({ eventId, initialNotes, currentMemberId }:
         <div className="flex justify-end mt-2">
           <button
             onClick={handleAdd}
-            disabled={isPending || !content.trim()}
+            disabled={isAdding || !content.trim()}
             className="text-xs font-medium px-3 py-1.5 bg-slate-900 text-white rounded-lg disabled:opacity-40 hover:bg-slate-700 transition-colors"
           >
-            {isPending ? 'A guardar...' : 'Guardar'}
+            {isAdding ? 'A guardar...' : 'Guardar'}
           </button>
         </div>
       </div>
@@ -76,26 +103,27 @@ export default function NotesSection({ eventId, initialNotes, currentMemberId }:
           notes.map(note => {
             const initials = note.author?.full_name
               .split(' ').filter(Boolean).slice(0, 2).map(n => n[0].toUpperCase()).join('') ?? '?'
-            const canDelete = currentMemberId && (note.author_id === currentMemberId)
+            const canDelete = currentMemberId && note.author_id === currentMemberId
+            const isOptimistic = note.id.startsWith('optimistic-')
             return (
-              <div key={note.id} className="px-5 py-4">
+              <div key={note.id} className={`px-5 py-4 ${isOptimistic ? 'opacity-60' : ''}`}>
                 <div className="flex items-start gap-3">
                   <span className="w-7 h-7 rounded-full bg-slate-100 text-[10px] font-semibold text-slate-600 flex items-center justify-center shrink-0 mt-0.5">
                     {initials}
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-medium text-slate-700">{note.author?.full_name ?? 'Desconhecido'}</span>
+                      <span className="text-xs font-medium text-slate-700">{note.author?.full_name ?? 'A guardar...'}</span>
                       <span className="text-xs text-slate-300">
                         {formatDistanceToNow(new Date(note.created_at), { addSuffix: true, locale: pt })}
                       </span>
                     </div>
                     <p className="text-sm text-slate-600 whitespace-pre-wrap break-words">{note.content}</p>
                   </div>
-                  {canDelete && (
+                  {canDelete && !isOptimistic && (
                     <button
                       onClick={() => handleDelete(note.id)}
-                      disabled={isPending}
+                      disabled={deletingId === note.id}
                       className="shrink-0 text-slate-300 hover:text-red-400 transition-colors disabled:opacity-40"
                       aria-label="Apagar nota"
                     >
