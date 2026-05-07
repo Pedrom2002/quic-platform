@@ -26,10 +26,10 @@ export function GroupsPanel({
   return (
     <div className="w-56 shrink-0 bg-zinc-950 border-r border-zinc-800 flex flex-col">
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
-        <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Grupos</span>
+        <span className="text-xs font-semibold text-zinc-200 uppercase tracking-wider">Grupos</span>
         <button
           onClick={onNewGroup}
-          className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+          className="w-6 h-6 flex items-center justify-center rounded-md text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
           title="Novo grupo"
         >
           <Plus className="w-3.5 h-3.5" />
@@ -55,7 +55,7 @@ export function GroupsPanel({
 
         {groups.length > 0 && (
           <div className="pt-2">
-            <p className="text-[10px] text-zinc-600 uppercase tracking-wider px-2 pb-1">Grupos</p>
+            <p className="text-[10px] text-zinc-400 uppercase tracking-wider px-2 pb-1">Grupos</p>
             {groups.map(g => (
               <GroupItem
                 key={g.id}
@@ -91,14 +91,14 @@ function GroupItem({ label, count, active, onClick, icon, color, muted, adminOnl
       className={cn(
         'w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors text-left',
         active
-          ? 'bg-zinc-800 text-zinc-100 font-medium'
+          ? 'bg-zinc-800 text-white font-medium'
           : muted
-            ? 'text-zinc-600 hover:bg-zinc-900 hover:text-zinc-400'
-            : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
+            ? 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
+            : 'text-zinc-200 hover:bg-zinc-900 hover:text-white'
       )}
     >
       {icon ? (
-        <span className="text-zinc-500">{icon}</span>
+        <span className="text-zinc-300">{icon}</span>
       ) : color ? (
         <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
       ) : null}
@@ -114,7 +114,7 @@ function GroupItem({ label, count, active, onClick, icon, color, muted, adminOnl
       {count !== undefined && (
         <span className={cn(
           'text-xs px-1.5 py-0.5 rounded font-medium',
-          active ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-900 text-zinc-600'
+          active ? 'bg-zinc-700 text-zinc-200' : 'bg-zinc-900 text-zinc-400'
         )}>
           {count}
         </span>
