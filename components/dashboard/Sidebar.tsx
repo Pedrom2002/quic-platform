@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { Calendar, Users, LayoutDashboard, FileText, Settings, LogOut } from 'lucide-react'
+import { Calendar, Users, LayoutDashboard, FileText, Settings, LogOut, Users2, FolderOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 
@@ -11,7 +11,9 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/dashboard/events', label: 'Eventos', icon: Calendar },
   { href: '/dashboard/clients', label: 'Clientes', icon: Users },
+  { href: '/dashboard/team', label: 'Equipa', icon: Users2 },
   { href: '/dashboard/templates', label: 'Templates', icon: FileText },
+  { href: '/dashboard/files', label: 'Ficheiros', icon: FolderOpen },
 ]
 
 interface SidebarProps {
@@ -42,7 +44,7 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
     <aside className="w-60 min-h-screen bg-zinc-950 border-r border-zinc-800 flex flex-col">
       {/* Logo / Org */}
       <div className="h-16 flex items-center gap-3 px-4 border-b border-zinc-800 shrink-0">
-        <Image src="/logo-branco.png" alt="Quic" width={72} height={28} className="shrink-0" />
+        <Image src="/Design sem nome(1).png" alt="Quic" width={100} height={40} className="shrink-0" />
         <p className="text-zinc-500 text-xs truncate">{orgName}</p>
       </div>
 
