@@ -55,6 +55,7 @@ export default async function DashboardPage() {
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Bom dia' : hour < 19 ? 'Boa tarde' : 'Boa noite'
+  const activeCount = upcomingEvents?.filter(e => e.status === 'active').length ?? 0
 
   return (
     <div className="min-h-screen" style={{ background: '#f5f5f5' }}>
@@ -87,14 +88,14 @@ export default async function DashboardPage() {
               {firstName}
             </h1>
             <p className="text-sm text-white/40">
-              {format(new Date(), "d 'de' MMMM", { locale: pt })} · {upcomingEvents?.filter(e => e.status === 'active').length ?? 0} eventos ativos
+              {format(new Date(), "d 'de' MMMM", { locale: pt })} · {activeCount} eventos ativos
             </p>
           </div>
 
           {/* KPI strip */}
           <div className="flex border-t border-white/10">
             <div className="flex-1 py-5 pr-6 border-r border-white/10">
-              <p className="text-2xl font-bold text-white">{upcomingEvents?.filter(e => e.status === 'active').length ?? 0}</p>
+              <p className="text-2xl font-bold text-white">{activeCount}</p>
               <p className="text-[10px] uppercase tracking-widest text-white/40 mt-1">Eventos ativos</p>
             </div>
             <div className="flex-1 py-5 px-6 border-r border-white/10">
@@ -111,7 +112,7 @@ export default async function DashboardPage() {
       </header>
 
       {/* Body */}
-      <main className="max-w-5xl mx-auto px-8 py-8">
+      <div className="max-w-5xl mx-auto px-8 py-8">
         <div className="grid grid-cols-5 gap-6">
 
           {/* Events col 3 */}
@@ -241,7 +242,7 @@ export default async function DashboardPage() {
           </div>
 
         </div>
-      </main>
+      </div>
     </div>
   )
 }
