@@ -146,7 +146,7 @@ function TabBar({
   if (tabs.length < 2) return null
 
   return (
-    <div className="relative z-10 border-b border-stone-900/10 backdrop-blur-md bg-white/20">
+    <div className="relative z-10 border-b border-white/10 backdrop-blur-md bg-white/5">
       <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 flex">
         {tabs.map(tab => (
           <button
@@ -154,8 +154,8 @@ function TabBar({
             onClick={() => onChange(tab.key)}
             className={`px-4 py-4 text-xs font-semibold tracking-widest uppercase transition-colors border-b-2 ${
               active === tab.key
-                ? 'border-stone-900 text-stone-900'
-                : 'border-transparent text-stone-500 hover:text-stone-700'
+                ? 'border-white text-white'
+                : 'border-transparent text-white/40 hover:text-white/70'
             }`}
           >
             {tab.label}
@@ -169,11 +169,11 @@ function TabBar({
 function DocumentsTab({ files }: { files: PortalItemFile[] }) {
   return (
     <div className="anim-tab-fade">
-      <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-        <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">
+      <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-white/20">
+        <h2 className="text-xs font-medium tracking-widest uppercase text-white/60">
           Documentos do Evento
         </h2>
-        <span className="text-xs text-stone-400 tabular-nums">
+        <span className="text-xs text-white/40 tabular-nums">
           {String(files.length).padStart(2, '0')}
         </span>
       </div>
@@ -213,12 +213,12 @@ function ProgressTab({
   return (
     <div className="anim-tab-fade">
       {completedItems.length > 0 && (
-        <div className="mb-16 sm:mb-20 md:mb-24 bg-white/85 backdrop-blur-md rounded-2xl px-6 py-8">
-          <div className="flex items-baseline justify-between mb-8 sm:mb-10 pb-4 border-b border-stone-900">
-            <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">
+        <div className="mb-16 sm:mb-20 md:mb-24 bg-white/5 backdrop-blur-md rounded-2xl px-6 py-8 border border-white/10">
+          <div className="flex items-baseline justify-between mb-8 sm:mb-10 pb-4 border-b border-white/20">
+            <h2 className="text-xs font-medium tracking-widest uppercase text-white/60">
               Concluído
             </h2>
-            <span className="text-xs text-stone-400 tabular-nums">
+            <span className="text-xs text-white/40 tabular-nums">
               {String(completedItems.length).padStart(2, '0')}
             </span>
           </div>
@@ -231,7 +231,7 @@ function ProgressTab({
                 <li
                   key={item.id}
                   onClick={hasContent ? () => toggle(item.id) : undefined}
-                  className={`pl-4 border-l-2 border-b border-stone-100 last:border-b-0 mb-0 ${
+                  className={`pl-4 border-l-2 border-b border-white/10 last:border-b-0 mb-0 ${
                     isNew
                       ? 'anim-item-enter anim-pulse-gold border-l-amber-400'
                       : 'border-l-amber-400/50 anim-fade-in'
@@ -239,14 +239,14 @@ function ProgressTab({
                   style={isNew ? undefined : { animationDelay: `${300 + idx * 40}ms` }}
                 >
                   <div className="flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6">
-                    <span className="text-xs text-amber-600/70 tabular-nums tracking-wider font-medium pt-0.5">
+                    <span className="text-xs text-amber-400/70 tabular-nums tracking-wider font-medium pt-0.5">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
-                    <p className="text-stone-900 text-base sm:text-lg font-medium tracking-tight">
+                    <p className="text-white text-base sm:text-lg font-medium tracking-tight">
                       {item.client_label ?? item.title}
                     </p>
                     {hasContent ? (
-                      <span className={`text-stone-400 text-xs self-start sm:self-center transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
+                      <span className={`text-white/40 text-xs self-start sm:self-center transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
                         ▶
                       </span>
                     ) : null}
@@ -254,7 +254,7 @@ function ProgressTab({
                   {isExpanded && (
                     <div className="pb-5 sm:pl-[calc(2rem+1.5rem)]">
                       {item.completion_note && (
-                        <p className="text-stone-500 text-sm italic leading-relaxed mt-2">
+                        <p className="text-white/50 text-sm italic leading-relaxed mt-2">
                           {item.completion_note}
                         </p>
                       )}
@@ -266,7 +266,7 @@ function ProgressTab({
                         </div>
                       )}
                       {item.completed_at && (
-                        <p className="text-xs text-stone-400 mt-2">
+                        <p className="text-xs text-white/30 mt-2">
                           Concluído a {format(new Date(item.completed_at), "d MMM · HH'h'mm", { locale: pt })}
                         </p>
                       )}
@@ -280,12 +280,12 @@ function ProgressTab({
       )}
 
       {pendingItems.length > 0 && (
-        <div className="bg-white/85 backdrop-blur-md rounded-2xl px-6 py-8">
-          <div className="flex items-baseline justify-between mb-8 sm:mb-10 pb-4 border-b border-stone-200">
-            <h2 className="text-xs font-medium tracking-widest uppercase text-stone-500">
+        <div className="bg-white/5 backdrop-blur-md rounded-2xl px-6 py-8 border border-white/10">
+          <div className="flex items-baseline justify-between mb-8 sm:mb-10 pb-4 border-b border-white/10">
+            <h2 className="text-xs font-medium tracking-widest uppercase text-white/40">
               Em Preparação
             </h2>
-            <span className="text-xs text-stone-500 tabular-nums">
+            <span className="text-xs text-white/30 tabular-nums">
               {String(pendingItems.length).padStart(2, '0')}
             </span>
           </div>
@@ -297,24 +297,24 @@ function ProgressTab({
                 <li
                   key={item.id}
                   onClick={hasFiles ? () => toggle(item.id) : undefined}
-                  className={`border-b border-stone-100 last:border-0 anim-fade-in ${
+                  className={`border-b border-white/10 last:border-0 anim-fade-in ${
                     animatingOut.has(item.id) ? 'anim-item-exit' : ''
                   } ${hasFiles ? 'cursor-pointer' : ''}`}
                   style={{ animationDelay: `${300 + idx * 40}ms` }}
                 >
                   <div className="flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6">
-                    <span className="text-xs text-stone-400 tabular-nums tracking-wider font-medium pt-0.5">
+                    <span className="text-xs text-white/30 tabular-nums tracking-wider font-medium pt-0.5">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
-                    <p className="text-stone-500 text-base sm:text-lg tracking-tight">
+                    <p className="text-white/50 text-base sm:text-lg tracking-tight">
                       {item.client_label ?? item.title}
                     </p>
                     {hasFiles ? (
-                      <span className={`text-stone-400 text-xs self-start sm:self-center transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
+                      <span className={`text-white/30 text-xs self-start sm:self-center transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
                         ▶
                       </span>
                     ) : (item.status === 'pending' || item.status === 'in_progress') && item.due_at ? (
-                      <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full whitespace-nowrap self-start">
+                      <span className="text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full whitespace-nowrap self-start">
                         Previsto {format(new Date(item.due_at), 'd MMM', { locale: pt })}
                       </span>
                     ) : null}
@@ -569,18 +569,18 @@ export function PortalClient({
       )}
 
       {/* Tab content */}
-      <section className="relative">
+      <section className="relative" style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
         {contentVideo !== null && (
           <video
             autoPlay
             muted
             loop
             playsInline
-            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
             src={contentVideo ?? FALLBACK_CONTENT_VIDEO}
           />
         )}
-        <div className="absolute inset-0 bg-white/30 pointer-events-none" />
+        <div className="absolute inset-0 pointer-events-none" />
         <TabBar
           active={activeTab}
           hasDocuments={eventFiles.length > 0}
