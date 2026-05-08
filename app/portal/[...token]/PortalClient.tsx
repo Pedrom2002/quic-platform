@@ -316,11 +316,11 @@ function ProgressTab({
                   style={{ animationDelay: `${300 + idx * 40}ms` }}
                 >
                   <div className="grid grid-cols-[64px_1fr_auto] items-start gap-6 py-8">
-                    <span className="text-5xl sm:text-6xl font-bold leading-none select-none block text-right" style={{ fontFamily: 'var(--font-playfair), Georgia, serif', color: 'rgba(255,255,255,0.04)' }}>
+                    <span className="text-5xl sm:text-6xl font-bold leading-none select-none block text-right" style={{ fontFamily: 'var(--font-playfair), Georgia, serif', color: 'rgba(255,255,255,0.12)' }}>
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <div className="pt-2">
-                      <p className="text-white/35 text-base sm:text-lg tracking-tight leading-snug mb-2">
+                      <p className="text-white/55 text-base sm:text-lg tracking-tight leading-snug mb-2">
                         {item.client_label ?? item.title}
                       </p>
                       {(item.status === 'pending' || item.status === 'in_progress') && item.due_at && (
