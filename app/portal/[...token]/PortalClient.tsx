@@ -491,14 +491,16 @@ export function PortalClient({
       {/* Hero */}
       <section className="text-white relative overflow-hidden flex flex-col justify-between" style={{ height: '100dvh', background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
         {/* Background video */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.07] pointer-events-none"
-          src={heroVideo ?? FALLBACK_HERO_VIDEO}
-        />
+        {heroVideo && (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-[0.07] pointer-events-none"
+            src={heroVideo}
+          />
+        )}
         {/* Top bar — full-width border */}
         <div className="relative z-10 border-b border-white/10 anim-fade-up" style={{ animationDelay: '100ms' }}>
           <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-4 sm:py-5 flex items-center justify-between">
@@ -578,14 +580,16 @@ export function PortalClient({
 
       {/* Tab content */}
       <section className="relative" style={{ background: 'linear-gradient(145deg, #1c1c1c 0%, #242424 50%, #181818 100%)' }}>
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none"
-          src={contentVideo ?? FALLBACK_CONTENT_VIDEO}
-        />
+        {contentVideo && (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none"
+            src={contentVideo}
+          />
+        )}
         <div className="absolute inset-0 pointer-events-none" />
         <TabBar
           active={activeTab}
