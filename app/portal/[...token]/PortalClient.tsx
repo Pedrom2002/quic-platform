@@ -582,7 +582,7 @@ export function PortalClient({
       <div className="h-24 -mt-24 relative z-10 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, #111111)' }} />
 
       {/* Tab content */}
-      <section className="relative" style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
+      <section className="relative" style={{ background: 'linear-gradient(145deg, #1c1c1c 0%, #242424 50%, #181818 100%)' }}>
         {contentVideo !== null && (
           <video
             autoPlay
@@ -615,7 +615,7 @@ export function PortalClient({
       </section>
 
       {/* Footer */}
-      <footer className="text-white" style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
+      <footer className="text-white" style={{ background: 'linear-gradient(145deg, #1c1c1c 0%, #242424 50%, #181818 100%)' }}>
         <div className="max-w-5xl mx-auto px-6 md:px-10 py-8 md:py-10">
           <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
             <div className="flex items-center gap-4">
