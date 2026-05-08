@@ -236,35 +236,39 @@ function ProgressTab({
                   } ${hasContent ? 'cursor-pointer' : ''}`}
                   style={isNew ? undefined : { animationDelay: `${300 + idx * 40}ms` }}
                 >
-                  <div className="flex items-center gap-4 py-5">
-                    <span className="text-[10px] font-sans text-white/30 tabular-nums w-5 text-right shrink-0">
+                  <div className="flex gap-4 py-5">
+                    <span className="text-[10px] font-sans text-white/15 tabular-nums w-5 text-right shrink-0 flex items-center justify-end">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
-                    <p className="flex-1 text-white/90 text-sm font-medium tracking-tight leading-snug">
-                      {item.client_label ?? item.title}
-                    </p>
-                    {item.completed_at && (
-                      <span className="text-[10px] font-sans tracking-widest uppercase text-amber-400/70 shrink-0">
-                        {format(new Date(item.completed_at), "d MMM", { locale: pt })}
-                      </span>
-                    )}
-                    <span className="w-4 h-4 rounded-full border border-amber-400/50 flex items-center justify-center text-[7px] text-amber-400/80 shrink-0">✓</span>
-                    {hasContent && (
-                      <span className={`text-white/20 text-xs transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
-                    )}
-                  </div>
-                  {isExpanded && (item.completion_note || item.files.length > 0) && (
-                    <div className="pb-5 pl-9 space-y-3">
-                      {item.completion_note && (
-                        <p className="text-white/35 text-sm italic leading-relaxed">{item.completion_note}</p>
-                      )}
-                      {item.files.length > 0 && (
-                        <div className="space-y-2">
-                          {item.files.map(file => <FileRow key={file.id} file={file} />)}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3">
+                        <p className="flex-1 text-white/90 text-sm font-medium tracking-tight leading-snug">
+                          {item.client_label ?? item.title}
+                        </p>
+                        {item.completed_at && (
+                          <span className="text-[10px] font-sans tracking-widest uppercase text-amber-400/70 shrink-0">
+                            {format(new Date(item.completed_at), "d MMM", { locale: pt })}
+                          </span>
+                        )}
+                        <span className="w-4 h-4 rounded-full border border-amber-400/50 flex items-center justify-center text-[7px] text-amber-400/80 shrink-0">✓</span>
+                        {hasContent && (
+                          <span className={`text-white/20 text-xs transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
+                        )}
+                      </div>
+                      {isExpanded && (item.completion_note || item.files.length > 0) && (
+                        <div className="pt-3 pb-2 space-y-3">
+                          {item.completion_note && (
+                            <p className="text-white/35 text-sm italic leading-relaxed">{item.completion_note}</p>
+                          )}
+                          {item.files.length > 0 && (
+                            <div className="space-y-2">
+                              {item.files.map(file => <FileRow key={file.id} file={file} />)}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
+                  </div>
                 </li>
               )
             })}
@@ -296,7 +300,7 @@ function ProgressTab({
                   style={{ animationDelay: `${300 + idx * 40}ms` }}
                 >
                   <div className="flex items-center gap-4 py-4">
-                    <span className="text-[10px] font-sans text-white/20 tabular-nums w-5 text-right shrink-0">
+                    <span className="text-[10px] font-sans text-white/15 tabular-nums w-5 text-right shrink-0">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <p className="flex-1 text-white/55 text-sm tracking-tight leading-snug">
