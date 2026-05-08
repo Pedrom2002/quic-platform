@@ -579,7 +579,7 @@ export function PortalClient({
             muted
             loop
             playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
+            className="absolute inset-0 w-full h-full object-cover opacity-100 pointer-events-none"
             src={contentVideo ?? FALLBACK_CONTENT_VIDEO}
           />
         )}
