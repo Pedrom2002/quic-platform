@@ -237,7 +237,7 @@ function ProgressTab({
                   style={isNew ? undefined : { animationDelay: `${300 + idx * 40}ms` }}
                 >
                   <div className="flex gap-4 py-5">
-                    <span className="text-[10px] font-sans text-white/30 tabular-nums w-5 text-right shrink-0 self-start pt-0.5">
+                    <span className="text-xs font-sans text-white/30 tabular-nums w-6 text-right shrink-0 self-start pt-0.5">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <div className="flex-1 min-w-0">
@@ -313,7 +313,7 @@ function ProgressTab({
                   style={{ animationDelay: `${300 + idx * 40}ms` }}
                 >
                   <div className="flex items-center gap-4 py-4">
-                    <span className="text-[10px] font-sans text-white/30 tabular-nums w-5 text-right shrink-0">
+                    <span className="text-xs font-sans text-white/30 tabular-nums w-6 text-right shrink-0">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <p className="flex-1 text-white/55 text-sm tracking-tight leading-snug">
