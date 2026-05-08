@@ -525,8 +525,11 @@ export function PortalClient({
           </div>
         </div>
 
+        {/* Bottom fade overlay */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none z-10" style={{ background: 'linear-gradient(to bottom, transparent, #0d0d0d)' }} />
+
         {/* Progress bar */}
-        <div className="relative z-10 border-t border-white/10 anim-fade-up" style={{ animationDelay: '1100ms' }}>
+        <div className="relative z-20 border-t border-white/10 anim-fade-up" style={{ animationDelay: '1100ms' }}>
           <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-6 sm:py-8">
             <div className="flex items-baseline justify-between mb-3">
               <span className="text-xs font-medium tracking-widest uppercase text-white/50">
