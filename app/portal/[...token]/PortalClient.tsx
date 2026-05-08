@@ -314,7 +314,7 @@ function ProgressTab({
                         ▶
                       </span>
                     ) : (item.status === 'pending' || item.status === 'in_progress') && item.due_at ? (
-                      <span className="text-xs text-stone-400 border border-stone-200 px-2 py-0.5 rounded-full whitespace-nowrap self-start tabular-nums">
+                      <span className="text-xs text-white/40 border border-white/20 px-2 py-0.5 rounded-full whitespace-nowrap self-start tabular-nums">
                         {format(new Date(item.due_at), 'd MMM', { locale: pt })}
                       </span>
                     ) : null}
