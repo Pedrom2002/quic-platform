@@ -77,8 +77,13 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
   if (!eventRaw) return null
 
   const eventSettings = (eventRaw.settings ?? {}) as Record<string, unknown>
-  const heroVideo = typeof eventSettings.portal_hero_video === 'string' ? eventSettings.portal_hero_video : null
-  const contentVideo = typeof eventSettings.portal_content_video === 'string' ? eventSettings.portal_content_video : null
+  const normalizeVideo = (v: unknown): string | null => {
+    if (typeof v !== 'string' || !v) return null
+    if (v.startsWith('/')) return null
+    return v
+  }
+  const heroVideo = normalizeVideo(eventSettings.portal_hero_video)
+  const contentVideo = normalizeVideo(eventSettings.portal_content_video)
 
   const event = eventRaw as PortalEventData['event']
 

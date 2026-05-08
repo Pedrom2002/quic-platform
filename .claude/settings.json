@@ -13,7 +13,13 @@
       "Bash(grep -r \"PORTAL_JWT_SECRET\" . --include=\"*.env\" --include=\"*.local\" --include=\"*.env.*\" -l)",
       "Bash(ls -la .env*)",
       "Bash(node -e \"console.log\\(require\\('crypto'\\).randomBytes\\(32\\).toString\\('hex'\\)\\)\")",
-      "Bash(node scripts/seed-demo.mjs aa42efc0a6a1546de0355ae05b649b64c6b7effb5160f436d15401bf2bfa38ac)"
+      "Bash(node scripts/seed-demo.mjs aa42efc0a6a1546de0355ae05b649b64c6b7effb5160f436d15401bf2bfa38ac)",
+      "Bash(node -e \"const http=require\\('http'\\),fs=require\\('fs'\\);http.createServer\\(\\(req,res\\)=>{res.writeHead\\(200,{'Content-Type':'text/html'}\\);res.end\\(fs.readFileSync\\('mockup-checklist.html'\\)\\)}\\).listen\\(9191,\\(\\)=>console.log\\('ready'\\)\\)\")",
+      "Bash(gh deployment *)",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(p.imports,null,2\\)\\)\")",
+      "Bash(xargs -I{} gh api repos/Pedrom2002/quic-platform/deployments/{}/statuses --jq '.[0] | {state, description}')",
+      "PowerShell(Get-Content \"$env:APPDATA\\\\com.vercel.cli\\\\auth.json\" -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.config\\\\vercel\\\\auth.json\" -ErrorAction SilentlyContinue; Get-Content \"$env:USERPROFILE\\\\.vercel\\\\auth.json\" -ErrorAction SilentlyContinue)"
     ],
     "additionalDirectories": [
       "c:\\Users\\P02\\Downloads\\quic-plat\\app\\portal\\[token]"
