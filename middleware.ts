@@ -67,7 +67,7 @@ function buildCsp(nonce: string): string {
     `img-src 'self' data: blob: ${supabaseUrl} https://*.unsplash.com https://images.unsplash.com https://*.public.blob.vercel-storage.com`,
     `frame-src https://images.unsplash.com https://*.public.blob.vercel-storage.com`,
     `connect-src 'self' ${supabaseUrl} https://*.supabase.com wss://*.supabase.co`,
-    "media-src 'self' blob: https:",
+    "media-src 'self' blob: https: https://*.public.blob.vercel-storage.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "object-src 'none'",
