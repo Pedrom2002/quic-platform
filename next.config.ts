@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import path from 'path'
 
 const securityHeaders = [
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
@@ -13,6 +14,9 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '50mb',
     },
+  },
+  turbopack: {
+    root: path.resolve(__dirname),
   },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
