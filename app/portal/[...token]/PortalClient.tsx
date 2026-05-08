@@ -315,31 +315,29 @@ function ProgressTab({
                   } ${hasFiles ? 'cursor-pointer' : ''}`}
                   style={{ animationDelay: `${300 + idx * 40}ms` }}
                 >
-                  <div className="grid grid-cols-[64px_1fr_auto] items-start gap-6 py-8">
-                    <span className="text-5xl sm:text-6xl font-bold leading-none select-none block text-right" style={{ fontFamily: 'var(--font-playfair), Georgia, serif', color: 'rgba(255,255,255,0.12)' }}>
+                  <div className="flex items-center gap-4 py-4">
+                    <span className="text-[10px] font-sans text-white/20 tabular-nums w-5 text-right shrink-0">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
-                    <div className="pt-2">
-                      <p className="text-white/55 text-base sm:text-lg tracking-tight leading-snug mb-2">
-                        {item.client_label ?? item.title}
-                      </p>
-                      {(item.status === 'pending' || item.status === 'in_progress') && item.due_at && (
-                        <span className="text-[10px] font-sans text-white/20 border border-white/10 px-2 py-0.5 rounded-full tabular-nums">
-                          {format(new Date(item.due_at), "d MMM", { locale: pt })}
-                        </span>
-                      )}
-                      {isExpanded && hasFiles && (
-                        <div className="mt-3 space-y-2">
-                          {item.files.map(file => (
-                            <FileRow key={file.id} file={file} />
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <p className="flex-1 text-white/55 text-sm tracking-tight leading-snug">
+                      {item.client_label ?? item.title}
+                    </p>
+                    {(item.status === 'pending' || item.status === 'in_progress') && item.due_at && (
+                      <span className="text-[10px] font-sans text-white/20 tabular-nums shrink-0">
+                        {format(new Date(item.due_at), "d MMM", { locale: pt })}
+                      </span>
+                    )}
                     {hasFiles && (
-                      <span className={`text-white/20 text-xs pt-3 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
+                      <span className={`text-white/20 text-xs transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
                     )}
                   </div>
+                  {isExpanded && hasFiles && (
+                    <div className="pb-4 space-y-2">
+                      {item.files.map(file => (
+                        <FileRow key={file.id} file={file} />
+                      ))}
+                    </div>
+                  )}
                 </li>
               )
             })}
