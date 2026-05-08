@@ -4,6 +4,7 @@ const ALLOWED_SUFFIXES = [
   '.public.blob.vercel-storage.com',
   '.supabase.co',
   '.supabase.in',
+  '.unsplash.com',
 ]
 
 export async function GET(request: NextRequest) {
@@ -12,23 +13,18 @@ export async function GET(request: NextRequest) {
   const name = searchParams.get('name') ?? 'download'
 
   if (!url) {
-    console.error('[download] missing url param')
     return new NextResponse('Missing url param', { status: 400 })
   }
-
-  console.log('[download] url:', url)
 
   let parsed: URL
   try {
     parsed = new URL(url)
   } catch {
-    console.error('[download] invalid url:', url)
     return new NextResponse('Invalid url', { status: 400 })
   }
 
   const allowed = ALLOWED_SUFFIXES.some(s => parsed.hostname.endsWith(s))
   if (!allowed) {
-    console.error('[download] blocked host:', parsed.hostname, 'full url:', url)
     return new NextResponse('Forbidden', { status: 403 })
   }
 
