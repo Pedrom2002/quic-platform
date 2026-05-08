@@ -93,6 +93,8 @@ function VideoCard({
   )
 }
 
+const NO_VIDEO = ''
+
 function VideoPicker({
   label,
   selected,
@@ -106,6 +108,26 @@ function VideoPicker({
     <div>
       <p className="text-xs font-semibold text-slate-700 mb-3">{label}</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {/* Sem vídeo option */}
+        <button
+          type="button"
+          onClick={() => onSelect(NO_VIDEO)}
+          className={cn(
+            'relative rounded-lg overflow-hidden aspect-video border-2 transition-all focus:outline-none bg-slate-100 flex flex-col items-center justify-center gap-1',
+            selected === NO_VIDEO
+              ? 'border-slate-900 ring-2 ring-slate-900/20'
+              : 'border-slate-200 hover:border-slate-400',
+          )}
+        >
+          <span className="text-slate-400 text-lg">✕</span>
+          <span className="text-[10px] text-slate-500 font-medium">Sem vídeo</span>
+          {selected === NO_VIDEO && (
+            <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-slate-900 flex items-center justify-center">
+              <Check className="w-3 h-3 text-white" strokeWidth={3} />
+            </span>
+          )}
+        </button>
+
         {AVAILABLE_VIDEOS.map(video => (
           <VideoCard
             key={video.id}
