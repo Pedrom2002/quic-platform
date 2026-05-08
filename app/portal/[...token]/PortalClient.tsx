@@ -213,12 +213,12 @@ function ProgressTab({
   return (
     <div className="anim-tab-fade">
       {completedItems.length > 0 && (
-        <div className="mb-16 sm:mb-20 md:mb-24 bg-white/75 backdrop-blur-sm rounded-2xl px-6 py-8">
-          <div className="flex items-baseline justify-between mb-8 sm:mb-10 pb-4 border-b border-stone-900">
-            <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">
+        <div className="mb-16 sm:mb-20 md:mb-24">
+          <div className="flex items-baseline justify-between mb-10 pb-4 border-b border-white/12">
+            <h2 className="text-xs font-medium tracking-widest uppercase text-white/40">
               Concluído
             </h2>
-            <span className="text-xs text-stone-400 tabular-nums">
+            <span className="text-xs text-white/25 tabular-nums">
               {String(completedItems.length).padStart(2, '0')}
             </span>
           </div>
@@ -231,47 +231,60 @@ function ProgressTab({
                 <li
                   key={item.id}
                   onClick={hasContent ? () => toggle(item.id) : undefined}
-                  className={`pl-4 border-l-2 border-b border-stone-100 last:border-b-0 mb-0 ${
-                    isNew
-                      ? 'anim-item-enter anim-pulse-gold border-l-amber-400'
-                      : 'border-l-amber-400/50 anim-fade-in'
+                  className={`relative border-b border-white/[0.06] last:border-b-0 overflow-hidden anim-fade-in ${
+                    isNew ? 'anim-item-enter' : ''
                   } ${hasContent ? 'cursor-pointer' : ''}`}
                   style={isNew ? undefined : { animationDelay: `${300 + idx * 40}ms` }}
                 >
-                  <div className="flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6">
-                    <span className="text-xs text-amber-600/70 tabular-nums tracking-wider font-medium pt-0.5">
+                  {/* amber line */}
+                  <div className="absolute left-0 top-0 bottom-0 w-px" style={{ background: 'linear-gradient(to bottom, transparent, rgba(180,140,60,0.5), transparent)' }} />
+                  <div className="grid grid-cols-[96px_1fr_auto] items-start gap-6 py-8 pl-6">
+                    {/* ghost number */}
+                    <span className="text-7xl sm:text-8xl font-bold leading-none tracking-tighter select-none" style={{ color: isNew ? 'rgba(180,140,60,0.3)' : 'rgba(180,140,60,0.22)' }}>
                       {String(idx + 1).padStart(2, '0')}
                     </span>
-                    <p className="text-stone-900 text-base sm:text-lg font-medium tracking-tight">
-                      {item.client_label ?? item.title}
-                    </p>
-                    {hasContent ? (
-                      <span className={`text-stone-400 text-xs self-start sm:self-center transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
-                        ▶
-                      </span>
-                    ) : null}
-                  </div>
-                  {isExpanded && (
-                    <div className="pb-5 sm:pl-[calc(2rem+1.5rem)]">
-                      {item.completion_note && (
-                        <p className="text-stone-500 text-sm italic leading-relaxed mt-2">
+                    <div className="pt-2">
+                      <p className="text-white/85 text-base sm:text-lg font-medium tracking-tight leading-snug mb-2">
+                        {item.client_label ?? item.title}
+                      </p>
+                      {item.completed_at && (
+                        <div className="flex items-center gap-1.5 mb-3">
+                          <span className="w-3 h-3 rounded-full border border-amber-400/50 flex items-center justify-center text-[7px] text-amber-400/70">✓</span>
+                          <span className="text-[10px] font-sans tracking-widest uppercase text-amber-400/60">
+                            Concluído · {format(new Date(item.completed_at), "d MMM", { locale: pt })}
+                          </span>
+                        </div>
+                      )}
+                      {isExpanded && item.completion_note && (
+                        <p className="text-white/35 text-sm italic leading-relaxed mt-1 mb-3">
                           {item.completion_note}
                         </p>
                       )}
-                      {item.files.length > 0 && (
+                      {isExpanded && item.files.length > 0 && (
                         <div className="mt-3 space-y-2">
                           {item.files.map(file => (
                             <FileRow key={file.id} file={file} />
                           ))}
                         </div>
                       )}
-                      {item.completed_at && (
-                        <p className="text-xs text-stone-400 mt-2">
-                          Concluído a {format(new Date(item.completed_at), "d MMM · HH'h'mm", { locale: pt })}
-                        </p>
+                      {!isExpanded && item.files.length > 0 && (
+                        <div className="flex gap-2 mt-2">
+                          {item.files.slice(0, 3).map(file => file.mime_type?.startsWith('image/') && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img key={file.id} src={file.blob_url} alt="" className="w-12 h-12 rounded object-cover opacity-60" />
+                          ))}
+                          {item.files.length > 3 && (
+                            <span className="w-12 h-12 rounded border border-white/10 flex items-center justify-center text-[10px] text-white/30 font-sans">
+                              +{item.files.length - 3}
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
+                    {hasContent && (
+                      <span className={`text-white/25 text-xs pt-3 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
+                    )}
+                  </div>
                 </li>
               )
             })}
@@ -280,12 +293,12 @@ function ProgressTab({
       )}
 
       {pendingItems.length > 0 && (
-        <div className="bg-white/75 backdrop-blur-sm rounded-2xl px-6 py-8">
-          <div className="flex items-baseline justify-between mb-8 sm:mb-10 pb-4 border-b border-stone-200">
-            <h2 className="text-xs font-medium tracking-widest uppercase text-stone-500">
+        <div>
+          <div className="flex items-baseline justify-between mb-10 pb-4 border-b border-white/[0.08]">
+            <h2 className="text-xs font-medium tracking-widest uppercase text-white/25">
               Em Preparação
             </h2>
-            <span className="text-xs text-stone-400 tabular-nums">
+            <span className="text-xs text-white/20 tabular-nums">
               {String(pendingItems.length).padStart(2, '0')}
             </span>
           </div>
@@ -297,37 +310,36 @@ function ProgressTab({
                 <li
                   key={item.id}
                   onClick={hasFiles ? () => toggle(item.id) : undefined}
-                  className={`border-b border-stone-100 last:border-0 anim-fade-in ${
+                  className={`border-b border-white/[0.05] last:border-0 overflow-hidden anim-fade-in ${
                     animatingOut.has(item.id) ? 'anim-item-exit' : ''
                   } ${hasFiles ? 'cursor-pointer' : ''}`}
                   style={{ animationDelay: `${300 + idx * 40}ms` }}
                 >
-                  <div className="flex flex-col sm:grid sm:grid-cols-[2rem_1fr_auto] gap-2 sm:gap-6 md:gap-10 py-5 sm:py-6">
-                    <span className="text-xs text-stone-400 tabular-nums tracking-wider font-medium pt-0.5">
+                  <div className="grid grid-cols-[96px_1fr_auto] items-start gap-6 py-8">
+                    <span className="text-7xl sm:text-8xl font-bold leading-none tracking-tighter select-none" style={{ color: 'rgba(255,255,255,0.04)' }}>
                       {String(idx + 1).padStart(2, '0')}
                     </span>
-                    <p className="text-stone-500 text-base sm:text-lg tracking-tight">
-                      {item.client_label ?? item.title}
-                    </p>
-                    {hasFiles ? (
-                      <span className={`text-stone-400 text-xs self-start sm:self-center transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
-                        ▶
-                      </span>
-                    ) : (item.status === 'pending' || item.status === 'in_progress') && item.due_at ? (
-                      <span className="text-xs text-white/40 border border-white/20 px-2 py-0.5 rounded-full whitespace-nowrap self-start tabular-nums">
-                        {format(new Date(item.due_at), 'd MMM', { locale: pt })}
-                      </span>
-                    ) : null}
-                  </div>
-                  {isExpanded && hasFiles && (
-                    <div className="pb-5 sm:pl-[calc(2rem+1.5rem)]">
-                      <div className="space-y-2">
-                        {item.files.map(file => (
-                          <FileRow key={file.id} file={file} />
-                        ))}
-                      </div>
+                    <div className="pt-2">
+                      <p className="text-white/35 text-base sm:text-lg tracking-tight leading-snug mb-2">
+                        {item.client_label ?? item.title}
+                      </p>
+                      {(item.status === 'pending' || item.status === 'in_progress') && item.due_at && (
+                        <span className="text-[10px] font-sans text-white/20 border border-white/10 px-2 py-0.5 rounded-full tabular-nums">
+                          {format(new Date(item.due_at), "d MMM", { locale: pt })}
+                        </span>
+                      )}
+                      {isExpanded && hasFiles && (
+                        <div className="mt-3 space-y-2">
+                          {item.files.map(file => (
+                            <FileRow key={file.id} file={file} />
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
+                    {hasFiles && (
+                      <span className={`text-white/20 text-xs pt-3 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
+                    )}
+                  </div>
                 </li>
               )
             })}
