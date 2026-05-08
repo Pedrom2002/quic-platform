@@ -240,7 +240,7 @@ function ProgressTab({
                   <div className="absolute left-0 top-0 bottom-0 w-px" style={{ background: 'linear-gradient(to bottom, transparent, rgba(180,140,60,0.5), transparent)' }} />
                   <div className="grid grid-cols-[64px_1fr_auto] items-start gap-6 py-8 pl-6">
                     {/* ghost number */}
-                    <span className="text-5xl sm:text-6xl font-bold leading-none select-none block text-right" style={{ fontFamily: 'ui-monospace, "Courier New", monospace', color: isNew ? 'rgba(180,140,60,0.3)' : 'rgba(180,140,60,0.22)' }}>
+                    <span className="text-5xl sm:text-6xl font-bold leading-none select-none block text-right" style={{ fontFamily: 'var(--font-playfair), Georgia, serif', color: isNew ? 'rgba(180,140,60,0.3)' : 'rgba(180,140,60,0.22)' }}>
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <div className="pt-2">
@@ -316,7 +316,7 @@ function ProgressTab({
                   style={{ animationDelay: `${300 + idx * 40}ms` }}
                 >
                   <div className="grid grid-cols-[64px_1fr_auto] items-start gap-6 py-8">
-                    <span className="text-5xl sm:text-6xl font-bold leading-none select-none block text-right" style={{ fontFamily: 'ui-monospace, "Courier New", monospace', color: 'rgba(255,255,255,0.04)' }}>
+                    <span className="text-5xl sm:text-6xl font-bold leading-none select-none block text-right" style={{ fontFamily: 'var(--font-playfair), Georgia, serif', color: 'rgba(255,255,255,0.04)' }}>
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <div className="pt-2">
