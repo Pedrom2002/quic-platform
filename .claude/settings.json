@@ -6,7 +6,17 @@
       "Bash(Select-Object Name)",
       "PowerShell(New-Item -ItemType Directory -Path \"c:\\\\Users\\\\P02\\\\Downloads\\\\quic-plat\\\\components\\\\contacts\" -Force)",
       "Bash(Get-ChildItem \"c:\\\\Users\\\\P02\\\\Downloads\\\\quic-plat\\\\components\\\\contacts\" -Filter \"*Dialog.tsx\")",
-      "Bash(grep -v \"^$\")"
+      "Bash(grep -v \"^$\")",
+      "Bash(node -e ' *)",
+      "Bash(grep -v \"^#\\\\|^$\\\\|OIDC\\\\|TURBO\\\\|NX_\\\\|VERCEL_GIT\\\\|VERCEL_ENV\\\\|VERCEL_TARGET\\\\|VERCEL_URL\\\\|VERCEL=\" .env.production.local)",
+      "Bash(Get-ChildItem -Filter \".env*\" -Force)",
+      "Bash(grep -r \"PORTAL_JWT_SECRET\" . --include=\"*.env\" --include=\"*.local\" --include=\"*.env.*\" -l)",
+      "Bash(ls -la .env*)",
+      "Bash(node -e \"console.log\\(require\\('crypto'\\).randomBytes\\(32\\).toString\\('hex'\\)\\)\")",
+      "Bash(node scripts/seed-demo.mjs aa42efc0a6a1546de0355ae05b649b64c6b7effb5160f436d15401bf2bfa38ac)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\P02\\Downloads\\quic-plat\\app\\portal\\[token]"
     ]
   }
 }

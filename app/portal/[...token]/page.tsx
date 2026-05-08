@@ -5,11 +5,12 @@ import { getPortalData } from '@/lib/portal/data'
 export default async function PortalPage({
   params,
 }: {
-  params: Promise<{ token: string }>
+  params: Promise<{ token: string[] }>
 }) {
   const { token } = await params
+  const tokenStr = Array.isArray(token) ? token.join('/') : token
 
-  const data = await getPortalData(token)
+  const data = await getPortalData(tokenStr)
   if (!data) notFound()
 
   return (
@@ -21,7 +22,7 @@ export default async function PortalPage({
       status={data.event.status}
       initialItems={data.items}
       initialProgress={data.progress}
-      portalToken={token}
+      portalToken={tokenStr}
       heroVideo={data.heroVideo}
       contentVideo={data.contentVideo}
       eventFiles={data.eventFiles}
