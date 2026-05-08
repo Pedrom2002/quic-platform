@@ -9,15 +9,6 @@ import { Video, Check, Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const AVAILABLE_VIDEOS = [
-  { id: 'va', label: 'Vídeo A', url: '/a.mp4' },
-  { id: 'vb', label: 'Vídeo B', url: '/b.mp4' },
-  { id: 'vc', label: 'Vídeo C', url: '/c.mp4' },
-  { id: 'v1', label: 'Vídeo 1', url: '/1630-148614385.mp4' },
-  { id: 'v2', label: 'Vídeo 2', url: '/166707-835224055_medium.mp4' },
-  { id: 'v3', label: 'Vídeo 3', url: '/169951-842348732_medium.mp4' },
-  { id: 'v4', label: 'Vídeo 4', url: '/21118-315137091_medium.mp4' },
-  { id: 'v5', label: 'Vídeo 5', url: '/227353_medium.mp4' },
-  { id: 'v6', label: 'Vídeo 6', url: '/7901-205237744_medium.mp4' },
   { id: 'blob-hero', label: 'Luzes de palco', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/144156-784280927.mp4' },
   { id: 'blob-content', label: 'Ambiente noturno', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/45961-447087612.mp4' },
 ]
@@ -142,8 +133,8 @@ function VideoPicker({
 }
 
 export function PortalVideoSettings({ eventId }: { eventId: string }) {
-  const [heroVideo, setHeroVideo] = useState(AVAILABLE_VIDEOS[6].url)
-  const [contentVideo, setContentVideo] = useState(AVAILABLE_VIDEOS[7].url)
+  const [heroVideo, setHeroVideo] = useState(AVAILABLE_VIDEOS[0].url)
+  const [contentVideo, setContentVideo] = useState(AVAILABLE_VIDEOS[1].url)
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
 
