@@ -77,23 +77,37 @@ function formatFileSize(bytes: number | null): string {
 }
 
 function FileRow({ file }: { file: PortalItemFile }) {
+  const isImage = file.mime_type?.startsWith('image/') ?? false
+
   return (
-    <div className="flex items-center gap-3 bg-stone-50 border border-stone-100 rounded px-3 py-2">
-      <span className="text-stone-400 text-xs">📎</span>
-      <div className="flex-1 min-w-0">
-        <p className="text-stone-700 text-sm font-medium truncate">{file.file_name}</p>
-        {file.file_size !== null && (
-          <p className="text-stone-400 text-xs">{formatFileSize(file.file_size)}</p>
-        )}
+    <div className="bg-stone-50 border border-stone-100 rounded overflow-hidden">
+      {isImage && (
+        <a href={file.blob_url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={file.blob_url}
+            alt={file.file_name}
+            className="w-full max-h-64 object-cover hover:opacity-90 transition-opacity"
+          />
+        </a>
+      )}
+      <div className="flex items-center gap-3 px-3 py-2">
+        <span className="text-stone-400 text-xs">{isImage ? '🖼' : '📎'}</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-stone-700 text-sm font-medium truncate">{file.file_name}</p>
+          {file.file_size !== null && (
+            <p className="text-stone-400 text-xs">{formatFileSize(file.file_size)}</p>
+          )}
+        </div>
+        <a
+          href={file.blob_url}
+          download={file.file_name}
+          className="text-xs text-stone-400 border border-stone-200 px-2 py-1 rounded hover:border-stone-400 hover:text-stone-600 transition-colors shrink-0"
+          onClick={e => e.stopPropagation()}
+        >
+          ↓
+        </a>
       </div>
-      <a
-        href={file.blob_url}
-        download={file.file_name}
-        className="text-xs text-stone-400 border border-stone-200 px-2 py-1 rounded hover:border-stone-400 hover:text-stone-600 transition-colors shrink-0"
-        onClick={e => e.stopPropagation()}
-      >
-        ↓
-      </a>
     </div>
   )
 }
