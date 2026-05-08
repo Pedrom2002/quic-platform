@@ -79,18 +79,7 @@ function formatFileSize(bytes: number | null): string {
 function FileRow({ file }: { file: PortalItemFile }) {
   const isImage = file.mime_type?.startsWith('image/') ?? false
   const isPdf = file.mime_type === 'application/pdf'
-
-  function handleDownload(e: React.MouseEvent) {
-    e.stopPropagation()
-    e.preventDefault()
-    const proxyUrl = `/api/portal/download?url=${encodeURIComponent(file.blob_url)}&name=${encodeURIComponent(file.file_name)}`
-    const a = document.createElement('a')
-    a.href = proxyUrl
-    a.download = file.file_name
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-  }
+  const downloadHref = `/api/portal/download?url=${encodeURIComponent(file.blob_url)}&name=${encodeURIComponent(file.file_name)}`
 
   return (
     <div className="bg-stone-50 border border-stone-100 rounded overflow-hidden">
@@ -128,13 +117,14 @@ function FileRow({ file }: { file: PortalItemFile }) {
             <p className="text-stone-400 text-xs">{formatFileSize(file.file_size)}</p>
           )}
         </div>
-        <button
-          type="button"
-          onClick={handleDownload}
+        <a
+          href={downloadHref}
+          download={file.file_name}
+          onClick={e => e.stopPropagation()}
           className="text-xs text-stone-400 border border-stone-200 px-2 py-1 rounded hover:border-stone-400 hover:text-stone-600 transition-colors shrink-0"
         >
           ↓
-        </button>
+        </a>
       </div>
     </div>
   )
