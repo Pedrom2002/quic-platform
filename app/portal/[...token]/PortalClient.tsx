@@ -213,7 +213,7 @@ function ProgressTab({
   return (
     <div className="anim-tab-fade">
       {completedItems.length > 0 && (
-        <div className="mb-16 sm:mb-20 md:mb-24 bg-white/5 backdrop-blur-md rounded-2xl px-6 py-8 border border-white/10">
+        <div className="mb-16 sm:mb-20 md:mb-24 bg-white/[0.03] backdrop-blur-md rounded-2xl px-6 py-8 border border-white/[0.06]">
           <div className="flex items-baseline justify-between mb-8 sm:mb-10 pb-4 border-b border-white/20">
             <h2 className="text-xs font-medium tracking-widest uppercase text-white/60">
               Concluído
@@ -280,7 +280,7 @@ function ProgressTab({
       )}
 
       {pendingItems.length > 0 && (
-        <div className="bg-white/5 backdrop-blur-md rounded-2xl px-6 py-8 border border-white/10">
+        <div className="bg-white/[0.03] backdrop-blur-md rounded-2xl px-6 py-8 border border-white/[0.06]">
           <div className="flex items-baseline justify-between mb-8 sm:mb-10 pb-4 border-b border-white/10">
             <h2 className="text-xs font-medium tracking-widest uppercase text-white/40">
               Em Preparação
