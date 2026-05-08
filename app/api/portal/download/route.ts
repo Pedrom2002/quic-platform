@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const ALLOWED_HOST = '0q7kycaotkbutqsj.public.blob.vercel-storage.com'
+const ALLOWED_HOSTS = [
+  '.public.blob.vercel-storage.com',
+  '.supabase.co',
+  '.supabase.in',
+]
+
+function isAllowedHost(hostname: string): boolean {
+  return ALLOWED_HOSTS.some(suffix => hostname.endsWith(suffix))
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
@@ -18,7 +26,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Invalid url', { status: 400 })
   }
 
-  if (parsed.hostname !== ALLOWED_HOST) {
+  if (!isAllowedHost(parsed.hostname)) {
     return new NextResponse('Forbidden', { status: 403 })
   }
 
