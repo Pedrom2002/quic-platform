@@ -80,23 +80,16 @@ function FileRow({ file }: { file: PortalItemFile }) {
   const isImage = file.mime_type?.startsWith('image/') ?? false
   const isPdf = file.mime_type === 'application/pdf'
 
-  async function handleDownload(e: React.MouseEvent) {
+  function handleDownload(e: React.MouseEvent) {
     e.stopPropagation()
     e.preventDefault()
-    try {
-      const res = await fetch(file.blob_url)
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = file.file_name
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    } catch {
-      window.open(file.blob_url, '_blank')
-    }
+    const proxyUrl = `/api/portal/download?url=${encodeURIComponent(file.blob_url)}&name=${encodeURIComponent(file.file_name)}`
+    const a = document.createElement('a')
+    a.href = proxyUrl
+    a.download = file.file_name
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
   }
 
   return (
