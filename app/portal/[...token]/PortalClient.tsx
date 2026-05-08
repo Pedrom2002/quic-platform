@@ -237,7 +237,7 @@ function ProgressTab({
                   style={isNew ? undefined : { animationDelay: `${300 + idx * 40}ms` }}
                 >
                   <div className="flex gap-4 py-5">
-                    <span className="text-base font-sans text-white/30 tabular-nums w-8 text-right shrink-0 self-start pt-0.5">
+                    <span className="text-base font-sans text-white/50 tabular-nums w-8 text-right shrink-0 self-start pt-0.5">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <div className="flex-1 min-w-0">
@@ -262,7 +262,7 @@ function ProgressTab({
                             <img key={file.id} src={file.blob_url} alt="" className="w-10 h-10 rounded object-cover opacity-60" />
                           ))}
                           {item.files.length > 3 && (
-                            <span className="w-10 h-10 rounded border border-white/10 flex items-center justify-center text-[10px] text-white/30 font-sans">
+                            <span className="w-10 h-10 rounded border border-white/10 flex items-center justify-center text-[10px] text-white/50 font-sans">
                               +{item.files.length - 3}
                             </span>
                           )}
@@ -313,7 +313,7 @@ function ProgressTab({
                   style={{ animationDelay: `${300 + idx * 40}ms` }}
                 >
                   <div className="flex items-center gap-4 py-4">
-                    <span className="text-base font-sans text-white/30 tabular-nums w-8 text-right shrink-0">
+                    <span className="text-base font-sans text-white/50 tabular-nums w-8 text-right shrink-0">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <p className="flex-1 text-white/55 text-sm tracking-tight leading-snug">
@@ -617,7 +617,7 @@ export function PortalClient({
           <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
             <div className="flex items-center gap-4">
               <Image src="/Design sem nome(1).png" alt="Quic Vertex" width={180} height={72} />
-              <span className="text-xs tracking-[0.25em] uppercase text-white/30">No stage is too big</span>
+              <span className="text-xs tracking-[0.25em] uppercase text-white/50">No stage is too big</span>
             </div>
             <div className="flex items-center gap-2 justify-end">
               {isConnected ? (
