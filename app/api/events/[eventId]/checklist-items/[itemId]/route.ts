@@ -77,7 +77,10 @@ export async function PATCH(
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[checklist PATCH]', error.message)
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+  }
 
   if (isCompleting) {
     const adminClient = createAdminClient()
@@ -123,6 +126,9 @@ export async function DELETE(
     .eq('id', itemId)
     .eq('event_id', eventId)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[checklist DELETE]', error.message)
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+  }
   return NextResponse.json({ success: true })
 }

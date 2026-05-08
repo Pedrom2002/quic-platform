@@ -78,7 +78,9 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
   let qstash: import('@upstash/qstash').Client | null = null
   if (useQStash) {
     const { Client: QStashClient } = await import('@upstash/qstash')
-    qstash = new QStashClient({ token: process.env.QSTASH_TOKEN! })
+    const token = process.env.QSTASH_TOKEN
+    if (!token) throw new Error('[dispatcher] QSTASH_TOKEN não configurado')
+    qstash = new QStashClient({ token })
   }
 
   const workerUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/workers/send-notification`

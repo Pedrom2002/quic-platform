@@ -39,7 +39,10 @@ export async function POST(
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[checklist POST]', error.message)
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+  }
 
   return NextResponse.json({ item }, { status: 201 })
 }

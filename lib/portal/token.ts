@@ -1,7 +1,10 @@
 import { SignJWT, jwtVerify } from 'jose'
+import { getEnv } from '@/lib/env'
 import type { PortalTokenPayload } from '@/types/app'
 
-const secret = new TextEncoder().encode(process.env.PORTAL_JWT_SECRET!)
+function getSecret(): Uint8Array {
+  return new TextEncoder().encode(getEnv().PORTAL_JWT_SECRET)
+}
 
 const EXPIRY_DAYS = 90
 
@@ -10,12 +13,12 @@ export async function signPortalToken(eventId: string): Promise<string> {
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime(`${EXPIRY_DAYS}d`)
-    .sign(secret)
+    .sign(getSecret())
 }
 
 export async function verifyPortalToken(token: string): Promise<PortalTokenPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, secret)
+    const { payload } = await jwtVerify(token, getSecret())
     return payload as unknown as PortalTokenPayload
   } catch {
     return null

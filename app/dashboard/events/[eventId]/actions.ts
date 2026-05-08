@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { sendEmail, buildEmailHtml } from '@/lib/notifications/channels/email'
 import { resolveOrgMember } from '@/lib/supabase/actions'
+import { audit } from '@/lib/audit'
 
 export async function sendPortalLinkAction(eventId: string) {
   const portalBase = process.env.NEXT_PUBLIC_PORTAL_URL ?? process.env.NEXT_PUBLIC_APP_URL
@@ -42,6 +43,8 @@ export async function sendPortalLinkAction(eventId: string) {
 
   if (!recipients.length) throw new Error('Nenhum cliente com email configurado para este evento')
 
+  audit({ action: 'portal.link.sent', userId: user.id, organizationId: member.organization_id, eventId })
+
   let sent = 0
   const errors: string[] = []
   for (const client of recipients) {
@@ -57,12 +60,12 @@ export async function sendPortalLinkAction(eventId: string) {
       sent++
     } catch (err: unknown) {
       errors.push(client.email)
-      console.error('[sendPortalLink]', err instanceof Error ? err.message : err)
+      console.error('[sendPortalLink] failed for recipient:', err instanceof Error ? err.message : err)
     }
   }
 
-  if (errors.length && sent === 0) throw new Error(`Falhou o envio para todos os destinatários: ${errors.join(', ')}`)
-  if (errors.length) throw new Error(`Enviado para ${sent} de ${recipients.length}. Falhou: ${errors.join(', ')}`)
+  if (errors.length && sent === 0) throw new Error(`Falhou o envio para todos os ${recipients.length} destinatários`)
+  if (errors.length) throw new Error(`Enviado para ${sent} de ${recipients.length} destinatários. ${errors.length} falhou`)
 }
 
 export async function sendClientUpdateAction(
@@ -101,6 +104,8 @@ export async function sendClientUpdateAction(
 
   if (!recipients.length) throw new Error('Nenhum cliente com email configurado para este evento')
 
+  audit({ action: 'client.update.sent', userId: user.id, organizationId: member.organization_id, eventId })
+
   let sent = 0
   const errors: string[] = []
   for (const client of recipients) {
@@ -115,12 +120,12 @@ export async function sendClientUpdateAction(
       sent++
     } catch (err: unknown) {
       errors.push(client.email)
-      console.error('[sendClientUpdate]', err instanceof Error ? err.message : err)
+      console.error('[sendClientUpdate] failed for recipient:', err instanceof Error ? err.message : err)
     }
   }
 
-  if (errors.length && sent === 0) throw new Error(`Falhou o envio para todos os destinatários: ${errors.join(', ')}`)
-  if (errors.length) throw new Error(`Enviado para ${sent} de ${recipients.length}. Falhou: ${errors.join(', ')}`)
+  if (errors.length && sent === 0) throw new Error(`Falhou o envio para todos os ${recipients.length} destinatários`)
+  if (errors.length) throw new Error(`Enviado para ${sent} de ${recipients.length} destinatários. ${errors.length} falhou`)
 
   return { sent }
 }

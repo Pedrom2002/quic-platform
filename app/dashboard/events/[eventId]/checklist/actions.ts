@@ -356,11 +356,18 @@ export async function uploadFileToItemAction(
   if (!file || file.size === 0) return null
   if (file.size > MAX_FILE_SIZE) return null
 
-  const fileBuffer = await file.arrayBuffer()
-  const blob = await put(file.name, fileBuffer, {
+  const { ALLOWED_MIME_TYPES, detectMimeFromMagic, isMimeMismatch, safeBlobPathname } = await import('@/schemas/file.schema')
+  const declaredMime = file.type || ''
+  if (!ALLOWED_MIME_TYPES.has(declaredMime)) return null
+  const detectedMime = await detectMimeFromMagic(file)
+  if (isMimeMismatch(declaredMime, detectedMime)) return null
+
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+  if (!blobToken) return null
+
+  const blob = await put(safeBlobPathname(file.name), file, {
     access: 'public',
-    contentType: file.type || 'application/octet-stream',
-    token: process.env.BLOB_READ_WRITE_TOKEN,
+    token: blobToken,
   })
 
   const { data: memberRow } = await supabase
@@ -375,9 +382,9 @@ export async function uploadFileToItemAction(
       event_id: eventId,
       organization_id: member.organization_id,
       uploaded_by: memberRow?.id ?? null,
-      file_name: file.name,
+      file_name: file.name.slice(0, 255),
       file_size: file.size,
-      mime_type: file.type || null,
+      mime_type: declaredMime,
       blob_url: blob.url,
       blob_pathname: blob.pathname,
     })

@@ -1,10 +1,8 @@
 import { createBrowserClient } from '@supabase/ssr'
 
 export function createClient() {
-  // Nota: substituir pelo tipo gerado quando o Supabase CLI estiver configurado:
-  // createBrowserClient<Database>(...)
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) throw new Error('Supabase public env vars not set')
+  return createBrowserClient(url, key)
 }

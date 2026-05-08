@@ -2,8 +2,20 @@
 
 import { put, del } from '@vercel/blob'
 import { createClient } from '@/lib/supabase/server'
-import { MAX_FILE_SIZE } from '@/schemas/file.schema'
+import {
+  MAX_FILE_SIZE,
+  ALLOWED_MIME_TYPES,
+  detectMimeFromMagic,
+  isMimeMismatch,
+  safeBlobPathname,
+} from '@/schemas/file.schema'
 import type { EventFileWithUploader } from '@/types/app'
+
+function getBlobToken(): string {
+  const token = process.env.BLOB_READ_WRITE_TOKEN
+  if (!token) throw new Error('[upload] BLOB_READ_WRITE_TOKEN não configurado')
+  return token
+}
 
 export async function uploadFileAction(eventId: string, formData: FormData): Promise<EventFileWithUploader | null> {
   const supabase = await createClient()
@@ -29,9 +41,20 @@ export async function uploadFileAction(eventId: string, formData: FormData): Pro
   if (!file || file.size === 0) return null
   if (file.size > MAX_FILE_SIZE) return null
 
-  const blob = await put(file.name, file, {
+  // Validate MIME type against server-side allowlist
+  const declaredMime = file.type || ''
+  if (!ALLOWED_MIME_TYPES.has(declaredMime)) return null
+
+  // Validate magic bytes — catches files with spoofed Content-Type
+  const detectedMime = await detectMimeFromMagic(file)
+  if (isMimeMismatch(declaredMime, detectedMime)) return null
+
+  // Use UUID-prefixed pathname to prevent enumeration and path traversal
+  const blobPathname = safeBlobPathname(file.name)
+
+  const blob = await put(blobPathname, file, {
     access: 'public',
-    token: process.env.BLOB_READ_WRITE_TOKEN,
+    token: getBlobToken(),
   })
 
   const { data } = await supabase
@@ -40,9 +63,9 @@ export async function uploadFileAction(eventId: string, formData: FormData): Pro
       event_id: eventId,
       organization_id: member.organization_id,
       uploaded_by: member.id,
-      file_name: file.name,
+      file_name: file.name.slice(0, 255),
       file_size: file.size,
-      mime_type: file.type || null,
+      mime_type: declaredMime,
       blob_url: blob.url,
       blob_pathname: blob.pathname,
     })
@@ -74,8 +97,7 @@ export async function deleteFileAction(eventId: string, fileId: string): Promise
     .single()
   if (!fileRecord) return false
 
-  // Delete from blob storage first; if it fails, DB row stays for retry
-  await del(fileRecord.blob_pathname, { token: process.env.BLOB_READ_WRITE_TOKEN })
+  await del(fileRecord.blob_pathname, { token: getBlobToken() })
 
   const { error, count } = await supabase
     .from('event_files')
