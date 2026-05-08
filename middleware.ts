@@ -62,10 +62,10 @@ function buildCsp(nonce: string): string {
   return [
     "default-src 'self'",
     `script-src ${scriptSrc}`,
-    `style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`,
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     "font-src 'self' https://fonts.gstatic.com",
-    `img-src 'self' data: blob: ${supabaseUrl}`,
-    `connect-src 'self' ${supabaseUrl} https://*.supabase.com`,
+    `img-src 'self' data: blob: ${supabaseUrl} https://*.unsplash.com https://*.public.blob.vercel-storage.com`,
+    `connect-src 'self' ${supabaseUrl} https://*.supabase.com wss://*.supabase.co`,
     "media-src 'self' blob: https:",
     "frame-ancestors 'none'",
     "base-uri 'self'",
