@@ -236,55 +236,35 @@ function ProgressTab({
                   } ${hasContent ? 'cursor-pointer' : ''}`}
                   style={isNew ? undefined : { animationDelay: `${300 + idx * 40}ms` }}
                 >
-                  {/* amber line */}
-                  <div className="absolute left-0 top-0 bottom-0 w-px" style={{ background: 'linear-gradient(to bottom, transparent, rgba(180,140,60,0.5), transparent)' }} />
-                  <div className="grid grid-cols-[64px_1fr_auto] items-start gap-6 py-8 pl-6">
-                    {/* ghost number */}
-                    <span className="text-4xl leading-none select-none block text-right" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontWeight: 100, letterSpacing: '0.05em', color: 'rgba(255,255,255,0.9)' }}>
+                  <div className="flex items-center gap-4 py-5">
+                    <span className="text-[10px] font-sans text-white/30 tabular-nums w-5 text-right shrink-0">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
-                    <div className="pt-2">
-                      <p className="text-white/85 text-base sm:text-lg font-medium tracking-tight leading-snug mb-2">
-                        {item.client_label ?? item.title}
-                      </p>
-                      {item.completed_at && (
-                        <div className="flex items-center gap-1.5 mb-3">
-                          <span className="w-3 h-3 rounded-full border border-amber-400/50 flex items-center justify-center text-[7px] text-amber-400/70">✓</span>
-                          <span className="text-[10px] font-sans tracking-widest uppercase text-amber-400/60">
-                            Concluído · {format(new Date(item.completed_at), "d MMM", { locale: pt })}
-                          </span>
-                        </div>
+                    <p className="flex-1 text-white/90 text-sm font-medium tracking-tight leading-snug">
+                      {item.client_label ?? item.title}
+                    </p>
+                    {item.completed_at && (
+                      <span className="text-[10px] font-sans tracking-widest uppercase text-amber-400/70 shrink-0">
+                        {format(new Date(item.completed_at), "d MMM", { locale: pt })}
+                      </span>
+                    )}
+                    <span className="w-4 h-4 rounded-full border border-amber-400/50 flex items-center justify-center text-[7px] text-amber-400/80 shrink-0">✓</span>
+                    {hasContent && (
+                      <span className={`text-white/20 text-xs transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
+                    )}
+                  </div>
+                  {isExpanded && (item.completion_note || item.files.length > 0) && (
+                    <div className="pb-5 pl-9 space-y-3">
+                      {item.completion_note && (
+                        <p className="text-white/35 text-sm italic leading-relaxed">{item.completion_note}</p>
                       )}
-                      {isExpanded && item.completion_note && (
-                        <p className="text-white/35 text-sm italic leading-relaxed mt-1 mb-3">
-                          {item.completion_note}
-                        </p>
-                      )}
-                      {isExpanded && item.files.length > 0 && (
-                        <div className="mt-3 space-y-2">
-                          {item.files.map(file => (
-                            <FileRow key={file.id} file={file} />
-                          ))}
-                        </div>
-                      )}
-                      {!isExpanded && item.files.length > 0 && (
-                        <div className="flex gap-2 mt-2">
-                          {item.files.slice(0, 3).map(file => file.mime_type?.startsWith('image/') && (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img key={file.id} src={file.blob_url} alt="" className="w-12 h-12 rounded object-cover opacity-60" />
-                          ))}
-                          {item.files.length > 3 && (
-                            <span className="w-12 h-12 rounded border border-white/10 flex items-center justify-center text-[10px] text-white/30 font-sans">
-                              +{item.files.length - 3}
-                            </span>
-                          )}
+                      {item.files.length > 0 && (
+                        <div className="space-y-2">
+                          {item.files.map(file => <FileRow key={file.id} file={file} />)}
                         </div>
                       )}
                     </div>
-                    {hasContent && (
-                      <span className={`text-white/25 text-xs pt-3 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
-                    )}
-                  </div>
+                  )}
                 </li>
               )
             })}
