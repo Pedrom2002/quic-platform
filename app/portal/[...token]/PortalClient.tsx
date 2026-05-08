@@ -78,6 +78,7 @@ function formatFileSize(bytes: number | null): string {
 
 function FileRow({ file }: { file: PortalItemFile }) {
   const isImage = file.mime_type?.startsWith('image/') ?? false
+  const isPdf = file.mime_type === 'application/pdf'
 
   return (
     <div className="bg-stone-50 border border-stone-100 rounded overflow-hidden">
@@ -91,8 +92,24 @@ function FileRow({ file }: { file: PortalItemFile }) {
           />
         </a>
       )}
+      {isPdf && (
+        <a href={file.blob_url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+          className="block group">
+          <div className="w-full h-48 bg-stone-100 relative overflow-hidden">
+            <iframe
+              src={`${file.blob_url}#toolbar=0&navpanes=0&scrollbar=0`}
+              className="w-full h-full border-0 pointer-events-none"
+              title={file.file_name}
+            />
+            <div className="absolute inset-0 bg-transparent group-hover:bg-stone-900/5 transition-colors" />
+            <span className="absolute bottom-2 right-2 text-[10px] bg-stone-900/70 text-white px-1.5 py-0.5 rounded">
+              PDF
+            </span>
+          </div>
+        </a>
+      )}
       <div className="flex items-center gap-3 px-3 py-2">
-        <span className="text-stone-400 text-xs">{isImage ? '🖼' : '📎'}</span>
+        <span className="text-stone-400 text-xs">{isImage ? '🖼' : isPdf ? '📄' : '📎'}</span>
         <div className="flex-1 min-w-0">
           <p className="text-stone-700 text-sm font-medium truncate">{file.file_name}</p>
           {file.file_size !== null && (
