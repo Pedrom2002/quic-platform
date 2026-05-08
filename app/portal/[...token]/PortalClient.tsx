@@ -80,6 +80,25 @@ function FileRow({ file }: { file: PortalItemFile }) {
   const isImage = file.mime_type?.startsWith('image/') ?? false
   const isPdf = file.mime_type === 'application/pdf'
 
+  async function handleDownload(e: React.MouseEvent) {
+    e.stopPropagation()
+    e.preventDefault()
+    try {
+      const res = await fetch(file.blob_url)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = file.file_name
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch {
+      window.open(file.blob_url, '_blank')
+    }
+  }
+
   return (
     <div className="bg-stone-50 border border-stone-100 rounded overflow-hidden">
       {isImage && (
@@ -116,14 +135,13 @@ function FileRow({ file }: { file: PortalItemFile }) {
             <p className="text-stone-400 text-xs">{formatFileSize(file.file_size)}</p>
           )}
         </div>
-        <a
-          href={file.blob_url}
-          download={file.file_name}
+        <button
+          type="button"
+          onClick={handleDownload}
           className="text-xs text-stone-400 border border-stone-200 px-2 py-1 rounded hover:border-stone-400 hover:text-stone-600 transition-colors shrink-0"
-          onClick={e => e.stopPropagation()}
         >
           ↓
-        </a>
+        </button>
       </div>
     </div>
   )
