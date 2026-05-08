@@ -237,7 +237,7 @@ function ProgressTab({
                   style={isNew ? undefined : { animationDelay: `${300 + idx * 40}ms` }}
                 >
                   <div className="flex gap-4 py-5">
-                    <span className="text-[10px] font-sans text-white/15 tabular-nums w-5 text-right shrink-0 flex items-center justify-end">
+                    <span className="text-[10px] font-sans text-white/15 tabular-nums w-5 text-right shrink-0 self-start pt-0.5">
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <div className="flex-1 min-w-0">
@@ -255,6 +255,19 @@ function ProgressTab({
                           <span className={`text-white/20 text-xs transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
                         )}
                       </div>
+                      {!isExpanded && item.files.length > 0 && (
+                        <div className="flex gap-2 mt-3">
+                          {item.files.slice(0, 3).map(file => file.mime_type?.startsWith('image/') && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img key={file.id} src={file.blob_url} alt="" className="w-10 h-10 rounded object-cover opacity-60" />
+                          ))}
+                          {item.files.length > 3 && (
+                            <span className="w-10 h-10 rounded border border-white/10 flex items-center justify-center text-[10px] text-white/30 font-sans">
+                              +{item.files.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      )}
                       {isExpanded && (item.completion_note || item.files.length > 0) && (
                         <div className="pt-3 pb-2 space-y-3">
                           {item.completion_note && (
