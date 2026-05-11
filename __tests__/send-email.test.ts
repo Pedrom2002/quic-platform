@@ -80,4 +80,16 @@ describe('sendEmail', () => {
     const capturedBody = JSON.parse((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body)
     expect(capturedBody.to[0].name).toBe('Alice')
   })
+
+  it('falls back to default sender when EMAIL_FROM is not set', async () => {
+    delete process.env.EMAIL_FROM
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ messageId: 'fallback-1' }),
+    }) as unknown as typeof fetch
+    await sendEmail({ to: 'x@y.com', subject: 'Hi', html: '<p>body</p>' })
+    const capturedBody = JSON.parse((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body)
+    // Default is 'QUIC <noreply@quic.pt>' → parsed as { name: 'QUIC', email: 'noreply@quic.pt' }
+    expect(capturedBody.sender).toEqual({ name: 'QUIC', email: 'noreply@quic.pt' })
+  })
 })
