@@ -12,7 +12,6 @@ export default defineConfig({
         'app/api/**/*.ts',
         'schemas/**/*.ts',
       ],
-      all: true,
     },
   },
   resolve: {
