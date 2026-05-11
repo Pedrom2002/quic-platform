@@ -9,7 +9,7 @@ describe('parseCsvClients', () => {
     expect(result.rows[0]).toMatchObject({
       full_name: 'João Silva',
       email: 'joao@exemplo.pt',
-      phone: '+351912345678',
+      phone: '351912345678',
       company: 'Empresa Lda',
       error: null,
     })
