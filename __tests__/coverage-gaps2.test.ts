@@ -132,6 +132,43 @@ describe('dispatcher additional branches', () => {
     delete process.env.QSTASH_TOKEN
   })
 
+  it('qstash path: passes delay when delay_minutes > 0', async () => {
+    process.env.QSTASH_TOKEN = 'tok'
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    const mockPublishJSON = vi.fn().mockResolvedValue({ messageId: 'delayed-msg' })
+
+    const insertedJob = { id: 'job-1', event_id: 'event-1', checklist_item_id: 'item-1', client_id: 'client-1', channel: 'email' }
+    const tableData: Record<string, unknown> = {
+      event_clients: { data: [mockEventClient], error: null },
+      event_checklist_items: { data: [{ id: 'item-1', status: 'completed' }], error: null },
+      message_templates: { data: [mockTemplate], error: null },
+      notification_jobs: { data: [insertedJob], error: null },
+      notification_log: { data: null, error: null },
+    }
+
+    const supabaseMock = { from: vi.fn((table: string) => makeQuery(tableData[table] ?? { data: null, error: null })) }
+    vi.mocked(createAdminClient).mockReturnValue(supabaseMock as never)
+
+    vi.doMock('@upstash/qstash', () => ({
+      Client: vi.fn().mockImplementation(function () {
+        return { publishJSON: mockPublishJSON }
+      }),
+    }))
+
+    const { dispatchNotificationsForItem } = await import('@/lib/notifications/dispatcher')
+    // Rule with delay_minutes > 0 to trigger the delay spread on line 209
+    const itemWithDelay = {
+      ...makeItem(),
+      notification_rules: [{ trigger: 'on_complete', delay_minutes: 60, audience: 'all_clients', channels: ['email'], language: 'pt' }],
+    }
+    await dispatchNotificationsForItem({ event: makeEvent() as never, item: itemWithDelay as never, completedByName: 'Rui' })
+
+    expect(mockPublishJSON).toHaveBeenCalledWith(
+      expect.objectContaining({ delay: 3600 }) // 60 min * 60 sec
+    )
+    delete process.env.QSTASH_TOKEN
+  })
+
   it('filterClientsByAudience default case returns all clients', async () => {
     const { createAdminClient } = await import('@/lib/supabase/admin')
     const { sendEmail } = await import('@/lib/notifications/channels/email')
