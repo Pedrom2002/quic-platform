@@ -261,6 +261,83 @@ describe('PATCH /api/events/[eventId]/checklist-items/[itemId]', () => {
     expect(dispatchNotificationsForItem).toHaveBeenCalled()
   })
 
+  it('sets started_at when completing item that has no started_at yet (line 64)', async () => {
+    const { dispatchNotificationsForItem } = await import('@/lib/notifications/dispatcher')
+    vi.mocked(dispatchNotificationsForItem).mockResolvedValue(undefined)
+
+    const adminSupabase = {
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { id: 'ev-1', name: 'Test' } }),
+      }),
+    }
+    vi.mocked(createAdminClient).mockReturnValue(adminSupabase as never)
+
+    let checklistCallCount = 0
+    const userSupabase = {
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1' } } }) },
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'team_members') return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: defaultMember }) }
+        if (table === 'events') return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { id: 'ev-1' } }) }
+        if (table === 'event_checklist_items') {
+          checklistCallCount++
+          if (checklistCallCount === 1) {
+            // current item has NO started_at → triggers line 64
+            return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { started_at: null } }), update: vi.fn().mockReturnThis() }
+          }
+          return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { id: 'item-1', status: 'completed', started_at: expect.any(String) }, error: null }), update: vi.fn().mockReturnThis() }
+        }
+        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null }) }
+      }),
+    }
+    vi.mocked(createClient).mockResolvedValue(userSupabase as never)
+
+    const req = new Request('http://localhost', { method: 'PATCH', body: JSON.stringify({ status: 'completed' }) })
+    const res = await PATCH(req, { params: Promise.resolve({ eventId: 'ev-1', itemId: 'item-1' }) })
+    expect(res.status).toBe(200)
+  })
+
+  it('logs error when dispatchNotificationsForItem rejects (lines 99-100)', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { dispatchNotificationsForItem } = await import('@/lib/notifications/dispatcher')
+    vi.mocked(dispatchNotificationsForItem).mockRejectedValue(new Error('dispatch failed'))
+
+    const adminSupabase = {
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { id: 'ev-1', name: 'Test' } }),
+      }),
+    }
+    vi.mocked(createAdminClient).mockReturnValue(adminSupabase as never)
+
+    let checklistCallCount = 0
+    const userSupabase = {
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1' } } }) },
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'team_members') return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: defaultMember }) }
+        if (table === 'events') return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { id: 'ev-1' } }) }
+        if (table === 'event_checklist_items') {
+          checklistCallCount++
+          if (checklistCallCount === 1) {
+            return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { started_at: '2026-01-01' } }), update: vi.fn().mockReturnThis() }
+          }
+          return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { id: 'item-1', status: 'completed' }, error: null }), update: vi.fn().mockReturnThis() }
+        }
+        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null }) }
+      }),
+    }
+    vi.mocked(createClient).mockResolvedValue(userSupabase as never)
+
+    const req = new Request('http://localhost', { method: 'PATCH', body: JSON.stringify({ status: 'completed' }) })
+    const res = await PATCH(req, { params: Promise.resolve({ eventId: 'ev-1', itemId: 'item-1' }) })
+    expect(res.status).toBe(200)
+    // Wait for fire-and-forget catch to execute
+    await new Promise(r => setTimeout(r, 20))
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('falha ao despachar'), 'dispatch failed')
+    errorSpy.mockRestore()
+  })
+
   it('returns 500 when DB update fails', async () => {
     const userSupabase = {
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1' } } }) },
