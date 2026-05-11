@@ -532,6 +532,51 @@ describe('AI route stream error catch branches', () => {
     const body = await res.json()
     expect(body).toMatchObject({ memberId: 'm1' })
   })
+
+  it('generate-tasks: stream error is caught', async () => {
+    vi.mocked(createClient).mockResolvedValue(makeBaseSupabase(defaultEvent) as never)
+    mockAnthropicInstance.messages.stream.mockReturnValue(mockStreamThatThrows)
+
+    const { POST } = await import('@/app/api/ai/generate-tasks/route')
+    const res = await POST(makeReq({
+      eventId: VALID_EVENT_ID,
+      eventType: 'Wedding',
+      guestCount: 100,
+      eventDate: '2026-06-15',
+    }) as never)
+    expect(res.status).toBe(200)
+    const text = await readStream(res)
+    expect(text).toContain('error')
+  })
+
+  it('client-update: overdue items with status skipped are excluded from overdue count', async () => {
+    // Covers the branch `i.status !== 'skipped'` where status IS 'skipped' → not counted as overdue
+    const pastDate = '2026-01-01T00:00:00Z'
+    const supabase = {
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'u1' } } }) },
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'team_members') {
+          return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { id: 'm1', organization_id: 'org-1' } }) }
+        }
+        if (table === 'events') {
+          return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: defaultEvent }) }
+        }
+        // event_checklist_items: past due_at but status is 'skipped' → should NOT count as overdue
+        return {
+          select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(),
+          then: (resolve: (v: unknown) => void) => Promise.resolve({ data: [
+            { status: 'skipped', due_at: pastDate },
+            { status: 'completed', due_at: pastDate },
+          ]}).then(resolve),
+        }
+      }),
+    }
+    vi.mocked(createClient).mockResolvedValue(supabase as never)
+
+    const { POST } = await import('@/app/api/ai/client-update/route')
+    const res = await POST(makeReq({ eventId: VALID_EVENT_ID, focus: 'Update geral de progresso' }) as never)
+    expect(res.status).toBe(200)
+  })
 })
 
 // ─── cron/process-scheduled additional branches ──────────────────────────────
