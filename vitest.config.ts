@@ -7,7 +7,12 @@ export default defineConfig({
     include: ['**/__tests__/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      include: ['lib/**/*.ts'],
+      include: [
+        'lib/**/*.ts',
+        'app/api/**/*.ts',
+        'schemas/**/*.ts',
+      ],
+      all: true,
     },
   },
   resolve: {
