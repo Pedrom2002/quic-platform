@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { resolveOrgMember } from '@/lib/supabase/actions'
 import { put } from '@vercel/blob'
 import { MAX_FILE_SIZE } from '@/schemas/file.schema'
+import { getEnv } from '@/lib/env'
 import type { ChecklistItemStatus, EventTask, EventTaskNote, EventTaskFileLink, EventFileWithUploader } from '@/types/app'
 
 async function assertEventOwnership(
@@ -53,6 +54,9 @@ export async function createTaskAction(
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
 
+  const trimmedTitle = fields.title.trim()
+  if (!trimmedTitle || trimmedTitle.length > 300) return null
+
   const parentId = fields.parentId ?? null
 
   const query = supabase
@@ -76,7 +80,7 @@ export async function createTaskAction(
       organization_id: member.organization_id,
       parent_id: parentId,
       checklist_item_id: fields.checklistItemId ?? null,
-      title: fields.title.trim(),
+      title: trimmedTitle,
       position,
     })
     .select('*, assigned_member:team_members!assigned_to(id, full_name, avatar_url)')
@@ -107,6 +111,9 @@ export async function updateTaskAction(
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
+
+  if (fields.title !== undefined && (fields.title.trim().length === 0 || fields.title.length > 300)) return null
+  if (fields.description !== undefined && fields.description !== null && fields.description.length > 2000) return null
 
   const updateData: Record<string, unknown> = { ...fields }
   if (fields.status === 'completed') {
@@ -182,6 +189,9 @@ export async function addTaskNoteAction(
 
   const member = await resolveOrgMember(supabase, user.id)
   if (!member) return null
+
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) return null
 
   if (!content.trim() || content.length > 10000) return null
 
@@ -353,12 +363,9 @@ export async function uploadFileToTaskAction(
   const detectedMime = await detectMimeFromMagic(file)
   if (isMimeMismatch(declaredMime, detectedMime)) return null
 
-  const blobToken = process.env.BLOB_READ_WRITE_TOKEN
-  if (!blobToken) return null
-
   const blob = await put(safeBlobPathname(file.name), file, {
     access: 'public',
-    token: blobToken,
+    token: getEnv().BLOB_READ_WRITE_TOKEN,
   })
 
   const { data: memberRow } = await supabase

@@ -2,25 +2,73 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // ---------------------------------------------------------------------------
-// In-process rate limiter for public portal endpoints.
-// Sliding window: PORTAL_RATE_LIMIT requests per PORTAL_RATE_WINDOW_MS.
-// The Map is per-process; on Vercel each serverless instance is independent,
-// which is acceptable — the goal is to throttle casual abuse, not enforce
-// exact global limits.
+// Rate limiters — sliding window.
+//
+// When UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN are set, limits are
+// enforced globally across all Vercel instances via Upstash Redis (HTTP REST).
+// Without Redis, each instance keeps its own in-process Map — acceptable for
+// throttling casual abuse but not for strict global enforcement.
 // ---------------------------------------------------------------------------
-const PORTAL_RATE_LIMIT = 60
-const PORTAL_RATE_WINDOW_MS = 60_000
 
+const PORTAL_RATE_LIMIT = 60   // req per minute per IP
+const AUTH_RATE_LIMIT    = 10  // req per minute per IP
+const RATE_WINDOW_S      = 60
+const RATE_WINDOW_MS     = RATE_WINDOW_S * 1_000
+
+// In-process fallback maps (per serverless instance)
 const portalHits = new Map<string, number[]>()
+const authHits   = new Map<string, number[]>()
 
-function isRateLimited(ip: string): boolean {
-  const now = Date.now()
-  const cutoff = now - PORTAL_RATE_WINDOW_MS
-  const timestamps = (portalHits.get(ip) ?? []).filter(t => t > cutoff)
-  if (timestamps.length >= PORTAL_RATE_LIMIT) return true
-  timestamps.push(now)
-  portalHits.set(ip, timestamps)
+function inProcessLimited(map: Map<string, number[]>, ip: string, limit: number): boolean {
+  const now    = Date.now()
+  const cutoff = now - RATE_WINDOW_MS
+  const ts     = (map.get(ip) ?? []).filter(t => t > cutoff)
+  if (ts.length >= limit) return true
+  ts.push(now)
+  map.set(ip, ts)
   return false
+}
+
+async function upstashLimited(key: string, limit: number): Promise<boolean> {
+  const url   = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  if (!url || !token) return false // signal: not configured
+
+  const redisKey = `rl:mw:${key}`
+  const body = [
+    ['INCR', redisKey],
+    ['EXPIRE', redisKey, String(RATE_WINDOW_S), 'NX'],
+  ]
+
+  try {
+    const res = await fetch(`${url}/pipeline`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(2_000),
+    })
+    if (!res.ok) return false
+    const data = (await res.json()) as Array<{ result: number }>
+    return Number(data[0]?.result ?? 0) > limit
+  } catch {
+    return false // fail-open for middleware: prefer availability over strict limiting
+  }
+}
+
+async function isPortalRateLimited(ip: string): Promise<boolean> {
+  const upstashConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+  if (upstashConfigured) {
+    return upstashLimited(`portal:${ip}`, PORTAL_RATE_LIMIT)
+  }
+  return inProcessLimited(portalHits, ip, PORTAL_RATE_LIMIT)
+}
+
+async function isAuthRateLimited(ip: string): Promise<boolean> {
+  const upstashConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+  if (upstashConfigured) {
+    return upstashLimited(`auth:${ip}`, AUTH_RATE_LIMIT)
+  }
+  return inProcessLimited(authHits, ip, AUTH_RATE_LIMIT)
 }
 
 // On Vercel the real client IP is the LAST entry in x-forwarded-for;
@@ -52,6 +100,11 @@ function generateNonce(): string {
   return btoa(bin)
 }
 
+// Vercel Blob storage hostname — uploaded files are served from this domain.
+// The exact subdomain varies by project (e.g. <hash>.public.blob.vercel-storage.com)
+// so we allow the root wildcard.
+const VERCEL_BLOB_HOST = 'https://*.public.blob.vercel-storage.com'
+
 function buildCsp(nonce: string): string {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 
@@ -62,12 +115,12 @@ function buildCsp(nonce: string): string {
   return [
     "default-src 'self'",
     `script-src ${scriptSrc}`,
-    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
+    `style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`,
     "font-src 'self' https://fonts.gstatic.com",
-    `img-src 'self' data: blob: ${supabaseUrl} https://*.unsplash.com https://images.unsplash.com https://*.public.blob.vercel-storage.com`,
-    `frame-src https://images.unsplash.com https://*.public.blob.vercel-storage.com`,
-    `connect-src 'self' ${supabaseUrl} https://*.supabase.com wss://*.supabase.co https://*.public.blob.vercel-storage.com`,
-    "media-src 'self' blob: https: https://*.public.blob.vercel-storage.com",
+    `img-src 'self' data: blob: ${supabaseUrl} https://*.unsplash.com https://images.unsplash.com ${VERCEL_BLOB_HOST}`,
+    `frame-src https://images.unsplash.com ${VERCEL_BLOB_HOST}`,
+    `connect-src 'self' ${supabaseUrl} https://*.supabase.com wss://*.supabase.co ${VERCEL_BLOB_HOST}`,
+    `media-src 'self' blob: ${VERCEL_BLOB_HOST}`,
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "object-src 'none'",
@@ -99,9 +152,19 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  const ip = getClientIp(request)
+
   if (pathname.startsWith('/portal/') || pathname.startsWith('/api/portal/')) {
-    const ip = getClientIp(request)
-    if (isRateLimited(ip)) {
+    if (await isPortalRateLimited(ip)) {
+      return new NextResponse('Too Many Requests', {
+        status: 429,
+        headers: { 'Retry-After': '60', 'Content-Type': 'text/plain' },
+      })
+    }
+  }
+
+  if (pathname.startsWith('/auth/')) {
+    if (await isAuthRateLimited(ip)) {
       return new NextResponse('Too Many Requests', {
         status: 429,
         headers: { 'Retry-After': '60', 'Content-Type': 'text/plain' },
@@ -135,6 +198,10 @@ export async function middleware(request: NextRequest) {
   const isPublic = pathname.startsWith('/portal/') || pathname.startsWith('/auth/') || pathname.startsWith('/api/portal/')
 
   if (!user && !isPublic) {
+    // API routes must return 401, not redirect — redirecting breaks REST clients
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 

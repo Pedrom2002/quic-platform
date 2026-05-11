@@ -6,6 +6,9 @@ const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  // Prevents cross-origin windows from retaining a reference to this page,
+  // mitigating Spectre-style side-channel attacks via shared browsing contexts.
+  { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
 ]
 
 const nextConfig: NextConfig = {

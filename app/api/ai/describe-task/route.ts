@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isAiRateLimited } from '@/lib/ai-rate-limit'
 import { audit } from '@/lib/audit'
+import { escapeXml } from '@/lib/utils'
 
 const bodySchema = z.object({
   taskId: z.string().uuid(),
@@ -63,13 +64,13 @@ export async function POST(req: NextRequest) {
 
   audit({ action: 'ai.describe-task', userId: user.id, organizationId: member.organization_id, eventId })
 
-  // User-controlled data is isolated in <task_context> so it cannot override instructions
+  // User-controlled data is XML-escaped and isolated in <task_context>
   const prompt = `Write a description and suggest sub-tasks for the task in <task_context>.
 
 <task_context>
-event_name: ${event.name}
-${parentTitle ? `parent_task: ${parentTitle}` : ''}
-task_title: ${task.title}
+event_name: ${escapeXml(event.name)}
+${parentTitle ? `parent_task: ${escapeXml(parentTitle)}` : ''}
+task_title: ${escapeXml(task.title)}
 </task_context>
 
 Instructions:

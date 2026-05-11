@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getEnv } from '@/lib/env'
 import crypto from 'crypto'
 
 export async function POST(request: Request) {
@@ -9,17 +10,17 @@ export async function POST(request: Request) {
   const id = request.headers.get('svix-id') ?? ''
 
   // Verificar assinatura HMAC do Resend — obrigatório
-  const secret = process.env.RESEND_WEBHOOK_SECRET
-  if (!secret) {
-    console.error('[webhook/resend] RESEND_WEBHOOK_SECRET não configurado')
-    return NextResponse.json({ error: 'Webhook não configurado' }, { status: 500 })
-  }
+  const secret = getEnv().RESEND_WEBHOOK_SECRET
   const toSign = `${id}.${timestamp}.${body}`
   const [, secretBytes] = secret.split('_')
   const key = Buffer.from(secretBytes ?? secret, 'base64')
   const expectedSig = crypto.createHmac('sha256', key).update(toSign).digest('base64')
-  const sigs = sig.split(' ').map(s => s.split(',')[1])
-  const valid = sigs.some(s => s === expectedSig)
+  const expectedBuf = Buffer.from(expectedSig)
+  const sigs = sig.split(' ').map(s => s.split(',')[1] ?? '')
+  const valid = sigs.some(s => {
+    const buf = Buffer.from(s)
+    return buf.length === expectedBuf.length && crypto.timingSafeEqual(buf, expectedBuf)
+  })
   if (!valid) return NextResponse.json({ error: 'Assinatura inválida' }, { status: 401 })
 
   const payload = JSON.parse(body)

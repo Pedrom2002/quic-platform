@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isAiRateLimited } from '@/lib/ai-rate-limit'
 import { audit } from '@/lib/audit'
+import { escapeXml } from '@/lib/utils'
 
 const bodySchema = z.object({
   eventId: z.string().uuid(),
@@ -49,14 +50,14 @@ export async function POST(req: NextRequest) {
 
   const client = new Anthropic()
 
-  // User-controlled data is isolated in <event_context> so it cannot override instructions
+  // User-controlled data is XML-escaped and isolated in <event_context>
   const prompt = `Generate a task list based on the event information in <event_context>.
 
 <event_context>
-event_type: ${body.eventType}
+event_type: ${escapeXml(body.eventType)}
 guest_count: ${body.guestCount}
-event_date: ${body.eventDate}
-notes: ${body.notes ?? 'None'}
+event_date: ${escapeXml(body.eventDate)}
+notes: ${escapeXml(body.notes) || 'None'}
 </event_context>
 
 Return ONLY a valid JSON array with this structure (no markdown, no explanation):

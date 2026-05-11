@@ -9,12 +9,12 @@ import {
   isMimeMismatch,
   safeBlobPathname,
 } from '@/schemas/file.schema'
+import { getEnv } from '@/lib/env'
+import { audit } from '@/lib/audit'
 import type { EventFileWithUploader } from '@/types/app'
 
 function getBlobToken(): string {
-  const token = process.env.BLOB_READ_WRITE_TOKEN
-  if (!token) throw new Error('[upload] BLOB_READ_WRITE_TOKEN não configurado')
-  return token
+  return getEnv().BLOB_READ_WRITE_TOKEN
 }
 
 export async function uploadFileAction(eventId: string, formData: FormData): Promise<EventFileWithUploader | null> {
@@ -73,6 +73,16 @@ export async function uploadFileAction(eventId: string, formData: FormData): Pro
     .returns<EventFileWithUploader[]>()
     .single()
 
+  if (data) {
+    audit({
+      action: 'file.uploaded',
+      userId: user.id,
+      organizationId: member.organization_id,
+      eventId,
+      meta: { fileId: data.id, fileName: file.name.slice(0, 255), mimeType: declaredMime, fileSize: file.size },
+    })
+  }
+
   return data ?? null
 }
 
@@ -106,5 +116,15 @@ export async function deleteFileAction(eventId: string, fileId: string): Promise
     .eq('event_id', eventId)
     .eq('organization_id', member.organization_id)
 
-  return !error && (count ?? 0) > 0
+  const deleted = !error && (count ?? 0) > 0
+  if (deleted) {
+    audit({
+      action: 'file.deleted',
+      userId: user.id,
+      organizationId: member.organization_id,
+      eventId,
+      meta: { fileId },
+    })
+  }
+  return deleted
 }

@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isAiRateLimited } from '@/lib/ai-rate-limit'
 import { audit } from '@/lib/audit'
+import { escapeXml } from '@/lib/utils'
 
 const bodySchema = z.object({
   taskId: z.string().uuid(),
@@ -66,18 +67,18 @@ export async function POST(req: NextRequest) {
 
   audit({ action: 'ai.suggest-assignee', userId: user.id, organizationId: member.organization_id, eventId })
 
-  // task.title, task.description, member names, and history are all user-provided — isolated in <task_context>
+  // task.title, task.description, member names, and history are all user-provided — XML-escaped and isolated in <task_context>
   const prompt = `Given the task and team information in <task_context>, suggest the best person to assign.
 
 <task_context>
-task_title: ${task.title}
-${task.description ? `task_description: ${task.description}` : ''}
+task_title: ${escapeXml(task.title)}
+${task.description ? `task_description: ${escapeXml(task.description)}` : ''}
 
 team_members:
-${orgMembers.map(m => `- id: "${m.id}", name: "${m.full_name}", role: "${m.role}"`).join('\n')}
+${orgMembers.map(m => `- id: "${m.id}", name: "${escapeXml(m.full_name)}", role: "${escapeXml(m.role)}"`).join('\n')}
 
 recent_assignments:
-${historyLines.length > 0 ? historyLines.join('\n') : 'No history available'}
+${historyLines.length > 0 ? historyLines.map(l => escapeXml(l)).join('\n') : 'No history available'}
 </task_context>
 
 Return ONLY valid JSON with this exact structure (no markdown):

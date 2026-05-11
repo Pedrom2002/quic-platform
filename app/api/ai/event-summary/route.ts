@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isAiRateLimited } from '@/lib/ai-rate-limit'
 import { audit } from '@/lib/audit'
+import { escapeXml } from '@/lib/utils'
 
 const bodySchema = z.object({ eventId: z.string().uuid() })
 
@@ -70,15 +71,15 @@ export async function POST(req: NextRequest) {
 
   audit({ action: 'ai.event-summary', userId: user.id, organizationId: member.organization_id, eventId })
 
-  // Note content is user-provided data — truncated and isolated in <event_context>
+  // Note content is user-provided data — truncated, XML-escaped and isolated in <event_context>
   const notesBlock = (notes ?? [])
-    .map(n => `- ${n.content.slice(0, 200)}`)
+    .map(n => `- ${escapeXml(n.content.slice(0, 200))}`)
     .join('\n') || 'None'
 
   const context = `<event_context>
-event_name: ${event.name}
-date: ${event.start_datetime}
-status: ${event.status}
+event_name: ${escapeXml(event.name)}
+date: ${escapeXml(event.start_datetime)}
+status: ${escapeXml(event.status)}
 checklist_progress: ${checklistDone}/${checklistTotal}
 checklist_overdue: ${overdueChecklist}
 tasks_progress: ${tasksDone}/${tasksTotal}

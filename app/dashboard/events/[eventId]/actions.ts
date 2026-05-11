@@ -49,7 +49,7 @@ export async function sendPortalLinkAction(eventId: string) {
   const errors: string[] = []
   for (const client of recipients) {
     try {
-      const body = `Olá ${client.full_name},\n\nPode acompanhar o estado do seu evento em tempo real através do portal:\n\n${portalUrl}\n\nO link é pessoal e válido durante 90 dias.`
+      const body = `Olá ${client.full_name},\n\nPode acompanhar o estado do seu evento em tempo real através do portal:\n\n${portalUrl}\n\nO link é pessoal e válido durante 14 dias.`
       const html = buildEmailHtml(body, event.name)
       await sendEmail({
         to: client.email,
@@ -66,6 +66,25 @@ export async function sendPortalLinkAction(eventId: string) {
 
   if (errors.length && sent === 0) throw new Error(`Falhou o envio para todos os ${recipients.length} destinatários`)
   if (errors.length) throw new Error(`Enviado para ${sent} de ${recipients.length} destinatários. ${errors.length} falhou`)
+}
+
+export async function revokePortalTokenAction(eventId: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  const member = await resolveOrgMember(supabase, user.id)
+  if (!member) throw new Error('Não autorizado')
+
+  const { error } = await supabase
+    .from('events')
+    .update({ portal_token_revoked_at: new Date().toISOString() } as Record<string, unknown>)
+    .eq('id', eventId)
+    .eq('organization_id', member.organization_id)
+
+  if (error) throw new Error('Erro ao revogar token do portal')
+
+  audit({ action: 'portal.token.revoked', userId: user.id, organizationId: member.organization_id, eventId })
 }
 
 export async function sendClientUpdateAction(

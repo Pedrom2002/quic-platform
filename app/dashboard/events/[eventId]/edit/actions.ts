@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { audit } from '@/lib/audit'
 import type { UpdateEventInput } from '@/schemas/event.schema'
 
 export async function updateEventAction(eventId: string, data: UpdateEventInput): Promise<void> {
@@ -36,6 +37,16 @@ export async function updateEventAction(eventId: string, data: UpdateEventInput)
     .eq('organization_id', member.organization_id)
 
   if (error) throw new Error(error.message)
+
+  if (data.status) {
+    audit({
+      action: 'event.status.changed',
+      userId: user.id,
+      organizationId: member.organization_id,
+      eventId,
+      meta: { newStatus: data.status },
+    })
+  }
 }
 
 export async function updatePortalVideosAction(

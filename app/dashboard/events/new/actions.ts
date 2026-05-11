@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { signPortalToken } from '@/lib/portal/token'
+import { audit } from '@/lib/audit'
 import type { CreateEventInput } from '@/schemas/event.schema'
 import type { ChecklistTemplateItem } from '@/types/app'
 
@@ -113,6 +114,14 @@ export async function createEventAction(data: CreateEventInput): Promise<{ event
 
   const portalToken = await signPortalToken(event.id)
   await supabase.from('events').update({ portal_token: portalToken }).eq('id', event.id)
+
+  audit({
+    action: 'event.created',
+    userId: user.id,
+    organizationId: member.organization_id,
+    eventId: event.id,
+    meta: { eventName: data.name },
+  })
 
   const { data: template } = await supabase
     .from('checklist_templates')

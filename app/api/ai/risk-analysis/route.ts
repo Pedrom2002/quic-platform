@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isAiRateLimited } from '@/lib/ai-rate-limit'
 import { audit } from '@/lib/audit'
+import { escapeXml } from '@/lib/utils'
 
 const bodySchema = z.object({ eventId: z.string().uuid() })
 
@@ -65,10 +66,10 @@ export async function POST(req: NextRequest) {
 
   audit({ action: 'ai.risk-analysis', userId: user.id, organizationId: member.organization_id, eventId })
 
-  // event.name is user-provided data — isolated in <event_context>
+  // event.name is user-provided data — XML-escaped and isolated in <event_context>
   const stats = `<event_context>
-event_name: ${event.name}
-status: ${event.status}
+event_name: ${escapeXml(event.name)}
+status: ${escapeXml(event.status)}
 days_until_event: ${daysUntilEvent}
 tasks_completed: ${completedTasks}/${totalTasks}
 tasks_overdue: ${overdueTasks}

@@ -6,7 +6,7 @@ function getSecret(): Uint8Array {
   return new TextEncoder().encode(getEnv().PORTAL_JWT_SECRET)
 }
 
-const EXPIRY_DAYS = 90
+const EXPIRY_DAYS = 14
 
 export async function signPortalToken(eventId: string): Promise<string> {
   return new SignJWT({ eventId })

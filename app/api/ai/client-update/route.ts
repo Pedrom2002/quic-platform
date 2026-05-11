@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isAiRateLimited } from '@/lib/ai-rate-limit'
 import { audit } from '@/lib/audit'
+import { escapeXml } from '@/lib/utils'
 
 const VALID_FOCUS = [
   'Update geral de progresso',
@@ -73,12 +74,12 @@ export async function POST(req: NextRequest) {
     'Mensagem de boas-vindas': 'Write a warm welcome message introducing the team and confirming the event is being actively prepared.',
   }
 
-  // event.name and venue_name are user-provided data — isolated in <event_context>
+  // event.name and venue_name are user-provided data — XML-escaped and isolated in <event_context>
   const context = `<event_context>
-event_name: ${event.name}
-date: ${event.start_datetime}${daysUntil > 0 ? ` (${daysUntil} days away)` : ' (past)'}
-status: ${event.status}
-venue: ${event.venue_name ?? 'Not specified'}
+event_name: ${escapeXml(event.name)}
+date: ${escapeXml(event.start_datetime)}${daysUntil > 0 ? ` (${daysUntil} days away)` : ' (past)'}
+status: ${escapeXml(event.status)}
+venue: ${escapeXml(event.venue_name) || 'Not specified'}
 checklist: ${completed}/${total} items completed${overdue > 0 ? `, ${overdue} overdue` : ''}
 </event_context>`
 
