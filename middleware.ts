@@ -115,7 +115,7 @@ function buildCsp(nonce: string): string {
   return [
     "default-src 'self'",
     `script-src ${scriptSrc}`,
-    `style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`,
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     "font-src 'self' https://fonts.gstatic.com",
     `img-src 'self' data: blob: ${supabaseUrl} https://*.unsplash.com https://images.unsplash.com ${VERCEL_BLOB_HOST}`,
     `frame-src https://images.unsplash.com ${VERCEL_BLOB_HOST}`,
