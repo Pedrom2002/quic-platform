@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { calcProgress } from '@/lib/event-status'
-import { CheckCircle2, Circle, SkipForward, Plus, EyeOff, Loader2, Trash2, X, Check, Mail, Globe, GripVertical } from 'lucide-react'
+import { CheckCircle2, Circle, SkipForward, Plus, EyeOff, Loader2, Trash2, X, Check, GripVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { format, differenceInCalendarDays, isToday, isPast } from 'date-fns'
 import { pt } from 'date-fns/locale'
-import type { NotificationRule, ItemWithMemberAndCounts, ChecklistItemStatus } from '@/types/app'
+import type { ItemWithMemberAndCounts, ChecklistItemStatus } from '@/types/app'
 import { updateChecklistItemAction } from '@/app/dashboard/events/[eventId]/checklist/actions'
 import TaskDetailPanel from './TaskDetailPanel'
 import {
@@ -200,14 +200,11 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
 
   async function addItem(fields: {
     title: string; clientLabel: string
-    assignedTo: string; notifyEmail: boolean; notifyPortal: boolean
+    assignedTo: string
   }) {
     setAddingItem(true)
     try {
       const maxPos = items.reduce((max, i) => Math.max(max, i.position), 0)
-      const channels: string[] = []
-      if (fields.notifyEmail) channels.push('email')
-      if (fields.notifyPortal) channels.push('portal')
       const res = await fetch(`/api/events/${eventId}/checklist-items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -221,18 +218,6 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
       })
       if (!res.ok) throw new Error((await res.json()).error)
       const { item } = await res.json() as { item: ItemWithMemberAndCounts }
-
-      // Apply notification rules via PATCH if needed
-      if (channels.length > 0) {
-        await fetch(`/api/events/${eventId}/checklist-items/${item.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            notification_rules: [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels }],
-          }),
-        })
-        item.notification_rules = [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels }] as any
-      }
 
       setItems(prev => [...prev, item])
       setShowNewForm(false)
@@ -451,27 +436,15 @@ interface EditRowProps {
 }
 
 function EditRow({ item, orgMembers, onSave, onCancel, isLoading }: EditRowProps) {
-  const rules = (item.notification_rules as unknown as NotificationRule[]) ?? []
-  const existingChannels: string[] = rules[0]?.channels ?? []
-
   const [title, setTitle] = useState(item.title)
   const [clientLabel, setClientLabel] = useState(item.client_label ?? '')
-  const [notifyEmail, setNotifyEmail] = useState(existingChannels.includes('email'))
-  const [notifyPortal, setNotifyPortal] = useState(existingChannels.includes('portal'))
   const [assignedTo, setAssignedTo] = useState<string>(item.assigned_to ?? '')
 
   function handleSave() {
-    const channels: string[] = []
-    if (notifyEmail) channels.push('email')
-    if (notifyPortal) channels.push('portal')
-    const notificationRules = channels.length > 0
-      ? [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels }]
-      : []
     onSave({
       title,
       client_label: clientLabel || title,
       is_client_visible: true,
-      notification_rules: notificationRules as any,
       assigned_to: assignedTo || null,
     })
   }
@@ -506,16 +479,6 @@ function EditRow({ item, orgMembers, onSave, onCancel, isLoading }: EditRowProps
       </div>
 
       <div className="flex items-center gap-2">
-        <button type="button" onClick={() => setNotifyEmail(v => !v)}
-          className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors',
-            notifyEmail ? 'border-blue-200 bg-blue-50 text-blue-600' : 'border-slate-200 bg-white text-slate-400')}>
-          <Mail className="w-3 h-3" />Email
-        </button>
-        <button type="button" onClick={() => setNotifyPortal(v => !v)}
-          className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors',
-            notifyPortal ? 'border-violet-200 bg-violet-50 text-violet-600' : 'border-slate-200 bg-white text-slate-400')}>
-          <Globe className="w-3 h-3" />Portal
-        </button>
         <div className="flex-1" />
         <Button size="sm" variant="ghost" onClick={onCancel} disabled={isLoading} className="h-7 px-2 text-slate-400">
           <X className="w-3.5 h-3.5" />
@@ -533,15 +496,13 @@ function EditRow({ item, orgMembers, onSave, onCancel, isLoading }: EditRowProps
 interface NewItemRowProps {
   orgMembers: { id: string; full_name: string }[]
   isLoading: boolean
-  onSave: (fields: { title: string; clientLabel: string; assignedTo: string; notifyEmail: boolean; notifyPortal: boolean }) => void
+  onSave: (fields: { title: string; clientLabel: string; assignedTo: string }) => void
   onCancel: () => void
 }
 
 function NewItemRow({ orgMembers, isLoading, onSave, onCancel }: NewItemRowProps) {
   const [title, setTitle] = useState('')
   const [clientLabel, setClientLabel] = useState('')
-  const [notifyEmail, setNotifyEmail] = useState(false)
-  const [notifyPortal, setNotifyPortal] = useState(false)
   const [assignedTo, setAssignedTo] = useState('')
 
   return (
@@ -575,21 +536,11 @@ function NewItemRow({ orgMembers, isLoading, onSave, onCancel }: NewItemRowProps
         )}
       </div>
       <div className="flex items-center gap-2">
-        <button type="button" onClick={() => setNotifyEmail(v => !v)}
-          className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors',
-            notifyEmail ? 'border-blue-200 bg-blue-50 text-blue-600' : 'border-slate-200 bg-white text-slate-400')}>
-          <Mail className="w-3 h-3" />Email
-        </button>
-        <button type="button" onClick={() => setNotifyPortal(v => !v)}
-          className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors',
-            notifyPortal ? 'border-violet-200 bg-violet-50 text-violet-600' : 'border-slate-200 bg-white text-slate-400')}>
-          <Globe className="w-3 h-3" />Portal
-        </button>
         <div className="flex-1" />
         <Button size="sm" variant="ghost" onClick={onCancel} disabled={isLoading} className="h-7 px-2 text-slate-400">
           <X className="w-3.5 h-3.5" />
         </Button>
-        <Button size="sm" onClick={() => onSave({ title, clientLabel, assignedTo, notifyEmail, notifyPortal })} disabled={isLoading || !title.trim()} className="h-7 px-3 text-xs">
+        <Button size="sm" onClick={() => onSave({ title, clientLabel, assignedTo })} disabled={isLoading || !title.trim()} className="h-7 px-3 text-xs">
           {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Check className="w-3.5 h-3.5 mr-1" />Guardar</>}
         </Button>
       </div>
