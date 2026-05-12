@@ -1,5 +1,4 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { verifyPortalToken } from './token'
 import { calcProgress } from '@/lib/event-status'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
@@ -63,15 +62,15 @@ export function filterEventLevelFiles(
 }
 
 export async function getPortalData(token: string): Promise<PortalEventData | null> {
-  const payload = await verifyPortalToken(token)
-  if (!payload) return null
+  if (!token) return null
 
   const supabase = createAdminClient()
 
+  // Lookup by portal_token value stored in DB — no JWT secret dependency
   const { data: eventRaw } = await supabase
     .from('events')
     .select('id, name, venue_name, start_datetime, status, settings, portal_token_expires_at')
-    .eq('id', payload.eventId)
+    .eq('portal_token', token)
     .single()
 
   if (!eventRaw) return null
@@ -79,6 +78,8 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
   // Portal revogado manualmente: portal_token_expires_at definido no passado
   const expiresAt = (eventRaw as Record<string, unknown>).portal_token_expires_at
   if (expiresAt && new Date(expiresAt as string) <= new Date()) return null
+
+  const eventId = eventRaw.id
 
   const eventSettings = (eventRaw.settings ?? {}) as Record<string, unknown>
   const normalizeVideo = (v: unknown): string | null => {
@@ -94,7 +95,7 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
   const { data: itemsRaw } = await supabase
     .from('event_checklist_items')
     .select('id, client_label, title, status, completed_at, completion_note, position, due_at')
-    .eq('event_id', payload.eventId)
+    .eq('event_id', eventId)
     .eq('is_client_visible', true)
     .order('position', { ascending: true })
 
@@ -111,7 +112,7 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
   const { data: allEventFilesRaw, error: eventFilesError } = await supabase
     .from('event_files')
     .select('id, file_name, file_size, mime_type, blob_url')
-    .eq('event_id', payload.eventId)
+    .eq('event_id', eventId)
     .order('created_at', { ascending: true })
   if (eventFilesError) console.error('[getPortalData] eventFiles query failed', eventFilesError)
 
