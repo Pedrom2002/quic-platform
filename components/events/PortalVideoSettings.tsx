@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { updatePortalVideosAction } from '@/app/dashboard/events/[eventId]/edit/actions'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { Video, Check, Play } from 'lucide-react'
+import { Video, Check, Play, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const AVAILABLE_VIDEOS = [
@@ -146,6 +146,7 @@ export function PortalVideoSettings({ eventId }: { eventId: string }) {
   const [contentVideo, setContentVideo] = useState(AVAILABLE_VIDEOS[1].url)
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
+  const [collapsed, setCollapsed] = useState(true)
 
   useEffect(() => {
     const supabase = createClient()
@@ -181,34 +182,46 @@ export function PortalVideoSettings({ eventId }: { eventId: string }) {
   if (fetching) return null
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6 mt-6">
-      <div className="flex items-center gap-2 mb-1">
-        <Video className="w-4 h-4 text-slate-500" />
-        <h2 className="text-sm font-semibold text-slate-800">Vídeos do portal</h2>
-      </div>
-      <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-        Passa o rato por cima para pré-visualizar. Clica para selecionar.
-      </p>
-
-      <div className="space-y-6">
-        <VideoPicker
-          label="Vídeo hero (topo)"
-          selected={heroVideo}
-          onSelect={setHeroVideo}
+    <div className="bg-white border border-slate-200 rounded-xl shadow-sm mt-6">
+      <button
+        type="button"
+        onClick={() => setCollapsed(c => !c)}
+        className="w-full flex items-center gap-2 p-6 text-left focus:outline-none"
+      >
+        <Video className="w-4 h-4 text-slate-500 shrink-0" />
+        <h2 className="text-sm font-semibold text-slate-800 flex-1">Vídeos do portal</h2>
+        <ChevronDown
+          className={cn('w-4 h-4 text-slate-400 transition-transform duration-200', collapsed ? '' : 'rotate-180')}
         />
-        <div className="border-t border-slate-100" />
-        <VideoPicker
-          label="Vídeo de fundo (conteúdo)"
-          selected={contentVideo}
-          onSelect={setContentVideo}
-        />
-      </div>
+      </button>
 
-      <div className="pt-5">
-        <Button onClick={handleSave} disabled={loading} className="w-full">
-          {loading ? 'A guardar...' : 'Guardar vídeos'}
-        </Button>
-      </div>
+      {!collapsed && (
+        <div className="px-6 pb-6">
+          <p className="text-xs text-slate-400 mb-6 leading-relaxed -mt-2">
+            Passa o rato por cima para pré-visualizar. Clica para selecionar.
+          </p>
+
+          <div className="space-y-6">
+            <VideoPicker
+              label="Vídeo hero (topo)"
+              selected={heroVideo}
+              onSelect={setHeroVideo}
+            />
+            <div className="border-t border-slate-100" />
+            <VideoPicker
+              label="Vídeo de fundo (conteúdo)"
+              selected={contentVideo}
+              onSelect={setContentVideo}
+            />
+          </div>
+
+          <div className="pt-5">
+            <Button onClick={handleSave} disabled={loading} className="w-full">
+              {loading ? 'A guardar...' : 'Guardar vídeos'}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
