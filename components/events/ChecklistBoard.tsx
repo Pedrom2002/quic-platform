@@ -233,6 +233,20 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
         </div>
       </div>
 
+      {/* Add item */}
+      <div className="flex gap-2 mb-4">
+        <Input
+          value={newItemTitle}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewItemTitle(e.target.value)}
+          placeholder="Adicionar nova etapa..."
+          className="bg-white border-slate-200"
+          onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && addItem()}
+        />
+        <Button onClick={addItem} disabled={addingItem || !newItemTitle.trim()} variant="outline">
+          {addingItem ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+        </Button>
+      </div>
+
       {/* View toggle */}
       <div className="flex items-center justify-end mb-3">
         <div className="flex items-center gap-1 border border-slate-200 rounded-lg p-0.5">
@@ -374,20 +388,6 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
           </div>
         </DndContext>
       )}
-
-      {/* Add item */}
-      <div className="flex gap-2">
-        <Input
-          value={newItemTitle}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewItemTitle(e.target.value)}
-          placeholder="Adicionar nova etapa..."
-          className="bg-white border-slate-200"
-          onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && addItem()}
-        />
-        <Button onClick={addItem} disabled={addingItem || !newItemTitle.trim()} variant="outline">
-          {addingItem ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-        </Button>
-      </div>
 
       {/* Task detail panel */}
       {selectedItemId && (() => {
