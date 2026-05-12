@@ -3,9 +3,10 @@
 import { useState, useTransition, useRef } from 'react'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
-import { uploadFileAction, deleteFileAction } from '@/app/dashboard/events/[eventId]/files/actions'
+import { deleteFileAction } from '@/app/dashboard/events/[eventId]/files/actions'
 import type { EventFileWithUploader } from '@/types/app'
 import { Upload, Trash2, Download, FileText, ImageIcon, FileSpreadsheet, File, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -38,13 +39,24 @@ export default function FilesManager({ eventId, initialFiles }: FilesManagerProp
 
   async function handleFiles(fileList: FileList) {
     setUploading(true)
-    for (const file of Array.from(fileList)) {
-      const fd = new FormData()
-      fd.append('file', file)
-      const uploaded = await uploadFileAction(eventId, fd)
-      if (uploaded) setFiles(prev => [uploaded, ...prev])
+    try {
+      for (const file of Array.from(fileList)) {
+        const fd = new FormData()
+        fd.append('file', file)
+        const res = await fetch(`/api/events/${eventId}/files`, { method: 'POST', body: fd })
+        if (!res.ok) {
+          const json = await res.json().catch(() => ({}))
+          toast.error((json as { error?: string }).error ?? 'Erro ao carregar ficheiro')
+          continue
+        }
+        const json = await res.json() as { file: EventFileWithUploader }
+        setFiles(prev => [json.file, ...prev])
+      }
+    } catch {
+      toast.error('Erro ao carregar ficheiro')
+    } finally {
+      setUploading(false)
     }
-    setUploading(false)
   }
 
   async function handleDownload(url: string, filename: string) {
