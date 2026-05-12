@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Popover } from '@base-ui/react/popover'
 import { DayPicker } from 'react-day-picker'
 import { format, parse, isValid } from 'date-fns'
@@ -17,26 +17,39 @@ interface DateTimePickerProps {
   minValue?: string     // "YYYY-MM-DDTHH:MM" — disables dates/times before this
 }
 
+const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
+const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'))
+
 export function DateTimePicker({ value, onChange, placeholder = 'Selecionar data', className, minValue }: DateTimePickerProps) {
   const [open, setOpen] = useState(false)
 
   const date = value ? parse(value.slice(0, 10), 'yyyy-MM-dd', new Date()) : undefined
   const time = value ? value.slice(11, 16) : '00:00'
+  const [hh, mm] = time.split(':')
   const validDate = date && isValid(date) ? date : undefined
 
   const minDate = minValue ? parse(minValue.slice(0, 10), 'yyyy-MM-dd', new Date()) : undefined
   const minTime = minValue ? minValue.slice(11, 16) : undefined
+  const isSameDay = minDate && validDate && format(validDate, 'yyyy-MM-dd') === format(minDate, 'yyyy-MM-dd')
+  const minHH = isSameDay && minTime ? minTime.slice(0, 2) : '00'
+  const minMM = isSameDay && minTime && hh === minHH ? minTime.slice(3, 5) : '00'
 
   function handleDaySelect(day: Date | undefined) {
     if (!day) return
     const dateStr = format(day, 'yyyy-MM-dd')
     onChange(`${dateStr}T${time}`)
-    // keep open to allow time selection
   }
 
-  function handleTimeChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleHour(h: string) {
     const dateStr = validDate ? format(validDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
-    onChange(`${dateStr}T${e.target.value}`)
+    // if hour is now == minHH and current minute is too early, clamp it
+    const clampedMM = isSameDay && minTime && h === minHH && mm < minMM ? minMM : mm
+    onChange(`${dateStr}T${h}:${clampedMM}`)
+  }
+
+  function handleMinute(m: string) {
+    const dateStr = validDate ? format(validDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
+    onChange(`${dateStr}T${hh}:${m}`)
   }
 
   const displayValue = validDate
@@ -100,19 +113,68 @@ export function DateTimePicker({ value, onChange, placeholder = 'Selecionar data
             />
 
             {/* Time picker */}
-            <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-3 px-1">
-              <span className="text-xs text-slate-500 shrink-0">Hora</span>
-              <input
-                type="time"
-                value={time}
-                onChange={handleTimeChange}
-                min={minDate && validDate && format(validDate, 'yyyy-MM-dd') === format(minDate, 'yyyy-MM-dd') ? minTime : undefined}
-                className="flex-1 rounded-md bg-white border border-slate-200 text-slate-800 text-sm px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-300"
-              />
+            <div className="mt-3 pt-3 border-t border-slate-100 px-1">
+              <p className="text-xs text-slate-400 mb-2">Hora</p>
+              <div className="flex items-stretch gap-2">
+                {/* Hours */}
+                <div className="flex-1 overflow-y-auto max-h-36 rounded-lg border border-slate-200 scroll-smooth">
+                  {HOURS.map(h => {
+                    const disabled = isSameDay && h < minHH
+                    const selected = h === hh
+                    return (
+                      <button
+                        key={h}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => handleHour(h)}
+                        className={cn(
+                          'w-full text-center text-sm py-1.5 transition-colors',
+                          selected
+                            ? 'bg-slate-900 text-white font-semibold'
+                            : disabled
+                              ? 'text-slate-200 cursor-not-allowed'
+                              : 'text-slate-700 hover:bg-slate-100',
+                        )}
+                      >
+                        {h}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <div className="flex items-center text-slate-300 font-light text-lg select-none">:</div>
+
+                {/* Minutes */}
+                <div className="flex-1 overflow-y-auto max-h-36 rounded-lg border border-slate-200 scroll-smooth">
+                  {MINUTES.map(m => {
+                    const disabled = isSameDay && hh === minHH && m < minMM
+                    const selected = m === mm
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => handleMinute(m)}
+                        className={cn(
+                          'w-full text-center text-sm py-1.5 transition-colors',
+                          selected
+                            ? 'bg-slate-900 text-white font-semibold'
+                            : disabled
+                              ? 'text-slate-200 cursor-not-allowed'
+                              : 'text-slate-700 hover:bg-slate-100',
+                        )}
+                      >
+                        {m}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-xs font-medium text-white bg-slate-800 hover:bg-slate-700 rounded-md px-3 py-1.5 transition-colors"
+                className="mt-3 w-full text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg py-2 transition-colors"
               >
                 OK
               </button>
