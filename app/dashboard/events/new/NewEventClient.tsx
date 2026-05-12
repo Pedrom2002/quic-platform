@@ -119,7 +119,11 @@ export function NewEventClient({ eventTypes }: Props) {
               <Label className="text-slate-600">Tipo de Evento *</Label>
               <Select onValueChange={val => val && setValue('event_type_id', val as string, { shouldValidate: true })}>
                 <SelectTrigger className="bg-white border-slate-200">
-                  <SelectValue placeholder="Selecionar tipo..." />
+                  <SelectValue placeholder="Selecionar tipo...">
+                    {watch('event_type_id')
+                      ? (eventTypes.find(et => et.id === watch('event_type_id'))?.name ?? 'Selecionar tipo...')
+                      : 'Selecionar tipo...'}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {eventTypes.map(et => (

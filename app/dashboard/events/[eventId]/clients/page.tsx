@@ -147,7 +147,11 @@ export default function EventClientsPage() {
                       <Label className="text-slate-700">Cliente</Label>
                       <Select onValueChange={(val: string | null) => { if (val) setSelectedClientId(val) }}>
                         <SelectTrigger className="bg-white border-slate-200 text-slate-800">
-                          <SelectValue placeholder="Selecionar..." />
+                          <SelectValue placeholder="Selecionar...">
+                            {selectedClientId
+                              ? (() => { const c = availableClients.find(c => c.id === selectedClientId); return c ? `${c.full_name}${c.company ? ` — ${c.company}` : ''}` : 'Selecionar...' })()
+                              : 'Selecionar...'}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {availableClients.map(c => (
@@ -300,7 +304,7 @@ function RoleSelector({ value, onChange }: { value: string; onChange: (v: string
       <Label className="text-slate-700">Papel</Label>
       <Select value={value} onValueChange={(val) => val && onChange(val)}>
         <SelectTrigger className="bg-white border-slate-200">
-          <SelectValue />
+          <SelectValue>{roleLabel[value] ?? value}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="primary_contact">Contacto Principal</SelectItem>
