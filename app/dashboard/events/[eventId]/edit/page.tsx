@@ -19,6 +19,13 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { PortalVideoSettings } from '@/components/events/PortalVideoSettings'
 
+const STATUS_PT: Record<string, string> = {
+  planning: 'Em Planeamento',
+  active: 'Ativo',
+  completed: 'Concluído',
+  cancelled: 'Cancelado',
+}
+
 export default function EditEventPage() {
   const params = useParams<{ eventId: string }>()
   const router = useRouter()
@@ -89,7 +96,7 @@ export default function EditEventPage() {
               onValueChange={val => val && setValue('status', val as UpdateEventInput['status'], { shouldValidate: true })}
             >
               <SelectTrigger className="bg-white border-slate-200">
-                <SelectValue />
+                <SelectValue>{STATUS_PT[watch('status') ?? ''] ?? ''}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="planning">Em Planeamento</SelectItem>
