@@ -6,7 +6,7 @@ import { pt } from 'date-fns/locale'
 import { put } from '@vercel/blob/client'
 import { deleteFileAction } from '@/app/dashboard/events/[eventId]/files/actions'
 import type { EventFileWithUploader } from '@/types/app'
-import { Upload, Trash2, Download, FileText, ImageIcon, FileSpreadsheet, File, Loader2 } from 'lucide-react'
+import { Upload, Trash2, Download, Eye, X, FileText, ImageIcon, FileSpreadsheet, File, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const MAX_FILE_BYTES = 50 * 1024 * 1024 // 50 MB
@@ -33,10 +33,56 @@ interface FilesManagerProps {
   initialFiles: EventFileWithUploader[]
 }
 
+function isPreviewable(mimeType: string | null): boolean {
+  if (!mimeType) return false
+  return mimeType.startsWith('image/') || mimeType.startsWith('video/')
+}
+
+interface PreviewFile { url: string; name: string; mimeType: string }
+
+function PreviewModal({ file, onClose }: { file: PreviewFile; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+      onClick={onClose}
+    >
+      <button
+        className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
+        onClick={onClose}
+        aria-label="Fechar"
+      >
+        <X className="w-6 h-6" />
+      </button>
+      <div
+        className="max-w-4xl max-h-[90vh] w-full flex flex-col items-center gap-3"
+        onClick={e => e.stopPropagation()}
+      >
+        <p className="text-white/80 text-sm font-medium truncate max-w-full px-8">{file.name}</p>
+        {file.mimeType.startsWith('image/') ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={file.url}
+            alt={file.name}
+            className="max-h-[80vh] max-w-full rounded-lg object-contain shadow-2xl"
+          />
+        ) : (
+          <video
+            src={file.url}
+            controls
+            autoPlay
+            className="max-h-[80vh] max-w-full rounded-lg shadow-2xl"
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function FilesManager({ eventId, initialFiles }: FilesManagerProps) {
   const [files, setFiles] = useState<EventFileWithUploader[]>(initialFiles)
   const [uploading, setUploading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [previewFile, setPreviewFile] = useState<PreviewFile | null>(null)
   const [, startTransition] = useTransition()
   const [isDragOver, setIsDragOver] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -145,6 +191,8 @@ export default function FilesManager({ eventId, initialFiles }: FilesManagerProp
   }
 
   return (
+    <>
+    {previewFile && <PreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
     <div className="space-y-4">
       {/* Drop zone */}
       <label
@@ -196,6 +244,16 @@ export default function FilesManager({ eventId, initialFiles }: FilesManagerProp
                 </p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                {isPreviewable(file.mime_type) && (
+                  <button
+                    type="button"
+                    onClick={() => setPreviewFile({ url: file.blob_url, name: file.file_name, mimeType: file.mime_type! })}
+                    className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"
+                    aria-label="Pré-visualizar"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => handleDownload(file.blob_url, file.file_name)}
@@ -225,5 +283,6 @@ export default function FilesManager({ eventId, initialFiles }: FilesManagerProp
         <p className="text-center text-sm text-slate-400 py-4">Nenhum ficheiro anexado.</p>
       )}
     </div>
+    </>
   )
 }
