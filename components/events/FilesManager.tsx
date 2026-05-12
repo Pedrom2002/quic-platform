@@ -3,10 +3,14 @@
 import { useState, useTransition, useRef } from 'react'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
+import { put } from '@vercel/blob/client'
 import { deleteFileAction } from '@/app/dashboard/events/[eventId]/files/actions'
 import type { EventFileWithUploader } from '@/types/app'
 import { Upload, Trash2, Download, FileText, ImageIcon, FileSpreadsheet, File, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+
+const MAX_FILE_BYTES = 50 * 1024 * 1024 // 50 MB
+const DIRECT_UPLOAD_THRESHOLD = 4 * 1024 * 1024 // 4 MB — above this, upload directly to Vercel Blob
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -41,22 +45,71 @@ export default function FilesManager({ eventId, initialFiles }: FilesManagerProp
     setUploading(true)
     try {
       for (const file of Array.from(fileList)) {
-        const fd = new FormData()
-        fd.append('file', file)
-        const res = await fetch(`/api/events/${eventId}/files`, { method: 'POST', body: fd })
-        if (!res.ok) {
-          const json = await res.json().catch(() => ({}))
-          toast.error((json as { error?: string }).error ?? 'Erro ao carregar ficheiro')
+        if (file.size > MAX_FILE_BYTES) {
+          toast.error(`"${file.name}" excede o limite máximo de 50 MB`)
           continue
         }
-        const json = await res.json() as { file: EventFileWithUploader }
-        setFiles(prev => [json.file, ...prev])
+
+        const uploaded = file.size > DIRECT_UPLOAD_THRESHOLD
+          ? await uploadDirect(file)
+          : await uploadViaServer(file)
+
+        if (uploaded) setFiles(prev => [uploaded, ...prev])
       }
     } catch {
       toast.error('Erro ao carregar ficheiro')
     } finally {
       setUploading(false)
     }
+  }
+
+  async function uploadViaServer(file: File): Promise<EventFileWithUploader | null> {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch(`/api/events/${eventId}/files`, { method: 'POST', body: fd })
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}))
+      toast.error((json as { error?: string }).error ?? 'Erro ao carregar ficheiro')
+      return null
+    }
+    const json = await res.json() as { file: EventFileWithUploader }
+    return json.file
+  }
+
+  async function uploadDirect(file: File): Promise<EventFileWithUploader | null> {
+    // Step 1: get a short-lived client token from the server
+    const tokenRes = await fetch(
+      `/api/events/${eventId}/files/token?filename=${encodeURIComponent(file.name)}&mimeType=${encodeURIComponent(file.type)}`
+    )
+    if (!tokenRes.ok) {
+      const json = await tokenRes.json().catch(() => ({}))
+      toast.error((json as { error?: string }).error ?? 'Erro ao iniciar upload')
+      return null
+    }
+    const { token, pathname } = await tokenRes.json() as { token: string; pathname: string }
+
+    // Step 2: upload directly from browser to Vercel Blob (bypasses server body limit)
+    const blob = await put(pathname, file, { access: 'public', token, multipart: true })
+
+    // Step 3: save metadata to database via server
+    const saveRes = await fetch(`/api/events/${eventId}/files`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        blobUrl: blob.url,
+        blobPathname: blob.pathname,
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type,
+      }),
+    })
+    if (!saveRes.ok) {
+      const json = await saveRes.json().catch(() => ({}))
+      toast.error((json as { error?: string }).error ?? 'Erro ao guardar ficheiro')
+      return null
+    }
+    const saveJson = await saveRes.json() as { file: EventFileWithUploader }
+    return saveJson.file
   }
 
   async function handleDownload(url: string, filename: string) {
@@ -122,7 +175,7 @@ export default function FilesManager({ eventId, initialFiles }: FilesManagerProp
           <>
             <Upload className="w-6 h-6 text-slate-300 mb-2" />
             <p className="text-sm text-slate-400">Arrastar ficheiros ou <span className="text-slate-600 font-medium">clique para selecionar</span></p>
-            <p className="text-xs text-slate-300 mt-1">Max. 50 MB por ficheiro</p>
+            <p className="text-xs text-slate-300 mt-1">Máximo 50 MB por ficheiro · imagens, PDF, Word, Excel, vídeo (MP4, MOV)</p>
           </>
         )}
       </label>

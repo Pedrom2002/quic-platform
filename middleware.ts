@@ -104,6 +104,8 @@ function generateNonce(): string {
 // The exact subdomain varies by project (e.g. <hash>.public.blob.vercel-storage.com)
 // so we allow the root wildcard.
 const VERCEL_BLOB_HOST = 'https://*.public.blob.vercel-storage.com'
+// Vercel Blob API endpoint — used by @vercel/blob/client for direct browser-to-blob uploads.
+const VERCEL_BLOB_API = 'https://vercel.com'
 
 function buildCsp(nonce: string): string {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
@@ -119,7 +121,7 @@ function buildCsp(nonce: string): string {
     "font-src 'self' https://fonts.gstatic.com",
     `img-src 'self' data: blob: ${supabaseUrl} https://*.unsplash.com https://images.unsplash.com ${VERCEL_BLOB_HOST}`,
     `frame-src https://images.unsplash.com ${VERCEL_BLOB_HOST}`,
-    `connect-src 'self' ${supabaseUrl} https://*.supabase.com wss://*.supabase.co ${VERCEL_BLOB_HOST}`,
+    `connect-src 'self' ${supabaseUrl} https://*.supabase.com wss://*.supabase.co ${VERCEL_BLOB_HOST} ${VERCEL_BLOB_API}`,
     `media-src 'self' blob: ${VERCEL_BLOB_HOST}`,
     "frame-ancestors 'none'",
     "base-uri 'self'",
