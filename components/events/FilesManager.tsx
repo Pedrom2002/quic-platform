@@ -47,6 +47,24 @@ export default function FilesManager({ eventId, initialFiles }: FilesManagerProp
     setUploading(false)
   }
 
+  async function handleDownload(url: string, filename: string) {
+    try {
+      const res = await fetch(url)
+      const blob = await res.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(blobUrl)
+    } catch {
+      // fallback: abrir em nova tab
+      window.open(url, '_blank')
+    }
+  }
+
   function handleDelete(fileId: string) {
     setDeletingId(fileId)
     startTransition(async () => {
@@ -108,14 +126,14 @@ export default function FilesManager({ eventId, initialFiles }: FilesManagerProp
                 </p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <a
-                  href={file.blob_url}
-                  download={file.file_name}
+                <button
+                  type="button"
+                  onClick={() => handleDownload(file.blob_url, file.file_name)}
                   className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"
                   aria-label="Descarregar"
                 >
                   <Download className="w-4 h-4" />
-                </a>
+                </button>
                 <button
                   onClick={() => handleDelete(file.id)}
                   disabled={deletingId === file.id}
