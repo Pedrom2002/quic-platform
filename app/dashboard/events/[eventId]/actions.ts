@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { sendEmail, buildEmailHtml } from '@/lib/notifications/channels/email'
 import { resolveOrgMember } from '@/lib/supabase/actions'
 import { audit } from '@/lib/audit'
+import { signPortalToken } from '@/lib/portal/token'
+import { revalidatePath } from 'next/cache'
 
 export async function sendPortalLinkAction(eventId: string) {
   const portalBase = process.env.NEXT_PUBLIC_PORTAL_URL ?? process.env.NEXT_PUBLIC_APP_URL
@@ -66,6 +68,28 @@ export async function sendPortalLinkAction(eventId: string) {
 
   if (errors.length && sent === 0) throw new Error(`Falhou o envio para todos os ${recipients.length} destinatários`)
   if (errors.length) throw new Error(`Enviado para ${sent} de ${recipients.length} destinatários. ${errors.length} falhou`)
+}
+
+export async function regeneratePortalTokenAction(eventId: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+
+  const member = await resolveOrgMember(supabase, user.id)
+  if (!member) throw new Error('Não autorizado')
+
+  const newToken = await signPortalToken(eventId)
+
+  const { error } = await supabase
+    .from('events')
+    .update({ portal_token: newToken, portal_token_expires_at: null })
+    .eq('id', eventId)
+    .eq('organization_id', member.organization_id)
+
+  if (error) throw new Error('Erro ao regenerar link do portal')
+
+  audit({ action: 'portal.token.revoked', userId: user.id, organizationId: member.organization_id, eventId })
+  revalidatePath(`/dashboard/events/${eventId}`)
 }
 
 export async function revokePortalTokenAction(eventId: string): Promise<void> {

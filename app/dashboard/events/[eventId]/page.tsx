@@ -7,6 +7,7 @@ import { pt } from 'date-fns/locale'
 import { EVENT_STATUS_LABEL, EVENT_STATUS_COLOR, calcProgress } from '@/lib/event-status'
 import type { EventTypeJoin, EventNoteWithAuthor } from '@/types/app'
 import { SendPortalButton } from '@/components/events/SendPortalButton'
+import { RegeneratePortalButton } from '@/components/events/RegeneratePortalButton'
 import AIButtons from '@/components/events/AIButtons'
 import { ActivityFeed } from '@/components/events/ActivityFeed'
 import NotesSection from '@/components/events/NotesSection'
@@ -167,6 +168,7 @@ export default async function EventDetailPage({
           </div>
           <div className="flex items-center gap-2">
             <SendPortalButton eventId={eventId} />
+            <RegeneratePortalButton eventId={eventId} />
             <Link
               href={`/dashboard/events/${eventId}/edit`}
               className="inline-flex items-center gap-1.5 h-8 px-3 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
