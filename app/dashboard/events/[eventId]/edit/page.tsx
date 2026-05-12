@@ -105,7 +105,16 @@ export default function EditEventPage() {
               <Label className="text-slate-600">Início *</Label>
               <DateTimePicker
                 value={watch('start_datetime')}
-                onChange={val => setValue('start_datetime', val, { shouldValidate: true })}
+                onChange={val => {
+                  setValue('start_datetime', val, { shouldValidate: true })
+                  const end = watch('end_datetime')
+                  if (end && new Date(end) <= new Date(val)) {
+                    const adjusted = new Date(new Date(val).getTime() + 60 * 60 * 1000)
+                    const pad = (n: number) => String(n).padStart(2, '0')
+                    const adjustedStr = `${adjusted.getFullYear()}-${pad(adjusted.getMonth() + 1)}-${pad(adjusted.getDate())}T${pad(adjusted.getHours())}:${pad(adjusted.getMinutes())}`
+                    setValue('end_datetime', adjustedStr, { shouldValidate: true })
+                  }
+                }}
                 placeholder="Selecionar data e hora"
               />
               {errors.start_datetime && <p className="text-red-500 text-xs">{errors.start_datetime.message as string}</p>}
@@ -116,6 +125,7 @@ export default function EditEventPage() {
                 value={watch('end_datetime')}
                 onChange={val => setValue('end_datetime', val, { shouldValidate: true })}
                 placeholder="Selecionar data e hora"
+                minValue={watch('start_datetime')}
               />
               {errors.end_datetime && <p className="text-red-500 text-xs">{errors.end_datetime.message as string}</p>}
             </div>

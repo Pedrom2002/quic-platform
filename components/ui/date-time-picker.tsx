@@ -14,14 +14,18 @@ interface DateTimePickerProps {
   onChange: (val: string) => void
   placeholder?: string
   className?: string
+  minValue?: string     // "YYYY-MM-DDTHH:MM" — disables dates/times before this
 }
 
-export function DateTimePicker({ value, onChange, placeholder = 'Selecionar data', className }: DateTimePickerProps) {
+export function DateTimePicker({ value, onChange, placeholder = 'Selecionar data', className, minValue }: DateTimePickerProps) {
   const [open, setOpen] = useState(false)
 
   const date = value ? parse(value.slice(0, 10), 'yyyy-MM-dd', new Date()) : undefined
   const time = value ? value.slice(11, 16) : '00:00'
   const validDate = date && isValid(date) ? date : undefined
+
+  const minDate = minValue ? parse(minValue.slice(0, 10), 'yyyy-MM-dd', new Date()) : undefined
+  const minTime = minValue ? minValue.slice(11, 16) : undefined
 
   function handleDaySelect(day: Date | undefined) {
     if (!day) return
@@ -63,6 +67,7 @@ export function DateTimePicker({ value, onChange, placeholder = 'Selecionar data
               locale={pt}
               weekStartsOn={1}
               showOutsideDays
+              disabled={minDate ? { before: minDate } : undefined}
               classNames={{
                 root: 'rdp-custom',
                 months: 'flex flex-col',
@@ -101,6 +106,7 @@ export function DateTimePicker({ value, onChange, placeholder = 'Selecionar data
                 type="time"
                 value={time}
                 onChange={handleTimeChange}
+                min={minDate && validDate && format(validDate, 'yyyy-MM-dd') === format(minDate, 'yyyy-MM-dd') ? minTime : undefined}
                 className="flex-1 rounded-md bg-white border border-slate-200 text-slate-800 text-sm px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-300"
               />
               <button
