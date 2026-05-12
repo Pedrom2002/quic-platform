@@ -68,9 +68,14 @@ export default function FilesManager({ eventId, initialFiles }: FilesManagerProp
   function handleDelete(fileId: string) {
     setDeletingId(fileId)
     startTransition(async () => {
-      const ok = await deleteFileAction(eventId, fileId)
-      if (ok) setFiles(prev => prev.filter(f => f.id !== fileId))
-      setDeletingId(null)
+      try {
+        const ok = await deleteFileAction(eventId, fileId)
+        if (ok) setFiles(prev => prev.filter(f => f.id !== fileId))
+      } catch {
+        // erro silencioso — o toast de erro não é crítico aqui
+      } finally {
+        setDeletingId(null)
+      }
     })
   }
 

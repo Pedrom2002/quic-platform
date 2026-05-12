@@ -107,7 +107,11 @@ export async function deleteFileAction(eventId: string, fileId: string): Promise
     .single()
   if (!fileRecord) return false
 
-  await del(fileRecord.blob_url, { token: getBlobToken() })
+  try {
+    await del(fileRecord.blob_url, { token: getBlobToken() })
+  } catch {
+    // blob já eliminado ou inacessível — continua para remover o registo
+  }
 
   const { error, count } = await supabase
     .from('event_files')
