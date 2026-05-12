@@ -100,14 +100,14 @@ export async function deleteFileAction(eventId: string, fileId: string): Promise
 
   const { data: fileRecord } = await supabase
     .from('event_files')
-    .select('blob_pathname')
+    .select('blob_url')
     .eq('id', fileId)
     .eq('event_id', eventId)
     .eq('organization_id', member.organization_id)
     .single()
   if (!fileRecord) return false
 
-  await del(fileRecord.blob_pathname, { token: getBlobToken() })
+  await del(fileRecord.blob_url, { token: getBlobToken() })
 
   const { error, count } = await supabase
     .from('event_files')
