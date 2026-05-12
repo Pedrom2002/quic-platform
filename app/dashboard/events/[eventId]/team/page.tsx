@@ -104,7 +104,11 @@ export default function EventTeamPage() {
                 <Label className="text-slate-700">Membro</Label>
                 <Select onValueChange={(val: string | null) => { if (val) setSelectedMemberId(val) }}>
                   <SelectTrigger className="bg-white border-slate-200 text-slate-800">
-                    <SelectValue placeholder="Selecionar membro..." />
+                    <SelectValue placeholder="Selecionar membro...">
+                      {selectedMemberId
+                        ? (() => { const m = availableMembers.find(m => m.id === selectedMemberId); return m ? `${m.full_name} / ${roleLabels[m.role] ?? m.role}` : '' })()
+                        : 'Selecionar membro...'}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {availableMembers.map(m => (
