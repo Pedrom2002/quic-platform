@@ -14,7 +14,9 @@ import { audit } from '@/lib/audit'
 import type { EventFileWithUploader } from '@/types/app'
 
 function getBlobToken(): string {
-  return getEnv().BLOB_READ_WRITE_TOKEN
+  const token = process.env.BLOB_READ_WRITE_TOKEN
+  if (!token) throw new Error('BLOB_READ_WRITE_TOKEN não está definido')
+  return token
 }
 
 export async function uploadFileAction(eventId: string, formData: FormData): Promise<EventFileWithUploader | null> {

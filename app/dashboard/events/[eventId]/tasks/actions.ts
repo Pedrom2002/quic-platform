@@ -365,7 +365,7 @@ export async function uploadFileToTaskAction(
 
   const blob = await put(safeBlobPathname(file.name), file, {
     access: 'public',
-    token: getEnv().BLOB_READ_WRITE_TOKEN,
+    token: process.env.BLOB_READ_WRITE_TOKEN!,
   })
 
   const { data: memberRow } = await supabase
