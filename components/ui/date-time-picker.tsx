@@ -43,19 +43,19 @@ export function DateTimePicker({ value, onChange, placeholder = 'Selecionar data
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger
         className={cn(
-          'flex h-9 w-full items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 px-3 text-sm text-left',
-          !displayValue && 'text-zinc-500',
-          'focus:outline-none focus:ring-2 focus:ring-zinc-600',
+          'flex h-9 w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm text-left text-slate-800',
+          !displayValue && 'text-slate-400',
+          'focus:outline-none focus:ring-2 focus:ring-slate-300',
           className
         )}
       >
-        <CalendarIcon className="w-4 h-4 text-zinc-500 shrink-0" />
+        <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0" />
         <span className="flex-1 truncate">{displayValue || placeholder}</span>
       </Popover.Trigger>
 
       <Popover.Portal>
         <Popover.Positioner sideOffset={6} align="start">
-          <Popover.Popup className="z-50 rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl p-3 outline-none">
+          <Popover.Popup className="z-50 rounded-xl border border-slate-200 bg-white shadow-xl p-3 outline-none">
             <DayPicker
               mode="single"
               selected={validDate}
@@ -68,22 +68,22 @@ export function DateTimePicker({ value, onChange, placeholder = 'Selecionar data
                 months: 'flex flex-col',
                 month: 'space-y-3',
                 month_caption: 'flex items-center justify-between px-1 mb-1',
-                caption_label: 'text-sm font-semibold text-white capitalize',
+                caption_label: 'text-sm font-semibold text-slate-800 capitalize',
                 nav: 'flex items-center gap-1',
-                button_previous: 'flex items-center justify-center w-7 h-7 rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors',
-                button_next: 'flex items-center justify-center w-7 h-7 rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors',
+                button_previous: 'flex items-center justify-center w-7 h-7 rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors',
+                button_next: 'flex items-center justify-center w-7 h-7 rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors',
                 weeks: 'space-y-1',
                 weekdays: 'flex',
-                weekday: 'w-8 text-center text-xs text-zinc-500 font-normal',
+                weekday: 'w-8 text-center text-xs text-slate-400 font-normal',
                 week: 'flex',
                 day: 'w-8 h-8 text-center',
                 day_button: cn(
-                  'w-8 h-8 rounded-md text-sm text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors',
-                  'focus:outline-none focus:ring-2 focus:ring-zinc-500'
+                  'w-8 h-8 rounded-md text-sm text-slate-700 hover:bg-slate-100 transition-colors',
+                  'focus:outline-none focus:ring-2 focus:ring-slate-300'
                 ),
-                selected: '[&>button]:bg-white [&>button]:text-zinc-900 [&>button]:hover:bg-zinc-100',
-                today: '[&>button]:text-violet-400 [&>button]:font-semibold',
-                outside: '[&>button]:text-zinc-600',
+                selected: '[&>button]:bg-slate-900 [&>button]:text-white [&>button]:hover:bg-slate-800',
+                today: '[&>button]:text-violet-600 [&>button]:font-semibold',
+                outside: '[&>button]:text-slate-300',
                 disabled: '[&>button]:opacity-30 [&>button]:cursor-not-allowed',
               }}
               components={{
@@ -95,18 +95,18 @@ export function DateTimePicker({ value, onChange, placeholder = 'Selecionar data
             />
 
             {/* Time picker */}
-            <div className="mt-3 pt-3 border-t border-zinc-800 flex items-center gap-3 px-1">
-              <span className="text-xs text-zinc-400 shrink-0">Hora</span>
+            <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-3 px-1">
+              <span className="text-xs text-slate-500 shrink-0">Hora</span>
               <input
                 type="time"
                 value={time}
                 onChange={handleTimeChange}
-                className="flex-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-zinc-600"
+                className="flex-1 rounded-md bg-white border border-slate-200 text-slate-800 text-sm px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-300"
               />
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-xs font-medium text-white bg-zinc-700 hover:bg-zinc-600 rounded-md px-3 py-1.5 transition-colors"
+                className="text-xs font-medium text-white bg-slate-800 hover:bg-slate-700 rounded-md px-3 py-1.5 transition-colors"
               >
                 OK
               </button>
