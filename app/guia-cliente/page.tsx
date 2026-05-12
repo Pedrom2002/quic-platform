@@ -303,7 +303,7 @@ export default function GuiaClientePage() {
                 </div>
                 <div className="divide-y divide-stone-100">
                   {[
-                    { q: 'O link expira?', a: 'O link do portal é válido por 90 dias a partir da data de emissão. Se precisar de acesso após esse período, contacte a equipa Quic para renovação.' },
+                    { q: 'O link expira?', a: 'O link do portal não tem data de expiração. Pode aceder ao seu portal a qualquer momento enquanto o evento estiver ativo. Se perder o acesso, contacte a equipa Quic.' },
                     { q: 'Posso partilhar o link com alguém?', a: 'Tecnicamente é possível, mas o link é pessoal e dá acesso a informação privada do seu evento. Recomendamos que não o partilhe com terceiros fora do núcleo de organização.' },
                     { q: 'Porque é que não vejo todas as etapas?', a: 'A equipa Quic define quais as etapas visíveis para o cliente. Algumas etapas são internas e não aparecem no portal para não sobrecarregar a informação.' },
                     { q: 'Não recebi o email de notificação, o que faço?', a: 'Verifique primeiro a pasta de spam ou promoções. Se o email continuar em falta, pode sempre ver o estado actualizado directamente no portal. Contacte a equipa se o problema persistir.' },

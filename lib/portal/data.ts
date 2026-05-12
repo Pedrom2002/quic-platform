@@ -70,14 +70,15 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
 
   const { data: eventRaw } = await supabase
     .from('events')
-    .select('id, name, venue_name, start_datetime, status, settings, portal_token_revoked_at')
+    .select('id, name, venue_name, start_datetime, status, settings, portal_token_expires_at')
     .eq('id', payload.eventId)
     .single()
 
   if (!eventRaw) return null
 
-  // Token revogado manualmente — rejeitar mesmo que o JWT ainda seja válido
-  if ((eventRaw as Record<string, unknown>).portal_token_revoked_at) return null
+  // Portal revogado manualmente: portal_token_expires_at definido no passado
+  const expiresAt = (eventRaw as Record<string, unknown>).portal_token_expires_at
+  if (expiresAt && new Date(expiresAt as string) <= new Date()) return null
 
   const eventSettings = (eventRaw.settings ?? {}) as Record<string, unknown>
   const normalizeVideo = (v: unknown): string | null => {

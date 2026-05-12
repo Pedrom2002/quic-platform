@@ -78,7 +78,7 @@ export async function revokePortalTokenAction(eventId: string): Promise<void> {
 
   const { error } = await supabase
     .from('events')
-    .update({ portal_token_revoked_at: new Date().toISOString() } as Record<string, unknown>)
+    .update({ portal_token_expires_at: new Date().toISOString() })
     .eq('id', eventId)
     .eq('organization_id', member.organization_id)
 

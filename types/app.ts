@@ -152,7 +152,7 @@ export interface NotificationJobPayload {
 export interface PortalTokenPayload {
   eventId: string
   iat: number
-  exp: number
+  exp?: number
 }
 
 // Dados públicos para o portal do cliente

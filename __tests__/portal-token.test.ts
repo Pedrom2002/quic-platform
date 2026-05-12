@@ -39,12 +39,11 @@ describe('portal token', () => {
     expect(payload).toBeNull()
   })
 
-  it('payload includes iat and exp fields', async () => {
+  it('payload includes iat field and no exp field', async () => {
     const { signPortalToken, verifyPortalToken } = await getTokenFns()
     const token = await signPortalToken('event-789')
     const payload = await verifyPortalToken(token)
     expect(payload?.iat).toBeTypeOf('number')
-    expect(payload?.exp).toBeTypeOf('number')
-    expect(payload!.exp).toBeGreaterThan(payload!.iat)
+    expect(payload?.exp).toBeUndefined()
   })
 })
