@@ -11,6 +11,7 @@ import { RegeneratePortalButton } from '@/components/events/RegeneratePortalButt
 import AIButtons from '@/components/events/AIButtons'
 import { ActivityFeed } from '@/components/events/ActivityFeed'
 import NotesSection from '@/components/events/NotesSection'
+import { DeleteEventButton } from '@/components/events/DeleteEventButton'
 import { mergeTimelineEvents } from '@/lib/timeline'
 import type { ChecklistTimelineEvent, NotificationTimelineEvent, ClientTimelineEvent } from '@/lib/timeline'
 
@@ -123,11 +124,12 @@ export default async function EventDetailPage({
   const { data: currentMember } = user
     ? await supabase
         .from('team_members')
-        .select('id')
+        .select('id, role')
         .eq('auth_user_id', user.id)
         .single()
     : { data: null }
   const currentMemberId = currentMember?.id ?? null
+  const isAdmin = currentMember?.role === 'admin'
 
   const { data: eventNotes } = await supabase
     .from('event_notes')
@@ -167,6 +169,7 @@ export default async function EventDetailPage({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {isAdmin && <DeleteEventButton eventId={eventId} />}
             <SendPortalButton eventId={eventId} />
             <RegeneratePortalButton eventId={eventId} />
             <Link
