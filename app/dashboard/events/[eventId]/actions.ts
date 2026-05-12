@@ -49,7 +49,7 @@ export async function sendPortalLinkAction(eventId: string) {
   const errors: string[] = []
   for (const client of recipients) {
     try {
-      const body = `Olá ${client.full_name},\n\nPode acompanhar o estado do seu evento em tempo real através do portal:\n\n${portalUrl}\n\nO link é pessoal e válido durante 14 dias.`
+      const body = `Olá ${client.full_name},\n\nPode acompanhar o estado do seu evento em tempo real através do portal:\n\n${portalUrl}\n\nO link é pessoal e não tem data de expiração.`
       const html = buildEmailHtml(body, event.name)
       await sendEmail({
         to: client.email,

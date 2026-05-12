@@ -148,13 +148,6 @@ export interface NotificationJobPayload {
   client_whatsapp: string | null
 }
 
-// Contexto do portal do cliente (token decoded)
-export interface PortalTokenPayload {
-  eventId: string
-  iat: number
-  exp?: number
-}
-
 // Dados públicos para o portal do cliente
 export interface PortalEventData {
   event: {
