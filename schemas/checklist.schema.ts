@@ -17,6 +17,7 @@ export const createChecklistItemSchema = z.object({
   client_label: z.string().optional(),
   description: z.string().optional(),
   is_client_visible: z.boolean().default(true),
+  assigned_to: z.string().uuid().nullable().optional(),
   position: z.number().int().positive(),
 })
 

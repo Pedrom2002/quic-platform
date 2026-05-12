@@ -44,7 +44,7 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [newItemTitle, setNewItemTitle] = useState('')
+  const [showNewForm, setShowNewForm] = useState(false)
   const [addingItem, setAddingItem] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkLoading, setBulkLoading] = useState(false)
@@ -198,20 +198,44 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
     }
   }
 
-  async function addItem() {
-    if (!newItemTitle.trim()) return
+  async function addItem(fields: {
+    title: string; clientLabel: string; visible: boolean
+    assignedTo: string; notifyEmail: boolean; notifyPortal: boolean
+  }) {
     setAddingItem(true)
     try {
       const maxPos = items.reduce((max, i) => Math.max(max, i.position), 0)
+      const channels: string[] = []
+      if (fields.notifyEmail) channels.push('email')
+      if (fields.notifyPortal) channels.push('portal')
       const res = await fetch(`/api/events/${eventId}/checklist-items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newItemTitle.trim(), position: maxPos + 10 }),
+        body: JSON.stringify({
+          title: fields.title.trim(),
+          client_label: fields.clientLabel || fields.title.trim(),
+          is_client_visible: fields.visible,
+          assigned_to: fields.assignedTo || null,
+          position: maxPos + 10,
+        }),
       })
       if (!res.ok) throw new Error((await res.json()).error)
-      const { item } = await res.json()
+      const { item } = await res.json() as { item: ItemWithMemberAndCounts }
+
+      // Apply notification rules via PATCH if needed
+      if (channels.length > 0) {
+        await fetch(`/api/events/${eventId}/checklist-items/${item.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            notification_rules: [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels }],
+          }),
+        })
+        item.notification_rules = [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels }] as any
+      }
+
       setItems(prev => [...prev, item])
-      setNewItemTitle('')
+      setShowNewForm(false)
       toast.success('Etapa adicionada')
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Erro inesperado')
@@ -234,17 +258,23 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
       </div>
 
       {/* Add item */}
-      <div className="flex gap-2 mb-4">
-        <Input
-          value={newItemTitle}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewItemTitle(e.target.value)}
-          placeholder="Adicionar nova etapa..."
-          className="bg-white border-slate-200"
-          onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && addItem()}
-        />
-        <Button onClick={addItem} disabled={addingItem || !newItemTitle.trim()} variant="outline">
-          {addingItem ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-        </Button>
+      <div className="mb-4">
+        {showNewForm ? (
+          <NewItemRow
+            orgMembers={orgMembers}
+            isLoading={addingItem}
+            onSave={addItem}
+            onCancel={() => setShowNewForm(false)}
+          />
+        ) : (
+          <button
+            onClick={() => setShowNewForm(true)}
+            className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-slate-500 hover:text-slate-700 border border-dashed border-slate-200 hover:border-slate-300 rounded-xl bg-white hover:bg-slate-50 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Adicionar nova etapa
+          </button>
+        )}
       </div>
 
       {/* View toggle */}
@@ -498,6 +528,82 @@ function EditRow({ item, orgMembers, onSave, onCancel, isLoading }: EditRowProps
           <X className="w-3.5 h-3.5" />
         </Button>
         <Button size="sm" onClick={handleSave} disabled={isLoading || !title.trim()} className="h-7 px-3 text-xs">
+          {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Check className="w-3.5 h-3.5 mr-1" />Guardar</>}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+// ─── New Item Row ─────────────────────────────────────────────────────────────
+
+interface NewItemRowProps {
+  orgMembers: { id: string; full_name: string }[]
+  isLoading: boolean
+  onSave: (fields: { title: string; clientLabel: string; visible: boolean; assignedTo: string; notifyEmail: boolean; notifyPortal: boolean }) => void
+  onCancel: () => void
+}
+
+function NewItemRow({ orgMembers, isLoading, onSave, onCancel }: NewItemRowProps) {
+  const [title, setTitle] = useState('')
+  const [clientLabel, setClientLabel] = useState('')
+  const [visible, setVisible] = useState(true)
+  const [notifyEmail, setNotifyEmail] = useState(false)
+  const [notifyPortal, setNotifyPortal] = useState(false)
+  const [assignedTo, setAssignedTo] = useState('')
+
+  return (
+    <div className="bg-slate-50 border border-slate-300 rounded-xl p-4 space-y-3">
+      <div className="space-y-2">
+        <Input
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="Título interno"
+          className="bg-white border-slate-200 text-sm"
+          autoFocus
+          onKeyDown={e => e.key === 'Escape' && onCancel()}
+        />
+        <Input
+          value={clientLabel}
+          onChange={e => setClientLabel(e.target.value)}
+          placeholder="Label visível pelo cliente (ex: Palco montado)"
+          className="bg-white border-slate-200 text-xs text-slate-600"
+        />
+        {orgMembers.length > 0 && (
+          <select
+            value={assignedTo}
+            onChange={e => setAssignedTo(e.target.value)}
+            className="w-full rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400"
+          >
+            <option value="">— Sem atribuição —</option>
+            {orgMembers.map(m => (
+              <option key={m.id} value={m.id}>{m.full_name}</option>
+            ))}
+          </select>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={() => setVisible(v => !v)}
+          className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors',
+            visible ? 'border-slate-300 bg-white text-slate-700' : 'border-slate-200 bg-slate-100 text-slate-400')}>
+          {visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+          Visível cliente
+        </button>
+        <button type="button" onClick={() => setNotifyEmail(v => !v)}
+          className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors',
+            notifyEmail ? 'border-blue-200 bg-blue-50 text-blue-600' : 'border-slate-200 bg-white text-slate-400')}>
+          <Mail className="w-3 h-3" />Email
+        </button>
+        <button type="button" onClick={() => setNotifyPortal(v => !v)}
+          className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors',
+            notifyPortal ? 'border-violet-200 bg-violet-50 text-violet-600' : 'border-slate-200 bg-white text-slate-400')}>
+          <Globe className="w-3 h-3" />Portal
+        </button>
+        <div className="flex-1" />
+        <Button size="sm" variant="ghost" onClick={onCancel} disabled={isLoading} className="h-7 px-2 text-slate-400">
+          <X className="w-3.5 h-3.5" />
+        </Button>
+        <Button size="sm" onClick={() => onSave({ title, clientLabel, visible, assignedTo, notifyEmail, notifyPortal })} disabled={isLoading || !title.trim()} className="h-7 px-3 text-xs">
           {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Check className="w-3.5 h-3.5 mr-1" />Guardar</>}
         </Button>
       </div>
