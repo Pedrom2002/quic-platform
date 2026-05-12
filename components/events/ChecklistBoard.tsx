@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { calcProgress } from '@/lib/event-status'
-import { CheckCircle2, Circle, SkipForward, Plus, Eye, EyeOff, Loader2, Pencil, Trash2, X, Check, Mail, Globe, GripVertical } from 'lucide-react'
+import { CheckCircle2, Circle, SkipForward, Plus, Eye, EyeOff, Loader2, Trash2, X, Check, Mail, Globe, GripVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -706,10 +706,6 @@ function ChecklistItem({ item, orgMembers, isLoading, isSelected, onToggleSelect
             className="text-xs text-slate-400 hover:text-slate-700 h-7 px-2">Repor</Button>
         )}
         <div className={cn('flex items-center gap-0.5 transition-opacity', showActions ? 'opacity-100' : 'opacity-0')}>
-          <Button size="sm" variant="ghost" onClick={onEdit} disabled={isLoading}
-            className="h-7 w-7 p-0 text-slate-300 hover:text-slate-700">
-            <Pencil className="w-3.5 h-3.5" />
-          </Button>
           <Button size="sm" variant="ghost" onClick={onDelete} disabled={isLoading}
             className="h-7 w-7 p-0 text-slate-300 hover:text-red-500">
             <Trash2 className="w-3.5 h-3.5" />
