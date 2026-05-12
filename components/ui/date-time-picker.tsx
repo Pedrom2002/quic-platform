@@ -113,11 +113,11 @@ export function DateTimePicker({ value, onChange, placeholder = 'Selecionar data
             />
 
             {/* Time picker */}
-            <div className="mt-3 pt-3 border-t border-slate-100 px-1">
-              <p className="text-xs text-slate-400 mb-2">Hora</p>
-              <div className="flex items-stretch gap-2">
+            <div className="mt-3 pt-3 border-t border-slate-100">
+              <p className="text-xs text-slate-400 mb-2 px-1">Hora</p>
+              <div className="flex items-center justify-center gap-1">
                 {/* Hours */}
-                <div className="flex-1 overflow-y-auto max-h-36 rounded-lg border border-slate-200 scroll-smooth">
+                <div className="w-14 overflow-y-auto max-h-40 rounded-lg border border-slate-200 scroll-smooth">
                   {HOURS.map(h => {
                     const disabled = isSameDay && h < minHH
                     const selected = h === hh
@@ -142,10 +142,10 @@ export function DateTimePicker({ value, onChange, placeholder = 'Selecionar data
                   })}
                 </div>
 
-                <div className="flex items-center text-slate-300 font-light text-lg select-none">:</div>
+                <span className="text-slate-400 font-semibold text-sm select-none">:</span>
 
                 {/* Minutes */}
-                <div className="flex-1 overflow-y-auto max-h-36 rounded-lg border border-slate-200 scroll-smooth">
+                <div className="w-14 overflow-y-auto max-h-40 rounded-lg border border-slate-200 scroll-smooth">
                   {MINUTES.map(m => {
                     const disabled = isSameDay && hh === minHH && m < minMM
                     const selected = m === mm
