@@ -7,7 +7,13 @@ export async function GET(
 ) {
   const { token } = await params
 
-  const data = await getPortalData(token)
+  let data
+  try {
+    data = await getPortalData(token)
+  } catch (err) {
+    console.error('[portal] getPortalData threw:', err)
+    return NextResponse.json({ error: 'Erro interno', detail: String(err) }, { status: 500 })
+  }
   if (!data) {
     return NextResponse.json({ error: 'Link inválido ou expirado' }, { status: 401 })
   }
