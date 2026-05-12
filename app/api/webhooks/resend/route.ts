@@ -11,6 +11,7 @@ export async function POST(request: Request) {
 
   // Verificar assinatura HMAC do Resend — obrigatório
   const secret = getEnv().RESEND_WEBHOOK_SECRET
+  if (!secret) return NextResponse.json({ error: 'Webhook não configurado' }, { status: 503 })
   const toSign = `${id}.${timestamp}.${body}`
   const [, secretBytes] = secret.split('_')
   const key = Buffer.from(secretBytes ?? secret, 'base64')

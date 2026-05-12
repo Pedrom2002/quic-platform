@@ -10,10 +10,10 @@ const schema = z.object({
   CRON_SECRET: z
     .string()
     .min(32, 'CRON_SECRET must be at least 32 characters — generate with: openssl rand -hex 32'),
-  QSTASH_TOKEN: z.string().min(1, 'QSTASH_TOKEN is required'),
+  QSTASH_TOKEN: z.string().min(1).optional(),
   NEXT_PUBLIC_APP_URL: z.string().url('NEXT_PUBLIC_APP_URL must be a valid URL'),
   BLOB_READ_WRITE_TOKEN: z.string().min(1, 'BLOB_READ_WRITE_TOKEN is required'),
-  RESEND_WEBHOOK_SECRET: z.string().min(1, 'RESEND_WEBHOOK_SECRET is required'),
+  RESEND_WEBHOOK_SECRET: z.string().min(1).optional(),
   ANTHROPIC_API_KEY: z
     .string()
     .regex(/^sk-ant-/, 'ANTHROPIC_API_KEY must start with sk-ant-')
