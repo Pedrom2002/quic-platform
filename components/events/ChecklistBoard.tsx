@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { calcProgress } from '@/lib/event-status'
-import { CheckCircle2, Circle, SkipForward, Plus, Eye, EyeOff, Loader2, Trash2, X, Check, Mail, Globe, GripVertical } from 'lucide-react'
+import { CheckCircle2, Circle, SkipForward, Plus, EyeOff, Loader2, Trash2, X, Check, Mail, Globe, GripVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -199,7 +199,7 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
   }
 
   async function addItem(fields: {
-    title: string; clientLabel: string; visible: boolean
+    title: string; clientLabel: string
     assignedTo: string; notifyEmail: boolean; notifyPortal: boolean
   }) {
     setAddingItem(true)
@@ -214,7 +214,7 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
         body: JSON.stringify({
           title: fields.title.trim(),
           client_label: fields.clientLabel || fields.title.trim(),
-          is_client_visible: fields.visible,
+          is_client_visible: true,
           assigned_to: fields.assignedTo || null,
           position: maxPos + 10,
         }),
@@ -456,7 +456,6 @@ function EditRow({ item, orgMembers, onSave, onCancel, isLoading }: EditRowProps
 
   const [title, setTitle] = useState(item.title)
   const [clientLabel, setClientLabel] = useState(item.client_label ?? '')
-  const [visible, setVisible] = useState(item.is_client_visible ?? true)
   const [notifyEmail, setNotifyEmail] = useState(existingChannels.includes('email'))
   const [notifyPortal, setNotifyPortal] = useState(existingChannels.includes('portal'))
   const [assignedTo, setAssignedTo] = useState<string>(item.assigned_to ?? '')
@@ -471,7 +470,7 @@ function EditRow({ item, orgMembers, onSave, onCancel, isLoading }: EditRowProps
     onSave({
       title,
       client_label: clientLabel || title,
-      is_client_visible: visible,
+      is_client_visible: true,
       notification_rules: notificationRules as any,
       assigned_to: assignedTo || null,
     })
@@ -507,12 +506,6 @@ function EditRow({ item, orgMembers, onSave, onCancel, isLoading }: EditRowProps
       </div>
 
       <div className="flex items-center gap-2">
-        <button type="button" onClick={() => setVisible(v => !v)}
-          className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors',
-            visible ? 'border-slate-300 bg-white text-slate-700' : 'border-slate-200 bg-slate-100 text-slate-400')}>
-          {visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-          Visível cliente
-        </button>
         <button type="button" onClick={() => setNotifyEmail(v => !v)}
           className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors',
             notifyEmail ? 'border-blue-200 bg-blue-50 text-blue-600' : 'border-slate-200 bg-white text-slate-400')}>
@@ -540,14 +533,13 @@ function EditRow({ item, orgMembers, onSave, onCancel, isLoading }: EditRowProps
 interface NewItemRowProps {
   orgMembers: { id: string; full_name: string }[]
   isLoading: boolean
-  onSave: (fields: { title: string; clientLabel: string; visible: boolean; assignedTo: string; notifyEmail: boolean; notifyPortal: boolean }) => void
+  onSave: (fields: { title: string; clientLabel: string; assignedTo: string; notifyEmail: boolean; notifyPortal: boolean }) => void
   onCancel: () => void
 }
 
 function NewItemRow({ orgMembers, isLoading, onSave, onCancel }: NewItemRowProps) {
   const [title, setTitle] = useState('')
   const [clientLabel, setClientLabel] = useState('')
-  const [visible, setVisible] = useState(true)
   const [notifyEmail, setNotifyEmail] = useState(false)
   const [notifyPortal, setNotifyPortal] = useState(false)
   const [assignedTo, setAssignedTo] = useState('')
@@ -583,12 +575,6 @@ function NewItemRow({ orgMembers, isLoading, onSave, onCancel }: NewItemRowProps
         )}
       </div>
       <div className="flex items-center gap-2">
-        <button type="button" onClick={() => setVisible(v => !v)}
-          className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors',
-            visible ? 'border-slate-300 bg-white text-slate-700' : 'border-slate-200 bg-slate-100 text-slate-400')}>
-          {visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-          Visível cliente
-        </button>
         <button type="button" onClick={() => setNotifyEmail(v => !v)}
           className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors',
             notifyEmail ? 'border-blue-200 bg-blue-50 text-blue-600' : 'border-slate-200 bg-white text-slate-400')}>
@@ -603,7 +589,7 @@ function NewItemRow({ orgMembers, isLoading, onSave, onCancel }: NewItemRowProps
         <Button size="sm" variant="ghost" onClick={onCancel} disabled={isLoading} className="h-7 px-2 text-slate-400">
           <X className="w-3.5 h-3.5" />
         </Button>
-        <Button size="sm" onClick={() => onSave({ title, clientLabel, visible, assignedTo, notifyEmail, notifyPortal })} disabled={isLoading || !title.trim()} className="h-7 px-3 text-xs">
+        <Button size="sm" onClick={() => onSave({ title, clientLabel, assignedTo, notifyEmail, notifyPortal })} disabled={isLoading || !title.trim()} className="h-7 px-3 text-xs">
           {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Check className="w-3.5 h-3.5 mr-1" />Guardar</>}
         </Button>
       </div>
