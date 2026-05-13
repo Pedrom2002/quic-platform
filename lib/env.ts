@@ -14,10 +14,7 @@ const schema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url('NEXT_PUBLIC_APP_URL must be a valid URL'),
   BLOB_READ_WRITE_TOKEN: z.string().min(1, 'BLOB_READ_WRITE_TOKEN is required'),
   RESEND_WEBHOOK_SECRET: z.string().min(1).optional(),
-  ANTHROPIC_API_KEY: z
-    .string()
-    .regex(/^sk-ant-/, 'ANTHROPIC_API_KEY must start with sk-ant-')
-    .optional(),
+  GEMINI_API_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_PORTAL_URL: z.string().optional(),
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
