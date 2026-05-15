@@ -218,7 +218,7 @@ describe('dispatcher additional branches', () => {
     await dispatchNotificationsForItem({ event: makeEvent() as never, item: makeItem() as never, completedByName: 'Rui' })
 
     expect(mockSendEmail).not.toHaveBeenCalled()
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('falha ao inserir'), expect.anything())
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('falha ao inserir'))
     errorSpy.mockRestore()
   })
 })
@@ -266,7 +266,7 @@ describe('lib/portal/data getPortalData error log branches', () => {
     const { getPortalData } = await import('@/lib/portal/data')
     const result = await getPortalData('valid-token')
     expect(result).not.toBeNull()
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('itemFiles'), expect.any(Object))
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('itemFiles'))
     errorSpy.mockRestore()
   })
 
@@ -300,7 +300,7 @@ describe('lib/portal/data getPortalData error log branches', () => {
     const { getPortalData } = await import('@/lib/portal/data')
     const result = await getPortalData('valid-token')
     expect(result).not.toBeNull()
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('eventFiles'), expect.any(Object))
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('eventFiles'))
     errorSpy.mockRestore()
   })
 

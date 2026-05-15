@@ -14,8 +14,8 @@ export default async function DashboardPage() {
   const userPromise = supabase.auth.getUser()
 
   const [
-    { data: upcomingEvents },
-    { data: recentJobs },
+    eventsResult,
+    jobsResult,
     { count: totalClients },
     { count: completedToday },
     { data: { user } },
@@ -25,13 +25,13 @@ export default async function DashboardPage() {
       .select('id, name, status, start_datetime, venue_name, event_types(name, color)')
       .in('status', ['planning', 'active'])
       .order('start_datetime', { ascending: true })
-      .limit(8) as unknown as Promise<{ data: EventWithTypeJoin[] | null }>,
+      .limit(8),
     supabase
       .from('notification_jobs')
       .select('id, channel, status, sent_at, rendered_subject, clients(full_name), events(name)')
       .in('status', ['delivered', 'failed'])
       .order('sent_at', { ascending: false })
-      .limit(6) as unknown as Promise<{ data: NotificationJobWithJoins[] | null }>,
+      .limit(6),
     supabase
       .from('clients')
       .select('*', { count: 'exact', head: true }),
@@ -43,9 +43,13 @@ export default async function DashboardPage() {
     userPromise,
   ])
 
-  const { data: member } = user
-    ? (await supabase.from('team_members').select('full_name').eq('auth_user_id', user.id).single() as unknown as { data: { full_name: string } | null })
+  const upcomingEvents = eventsResult.data as EventWithTypeJoin[] | null
+  const recentJobs = jobsResult.data as NotificationJobWithJoins[] | null
+
+  const { data: memberRaw } = user
+    ? await supabase.from('team_members').select('full_name').eq('auth_user_id', user.id).single()
     : { data: null }
+  const member = memberRaw as { full_name: string } | null
 
   const firstName = member?.full_name?.split(' ')[0] ?? 'Olá'
 

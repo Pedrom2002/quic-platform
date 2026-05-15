@@ -1,4 +1,4 @@
-// Tipos de aplicação — DTOs, enums e tipos compostos
+// Application DTOs, enums, and join shapes for Supabase query results
 
 export type NotificationChannel = 'email' | 'whatsapp' | 'sms' | 'portal'
 export type EventStatus = 'planning' | 'active' | 'completed' | 'cancelled'
@@ -73,7 +73,7 @@ export interface ChecklistTemplateItem {
   default_notification_rules: import('./database').Json
 }
 
-// Evento com joins (DTO legacy — kept for compatibility)
+// Legacy shape used by some components — prefer EventWithTypeJoin for new code
 export interface EventWithType {
   id: string
   name: string

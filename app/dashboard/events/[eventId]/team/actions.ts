@@ -1,6 +1,7 @@
 'use server'
 
 import { requireOrgAuth, assertEventOwnership } from '@/lib/supabase/actions'
+import { audit } from '@/lib/audit'
 import type { EventTeamAssignmentWithMember } from '@/types/app'
 
 export async function loadEventTeamAction(eventId: string): Promise<{
@@ -37,7 +38,7 @@ export async function assignTeamMemberAction(
   teamMemberId: string,
   roleInEvent?: string
 ): Promise<void> {
-  const { supabase, member } = await requireOrgAuth()
+  const { supabase, user, member } = await requireOrgAuth()
 
   const owned = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owned) throw new Error('Evento não encontrado')
@@ -59,6 +60,14 @@ export async function assignTeamMemberAction(
     if (error.code === '23505') throw new Error('Membro já está atribuído a este evento')
     throw new Error('Erro ao atribuir membro')
   }
+
+  audit({
+    action: 'member.invited',
+    userId: user.id,
+    organizationId: member.organization_id,
+    eventId,
+    meta: { teamMemberId, roleInEvent },
+  })
 }
 
 export async function removeTeamMemberAction(

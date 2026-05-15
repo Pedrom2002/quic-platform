@@ -14,6 +14,7 @@ export default async function EventsPage() {
     .from('events')
     .select('*, event_types(name, color, icon)')
     .order('start_datetime', { ascending: true })
+    .limit(100)
 
   const events = (eventsRaw ?? []) as (typeof eventsRaw extends (infer T)[] | null ? T : never)[]
 

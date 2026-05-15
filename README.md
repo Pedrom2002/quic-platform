@@ -7,49 +7,43 @@ Plataforma multi-tenant de gestão de eventos e comunicação automatizada com c
 | Camada | Tecnologia |
 |--------|-----------|
 | Framework | Next.js 16 (App Router) + React 19 |
-| Base de dados | Supabase (PostgreSQL + RLS + Realtime) |
+| Base de dados | Supabase (PostgreSQL + RLS) |
 | Autenticação | Supabase Auth (email/password) |
 | Email | Brevo (API REST) |
+| Ficheiros | Vercel Blob |
 | Queue | Upstash QStash (serverless) |
 | Cron | Vercel Cron |
+| AI | Google Gemini |
 | UI | shadcn/ui + Tailwind CSS v4 |
 | Validação | Zod |
+| Testes | Vitest (92%+ cobertura) |
 
 ---
 
 ## Setup Local
 
-### 1. Instalar dependências
-
 ```bash
-npm install
+bash setup.sh
 ```
 
-### 2. Variáveis de ambiente
+O script verifica a versão do Node, copia `.env.example` para `.env.local`, instala dependências e corre o typecheck.
 
-Copia `.env.example` para `.env.local` e preenche todos os valores:
+Edita `.env.local` com as tuas credenciais (ver `.env.example` para descrição de cada variável).
 
-```bash
-cp .env.example .env.local
-```
+### Variáveis obrigatórias
 
-| Variável | Obrigatória | Descrição |
-|----------|-------------|-----------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Sim | URL do projeto Supabase |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Sim | Chave pública anon do Supabase |
-| `SUPABASE_SERVICE_ROLE_KEY` | Sim | Chave service role (apenas server-side) |
-| `BREVO_API_KEY` | Sim | API key do Brevo para envio de emails |
-| `EMAIL_FROM` | Sim | Remetente de email: `Nome <email@dominio.com>` |
-| `RESEND_WEBHOOK_SECRET` | Sim | Secret para verificação HMAC dos webhooks Brevo |
-| `QSTASH_TOKEN` | Prod | Token Upstash QStash (ausente → modo direto em dev) |
-| `QSTASH_CURRENT_SIGNING_KEY` | Prod | Chave de verificação de assinatura QStash |
-| `QSTASH_NEXT_SIGNING_KEY` | Prod | Chave de rotação QStash |
-| `CRON_SECRET` | Sim | Bearer token para autenticar o cron job |
-| `PORTAL_JWT_SECRET` | Sim | Secret HS256 para assinar tokens de portal de clientes |
-| `NEXT_PUBLIC_APP_URL` | Sim | URL base da app (ex: `https://app.quic.pt`) |
-| `NEXT_PUBLIC_PORTAL_URL` | Não | URL base do portal (usa APP_URL se omitido) |
+| Variável | Descrição |
+|----------|-----------|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL do projeto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave pública anon do Supabase |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chave service role (apenas server-side) |
+| `CRON_SECRET` | Bearer token para o cron job (mín. 32 chars, `openssl rand -hex 32`) |
+| `NEXT_PUBLIC_APP_URL` | URL base da app (ex: `https://app.quic.pt`) |
+| `BLOB_READ_WRITE_TOKEN` | Token Vercel Blob |
 
-### 3. Iniciar servidor de desenvolvimento
+Todas as outras variáveis são opcionais com degradação graciosa (ver `.env.example`).
+
+### Iniciar servidor de desenvolvimento
 
 ```bash
 npm run dev
@@ -69,7 +63,8 @@ Abre [http://localhost:3000](http://localhost:3000).
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Verificação de tipos TypeScript |
 | `npm test` | Correr testes unitários (Vitest) |
-| `npm run db:types` | Regenerar tipos TypeScript do schema Supabase |
+| `npm run db:types` | Regenerar tipos TypeScript do schema Supabase (requer `SUPABASE_PROJECT_ID` em `.env.local`) |
+| `node scripts/seed-demo.mjs` | Popular base de dados com dados de demonstração |
 
 ---
 
@@ -121,7 +116,7 @@ Corre a cada hora via Vercel Cron. Processa jobs `queued` sem `qstash_message_id
 
 ### Portal de cliente (`/portal/[token]`)
 
-Acesso público via JWT HS256 com expiração de 90 dias. Mostra apenas itens `is_client_visible = true`. Atualiza em tempo real via Supabase Realtime.
+Acesso público via token URL-safe armazenado em `events.portal_token`. Mostra apenas itens `is_client_visible = true`.
 
 ---
 
@@ -163,7 +158,7 @@ Cobertura atual: `lib/notifications/template-renderer`, `lib/notifications/chann
 
 - RLS activo no Supabase — o cliente anon só acede a dados da própria organização
 - Service role key usada apenas em route handlers e workers (nunca exposta ao cliente)
-- Tokens de portal verificados com `jose` (HS256)
+- Tokens de portal: 12 bytes aleatórios → 16 chars base64url, armazenados em `events.portal_token`
 - Assinaturas QStash verificadas com `@upstash/qstash` Receiver
 - Webhooks Brevo verificados com HMAC-SHA256
 - Authorization checks a nível de aplicação nas API routes (verificação de `organization_id`)

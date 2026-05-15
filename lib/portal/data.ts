@@ -1,7 +1,10 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { calcProgress } from '@/lib/event-status'
+import { createLogger } from '@/lib/logger'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
+
+const log = createLogger('portal/data')
 
 export interface PortalItemFile {
   id: string
@@ -107,14 +110,14 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
         .select('checklist_item_id, event_file:event_files!event_file_id(id, file_name, file_size, mime_type, blob_url)')
         .in('checklist_item_id', itemIds)
     : { data: [], error: null }
-  if (itemFilesError) console.error('[getPortalData] itemFiles query failed', itemFilesError)
+  if (itemFilesError) log.error('itemFiles query failed', { error: itemFilesError.message })
 
   const { data: allEventFilesRaw, error: eventFilesError } = await supabase
     .from('event_files')
     .select('id, file_name, file_size, mime_type, blob_url')
     .eq('event_id', eventId)
     .order('created_at', { ascending: true })
-  if (eventFilesError) console.error('[getPortalData] eventFiles query failed', eventFilesError)
+  if (eventFilesError) log.error('eventFiles query failed', { error: eventFilesError.message })
 
   const itemFilesRows = (itemFilesRaw ?? []) as unknown as Array<{
     checklist_item_id: string

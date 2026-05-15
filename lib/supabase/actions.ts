@@ -18,7 +18,7 @@ export async function resolveOrgMember(
   return data
 }
 
-// Variant that also returns id and full_name — used where the member identity
+// Variant that also returns id and full_name:used where the member identity
 // needs to be recorded (e.g. completed_by, linked_by fields).
 export async function resolveOrgMemberFull(
   supabase: SupabaseClient,
@@ -46,7 +46,7 @@ export async function assertEventOwnership(
   return !!data
 }
 
-// Auth helpers — replace the 4-line auth boilerplate in every Server Action.
+// Auth helpers:replace the 4-line auth boilerplate in every Server Action.
 //
 // requireOrgAuth / requireOrgAuthFull: throw on unauthenticated/unauthorized.
 // Use in Server Actions that surface errors to the UI (via throw).

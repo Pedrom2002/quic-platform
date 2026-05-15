@@ -2,11 +2,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { renderTemplate } from './template-renderer'
 import { sendEmail, buildEmailHtml } from './channels/email'
 import { getEnv } from '@/lib/env'
+import { createLogger } from '@/lib/logger'
 import type { NotificationRule, NotificationChannel, NotificationJobPayload } from '@/types/app'
 import type { EventChecklistItem, Event, Client, EventClient, MessageTemplate, NotificationJob } from '@/types/database'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { calcProgress } from '@/lib/event-status'
+
+const log = createLogger('notifications/dispatcher')
 
 interface DispatchContext {
   event: Event
@@ -159,7 +162,7 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
     .select()
 
   if (insertError || !insertedJobs?.length) {
-    console.error('[dispatcher] falha ao inserir jobs:', insertError?.message)
+    log.error('falha ao inserir jobs', { error: insertError?.message })
     return
   }
 
@@ -181,7 +184,7 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
       const key = `${job.client_id}:${job.channel}:${job.checklist_item_id ?? ''}`
       const draft = draftByKey.get(key)
       if (!draft) {
-        console.error('[dispatcher] draft não encontrado para job', job.id, key)
+        log.error('draft não encontrado para job', { jobId: job.id, key })
         await supabase
           .from('notification_jobs')
           .update({ status: 'failed', last_error: 'draft lookup failed after insert' })
@@ -225,7 +228,7 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
           ])
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err)
-          console.error('[dispatcher:qstash]', msg)
+          log.error('qstash dispatch failed', { jobId: job.id, error: msg })
           await supabase
             .from('notification_jobs')
             .update({ status: 'failed', last_error: msg })
@@ -257,7 +260,7 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
           }
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err)
-          console.error('[dispatcher:direct]', msg)
+          log.error('direct dispatch failed', { jobId: job.id, error: msg })
           await supabase
             .from('notification_jobs')
             .update({ status: 'failed', last_error: msg })
