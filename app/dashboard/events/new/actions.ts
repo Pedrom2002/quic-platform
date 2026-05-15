@@ -1,7 +1,7 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { signPortalToken } from '@/lib/portal/token'
+import { requireOrgAuth, requireOrgAuthFull } from '@/lib/supabase/actions'
+import { generatePortalToken } from '@/lib/portal/token'
 import { audit } from '@/lib/audit'
 import type { CreateEventInput } from '@/schemas/event.schema'
 import type { ChecklistTemplateItem } from '@/types/app'
@@ -21,16 +21,7 @@ export async function saveChecklistDraftsAction(
 ): Promise<void> {
   if (!items.length) return
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   // Confirm the event belongs to this organisation before touching its items
   const { data: event } = await supabase
@@ -72,20 +63,7 @@ export async function saveChecklistDraftsAction(
 }
 
 export async function createEventAction(data: CreateEventInput): Promise<{ eventId: string; items: import('@/types/database').EventChecklistItem[] }> {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const { data: member, error: memberError } = await supabase
-    .from('team_members')
-    .select('id, organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (memberError || !member) {
-    console.error('[createEvent] member lookup failed:', memberError?.message)
-    throw new Error('Não foi possível identificar o utilizador. Tenta novamente.')
-  }
+  const { supabase, user, member } = await requireOrgAuthFull()
 
   const slug =
     data.name
@@ -112,7 +90,7 @@ export async function createEventAction(data: CreateEventInput): Promise<{ event
     throw new Error('Erro ao criar o evento. Tenta novamente.')
   }
 
-  const portalToken = await signPortalToken(event.id)
+  const portalToken = generatePortalToken()
   await supabase.from('events').update({ portal_token: portalToken }).eq('id', event.id)
 
   audit({

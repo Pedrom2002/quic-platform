@@ -1,16 +1,10 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireOrgAuth } from '@/lib/supabase/actions'
 import { messageTemplateSchema, type MessageTemplateInput } from '@/schemas/template.schema'
-import { resolveOrgMember } from '@/lib/supabase/actions'
 
 export async function loadMessageTemplatesAction() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const { data } = await supabase
     .from('message_templates')
@@ -25,12 +19,7 @@ export async function createMessageTemplateAction(input: MessageTemplateInput) {
   const parsed = messageTemplateSchema.safeParse(input)
   if (!parsed.success) throw new Error(parsed.error.issues[0].message)
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const { error } = await supabase
     .from('message_templates')
@@ -42,12 +31,7 @@ export async function updateMessageTemplateAction(id: string, input: MessageTemp
   const parsed = messageTemplateSchema.safeParse(input)
   if (!parsed.success) throw new Error(parsed.error.issues[0].message)
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const { data: existing } = await supabase
     .from('message_templates')
@@ -66,12 +50,7 @@ export async function updateMessageTemplateAction(id: string, input: MessageTemp
 }
 
 export async function deactivateMessageTemplateAction(id: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const { data: existing } = await supabase
     .from('message_templates')

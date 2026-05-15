@@ -505,7 +505,7 @@ export function PortalClient({
         {/* Top bar — full-width border */}
         <div className="relative z-10 border-b border-white/10 anim-fade-up" style={{ animationDelay: '100ms' }}>
           <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-4 sm:py-5 flex items-center justify-between">
-            <Image src="/Design sem nome(1).png" alt="Quic Vertex" width={200} height={80} priority />
+            <Image src="/logo-quic.png" alt="Quic Vertex" width={200} height={80} priority />
             <StatusBadge status={status} />
           </div>
         </div>
@@ -617,7 +617,7 @@ export function PortalClient({
         <div className="max-w-5xl mx-auto px-6 md:px-10 py-8 md:py-10">
           <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
             <div className="flex items-center gap-4">
-              <Image src="/Design sem nome(1).png" alt="Quic Vertex" width={200} height={80} />
+              <Image src="/logo-quic.png" alt="Quic Vertex" width={200} height={80} />
               <span className="text-xs tracking-[0.25em] uppercase text-white/30">No stage is too big</span>
             </div>
             <div className="flex items-center gap-2 justify-end">

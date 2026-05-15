@@ -17,10 +17,14 @@ export default async function EventsPage() {
 
   const events = (eventsRaw ?? []) as (typeof eventsRaw extends (infer T)[] | null ? T : never)[]
 
-  // fetch checklist progress for all events in one query
-  const { data: checklistCounts } = await supabase
-    .from('event_checklist_items')
-    .select('event_id, status')
+  const eventIds = (eventsRaw ?? []).map(e => e.id)
+
+  const { data: checklistCounts } = eventIds.length
+    ? await supabase
+        .from('event_checklist_items')
+        .select('event_id, status')
+        .in('event_id', eventIds)
+    : { data: [] }
 
   const progressMap: Record<string, { total: number; completed: number }> = {}
   for (const item of checklistCounts ?? []) {

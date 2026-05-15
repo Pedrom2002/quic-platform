@@ -1,7 +1,7 @@
 'use server'
 
 import { put, del } from '@vercel/blob'
-import { createClient } from '@/lib/supabase/server'
+import { getOrgAuth, getOrgAuthFull } from '@/lib/supabase/actions'
 import {
   MAX_FILE_SIZE,
   ALLOWED_MIME_TYPES,
@@ -14,22 +14,13 @@ import { audit } from '@/lib/audit'
 import type { EventFileWithUploader } from '@/types/app'
 
 function getBlobToken(): string {
-  const token = process.env.BLOB_READ_WRITE_TOKEN
-  if (!token) throw new Error('BLOB_READ_WRITE_TOKEN não está definido')
-  return token
+  return getEnv().BLOB_READ_WRITE_TOKEN
 }
 
 export async function uploadFileAction(eventId: string, formData: FormData): Promise<EventFileWithUploader | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('id, organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) return null
+  const auth = await getOrgAuthFull()
+  if (!auth) return null
+  const { supabase, user, member } = auth
 
   const { data: event } = await supabase
     .from('events')
@@ -89,16 +80,9 @@ export async function uploadFileAction(eventId: string, formData: FormData): Pro
 }
 
 export async function deleteFileAction(eventId: string, fileId: string): Promise<boolean> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return false
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) return false
+  const auth = await getOrgAuth()
+  if (!auth) return false
+  const { supabase, user, member } = auth
 
   const { data: fileRecord } = await supabase
     .from('event_files')

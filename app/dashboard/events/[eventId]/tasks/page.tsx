@@ -13,34 +13,30 @@ export default async function TasksPage({
   const { eventId } = await params
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // Wave 1: auth + event in parallel
+  const [{ data: { user } }, { data: event }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from('events').select('id, name').eq('id', eventId).single(),
+  ])
+
   if (!user) redirect('/auth/login')
-
-  const { data: event } = await supabase
-    .from('events')
-    .select('id, name')
-    .eq('id', eventId)
-    .single()
-
   if (!event) notFound()
 
-  const { data: currentMember } = await supabase
-    .from('team_members')
-    .select('id, organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-
-  const [tasks, checklistItems, orgMembersResult] = await Promise.all([
+  // Wave 2: team member + task data in parallel
+  const [{ data: currentMember }, tasks, checklistItems] = await Promise.all([
+    supabase.from('team_members').select('id, organization_id').eq('auth_user_id', user.id).single(),
     loadEventTasksAction(eventId),
     loadChecklistItemsForLinkingAction(eventId),
-    currentMember
-      ? supabase
-          .from('team_members')
-          .select('id, full_name')
-          .eq('organization_id', currentMember.organization_id)
-          .order('full_name', { ascending: true })
-      : Promise.resolve({ data: [] }),
   ])
+
+  // Wave 3: org members (needs currentMember.organization_id)
+  const orgMembersResult = currentMember
+    ? await supabase
+        .from('team_members')
+        .select('id, full_name')
+        .eq('organization_id', currentMember.organization_id)
+        .order('full_name', { ascending: true })
+    : { data: [] }
 
   const orgMembers = (orgMembersResult.data ?? []) as { id: string; full_name: string }[]
 

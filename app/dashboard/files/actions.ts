@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { getOrgAuth } from '@/lib/supabase/actions'
 import type { EventFileWithUploader } from '@/types/app'
 
 export type FileWithEvent = EventFileWithUploader & {
@@ -8,16 +8,9 @@ export type FileWithEvent = EventFileWithUploader & {
 }
 
 export async function loadAllFilesAction(): Promise<FileWithEvent[]> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) return []
+  const auth = await getOrgAuth()
+  if (!auth) return []
+  const { supabase, member } = auth
 
   const { data } = await supabase
     .from('event_files')

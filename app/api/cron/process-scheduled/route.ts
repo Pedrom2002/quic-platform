@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Client as QStashClient } from '@upstash/qstash'
+import { getEnv } from '@/lib/env'
 import type { NotificationJobPayload } from '@/types/app'
 
 export async function GET(request: Request) {
-  const cronSecret = process.env.CRON_SECRET
-  if (!cronSecret) {
-    console.error('[cron] CRON_SECRET não configurado')
-    return NextResponse.json({ error: 'Não configurado' }, { status: 500 })
+  let cronSecret: string, qstashToken: string | undefined, appUrl: string
+  try {
+    ;({ CRON_SECRET: cronSecret, QSTASH_TOKEN: qstashToken, NEXT_PUBLIC_APP_URL: appUrl } = getEnv())
+  } catch {
+    return NextResponse.json({ error: 'Configuração inválida' }, { status: 500 })
   }
 
   const authHeader = request.headers.get('authorization')
@@ -15,7 +17,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
-  const qstashToken = process.env.QSTASH_TOKEN
   if (!qstashToken) {
     console.error('[cron] QSTASH_TOKEN não configurado')
     return NextResponse.json({ error: 'QSTASH_TOKEN não configurado' }, { status: 500 })
@@ -70,12 +71,6 @@ export async function GET(request: Request) {
     .from('clients')
     .select('id, email, phone, whatsapp')
     .in('id', clientIds)
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL
-  if (!appUrl) {
-    console.error('[cron] NEXT_PUBLIC_APP_URL não configurado')
-    return NextResponse.json({ error: 'NEXT_PUBLIC_APP_URL não configurado' }, { status: 500 })
-  }
 
   const clientMap = new Map((clientsRaw ?? []).map(c => [c.id, c]))
   const workerUrl = `${appUrl}/api/workers/send-notification`

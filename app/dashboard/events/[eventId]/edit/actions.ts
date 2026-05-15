@@ -1,20 +1,11 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireOrgAuth } from '@/lib/supabase/actions'
 import { audit } from '@/lib/audit'
 import type { UpdateEventInput } from '@/schemas/event.schema'
 
 export async function deleteEventAction(eventId: string): Promise<void> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('organization_id, role')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, user, member } = await requireOrgAuth()
   if (member.role !== 'admin') throw new Error('Apenas administradores podem eliminar eventos')
 
   const { error } = await supabase
@@ -35,16 +26,7 @@ export async function deleteEventAction(eventId: string): Promise<void> {
 }
 
 export async function updateEventAction(eventId: string, data: UpdateEventInput): Promise<void> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, user, member } = await requireOrgAuth()
 
   const { data: event } = await supabase
     .from('events')
@@ -84,16 +66,7 @@ export async function updatePortalVideosAction(
   heroVideo: string,
   contentVideo: string,
 ): Promise<void> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const { data: event } = await supabase
     .from('events')

@@ -1,29 +1,10 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { resolveOrgMember } from '@/lib/supabase/actions'
-
-async function assertEventOwnership(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  eventId: string,
-  organizationId: string
-) {
-  const { data } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('organization_id', organizationId)
-    .single()
-  return !!data
-}
+import { requireOrgAuth } from '@/lib/supabase/actions'
+import { assertEventOwnership } from '@/lib/supabase/actions'
 
 export async function loadEventClientsAction(eventId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) throw new Error('Evento não encontrado')
@@ -49,12 +30,7 @@ export async function addExistingClientAction(
   clientId: string,
   role: 'primary_contact' | 'cc' | 'vip' | 'vendor'
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) throw new Error('Evento não encontrado')
@@ -81,12 +57,7 @@ export async function createAndAddClientAction(
 ) {
   if (!newClient.full_name.trim()) throw new Error('Nome obrigatório')
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) throw new Error('Evento não encontrado')
@@ -109,12 +80,7 @@ export async function toggleChannelAction(
   ecId: string,
   updatedChannels: string[]
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) throw new Error('Evento não encontrado')
@@ -128,12 +94,7 @@ export async function toggleChannelAction(
 }
 
 export async function removeClientAction(eventId: string, ecId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) throw new Error('Evento não encontrado')

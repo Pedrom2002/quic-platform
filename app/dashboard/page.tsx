@@ -10,14 +10,16 @@ import type { EventWithTypeJoin, NotificationJobWithJoins } from '@/types/app'
 export default async function DashboardPage() {
   const supabase = await createClient()
 
+  // Auth runs concurrently with event/notification queries
+  const userPromise = supabase.auth.getUser()
+
   const [
-    { data: { user } },
     { data: upcomingEvents },
     { data: recentJobs },
     { count: totalClients },
     { count: completedToday },
+    { data: { user } },
   ] = await Promise.all([
-    supabase.auth.getUser(),
     supabase
       .from('events')
       .select('id, name, status, start_datetime, venue_name, event_types(name, color)')
@@ -38,13 +40,12 @@ export default async function DashboardPage() {
       .select('*', { count: 'exact', head: true })
       .eq('status', 'completed')
       .gte('completed_at', new Date(Date.now() - 86_400_000).toISOString()),
+    userPromise,
   ])
 
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('full_name')
-    .eq('auth_user_id', user?.id ?? '')
-    .single()
+  const { data: member } = user
+    ? (await supabase.from('team_members').select('full_name').eq('auth_user_id', user.id).single() as unknown as { data: { full_name: string } | null })
+    : { data: null }
 
   const firstName = member?.full_name?.split(' ')[0] ?? 'Olá'
 
@@ -66,7 +67,7 @@ export default async function DashboardPage() {
 
           {/* Top bar */}
           <div className="flex items-center justify-between py-5 border-b border-white/10">
-            <Image src="/Design sem nome(1).png" alt="Quic" width={200} height={80} priority />
+            <Image src="/logo-quic.png" alt="Quic" width={200} height={80} priority />
             <Link
               href="/dashboard/events/new"
               className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-white/90 transition-colors"

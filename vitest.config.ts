@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['**/__tests__/**/*.test.ts'],
+    setupFiles: ['__tests__/setup.ts'],
     coverage: {
       provider: 'v8',
       include: [
@@ -12,6 +13,13 @@ export default defineConfig({
         'app/api/**/*.ts',
         'schemas/**/*.ts',
       ],
+      reporter: ['text', 'lcov', 'html'],
+      thresholds: {
+        lines: 60,
+        functions: 60,
+        branches: 50,
+        statements: 60,
+      },
     },
   },
   resolve: {

@@ -9,6 +9,13 @@ vi.mock('@upstash/qstash', () => {
   return { Receiver }
 })
 
+vi.mock('@/lib/env', () => ({
+  getEnv: () => ({
+    QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
+    QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
+  }),
+}))
+
 import { verifyQStashSignature } from '@/lib/qstash/verify'
 
 describe('verifyQStashSignature', () => {

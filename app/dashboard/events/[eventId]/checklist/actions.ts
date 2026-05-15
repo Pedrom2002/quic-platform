@@ -1,36 +1,18 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { resolveOrgMember } from '@/lib/supabase/actions'
-import { put, del } from '@vercel/blob'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { requireOrgAuth, requireOrgAuthFull, getOrgAuth, assertEventOwnership } from '@/lib/supabase/actions'
+import { put } from '@vercel/blob'
 import { MAX_FILE_SIZE } from '@/schemas/file.schema'
+import { dispatchNotificationsForItem } from '@/lib/notifications/dispatcher'
 import type { ChecklistItemStatus, ChecklistItemNote, ChecklistItemFileLink, EventFileWithUploader } from '@/types/app'
-
-async function assertEventOwnership(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  eventId: string,
-  organizationId: string
-) {
-  const { data } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('organization_id', organizationId)
-    .single()
-  return !!data
-}
 
 export async function bulkUpdateChecklistStatusAction(
   eventId: string,
   ids: string[],
   status: ChecklistItemStatus
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuthFull()
 
   if (!ids.length) throw new Error('Nenhum item selecionado')
   if (ids.length > 50) throw new Error('Máximo 50 items por operação')
@@ -41,6 +23,7 @@ export async function bulkUpdateChecklistStatusAction(
   const updateData: Record<string, unknown> = { status }
   if (status === 'completed') {
     updateData.completed_at = new Date().toISOString()
+    updateData.completed_by = member.id
   } else {
     updateData.completed_at = null
   }
@@ -54,29 +37,31 @@ export async function bulkUpdateChecklistStatusAction(
   if (error) throw new Error(error.message)
 
   if (status === 'completed') {
-    await Promise.allSettled(
-      ids.map(id =>
-        fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/events/${eventId}/checklist-items/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'completed', _notifyOnly: true }),
-        })
+    const adminClient = createAdminClient()
+    const [{ data: event }, { data: completedItems }] = await Promise.all([
+      adminClient.from('events').select('*').eq('id', eventId).single(),
+      adminClient
+        .from('event_checklist_items')
+        .select('*')
+        .in('id', ids)
+        .eq('event_id', eventId),
+    ])
+
+    if (event && completedItems?.length) {
+      const completedByName = member.full_name ?? 'Equipa Quic'
+      await Promise.allSettled(
+        completedItems.map(item =>
+          dispatchNotificationsForItem({ event, item, completedByName })
+        )
       )
-    )
+    }
   }
 }
 
 export async function loadOrgTeamMembersAction(eventId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) return []
+  const auth = await getOrgAuth()
+  if (!auth) return []
+  const { supabase, member } = auth
 
   const { data } = await supabase
     .from('team_members')
@@ -92,12 +77,7 @@ export async function reorderChecklistItemsAction(
   eventId: string,
   orderedIds: string[]
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   if (!orderedIds.length) throw new Error('Nenhum item para reordenar')
   if (orderedIds.length > 200) throw new Error('Máximo 200 items por operação')
@@ -105,15 +85,24 @@ export async function reorderChecklistItemsAction(
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) throw new Error('Evento não encontrado')
 
-  await Promise.all(
-    orderedIds.map((id, index) =>
-      supabase
-        .from('event_checklist_items')
-        .update({ position: (index + 1) * 10 })
-        .eq('id', id)
-        .eq('event_id', eventId)
-    )
-  )
+  // Validate that all IDs belong to this event before the bulk upsert.
+  // Prevents cross-event position manipulation if client sends foreign IDs.
+  const { data: validRows } = await supabase
+    .from('event_checklist_items')
+    .select('id')
+    .in('id', orderedIds)
+    .eq('event_id', eventId)
+
+  const validIds = new Set((validRows ?? []).map(r => r.id))
+  const rows = orderedIds
+    .filter(id => validIds.has(id))
+    .map((id, index) => ({ id, position: (index + 1) * 10 }))
+
+  if (rows.length) {
+    await supabase
+      .from('event_checklist_items')
+      .upsert(rows, { onConflict: 'id' })
+  }
 }
 
 export async function updateChecklistItemAction(
@@ -127,12 +116,9 @@ export async function updateChecklistItemAction(
     status?: ChecklistItemStatus
   }
 ) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return null
+  const auth = await getOrgAuth()
+  if (!auth) return null
+  const { supabase, member } = auth
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
@@ -161,12 +147,9 @@ export async function addItemNoteAction(
   itemId: string,
   content: string
 ): Promise<ChecklistItemNote | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return null
+  const auth = await getOrgAuth()
+  if (!auth) return null
+  const { supabase, user, member } = auth
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
@@ -200,12 +183,9 @@ export async function deleteItemNoteAction(
   itemId: string,
   noteId: string
 ): Promise<boolean> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return false
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return false
+  const auth = await getOrgAuth()
+  if (!auth) return false
+  const { supabase, member } = auth
 
   const { error, count } = await supabase
     .from('checklist_item_notes')
@@ -222,12 +202,9 @@ export async function loadItemNotesAction(
   eventId: string,
   itemId: string
 ): Promise<ChecklistItemNote[]> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return []
+  const auth = await getOrgAuth()
+  if (!auth) return []
+  const { supabase, member } = auth
 
   const { data } = await supabase
     .from('checklist_item_notes')
@@ -245,12 +222,9 @@ export async function loadItemFilesAction(
   eventId: string,
   itemId: string
 ): Promise<ChecklistItemFileLink[]> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return []
+  const auth = await getOrgAuth()
+  if (!auth) return []
+  const { supabase, member } = auth
 
   const { data } = await supabase
     .from('checklist_item_files')
@@ -264,12 +238,9 @@ export async function loadItemFilesAction(
 }
 
 export async function loadEventFilesForLinkingAction(eventId: string): Promise<EventFileWithUploader[]> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return []
+  const auth = await getOrgAuth()
+  if (!auth) return []
+  const { supabase, member } = auth
 
   const { data } = await supabase
     .from('event_files')
@@ -287,12 +258,9 @@ export async function linkFileToItemAction(
   itemId: string,
   eventFileId: string
 ): Promise<ChecklistItemFileLink | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return null
+  const auth = await getOrgAuth()
+  if (!auth) return null
+  const { supabase, user, member } = auth
 
   const { data: linkedByRow } = await supabase
     .from('team_members')
@@ -320,12 +288,9 @@ export async function unlinkFileFromItemAction(
   itemId: string,
   linkId: string
 ): Promise<boolean> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return false
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return false
+  const auth = await getOrgAuth()
+  if (!auth) return false
+  const { supabase, member } = auth
 
   const { error, count } = await supabase
     .from('checklist_item_files')
@@ -342,12 +307,9 @@ export async function uploadFileToItemAction(
   itemId: string,
   formData: FormData
 ): Promise<ChecklistItemFileLink | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return null
+  const auth = await getOrgAuth()
+  if (!auth) return null
+  const { supabase, user, member } = auth
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null

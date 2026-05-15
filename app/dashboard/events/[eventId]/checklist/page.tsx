@@ -13,22 +13,24 @@ export default async function ChecklistPage({
   const { eventId } = await params
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // Wave 1: auth + event in parallel
+  const [{ data: { user } }, { data: event }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from('events').select('id, name, status').eq('id', eventId).single(),
+  ])
+
   if (!user) redirect('/auth/login')
-
-  const { data: event } = await supabase
-    .from('events')
-    .select('id, name, status')
-    .eq('id', eventId)
-    .single()
-
   if (!event) notFound()
 
-  const { data: items } = await supabase
-    .from('event_checklist_items')
-    .select('*, assigned_member:team_members!assigned_to(id, full_name, avatar_url)')
-    .eq('event_id', eventId)
-    .order('position', { ascending: true })
+  // Wave 2: checklist items + current member in parallel
+  const [{ data: items }, { data: currentMember }] = await Promise.all([
+    supabase
+      .from('event_checklist_items')
+      .select('*, assigned_member:team_members!assigned_to(id, full_name, avatar_url)')
+      .eq('event_id', eventId)
+      .order('position', { ascending: true }),
+    supabase.from('team_members').select('id').eq('auth_user_id', user.id).single(),
+  ])
 
   // Count notes and files per item
   const itemIds = (items ?? []).map(i => i.id)
@@ -56,12 +58,6 @@ export default async function ChecklistPage({
   for (const r of fileCounts ?? []) {
     fileCountMap.set(r.checklist_item_id, (fileCountMap.get(r.checklist_item_id) ?? 0) + 1)
   }
-
-  const { data: currentMember } = await supabase
-    .from('team_members')
-    .select('id')
-    .eq('auth_user_id', user.id)
-    .single()
 
   const itemsWithCounts: ItemWithMemberAndCounts[] = (items ?? []).map(item => ({
     ...item,

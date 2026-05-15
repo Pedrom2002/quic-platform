@@ -13,22 +13,20 @@ export default async function EventFilesPage({
   const { eventId } = await params
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // Wave 1: auth + event + files in parallel (all need only eventId)
+  const [{ data: { user } }, { data: event }, { data: files }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from('events').select('id, name').eq('id', eventId).single(),
+    supabase
+      .from('event_files')
+      .select('*, uploader:team_members!uploaded_by(id, full_name, avatar_url)')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false })
+      .returns<EventFileWithUploader[]>(),
+  ])
+
   if (!user) redirect('/auth/login')
-
-  const { data: event } = await supabase
-    .from('events')
-    .select('id, name')
-    .eq('id', eventId)
-    .single()
   if (!event) notFound()
-
-  const { data: files } = await supabase
-    .from('event_files')
-    .select('*, uploader:team_members!uploaded_by(id, full_name, avatar_url)')
-    .eq('event_id', eventId)
-    .order('created_at', { ascending: false })
-    .returns<EventFileWithUploader[]>()
 
   return (
     <div className="p-8 max-w-3xl mx-auto">

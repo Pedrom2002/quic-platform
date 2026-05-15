@@ -1,13 +1,12 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { renderTemplate } from './template-renderer'
 import { sendEmail, buildEmailHtml } from './channels/email'
+import { getEnv } from '@/lib/env'
 import type { NotificationRule, NotificationChannel, NotificationJobPayload } from '@/types/app'
 import type { EventChecklistItem, Event, Client, EventClient, MessageTemplate, NotificationJob } from '@/types/database'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { calcProgress } from '@/lib/event-status'
-
-const useQStash = !!process.env.QSTASH_TOKEN
 
 interface DispatchContext {
   event: Event
@@ -74,16 +73,17 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
     }
   }
 
+  const { QSTASH_TOKEN: qstashToken, NEXT_PUBLIC_APP_URL: appUrl } = getEnv()
+  const useQStash = !!qstashToken
+
   // Instantiate QStash client once outside the loop
   let qstash: import('@upstash/qstash').Client | null = null
   if (useQStash) {
     const { Client: QStashClient } = await import('@upstash/qstash')
-    const token = process.env.QSTASH_TOKEN
-    if (!token) throw new Error('[dispatcher] QSTASH_TOKEN não configurado')
-    qstash = new QStashClient({ token })
+    qstash = new QStashClient({ token: qstashToken! })
   }
 
-  const workerUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/workers/send-notification`
+  const workerUrl = `${appUrl}/api/workers/send-notification`
 
   // Build all jobs to insert in one batch
   type JobDraft = {

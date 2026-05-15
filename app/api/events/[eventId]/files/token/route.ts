@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { generateClientTokenFromReadWriteToken } from '@vercel/blob/client'
 import { createClient } from '@/lib/supabase/server'
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE, safeBlobPathname } from '@/schemas/file.schema'
+import { getEnv } from '@/lib/env'
 
 export async function GET(
   request: Request,
@@ -36,8 +37,7 @@ export async function GET(
       return NextResponse.json({ error: 'Tipo de ficheiro não permitido' }, { status: 415 })
     }
 
-    const blobToken = process.env.BLOB_READ_WRITE_TOKEN
-    if (!blobToken) return NextResponse.json({ error: 'Armazenamento não configurado' }, { status: 503 })
+    const blobToken = getEnv().BLOB_READ_WRITE_TOKEN
 
     const pathname = safeBlobPathname(filename)
     const clientToken = await generateClientTokenFromReadWriteToken({

@@ -1,33 +1,14 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { resolveOrgMember } from '@/lib/supabase/actions'
+import { getOrgAuth, assertEventOwnership } from '@/lib/supabase/actions'
 import { put } from '@vercel/blob'
 import { MAX_FILE_SIZE } from '@/schemas/file.schema'
-import { getEnv } from '@/lib/env'
 import type { ChecklistItemStatus, EventTask, EventTaskNote, EventTaskFileLink, EventFileWithUploader } from '@/types/app'
 
-async function assertEventOwnership(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  eventId: string,
-  organizationId: string
-) {
-  const { data } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('organization_id', organizationId)
-    .single()
-  return !!data
-}
-
 export async function loadEventTasksAction(eventId: string): Promise<EventTask[]> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return []
+  const auth = await getOrgAuth()
+  if (!auth) return []
+  const { supabase, member } = auth
 
   const { data } = await supabase
     .from('event_tasks')
@@ -44,12 +25,9 @@ export async function createTaskAction(
   eventId: string,
   fields: { title: string; parentId?: string | null; checklistItemId?: string | null }
 ): Promise<EventTask | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return null
+  const auth = await getOrgAuth()
+  if (!auth) return null
+  const { supabase, member } = auth
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
@@ -102,12 +80,9 @@ export async function updateTaskAction(
     checklist_item_id?: string | null
   }
 ): Promise<EventTask | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return null
+  const auth = await getOrgAuth()
+  if (!auth) return null
+  const { supabase, member } = auth
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
@@ -136,12 +111,9 @@ export async function updateTaskAction(
 }
 
 export async function deleteTaskAction(eventId: string, taskId: string): Promise<boolean> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return false
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return false
+  const auth = await getOrgAuth()
+  if (!auth) return false
+  const { supabase, member } = auth
 
   const { error, count } = await supabase
     .from('event_tasks')
@@ -158,24 +130,34 @@ export async function reorderTasksAction(
   parentId: string | null,
   orderedIds: string[]
 ): Promise<boolean> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return false
+  const auth = await getOrgAuth()
+  if (!auth) return false
+  const { supabase, member } = auth
 
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return false
+  // Validate ownership: only reorder tasks that actually belong to this event + org.
+  const query = supabase
+    .from('event_tasks')
+    .select('id')
+    .in('id', orderedIds)
+    .eq('event_id', eventId)
+    .eq('organization_id', member.organization_id)
 
-  const updates = orderedIds.map((id, index) =>
-    supabase
-      .from('event_tasks')
-      .update({ position: index })
-      .eq('id', id)
-      .eq('event_id', eventId)
-      .eq('organization_id', member.organization_id)
-  )
+  const { data: validRows } = parentId
+    ? await query.eq('parent_id', parentId)
+    : await query.is('parent_id', null)
 
-  const results = await Promise.all(updates)
-  return results.every(r => !r.error)
+  const validIds = new Set((validRows ?? []).map(r => r.id))
+  const rows = orderedIds
+    .filter(id => validIds.has(id))
+    .map((id, index) => ({ id, position: index }))
+
+  if (!rows.length) return true
+
+  const { error } = await supabase
+    .from('event_tasks')
+    .upsert(rows, { onConflict: 'id' })
+
+  return !error
 }
 
 export async function addTaskNoteAction(
@@ -183,12 +165,9 @@ export async function addTaskNoteAction(
   taskId: string,
   content: string
 ): Promise<EventTaskNote | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return null
+  const auth = await getOrgAuth()
+  if (!auth) return null
+  const { supabase, user, member } = auth
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
@@ -222,12 +201,9 @@ export async function deleteTaskNoteAction(
   taskId: string,
   noteId: string
 ): Promise<boolean> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return false
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return false
+  const auth = await getOrgAuth()
+  if (!auth) return false
+  const { supabase, member } = auth
 
   const { error, count } = await supabase
     .from('event_task_notes')
@@ -243,12 +219,9 @@ export async function loadTaskNotesAction(
   eventId: string,
   taskId: string
 ): Promise<EventTaskNote[]> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return []
+  const auth = await getOrgAuth()
+  if (!auth) return []
+  const { supabase, member } = auth
 
   const { data } = await supabase
     .from('event_task_notes')
@@ -265,12 +238,9 @@ export async function loadTaskFilesAction(
   eventId: string,
   taskId: string
 ): Promise<EventTaskFileLink[]> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return []
+  const auth = await getOrgAuth()
+  if (!auth) return []
+  const { supabase, member } = auth
 
   const { data } = await supabase
     .from('event_task_files')
@@ -288,12 +258,9 @@ export async function linkFileToTaskAction(
   taskId: string,
   eventFileId: string
 ): Promise<EventTaskFileLink | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return null
+  const auth = await getOrgAuth()
+  if (!auth) return null
+  const { supabase, user, member } = auth
 
   const { data: linkedByRow } = await supabase
     .from('team_members')
@@ -321,12 +288,9 @@ export async function unlinkFileFromTaskAction(
   taskId: string,
   linkId: string
 ): Promise<boolean> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return false
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return false
+  const auth = await getOrgAuth()
+  if (!auth) return false
+  const { supabase, member } = auth
 
   const { error, count } = await supabase
     .from('event_task_files')
@@ -343,12 +307,9 @@ export async function uploadFileToTaskAction(
   taskId: string,
   formData: FormData
 ): Promise<EventTaskFileLink | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return null
+  const auth = await getOrgAuth()
+  if (!auth) return null
+  const { supabase, user, member } = auth
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
@@ -363,9 +324,12 @@ export async function uploadFileToTaskAction(
   const detectedMime = await detectMimeFromMagic(file)
   if (isMimeMismatch(declaredMime, detectedMime)) return null
 
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+  if (!blobToken) return null
+
   const blob = await put(safeBlobPathname(file.name), file, {
     access: 'public',
-    token: process.env.BLOB_READ_WRITE_TOKEN!,
+    token: blobToken,
   })
 
   const { data: memberRow } = await supabase
@@ -407,12 +371,9 @@ export async function uploadFileToTaskAction(
 }
 
 export async function loadChecklistItemsForLinkingAction(eventId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) return []
+  const auth = await getOrgAuth()
+  if (!auth) return []
+  const { supabase, member } = auth
 
   const { data } = await supabase
     .from('event_checklist_items')

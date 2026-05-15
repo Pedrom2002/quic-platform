@@ -1,14 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
-import { SignJWT } from 'jose'
+import { randomBytes } from 'node:crypto'
 
-const SUPABASE_URL = 'https://zzxgumtzehfkxzqyjqjf.supabase.co'
-const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6eGd1bXR6ZWhma3h6cXlqcWpmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzQ0Nzc5MCwiZXhwIjoyMDkzMDIzNzkwfQ.4Sqy6bY2iBOTSiR-ANsDBsP8utfMapHcxXT_VnRjSNk'
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-// Read PORTAL_JWT_SECRET from env or arg
-const PORTAL_JWT_SECRET = process.env.PORTAL_JWT_SECRET || process.argv[2]
-if (!PORTAL_JWT_SECRET) {
-  console.error('Usage: node scripts/seed-demo.mjs <PORTAL_JWT_SECRET>')
-  console.error('  or set PORTAL_JWT_SECRET env var')
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  console.error('Missing env: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY required')
+  console.error('Copy .env.example to .env.local and fill in the values')
   process.exit(1)
 }
 
@@ -27,13 +25,9 @@ const FILE_IDS = Array.from({ length: 8 }, (_, i) =>
   `00000000-0000-0099-0002-${String(i + 1).padStart(12, '0')}`
 )
 
-async function generatePortalToken(eventId) {
-  const secret = new TextEncoder().encode(PORTAL_JWT_SECRET)
-  return new SignJWT({ eventId })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('90d')
-    .sign(secret)
+function generatePortalToken() {
+  // Same algorithm as lib/portal/token.ts — 12 random bytes → 16 base64url chars
+  return randomBytes(12).toString('base64url')
 }
 
 async function main() {
@@ -55,8 +49,8 @@ async function main() {
   }
   console.log('Using member:', member.id)
 
-  // Generate valid portal JWT
-  const portalToken = await generatePortalToken(EVENT_ID)
+  // Generate portal token (same format as app-generated tokens)
+  const portalToken = generatePortalToken()
   console.log('Portal token generated.')
 
   // 1. Event type

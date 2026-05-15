@@ -1,31 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { assertEventOwnership, resolveOrgMemberFull } from '@/lib/supabase/actions'
 import { updateChecklistItemSchema } from '@/schemas/checklist.schema'
 import { dispatchNotificationsForItem } from '@/lib/notifications/dispatcher'
-
-async function resolveOrgMember(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data } = await supabase
-    .from('team_members')
-    .select('id, full_name, organization_id')
-    .eq('auth_user_id', userId)
-    .single()
-  return data
-}
-
-async function assertEventOwnership(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  eventId: string,
-  organizationId: string
-) {
-  const { data } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('organization_id', organizationId)
-    .single()
-  return !!data
-}
 
 export async function PATCH(
   request: Request,
@@ -37,7 +15,7 @@ export async function PATCH(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const member = await resolveOrgMember(supabase, user.id)
+  const member = await resolveOrgMemberFull(supabase, user.id)
   if (!member) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
@@ -114,7 +92,7 @@ export async function DELETE(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const member = await resolveOrgMember(supabase, user.id)
+  const member = await resolveOrgMemberFull(supabase, user.id)
   if (!member) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)

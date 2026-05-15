@@ -7,9 +7,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 // ─── lib/portal/data getPortalData ───────────────────────────────────────────
-vi.mock('@/lib/portal/token', () => ({
-  verifyPortalToken: vi.fn(),
-}))
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: vi.fn(),
 }))
@@ -27,8 +24,14 @@ describe('lib/portal/data getPortalData', () => {
   })
 
   it('returns null when token is invalid', async () => {
-    const { verifyPortalToken } = await import('@/lib/portal/token')
-    vi.mocked(verifyPortalToken).mockResolvedValue(null)
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    vi.mocked(createAdminClient).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null }),
+      }),
+    } as never)
 
     const { getPortalData } = await import('@/lib/portal/data')
     const result = await getPortalData('bad-token')
@@ -36,9 +39,6 @@ describe('lib/portal/data getPortalData', () => {
   })
 
   it('returns null when event not found', async () => {
-    const { verifyPortalToken } = await import('@/lib/portal/token')
-    vi.mocked(verifyPortalToken).mockResolvedValue({ eventId: 'evt-1' } as never)
-
     const { createAdminClient } = await import('@/lib/supabase/admin')
     vi.mocked(createAdminClient).mockReturnValue({
       from: vi.fn().mockReturnValue({
@@ -54,9 +54,6 @@ describe('lib/portal/data getPortalData', () => {
   })
 
   it('returns full portal data for happy path', async () => {
-    const { verifyPortalToken } = await import('@/lib/portal/token')
-    vi.mocked(verifyPortalToken).mockResolvedValue({ eventId: 'evt-1' } as never)
-
     const mockEvent = {
       id: 'evt-1', name: 'Summer Gala', venue_name: 'Grand Hall',
       start_datetime: '2026-06-15T20:00:00Z', status: 'active',
@@ -108,9 +105,6 @@ describe('lib/portal/data getPortalData', () => {
   })
 
   it('normalizes settings — ignores relative path and empty videos', async () => {
-    const { verifyPortalToken } = await import('@/lib/portal/token')
-    vi.mocked(verifyPortalToken).mockResolvedValue({ eventId: 'evt-1' } as never)
-
     const mockEvent = {
       id: 'evt-1', name: 'Test', venue_name: null,
       start_datetime: '2026-06-15T20:00:00Z', status: 'active',
@@ -214,30 +208,12 @@ describe('parseCsvClients edge cases', () => {
 })
 
 // ─── AI route stream error paths + overdue branches ──────────────────────────
-const mockStreamThatThrows = {
-  [Symbol.asyncIterator]: async function* () {
-    throw new Error('Stream interrupted')
-    // eslint-disable-next-line no-unreachable
-    yield { type: 'content_block_delta', delta: { type: 'text_delta', text: '' } }
-  },
-}
-const mockStreamNormal = {
-  [Symbol.asyncIterator]: async function* () {
-    yield { type: 'content_block_delta', delta: { type: 'text_delta', text: 'Hello' } }
-  },
-}
+const mockGenerateContentStream = vi.fn()
+const mockGenerateContent = vi.fn()
+const mockGeminiInstance = { getGenerativeModel: vi.fn() }
 
-const mockAnthropicInstance = {
-  messages: {
-    stream: vi.fn().mockReturnValue(mockStreamNormal),
-    create: vi.fn().mockResolvedValue({
-      content: [{ type: 'text', text: '{"memberId":"m1","reason":"Good"}' }],
-    }),
-  },
-}
-
-vi.mock('@anthropic-ai/sdk', () => ({
-  default: vi.fn().mockImplementation(function () { return mockAnthropicInstance }),
+vi.mock('@google/generative-ai', () => ({
+  GoogleGenerativeAI: vi.fn().mockImplementation(function () { return mockGeminiInstance }),
 }))
 vi.mock('@/lib/ai-rate-limit', () => ({
   isAiRateLimited: vi.fn().mockResolvedValue(false),
@@ -291,18 +267,24 @@ async function readStream(res: Response): Promise<string> {
 
 describe('AI route stream error catch branches', () => {
   beforeEach(() => {
-    process.env.ANTHROPIC_API_KEY = 'key'
+    process.env.GEMINI_API_KEY = 'key'
     vi.clearAllMocks()
-    mockAnthropicInstance.messages.stream.mockReturnValue(mockStreamNormal)
-    mockAnthropicInstance.messages.create.mockResolvedValue({
-      content: [{ type: 'text', text: '{"memberId":"m1","reason":"Good"}' }],
+    mockGeminiInstance.getGenerativeModel.mockReturnValue({
+      generateContentStream: mockGenerateContentStream,
+      generateContent: mockGenerateContent,
+    })
+    mockGenerateContentStream.mockImplementation(() => Promise.resolve({
+      stream: (async function* () { yield { text: () => 'Hello' } })(),
+    }))
+    mockGenerateContent.mockResolvedValue({
+      response: { text: () => '{"memberId":"m1","reason":"Good"}' },
     })
   })
-  afterEach(() => { delete process.env.ANTHROPIC_API_KEY })
+  afterEach(() => { delete process.env.GEMINI_API_KEY })
 
   it('client-update: stream error is caught, fallback text enqueued', async () => {
     vi.mocked(createClient).mockResolvedValue(makeBaseSupabase(defaultEvent) as never)
-    mockAnthropicInstance.messages.stream.mockReturnValue(mockStreamThatThrows)
+    mockGenerateContentStream.mockImplementationOnce(() => Promise.resolve({ stream: (async function* () { throw new Error('Stream interrupted') })() }))
 
     const { POST } = await import('@/app/api/ai/client-update/route')
     const res = await POST(makeReq({ eventId: VALID_EVENT_ID, focus: 'Update geral de progresso' }) as never)
@@ -360,7 +342,7 @@ describe('AI route stream error catch branches', () => {
       }),
     }
     vi.mocked(createClient).mockResolvedValue(supabase as never)
-    mockAnthropicInstance.messages.stream.mockReturnValue(mockStreamThatThrows)
+    mockGenerateContentStream.mockImplementationOnce(() => Promise.resolve({ stream: (async function* () { throw new Error('Stream interrupted') })() }))
 
     const { POST } = await import('@/app/api/ai/describe-task/route')
     const res = await POST(makeReq({ taskId: VALID_TASK_ID, eventId: VALID_EVENT_ID }) as never)
@@ -407,7 +389,7 @@ describe('AI route stream error catch branches', () => {
 
   it('event-summary: stream error is caught', async () => {
     vi.mocked(createClient).mockResolvedValue(makeBaseSupabase(defaultEvent) as never)
-    mockAnthropicInstance.messages.stream.mockReturnValue(mockStreamThatThrows)
+    mockGenerateContentStream.mockImplementationOnce(() => Promise.resolve({ stream: (async function* () { throw new Error('Stream interrupted') })() }))
 
     const { POST } = await import('@/app/api/ai/event-summary/route')
     const res = await POST(makeReq({ eventId: VALID_EVENT_ID }) as never)
@@ -446,7 +428,7 @@ describe('AI route stream error catch branches', () => {
       }),
     }
     vi.mocked(createClient).mockResolvedValue(supabase as never)
-    mockAnthropicInstance.messages.stream.mockReturnValue(mockStreamThatThrows)
+    mockGenerateContentStream.mockImplementationOnce(() => Promise.resolve({ stream: (async function* () { throw new Error('Stream interrupted') })() }))
 
     const { POST } = await import('@/app/api/ai/risk-analysis/route')
     const res = await POST(makeReq({ eventId: VALID_EVENT_ID }) as never)
@@ -479,8 +461,8 @@ describe('AI route stream error catch branches', () => {
       }),
     }
     vi.mocked(createClient).mockResolvedValue(supabase as never)
-    mockAnthropicInstance.messages.create.mockResolvedValueOnce({
-      content: [{ type: 'text', text: 'NOT VALID JSON' }],
+    mockGenerateContent.mockResolvedValueOnce({
+      response: { text: () => 'NOT VALID JSON' },
     })
 
     const { POST } = await import('@/app/api/ai/suggest-assignee/route')
@@ -522,8 +504,8 @@ describe('AI route stream error catch branches', () => {
       }),
     }
     vi.mocked(createClient).mockResolvedValue(supabase as never)
-    mockAnthropicInstance.messages.create.mockResolvedValueOnce({
-      content: [{ type: 'text', text: '{"memberId":"m1","reason":"Good match"}' }],
+    mockGenerateContent.mockResolvedValueOnce({
+      response: { text: () => '{"memberId":"m1","reason":"Good match"}' },
     })
 
     const { POST } = await import('@/app/api/ai/suggest-assignee/route')
@@ -535,7 +517,7 @@ describe('AI route stream error catch branches', () => {
 
   it('generate-tasks: stream error is caught', async () => {
     vi.mocked(createClient).mockResolvedValue(makeBaseSupabase(defaultEvent) as never)
-    mockAnthropicInstance.messages.stream.mockReturnValue(mockStreamThatThrows)
+    mockGenerateContentStream.mockImplementationOnce(() => Promise.resolve({ stream: (async function* () { throw new Error('Stream interrupted') })() }))
 
     const { POST } = await import('@/app/api/ai/generate-tasks/route')
     const res = await POST(makeReq({
@@ -595,7 +577,7 @@ vi.mock('next/server', () => ({
 
 describe('cron/process-scheduled additional branches', () => {
   beforeEach(() => {
-    process.env.CRON_SECRET = 'secret123'
+    process.env.CRON_SECRET = 'secret123-for-coverage-tests-32chars!!'
     process.env.QSTASH_TOKEN = 'qstash-token'
     process.env.NEXT_PUBLIC_APP_URL = 'https://app.quic.pt'
     vi.clearAllMocks()
@@ -606,7 +588,7 @@ describe('cron/process-scheduled additional branches', () => {
     delete process.env.NEXT_PUBLIC_APP_URL
   })
 
-  function makeRequest(authHeader: string | null = 'Bearer secret123') {
+  function makeRequest(authHeader: string | null = 'Bearer secret123-for-coverage-tests-32chars!!') {
     return { headers: { get: (h: string) => h === 'authorization' ? authHeader : null } }
   }
 
@@ -677,9 +659,13 @@ describe('dispatcher with QStash token set', () => {
     process.env.QSTASH_TOKEN = 'tok'
     process.env.NEXT_PUBLIC_PORTAL_URL = 'http://localhost:3000'
     process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
+    process.env.CRON_SECRET = 'dispatcher-cron-secret-32-chars-pad!!'
     vi.resetModules()
   })
-  afterEach(() => { delete process.env.QSTASH_TOKEN })
+  afterEach(() => {
+    delete process.env.QSTASH_TOKEN
+    delete process.env.CRON_SECRET
+  })
 
   it('uses QStash publishJSON when QSTASH_TOKEN is set', async () => {
     const mockInsert = vi.fn()

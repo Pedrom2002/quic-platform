@@ -1,23 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-// Mock Anthropic before any route imports
-const mockStream = {
-  [Symbol.asyncIterator]: async function* () {
-    yield { type: 'content_block_delta', delta: { type: 'text_delta', text: 'Hello' } }
-  },
-}
+// Mock Google Generative AI before any route imports
+const mockGenerateContentStream = vi.fn()
+const mockGenerateContent = vi.fn()
+const mockGeminiInstance = { getGenerativeModel: vi.fn() }
 
-const mockAnthropicInstance = {
-  messages: {
-    stream: vi.fn().mockReturnValue(mockStream),
-    create: vi.fn().mockResolvedValue({
-      content: [{ type: 'text', text: '{"memberId":"m1","reason":"Boa escolha"}' }],
-    }),
-  },
-}
-
-vi.mock('@anthropic-ai/sdk', () => ({
-  default: vi.fn().mockImplementation(function () { return mockAnthropicInstance }),
+vi.mock('@google/generative-ai', () => ({
+  GoogleGenerativeAI: vi.fn().mockImplementation(function () { return mockGeminiInstance }),
 }))
 
 vi.mock('@/lib/ai-rate-limit', () => ({
@@ -116,16 +105,22 @@ function makeNextRequest(body: unknown): Request {
 }
 
 beforeEach(() => {
-  process.env.ANTHROPIC_API_KEY = 'test-api-key'
+  process.env.GEMINI_API_KEY = 'test-api-key'
   vi.clearAllMocks()
-  mockAnthropicInstance.messages.stream.mockReturnValue(mockStream)
-  mockAnthropicInstance.messages.create.mockResolvedValue({
-    content: [{ type: 'text', text: '{"memberId":"m1","reason":"Boa escolha"}' }],
+  mockGeminiInstance.getGenerativeModel.mockReturnValue({
+    generateContentStream: mockGenerateContentStream,
+    generateContent: mockGenerateContent,
+  })
+  mockGenerateContentStream.mockImplementation(() => Promise.resolve({
+    stream: (async function* () { yield { text: () => 'Hello' } })(),
+  }))
+  mockGenerateContent.mockResolvedValue({
+    response: { text: () => '{"memberId":"m1","reason":"Boa escolha"}' },
   })
 })
 
 afterEach(() => {
-  delete process.env.ANTHROPIC_API_KEY
+  delete process.env.GEMINI_API_KEY
 })
 
 // ===== client-update =====
@@ -168,8 +163,8 @@ describe('POST /api/ai/client-update', () => {
     expect(res.status).toBe(429)
   })
 
-  it('returns 503 when ANTHROPIC_API_KEY missing', async () => {
-    delete process.env.ANTHROPIC_API_KEY
+  it('returns 503 when GEMINI_API_KEY missing', async () => {
+    delete process.env.GEMINI_API_KEY
     vi.mocked(createClient).mockResolvedValue(makeSupabase({ member: defaultMember }) as never)
     const { POST } = await import('@/app/api/ai/client-update/route')
     const res = await POST(makeNextRequest(validBody) as never)
@@ -254,8 +249,8 @@ describe('POST /api/ai/describe-task', () => {
     expect(res.status).toBe(429)
   })
 
-  it('returns 503 when ANTHROPIC_API_KEY missing', async () => {
-    delete process.env.ANTHROPIC_API_KEY
+  it('returns 503 when GEMINI_API_KEY missing', async () => {
+    delete process.env.GEMINI_API_KEY
     vi.mocked(createClient).mockResolvedValue(makeSupabase({ member: defaultMember }) as never)
     const { POST } = await import('@/app/api/ai/describe-task/route')
     const res = await POST(makeNextRequest(validBody) as never)
@@ -384,8 +379,8 @@ describe('POST /api/ai/event-summary', () => {
     expect(res.status).toBe(429)
   })
 
-  it('returns 503 when ANTHROPIC_API_KEY missing', async () => {
-    delete process.env.ANTHROPIC_API_KEY
+  it('returns 503 when GEMINI_API_KEY missing', async () => {
+    delete process.env.GEMINI_API_KEY
     vi.mocked(createClient).mockResolvedValue(makeSupabase({ member: defaultMember }) as never)
     const { POST } = await import('@/app/api/ai/event-summary/route')
     const res = await POST(makeNextRequest(validBody) as never)
@@ -497,8 +492,8 @@ describe('POST /api/ai/generate-tasks', () => {
     expect(res.status).toBe(404)
   })
 
-  it('returns 503 when ANTHROPIC_API_KEY missing (checked after event fetch)', async () => {
-    delete process.env.ANTHROPIC_API_KEY
+  it('returns 503 when GEMINI_API_KEY missing (checked after event fetch)', async () => {
+    delete process.env.GEMINI_API_KEY
     vi.mocked(createClient).mockResolvedValue(
       makeSupabase({ member: defaultMember, eventData: defaultEvent }) as never,
     )
@@ -551,8 +546,8 @@ describe('POST /api/ai/risk-analysis', () => {
     expect(res.status).toBe(429)
   })
 
-  it('returns 503 when ANTHROPIC_API_KEY missing', async () => {
-    delete process.env.ANTHROPIC_API_KEY
+  it('returns 503 when GEMINI_API_KEY missing', async () => {
+    delete process.env.GEMINI_API_KEY
     vi.mocked(createClient).mockResolvedValue(makeSupabase({ member: defaultMember }) as never)
     const { POST } = await import('@/app/api/ai/risk-analysis/route')
     const res = await POST(makeNextRequest(validBody) as never)
@@ -652,8 +647,8 @@ describe('POST /api/ai/suggest-assignee', () => {
     expect(res.status).toBe(429)
   })
 
-  it('returns 503 when ANTHROPIC_API_KEY missing', async () => {
-    delete process.env.ANTHROPIC_API_KEY
+  it('returns 503 when GEMINI_API_KEY missing', async () => {
+    delete process.env.GEMINI_API_KEY
     vi.mocked(createClient).mockResolvedValue(makeSupabase({ member: defaultMember }) as never)
     const { POST } = await import('@/app/api/ai/suggest-assignee/route')
     const res = await POST(makeNextRequest(validBody) as never)
@@ -798,9 +793,9 @@ describe('POST /api/ai/suggest-assignee', () => {
       }),
     }
     vi.mocked(createClient).mockResolvedValue(supabase as never)
-    // Ensure Anthropic returns a valid memberId from our twoMembers list
-    mockAnthropicInstance.messages.create.mockResolvedValueOnce({
-      content: [{ type: 'text', text: '{"memberId":"m1","reason":"Boa escolha"}' }],
+    // Ensure Gemini returns a valid memberId from our twoMembers list
+    mockGenerateContent.mockResolvedValueOnce({
+      response: { text: () => '{"memberId":"m1","reason":"Boa escolha"}' },
     })
     const { POST } = await import('@/app/api/ai/suggest-assignee/route')
     const res = await POST(makeNextRequest(validBody) as never)

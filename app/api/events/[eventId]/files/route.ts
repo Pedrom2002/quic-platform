@@ -9,6 +9,7 @@ import {
   safeBlobPathname,
 } from '@/schemas/file.schema'
 import { audit } from '@/lib/audit'
+import { getEnv } from '@/lib/env'
 import type { EventFileWithUploader } from '@/types/app'
 
 export async function POST(
@@ -107,8 +108,7 @@ export async function POST(
       return NextResponse.json({ error: 'Conteúdo do ficheiro não corresponde ao tipo declarado' }, { status: 415 })
     }
 
-    const token = process.env.BLOB_READ_WRITE_TOKEN
-    if (!token) return NextResponse.json({ error: 'Armazenamento não configurado' }, { status: 503 })
+    const { BLOB_READ_WRITE_TOKEN: token } = getEnv()
 
     const blob = await put(safeBlobPathname(file.name), file, { access: 'public', token })
 

@@ -19,7 +19,6 @@ function makeQuery(result: unknown) {
 
 let fromResults: unknown[] = []
 const supabaseMock = {
-  auth: { getUser: vi.fn() },
   from: vi.fn(() => {
     const result = fromResults.shift() ?? { data: null, error: null }
     return makeQuery(result)
@@ -30,11 +29,11 @@ vi.mock('@/lib/supabase/server', () => ({
   createClient: () => Promise.resolve(supabaseMock),
 }))
 vi.mock('@/lib/supabase/actions', () => ({
-  resolveOrgMember: vi.fn(),
+  requireOrgAuth: vi.fn(),
 }))
 
 describe('templates actions', () => {
-  let resolveOrgMember: ReturnType<typeof vi.fn>
+  let requireOrgAuth: ReturnType<typeof vi.fn>
   let loadMessageTemplatesAction: () => Promise<unknown[]>
   let createMessageTemplateAction: (input: { name: string; channel: 'email' | 'whatsapp' | 'sms' | 'portal'; language: 'pt' | 'en'; subject?: string; body_template: string }) => Promise<void>
   let updateMessageTemplateAction: (id: string, input: { name: string; channel: 'email' | 'whatsapp' | 'sms' | 'portal'; language: 'pt' | 'en'; subject?: string; body_template: string }) => Promise<void>
@@ -48,12 +47,14 @@ describe('templates actions', () => {
     body_template: 'Olá {{client_name}}',
   }
 
+  const mockMember = { organization_id: 'org-1', role: 'member' }
+  const mockUser = { id: 'u1' }
+
   beforeEach(async () => {
     vi.resetModules()
     fromResults = []
     mockInsert.mockReset()
     mockUpdate.mockReset()
-    supabaseMock.auth.getUser.mockReset()
     supabaseMock.from.mockClear()
 
     const mod = await import('@/app/dashboard/templates/actions')
@@ -63,8 +64,8 @@ describe('templates actions', () => {
     deactivateMessageTemplateAction = mod.deactivateMessageTemplateAction
 
     const helpers = await import('@/lib/supabase/actions')
-    resolveOrgMember = helpers.resolveOrgMember as ReturnType<typeof vi.fn>
-    resolveOrgMember.mockReset()
+    requireOrgAuth = helpers.requireOrgAuth as ReturnType<typeof vi.fn>
+    requireOrgAuth.mockReset()
   })
 
   describe('createMessageTemplateAction', () => {
@@ -75,19 +76,17 @@ describe('templates actions', () => {
     })
 
     it('throws when not authenticated', async () => {
-      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: null } })
+      requireOrgAuth.mockRejectedValue(new Error('Não autenticado'))
       await expect(createMessageTemplateAction(validInput)).rejects.toThrow('Não autenticado')
     })
 
     it('throws when not org member', async () => {
-      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-      resolveOrgMember.mockResolvedValue(null)
+      requireOrgAuth.mockRejectedValue(new Error('Não autorizado'))
       await expect(createMessageTemplateAction(validInput)).rejects.toThrow('Não autorizado')
     })
 
     it('inserts template for org member', async () => {
-      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-      resolveOrgMember.mockResolvedValue({ organization_id: 'org-1' })
+      requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
       fromResults = [{ data: null, error: null }]
       await createMessageTemplateAction(validInput)
       expect(mockInsert).toHaveBeenCalledWith(
@@ -98,26 +97,23 @@ describe('templates actions', () => {
 
   describe('updateMessageTemplateAction', () => {
     it('throws when not authenticated', async () => {
-      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: null } })
+      requireOrgAuth.mockRejectedValue(new Error('Não autenticado'))
       await expect(updateMessageTemplateAction('t1', validInput)).rejects.toThrow('Não autenticado')
     })
 
     it('throws when not org member', async () => {
-      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-      resolveOrgMember.mockResolvedValue(null)
+      requireOrgAuth.mockRejectedValue(new Error('Não autorizado'))
       await expect(updateMessageTemplateAction('t1', validInput)).rejects.toThrow('Não autorizado')
     })
 
     it('throws when template not owned', async () => {
-      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-      resolveOrgMember.mockResolvedValue({ organization_id: 'org-1' })
+      requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
       fromResults = [{ data: null, error: null }]
       await expect(updateMessageTemplateAction('t1', validInput)).rejects.toThrow('Template não encontrado')
     })
 
     it('updates template when owned', async () => {
-      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-      resolveOrgMember.mockResolvedValue({ organization_id: 'org-1' })
+      requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
       fromResults = [
         { data: { id: 't1' }, error: null },
         { data: null, error: null },
@@ -129,26 +125,23 @@ describe('templates actions', () => {
 
   describe('deactivateMessageTemplateAction', () => {
     it('throws when not authenticated', async () => {
-      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: null } })
+      requireOrgAuth.mockRejectedValue(new Error('Não autenticado'))
       await expect(deactivateMessageTemplateAction('t1')).rejects.toThrow('Não autenticado')
     })
 
     it('throws when not org member', async () => {
-      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-      resolveOrgMember.mockResolvedValue(null)
+      requireOrgAuth.mockRejectedValue(new Error('Não autorizado'))
       await expect(deactivateMessageTemplateAction('t1')).rejects.toThrow('Não autorizado')
     })
 
     it('throws when template not owned', async () => {
-      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-      resolveOrgMember.mockResolvedValue({ organization_id: 'org-1' })
+      requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
       fromResults = [{ data: null, error: null }]
       await expect(deactivateMessageTemplateAction('t1')).rejects.toThrow('Template não encontrado')
     })
 
     it('sets is_active false', async () => {
-      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-      resolveOrgMember.mockResolvedValue({ organization_id: 'org-1' })
+      requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
       fromResults = [
         { data: { id: 't1' }, error: null },
         { data: null, error: null },
@@ -160,8 +153,7 @@ describe('templates actions', () => {
 
   describe('loadMessageTemplatesAction', () => {
     it('returns templates', async () => {
-      supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-      resolveOrgMember.mockResolvedValue({ organization_id: 'org-1' })
+      requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
       fromResults = [{ data: [{ id: 't1', name: 'Confirmação' }], error: null }]
       const result = await loadMessageTemplatesAction()
       expect(result).toEqual([{ id: 't1', name: 'Confirmação' }])

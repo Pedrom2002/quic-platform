@@ -8,8 +8,9 @@ vi.mock('@/lib/notifications/channels/email', () => ({
   buildEmailHtml: (...args: unknown[]) => mockBuildEmailHtml(...args),
 }))
 vi.mock('@/lib/supabase/actions', () => ({
-  resolveOrgMember: vi.fn(),
+  requireOrgAuth: vi.fn(),
 }))
+vi.mock('@/lib/audit', () => ({ audit: vi.fn() }))
 
 function makeQuery(result: unknown) {
   const q: Record<string, unknown> = {}
@@ -24,7 +25,6 @@ function makeQuery(result: unknown) {
 
 let fromResults: unknown[] = []
 const supabaseMock = {
-  auth: { getUser: vi.fn() },
   from: vi.fn(() => {
     const result = fromResults.shift() ?? { data: null, error: null }
     return makeQuery(result)
@@ -38,8 +38,11 @@ vi.mock('@/lib/supabase/server', () => ({
 const PORTAL_URL = 'https://app.example.com'
 
 describe('sendPortalLinkAction', () => {
-  let resolveOrgMember: ReturnType<typeof vi.fn>
+  let requireOrgAuth: ReturnType<typeof vi.fn>
   let sendPortalLinkAction: (eventId: string) => Promise<void>
+
+  const mockMember = { organization_id: 'org-1', role: 'member' }
+  const mockUser = { id: 'u1' }
 
   beforeEach(async () => {
     vi.resetModules()
@@ -48,7 +51,6 @@ describe('sendPortalLinkAction', () => {
     mockSendEmail.mockResolvedValue('msg-1')
     mockBuildEmailHtml.mockReset()
     mockBuildEmailHtml.mockReturnValue('<html/>')
-    supabaseMock.auth.getUser.mockReset()
     supabaseMock.from.mockClear()
     process.env.NEXT_PUBLIC_APP_URL = PORTAL_URL
     delete process.env.NEXT_PUBLIC_PORTAL_URL
@@ -57,8 +59,8 @@ describe('sendPortalLinkAction', () => {
     sendPortalLinkAction = mod.sendPortalLinkAction
 
     const helpers = await import('@/lib/supabase/actions')
-    resolveOrgMember = helpers.resolveOrgMember as ReturnType<typeof vi.fn>
-    resolveOrgMember.mockReset()
+    requireOrgAuth = helpers.requireOrgAuth as ReturnType<typeof vi.fn>
+    requireOrgAuth.mockReset()
   })
 
   afterEach(() => {
@@ -73,26 +75,23 @@ describe('sendPortalLinkAction', () => {
   })
 
   it('throws when not authenticated', async () => {
-    supabaseMock.auth.getUser.mockResolvedValue({ data: { user: null } })
+    requireOrgAuth.mockRejectedValue(new Error('Não autenticado'))
     await expect(sendPortalLinkAction('e1')).rejects.toThrow('Não autenticado')
   })
 
   it('throws when not org member', async () => {
-    supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-    resolveOrgMember.mockResolvedValue(null)
+    requireOrgAuth.mockRejectedValue(new Error('Não autorizado'))
     await expect(sendPortalLinkAction('e1')).rejects.toThrow('Não autorizado')
   })
 
   it('throws when event not found', async () => {
-    supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-    resolveOrgMember.mockResolvedValue({ organization_id: 'org-1' })
+    requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
     fromResults = [{ data: null, error: null }]
     await expect(sendPortalLinkAction('e1')).rejects.toThrow('Evento não encontrado')
   })
 
   it('throws when no clients with email', async () => {
-    supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-    resolveOrgMember.mockResolvedValue({ organization_id: 'org-1' })
+    requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
     fromResults = [
       { data: { id: 'e1', name: 'Concerto', portal_token: 'tok123', organization_id: 'org-1' }, error: null },
       {
@@ -106,8 +105,7 @@ describe('sendPortalLinkAction', () => {
   })
 
   it('sends email to eligible clients', async () => {
-    supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-    resolveOrgMember.mockResolvedValue({ organization_id: 'org-1' })
+    requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
     fromResults = [
       { data: { id: 'e1', name: 'Concerto', portal_token: 'tok123', organization_id: 'org-1' }, error: null },
       {
@@ -127,8 +125,7 @@ describe('sendPortalLinkAction', () => {
   })
 
   it('includes portal token in URL passed to email builder', async () => {
-    supabaseMock.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
-    resolveOrgMember.mockResolvedValue({ organization_id: 'org-1' })
+    requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
     fromResults = [
       { data: { id: 'e1', name: 'Concerto', portal_token: 'tok123', organization_id: 'org-1' }, error: null },
       {

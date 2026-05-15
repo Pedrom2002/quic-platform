@@ -23,67 +23,40 @@ export default async function EventDetailPage({
   const { eventId } = await params
   const supabase = await createClient()
 
-  const { data: eventRaw } = await supabase
-    .from('events')
-    .select('*, event_types(name, color, icon)')
-    .eq('id', eventId)
-    .single()
+  // Start auth before data queries — resolves in parallel with the wave below
+  const userPromise = supabase.auth.getUser()
+
+  const [
+    { data: eventRaw },
+    { data: items },
+    { count: clientCount },
+    { count: teamCount },
+    { count: fileCount },
+    { count: taskCount },
+    { data: checklistActivity },
+    { data: notifActivity },
+    { data: clientActivity },
+    { data: eventNotes },
+  ] = await Promise.all([
+    supabase.from('events').select('*, event_types(name, color, icon)').eq('id', eventId).single(),
+    supabase.from('event_checklist_items').select('status').eq('event_id', eventId),
+    supabase.from('event_clients').select('*', { count: 'exact', head: true }).eq('event_id', eventId),
+    supabase.from('event_team_assignments').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
+    supabase.from('event_files').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
+    supabase.from('event_tasks').select('id', { count: 'exact', head: true }).eq('event_id', eventId).is('parent_id', null),
+    supabase.from('event_checklist_items').select('id, title, client_label, status, updated_at').eq('event_id', eventId).not('status', 'eq', 'pending').order('updated_at', { ascending: false }).limit(30),
+    supabase.from('notification_jobs').select('id, channel, status, sent_at, created_at, clients(full_name)').eq('event_id', eventId).order('created_at', { ascending: false }).limit(30),
+    supabase.from('event_clients').select('id, role, created_at, clients(full_name)').eq('event_id', eventId).order('created_at', { ascending: false }).limit(30),
+    supabase.from('event_notes').select('*, author:team_members!author_id(id, full_name, avatar_url)').eq('event_id', eventId).order('created_at', { ascending: false }).limit(50).returns<EventNoteWithAuthor[]>(),
+  ])
 
   if (!eventRaw) notFound()
 
   const event = eventRaw as typeof eventRaw & { event_types: EventTypeJoin | null }
 
-  const { data: items } = await supabase
-    .from('event_checklist_items')
-    .select('status')
-    .eq('event_id', eventId)
-
   const total = items?.length ?? 0
   const completed = items?.filter(i => i.status === 'completed').length ?? 0
   const percent = calcProgress(completed, total)
-
-  const { count: clientCount } = await supabase
-    .from('event_clients')
-    .select('*', { count: 'exact', head: true })
-    .eq('event_id', eventId)
-
-  const { count: teamCount } = await supabase
-    .from('event_team_assignments')
-    .select('id', { count: 'exact', head: true })
-    .eq('event_id', eventId)
-
-  const { count: fileCount } = await supabase
-    .from('event_files')
-    .select('id', { count: 'exact', head: true })
-    .eq('event_id', eventId)
-
-  const { count: taskCount } = await supabase
-    .from('event_tasks')
-    .select('id', { count: 'exact', head: true })
-    .eq('event_id', eventId)
-    .is('parent_id', null)
-
-  const [{ data: checklistActivity }, { data: notifActivity }, { data: clientActivity }] = await Promise.all([
-    supabase
-      .from('event_checklist_items')
-      .select('id, title, client_label, status, updated_at')
-      .eq('event_id', eventId)
-      .not('status', 'eq', 'pending')
-      .order('updated_at', { ascending: false })
-      .limit(30),
-    supabase
-      .from('notification_jobs')
-      .select('id, channel, status, sent_at, created_at, clients(full_name)')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: false })
-      .limit(30),
-    supabase
-      .from('event_clients')
-      .select('id, role, created_at, clients(full_name)')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: false })
-      .limit(30),
-  ])
 
   const checklistEvents: ChecklistTimelineEvent[] = (checklistActivity ?? []).map(r => ({
     type: 'checklist',
@@ -120,24 +93,12 @@ export default async function EventDetailPage({
 
   const initialTimelineEvents = mergeTimelineEvents(checklistEvents, notifEvents, clientEvents)
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = await userPromise
   const { data: currentMember } = user
-    ? await supabase
-        .from('team_members')
-        .select('id, role')
-        .eq('auth_user_id', user.id)
-        .single()
+    ? await supabase.from('team_members').select('id, role').eq('auth_user_id', user.id).single()
     : { data: null }
   const currentMemberId = currentMember?.id ?? null
   const isAdmin = currentMember?.role === 'admin'
-
-  const { data: eventNotes } = await supabase
-    .from('event_notes')
-    .select('*, author:team_members!author_id(id, full_name, avatar_url)')
-    .eq('event_id', eventId)
-    .order('created_at', { ascending: false })
-    .limit(50)
-    .returns<EventNoteWithAuthor[]>()
 
   const portalUrl = `${process.env.NEXT_PUBLIC_PORTAL_URL ?? ''}/portal/${event.portal_token}`
   const et = event.event_types

@@ -1,20 +1,13 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { getOrgAuth, getOrgAuthFull } from '@/lib/supabase/actions'
 import { createNoteSchema } from '@/schemas/note.schema'
 import type { EventNoteWithAuthor } from '@/types/app'
 
 export async function addNoteAction(eventId: string, content: string): Promise<EventNoteWithAuthor | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('id, organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) return null
+  const auth = await getOrgAuthFull()
+  if (!auth) return null
+  const { supabase, member } = auth
 
   const { data: event } = await supabase
     .from('events')
@@ -43,16 +36,9 @@ export async function addNoteAction(eventId: string, content: string): Promise<E
 }
 
 export async function deleteNoteAction(eventId: string, noteId: string): Promise<boolean> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return false
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) return false
+  const auth = await getOrgAuth()
+  if (!auth) return false
+  const { supabase, member } = auth
 
   const { error, count } = await supabase
     .from('event_notes')

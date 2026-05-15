@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { resolveOrgMember } from '@/lib/supabase/actions'
+import { requireOrgAuth } from '@/lib/supabase/actions'
 import { isContactVisibleToMember } from '@/lib/contacts/visibility'
 
 export { isContactVisibleToMember }
@@ -34,12 +34,7 @@ export type ContactWithGroups = {
 // ---- Groups ----
 
 export async function loadGroupsAction(): Promise<ContactGroup[]> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   let query = supabase
     .from('contact_groups')
@@ -65,12 +60,7 @@ export async function createGroupAction(input: {
 }): Promise<ContactGroup> {
   if (!input.name.trim()) throw new Error('Nome obrigatório')
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   // Members cannot create admin_only groups
   const admin_only = member.role === 'admin' ? (input.admin_only ?? false) : false
@@ -96,12 +86,7 @@ export async function updateGroupAction(
   groupId: string,
   input: { name?: string; description?: string; color?: string; icon?: string; admin_only?: boolean }
 ): Promise<void> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
   if (member.role !== 'admin') throw new Error('Sem permissão')
 
   const { error } = await supabase
@@ -120,12 +105,7 @@ export async function updateGroupAction(
 }
 
 export async function deleteGroupAction(groupId: string): Promise<void> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
   if (member.role !== 'admin') throw new Error('Sem permissão')
 
   const { error } = await supabase
@@ -140,12 +120,7 @@ export async function deleteGroupAction(groupId: string): Promise<void> {
 // ---- Contacts ----
 
 export async function loadContactsAction(groupId?: string | null): Promise<ContactWithGroups[]> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const isAdmin = member.role === 'admin'
 
@@ -164,10 +139,17 @@ export async function loadContactsAction(groupId?: string | null): Promise<Conta
 
   if (error) throw new Error(error.message)
 
-  const contacts: ContactWithGroups[] = (data ?? []).map((row: any) => {
-    const groups = (row.contact_group_members ?? [])
-      .map((m: any) => m.contact_groups)
-      .filter(Boolean)
+  type GroupRef = { id: string; name: string; color: string | null; admin_only: boolean }
+  type ClientRow = {
+    id: string; full_name: string; email: string | null; phone: string | null
+    company: string | null; notes: string | null; is_active: boolean; created_at: string
+    contact_group_members: Array<{ contact_groups: GroupRef | GroupRef[] | null }>
+  }
+
+  const contacts: ContactWithGroups[] = ((data ?? []) as unknown as ClientRow[]).map((row) => {
+    const groups = row.contact_group_members
+      .flatMap((m) => (Array.isArray(m.contact_groups) ? m.contact_groups : m.contact_groups ? [m.contact_groups] : []))
+      .filter((g): g is GroupRef => g !== null)
     return {
       id: row.id,
       full_name: row.full_name,
@@ -205,12 +187,7 @@ export async function createContactAction(input: {
 }): Promise<string> {
   if (!input.full_name.trim()) throw new Error('Nome obrigatório')
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const { data, error } = await supabase
     .from('clients')
@@ -254,12 +231,7 @@ export async function updateContactAction(
 ): Promise<void> {
   if (!updates.full_name.trim()) throw new Error('Nome obrigatório')
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const { error } = await supabase
     .from('clients')
@@ -276,12 +248,7 @@ export async function updateContactAction(
 }
 
 export async function deactivateContactAction(contactId: string): Promise<void> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const { error } = await supabase
     .from('clients')
@@ -296,12 +263,7 @@ export async function syncContactGroupsAction(
   contactId: string,
   groupIds: string[]
 ): Promise<void> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   if (member.role !== 'admin' && groupIds.length > 0) {
     const { data: groups } = await supabase

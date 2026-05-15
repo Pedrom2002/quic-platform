@@ -87,7 +87,7 @@ export default function GuiaClientePage() {
         {/* Top bar */}
         <div className="relative z-10 border-b border-white/10 anim-fade-up" style={{ animationDelay: '100ms' }}>
           <div className="max-w-5xl mx-auto px-6 md:px-12 py-5 flex items-center justify-between">
-            <Image src="/Design sem nome(1).png" alt="Quic" width={200} height={80} priority />
+            <Image src="/logo-quic.png" alt="Quic" width={200} height={80} priority />
             <span className="text-[10px] tracking-[0.35em] uppercase text-white/30 hidden sm:block">
               No Stage Is Too Big
             </span>
@@ -338,7 +338,7 @@ export default function GuiaClientePage() {
         <div className="max-w-5xl mx-auto px-6 md:px-12 py-8">
           <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
             <div className="flex items-center gap-5">
-              <Image src="/Design sem nome(1).png" alt="Quic" width={200} height={80} />
+              <Image src="/logo-quic.png" alt="Quic" width={200} height={80} />
               <span className="text-[10px] tracking-[0.25em] uppercase text-white/30 hidden sm:block">
                 No Stage Is Too Big
               </span>

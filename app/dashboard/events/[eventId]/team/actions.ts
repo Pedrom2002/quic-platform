@@ -1,18 +1,13 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { assertEventOwnership, resolveOrgMember } from '@/lib/supabase/actions'
+import { requireOrgAuth, assertEventOwnership } from '@/lib/supabase/actions'
 import type { EventTeamAssignmentWithMember } from '@/types/app'
 
 export async function loadEventTeamAction(eventId: string): Promise<{
   assignments: EventTeamAssignmentWithMember[]
   orgMembers: { id: string; full_name: string; email: string; role: string; avatar_url: string | null }[]
 }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const owned = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owned) throw new Error('Evento não encontrado')
@@ -42,11 +37,7 @@ export async function assignTeamMemberAction(
   teamMemberId: string,
   roleInEvent?: string
 ): Promise<void> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const owned = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owned) throw new Error('Evento não encontrado')
@@ -74,11 +65,7 @@ export async function removeTeamMemberAction(
   eventId: string,
   assignmentId: string
 ): Promise<void> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-  const member = await resolveOrgMember(supabase, user.id)
-  if (!member) throw new Error('Não autorizado')
+  const { supabase, member } = await requireOrgAuth()
 
   const owned = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owned) throw new Error('Evento não encontrado')
@@ -91,4 +78,3 @@ export async function removeTeamMemberAction(
 
   if (error) throw new Error('Erro ao remover membro')
 }
-

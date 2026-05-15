@@ -1,3 +1,5 @@
+import { getEnv } from '@/lib/env'
+
 const BREVO_API = 'https://api.brevo.com/v3/smtp/email'
 
 interface SendEmailParams {
@@ -8,10 +10,10 @@ interface SendEmailParams {
 }
 
 export async function sendEmail({ to, toName, subject, html }: SendEmailParams): Promise<string> {
-  const apiKey = process.env.BREVO_API_KEY
+  const { BREVO_API_KEY: apiKey, EMAIL_FROM } = getEnv()
   if (!apiKey) throw new Error('BREVO_API_KEY não configurado')
 
-  const from = process.env.EMAIL_FROM ?? 'QUIC <noreply@quic.pt>'
+  const from = EMAIL_FROM ?? 'QUIC <noreply@quic.pt>'
   const match = from.match(/^(.+?)\s*<(.+?)>$/)
   const sender = match
     ? { name: match[1].trim(), email: match[2].trim() }

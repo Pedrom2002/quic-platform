@@ -99,7 +99,7 @@ function wireFrom(
 
 describe('GET /api/cron/process-scheduled', () => {
   beforeEach(() => {
-    process.env.CRON_SECRET = 'my-secret'
+    process.env.CRON_SECRET = 'my-secret-for-cron-tests-32chars!!'
     process.env.QSTASH_TOKEN = 'qstash-token'
     process.env.NEXT_PUBLIC_APP_URL = 'https://app.example.com'
     vi.clearAllMocks()
@@ -130,7 +130,7 @@ describe('GET /api/cron/process-scheduled', () => {
 
   it('returns 500 when QSTASH_TOKEN not set', async () => {
     delete process.env.QSTASH_TOKEN
-    const res = await GET(makeRequest('Bearer my-secret'))
+    const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     expect(res.status).toBe(500)
   })
 
@@ -140,7 +140,7 @@ describe('GET /api/cron/process-scheduled', () => {
     const clientsChain = makeClientsChain([])
     wireFrom(fetchChain, claimChain, clientsChain)
 
-    const res = await GET(makeRequest('Bearer my-secret'))
+    const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     expect(res.status).toBe(500)
   })
 
@@ -150,7 +150,7 @@ describe('GET /api/cron/process-scheduled', () => {
     const clientsChain = makeClientsChain([])
     wireFrom(fetchChain, claimChain, clientsChain)
 
-    const res = await GET(makeRequest('Bearer my-secret'))
+    const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     expect(res.status).toBe(200)
     expect((res as { body: { processed: number; hasMore: boolean } }).body).toEqual({
       processed: 0,
@@ -170,7 +170,7 @@ describe('GET /api/cron/process-scheduled', () => {
     const clientsChain = makeClientsChain([])
     wireFrom(fetchChain, claimChain, clientsChain)
 
-    const res = await GET(makeRequest('Bearer my-secret'))
+    const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     expect(res.status).toBe(500)
   })
 
@@ -188,7 +188,7 @@ describe('GET /api/cron/process-scheduled', () => {
     const clientsChain = makeClientsChain([])
     wireFrom(fetchChain, claimChain, clientsChain)
 
-    const res = await GET(makeRequest('Bearer my-secret'))
+    const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     expect(res.status).toBe(500)
   })
 
@@ -207,7 +207,7 @@ describe('GET /api/cron/process-scheduled', () => {
 
     mockPublishJSON.mockResolvedValue({ messageId: 'qm-ok' })
 
-    const res = await GET(makeRequest('Bearer my-secret'))
+    const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     expect(res.status).toBe(200)
     const body = (res as { body: { processed: number; failed: number; hasMore: boolean } }).body
     expect(body.processed).toBe(1)
@@ -227,7 +227,7 @@ describe('GET /api/cron/process-scheduled', () => {
     const perJobChains = Array.from({ length: 50 }, () => makeUpdateEqChain())
     wireFrom(fetchChain, claimChain, clientsChain, perJobChains)
 
-    const res = await GET(makeRequest('Bearer my-secret'))
+    const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     expect((res as { body: { hasMore: boolean } }).body.hasMore).toBe(true)
   })
 
@@ -247,7 +247,7 @@ describe('GET /api/cron/process-scheduled', () => {
 
     mockPublishJSON.mockRejectedValue(new Error('QStash down'))
 
-    const res = await GET(makeRequest('Bearer my-secret'))
+    const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     const body = (res as { body: { processed: number; failed: number } }).body
     expect(body.failed).toBe(1)
     expect(body.processed).toBe(0)

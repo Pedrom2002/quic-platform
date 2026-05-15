@@ -29,6 +29,10 @@ vi.mock('next/server', () => ({
   },
 }))
 
+vi.mock('@/lib/env', () => ({
+  getEnv: () => ({ RESEND_WEBHOOK_SECRET: process.env.RESEND_WEBHOOK_SECRET }),
+}))
+
 import { POST } from '@/app/api/webhooks/resend/route'
 
 // Secret: "whsec_" + base64("test-secret-bytes")
@@ -83,11 +87,11 @@ describe('POST /api/webhooks/resend', () => {
     delete process.env.RESEND_WEBHOOK_SECRET
   })
 
-  it('returns 500 when RESEND_WEBHOOK_SECRET not set', async () => {
+  it('returns 503 when RESEND_WEBHOOK_SECRET not set', async () => {
     delete process.env.RESEND_WEBHOOK_SECRET
     const req = makeRequest('{}', 'v1,badsig')
     const res = await POST(req)
-    expect(res.status).toBe(500)
+    expect(res.status).toBe(503)
   })
 
   it('returns 401 for invalid signature', async () => {

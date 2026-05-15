@@ -27,20 +27,17 @@ export default async function NotificationsPage({
   const { eventId } = await params
   const supabase = await createClient()
 
-  const { data: event } = await supabase
-    .from('events')
-    .select('id, name')
-    .eq('id', eventId)
-    .single()
+  const [{ data: event }, { data: jobs }] = await Promise.all([
+    supabase.from('events').select('id, name').eq('id', eventId).single(),
+    supabase
+      .from('notification_jobs')
+      .select('*, client:clients(full_name, email), checklist_item:event_checklist_items(title, client_label)')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false })
+      .limit(100),
+  ])
 
   if (!event) notFound()
-
-  const { data: jobs } = await supabase
-    .from('notification_jobs')
-    .select('*, client:clients(full_name, email), checklist_item:event_checklist_items(title, client_label)')
-    .eq('event_id', eventId)
-    .order('created_at', { ascending: false })
-    .limit(100)
 
   return (
     <div className="p-8">
