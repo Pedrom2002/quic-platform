@@ -45,7 +45,21 @@ export async function POST(
         fileName?: string; fileSize?: number; mimeType?: string
       }
       const { blobUrl, blobPathname, fileName, fileSize, mimeType } = body
-      if (!blobUrl?.includes('vercel-storage.com') || !blobPathname) {
+      if (!blobPathname) {
+        return NextResponse.json({ error: 'Dados de blob inválidos' }, { status: 400 })
+      }
+
+      const sanitizedMime = String(mimeType ?? '')
+      if (!ALLOWED_MIME_TYPES.has(sanitizedMime)) {
+        return NextResponse.json({ error: 'Tipo de ficheiro não permitido' }, { status: 415 })
+      }
+
+      try {
+        const parsed = new URL(blobUrl ?? '')
+        if (!parsed.hostname.endsWith('.public.blob.vercel-storage.com')) {
+          return NextResponse.json({ error: 'Dados de blob inválidos' }, { status: 400 })
+        }
+      } catch {
         return NextResponse.json({ error: 'Dados de blob inválidos' }, { status: 400 })
       }
 
@@ -57,7 +71,7 @@ export async function POST(
           uploaded_by: member.id,
           file_name: String(fileName ?? blobPathname).slice(0, 255),
           file_size: fileSize ?? null,
-          mime_type: String(mimeType ?? ''),
+          mime_type: sanitizedMime,
           blob_url: blobUrl,
           blob_pathname: blobPathname,
         })
@@ -72,7 +86,7 @@ export async function POST(
         userId: user.id,
         organizationId: member.organization_id,
         eventId,
-        meta: { fileId: data.id, fileName: String(fileName ?? '').slice(0, 255), mimeType: String(mimeType ?? ''), fileSize: fileSize ?? null },
+        meta: { fileId: data.id, fileName: String(fileName ?? '').slice(0, 255), mimeType: sanitizedMime, fileSize: fileSize ?? null },
       })
 
       return NextResponse.json({ file: data }, { status: 201 })
