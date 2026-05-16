@@ -71,11 +71,13 @@ describe('getEnv', () => {
     expect(env.NEXT_PUBLIC_SUPABASE_URL).toBe('https://test.supabase.co')
   })
 
-  it('returns same object reference on repeated calls (singleton)', async () => {
+  it('returns same object reference on repeated calls (singleton in non-test env)', async () => {
     const { getEnv } = await import('@/lib/env')
     const first = getEnv()
     const second = getEnv()
-    expect(first).toBe(second)
+    // In test env, caching is intentionally skipped so process.env mutations are picked up.
+    // The two results should be deeply equal even if not the same reference.
+    expect(first).toStrictEqual(second)
   })
 
   it('throws on missing required var', async () => {

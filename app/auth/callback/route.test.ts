@@ -55,4 +55,10 @@ describe('auth callback route', () => {
     await GET(new Request('http://localhost/auth/callback?code=abc&next=evil.com/phish'))
     expect(mockRedirect).toHaveBeenCalledWith('http://localhost/dashboard')
   })
+
+  it('rejects backslash-prefixed redirect', async () => {
+    const { GET } = await import('./route')
+    await GET(new Request('http://localhost/auth/callback?code=abc&next=/\\evil.com'))
+    expect(mockRedirect).toHaveBeenCalledWith('http://localhost/dashboard')
+  })
 })

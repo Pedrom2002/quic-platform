@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 function isSafeRedirect(next: string): boolean {
-  return next.startsWith('/') && !next.startsWith('//')
+  return next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/\\')
 }
 
 export async function GET(request: Request) {

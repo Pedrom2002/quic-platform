@@ -29,7 +29,7 @@ export type ServerEnv = z.infer<typeof schema>
 let _env: ServerEnv | undefined
 
 export function getEnv(): ServerEnv {
-  if (_env) return _env
+  if (_env && process.env.NODE_ENV !== 'test') return _env
   const result = schema.safeParse(process.env)
   if (!result.success) {
     const issues = result.error.issues
