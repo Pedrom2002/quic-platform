@@ -23,7 +23,8 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { reorderTasksAction } from '@/app/dashboard/events/[eventId]/tasks/actions'
-import GenerateTasksModal from './GenerateTasksModal'
+import dynamic from 'next/dynamic'
+const GenerateTasksModal = dynamic(() => import('./GenerateTasksModal'), { ssr: false })
 
 export function buildTree(flat: EventTask[]): EventTaskNode[] {
   const map = new Map<string, EventTaskNode>()
