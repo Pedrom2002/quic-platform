@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '50mb',
     },
+    typedRoutes: true,
   },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
