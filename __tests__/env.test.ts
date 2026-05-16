@@ -64,4 +64,23 @@ describe('getEnv', () => {
     expect(env.QSTASH_CURRENT_SIGNING_KEY).toBeUndefined()
     expect(env.QSTASH_NEXT_SIGNING_KEY).toBeUndefined()
   })
+
+  it('returns parsed env', async () => {
+    const { getEnv } = await import('@/lib/env')
+    const env = getEnv()
+    expect(env.NEXT_PUBLIC_SUPABASE_URL).toBe('https://test.supabase.co')
+  })
+
+  it('returns same object reference on repeated calls (singleton)', async () => {
+    const { getEnv } = await import('@/lib/env')
+    const first = getEnv()
+    const second = getEnv()
+    expect(first).toBe(second)
+  })
+
+  it('throws on missing required var', async () => {
+    delete process.env.CRON_SECRET
+    const { getEnv } = await import('@/lib/env')
+    expect(() => getEnv()).toThrow('[env]')
+  })
 })

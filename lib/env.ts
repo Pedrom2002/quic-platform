@@ -26,7 +26,10 @@ const schema = z.object({
 
 export type ServerEnv = z.infer<typeof schema>
 
+let _env: ServerEnv | undefined
+
 export function getEnv(): ServerEnv {
+  if (_env) return _env
   const result = schema.safeParse(process.env)
   if (!result.success) {
     const issues = result.error.issues
@@ -34,5 +37,6 @@ export function getEnv(): ServerEnv {
       .join('\n')
     throw new Error(`[env] Missing or invalid environment variables:\n${issues}`)
   }
-  return result.data
+  _env = result.data
+  return _env
 }
