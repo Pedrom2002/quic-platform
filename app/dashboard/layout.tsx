@@ -23,12 +23,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex h-screen bg-slate-50">
+      <a href="#main-content" className="skip-link">
+        Saltar para o conteúdo
+      </a>
       <Sidebar
         userName={member?.full_name ?? user.email ?? 'Utilizador'}
         userEmail={user.email ?? ''}
         orgName={member?.organizations?.name ?? 'Quic'}
       />
-      <main className="flex-1 overflow-auto flex flex-col">
+      <main id="main-content" className="flex-1 overflow-auto flex flex-col">
         {children}
       </main>
       <Toaster richColors theme="light" />

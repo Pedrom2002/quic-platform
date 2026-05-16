@@ -84,6 +84,7 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
           <Link
             href="/dashboard/settings"
             onClick={e => e.stopPropagation()}
+            aria-label="Definições"
             className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-zinc-500 hover:text-white"
           >
             <Settings className="w-3.5 h-3.5" />
