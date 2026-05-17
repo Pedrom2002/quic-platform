@@ -128,7 +128,14 @@ export default async function EventsPage() {
                         <span className="text-slate-400">Progresso</span>
                         <span className="tabular-nums font-medium text-slate-600">{prog.completed}/{prog.total}</span>
                       </div>
-                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-1.5 bg-slate-100 rounded-full overflow-hidden"
+                        role="progressbar"
+                        aria-valuenow={percent}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`Progresso: ${prog.completed} de ${prog.total} etapas`}
+                      >
                         <div
                           className="h-full rounded-full bg-slate-800 transition-all"
                           style={{ width: `${percent}%` }}

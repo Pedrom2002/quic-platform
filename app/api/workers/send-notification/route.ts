@@ -1,18 +1,35 @@
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { verifyQStashSignature } from '@/lib/qstash/verify'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail, buildEmailHtml } from '@/lib/notifications/channels/email'
-import type { NotificationJobPayload } from '@/types/app'
+
+const payloadSchema = z.object({
+  job_id: z.string().min(1),
+  event_id: z.string().min(1),
+  client_id: z.string().min(1),
+  channel: z.enum(['email', 'whatsapp', 'sms', 'portal']),
+  rendered_subject: z.string().nullable(),
+  rendered_body: z.string(),
+  client_email: z.string().nullable(),
+  client_phone: z.string().nullable(),
+  client_whatsapp: z.string().nullable(),
+})
 
 export async function POST(request: Request) {
-  const cloned = request.clone()
-  const isValid = await verifyQStashSignature(cloned)
+  const clonedForSig = request.clone()
+  const clonedForBody = request.clone()
+  const isValid = await verifyQStashSignature(clonedForSig)
 
   if (!isValid) {
     return NextResponse.json({ error: 'Assinatura inválida' }, { status: 401 })
   }
 
-  const payload: NotificationJobPayload = await request.json()
+  const parsed = payloadSchema.safeParse(await clonedForBody.json())
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Payload inválido', issues: parsed.error.issues }, { status: 400 })
+  }
+  const payload = parsed.data
   const supabase = createAdminClient()
 
   try {

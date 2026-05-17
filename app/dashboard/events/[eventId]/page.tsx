@@ -159,7 +159,14 @@ export default async function EventDetailPage({
           <span className="text-sm text-slate-500">Progresso do Evento</span>
           <span className="text-sm font-semibold text-slate-800">{percent}%</span>
         </div>
-        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div
+          className="h-2 bg-slate-100 rounded-full overflow-hidden"
+          role="progressbar"
+          aria-valuenow={percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Progresso do evento"
+        >
           <div
             className="h-full bg-green-500 rounded-full transition-all duration-500"
             style={{ width: `${percent}%` }}

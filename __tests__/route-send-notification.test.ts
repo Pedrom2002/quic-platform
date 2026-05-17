@@ -46,9 +46,9 @@ import { verifyQStashSignature } from '@/lib/qstash/verify'
 import { sendEmail } from '@/lib/notifications/channels/email'
 
 const basePayload = {
-  job_id: 'job-1',
-  event_id: 'ev-1',
-  client_id: 'cl-1',
+  job_id: '00000000-0000-0000-0000-000000000001',
+  event_id: '00000000-0000-0000-0000-000000000002',
+  client_id: '00000000-0000-0000-0000-000000000003',
   channel: 'email' as const,
   rendered_subject: 'Test Subject',
   rendered_body: 'Test body text',
