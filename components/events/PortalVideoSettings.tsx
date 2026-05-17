@@ -9,17 +9,17 @@ import { Video, Check, Play, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const AVAILABLE_VIDEOS = [
-  { id: 'blob-hero', label: 'Luzes de palco', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/144156-784280927.mp4' },
-  { id: 'blob-content', label: 'Ambiente noturno', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/45961-447087612.mp4' },
-  { id: 'va', label: 'Vídeo A', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/a.mp4' },
-  { id: 'vb', label: 'Vídeo B', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/b.mp4' },
-  { id: 'vc', label: 'Vídeo C', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/c.mp4' },
-  { id: 'v1', label: 'Vídeo 1', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/1630-148614385.mp4' },
-  { id: 'v2', label: 'Vídeo 2', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/166707-835224055_medium.mp4' },
-  { id: 'v3', label: 'Vídeo 3', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/169951-842348732_medium.mp4' },
-  { id: 'v4', label: 'Vídeo 4', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/21118-315137091_medium.mp4' },
-  { id: 'v5', label: 'Vídeo 5', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/227353_medium.mp4' },
-  { id: 'v6', label: 'Vídeo 6', url: 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/7901-205237744_medium.mp4' },
+  { id: 'blob-hero', label: 'Luzes de palco', url: '/portal_hero.mp4' },
+  { id: 'blob-content', label: 'Ambiente noturno', url: '/portal_content.mp4' },
+  { id: 'va', label: 'Vídeo A', url: '/qp_a.mp4' },
+  { id: 'vb', label: 'Vídeo B', url: '/qp_b.mp4' },
+  { id: 'vc', label: 'Vídeo C', url: '/qp_c.mp4' },
+  { id: 'v1', label: 'Vídeo 1', url: '/qp_1630-148614385.mp4' },
+  { id: 'v2', label: 'Vídeo 2', url: '/qp_166707-835224055_medium.mp4' },
+  { id: 'v3', label: 'Vídeo 3', url: '/qp_169951-842348732_medium.mp4' },
+  { id: 'v4', label: 'Vídeo 4', url: '/qp_21118-315137091_medium.mp4' },
+  { id: 'v5', label: 'Vídeo 5', url: '/qp_227353_medium.mp4' },
+  { id: 'v6', label: 'Vídeo 6', url: '/qp_7901-205237744_medium.mp4' },
 ]
 
 function VideoCard({

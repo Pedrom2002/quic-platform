@@ -8,8 +8,8 @@ import { pt } from 'date-fns/locale'
 import { calcProgress } from '@/lib/event-status'
 import type { PortalItem, PortalItemFile } from '@/lib/portal/data'
 
-const FALLBACK_HERO_VIDEO = 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/144156-784280927.mp4'
-const FALLBACK_CONTENT_VIDEO = 'https://0q7kycaotkbutqsj.public.blob.vercel-storage.com/45961-447087612.mp4'
+const FALLBACK_HERO_VIDEO = '/portal_hero.mp4'
+const FALLBACK_CONTENT_VIDEO = '/portal_content.mp4'
 
 interface Props {
   eventId: string
