@@ -54,6 +54,8 @@ export default function TaskDetailPanel({ eventId, item, orgMembers, currentMemb
   const [fileLinks, setFileLinks] = useState<ChecklistItemFileLink[] | null>(null)
   const [, startTransition] = useTransition()
   const titleRef = useRef<HTMLInputElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const previousFocusRef = useRef<Element | null>(null)
 
   useEffect(() => {
     loadItemNotesAction(eventId, item.id).then(setNotes)
@@ -61,7 +63,30 @@ export default function TaskDetailPanel({ eventId, item, orgMembers, currentMemb
   }, [eventId, item.id])
 
   useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
+    previousFocusRef.current = document.activeElement
+    titleRef.current?.focus()
+    return () => {
+      if (previousFocusRef.current instanceof HTMLElement) {
+        previousFocusRef.current.focus()
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') { onClose(); return }
+      if (e.key !== 'Tab' || !panelRef.current) return
+      const focusable = panelRef.current.querySelectorAll<HTMLElement>(
+        'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      )
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last?.focus() }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first?.focus() }
+      }
+    }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
@@ -94,7 +119,13 @@ export default function TaskDetailPanel({ eventId, item, orgMembers, currentMemb
       <div className="fixed inset-0 bg-black/20 z-40" onClick={onClose} />
 
       {/* Panel */}
-      <div className="fixed right-0 top-0 h-full w-[480px] bg-white shadow-2xl z-50 flex flex-col overflow-hidden">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Detalhes: ${item.title}`}
+        className="fixed right-0 top-0 h-full w-[480px] bg-white shadow-2xl z-50 flex flex-col overflow-hidden"
+      >
         {/* Header */}
         <div className="flex items-start gap-3 px-5 py-4 border-b border-slate-100">
           <input
@@ -104,9 +135,10 @@ export default function TaskDetailPanel({ eventId, item, orgMembers, currentMemb
             onBlur={() => title.trim() && title !== item.title && saveField({ title: title.trim() })}
             className="flex-1 text-base font-semibold text-slate-900 focus:outline-none bg-transparent"
             placeholder="Título da tarefa"
+            aria-label="Título da tarefa"
           />
-          <button onClick={onClose} className="shrink-0 text-slate-400 hover:text-slate-700 transition-colors">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} aria-label="Fechar painel" className="shrink-0 text-slate-400 hover:text-slate-700 transition-colors">
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 

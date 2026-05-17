@@ -81,19 +81,22 @@ export default function ClientUpdateModal({ eventId, clientCount, onClose }: Pro
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose} aria-hidden="true">
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="client-update-title"
         className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 flex flex-col max-h-[90vh]"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-green-600" />
-            <h2 className="text-sm font-semibold text-slate-800">Atualizar cliente</h2>
+            <MessageSquare className="w-4 h-4 text-green-600" aria-hidden="true" />
+            <h2 id="client-update-title" className="text-sm font-semibold text-slate-800">Atualizar cliente</h2>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700">
-            <X className="w-4 h-4" />
+          <button onClick={onClose} aria-label="Fechar" className="text-slate-400 hover:text-slate-700">
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
 
