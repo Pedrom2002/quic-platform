@@ -129,7 +129,7 @@ function buildCsp(nonce: string): string {
   ].join('; ')
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // CSRF guard: reject cross-origin mutation requests on internal API routes.
