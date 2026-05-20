@@ -146,7 +146,7 @@ export default function GuiaClientePage() {
         <video
           autoPlay muted loop playsInline
           className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-30"
-          src="/b.mp4"
+          src="/qp_b.mp4"
         />
         <div className="absolute inset-0 bg-white/60 pointer-events-none" />
 
