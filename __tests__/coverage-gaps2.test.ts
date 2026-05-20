@@ -225,7 +225,7 @@ describe('dispatcher additional branches', () => {
 
 // ─── portal/data.ts: error log branches ──────────────────────────────────────
 vi.mock('@/lib/portal/token', () => ({
-  verifyPortalToken: vi.fn(),
+  generatePortalToken: vi.fn(),
 }))
 vi.mock('date-fns', () => ({
   format: vi.fn().mockReturnValue('segunda-feira, 15 de junho de 2026'),
@@ -237,9 +237,6 @@ describe('lib/portal/data getPortalData error log branches', () => {
 
   it('logs error when itemFiles query fails', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const { verifyPortalToken } = await import('@/lib/portal/token')
-    vi.mocked(verifyPortalToken).mockResolvedValue({ eventId: 'evt-1' } as never)
-
     const { createAdminClient } = await import('@/lib/supabase/admin')
     const mockEvent = { id: 'evt-1', name: 'Test', venue_name: null, start_datetime: '2026-06-15T20:00:00Z', status: 'active', settings: {} }
     const mockItems = [{ id: 'item-1', client_label: null, title: 'T', status: 'pending', completed_at: null, completion_note: null, position: 1, due_at: null }]
@@ -272,9 +269,6 @@ describe('lib/portal/data getPortalData error log branches', () => {
 
   it('logs error when eventFiles query fails', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const { verifyPortalToken } = await import('@/lib/portal/token')
-    vi.mocked(verifyPortalToken).mockResolvedValue({ eventId: 'evt-1' } as never)
-
     const { createAdminClient } = await import('@/lib/supabase/admin')
     const mockEvent = { id: 'evt-1', name: 'Test', venue_name: null, start_datetime: '2026-06-15T20:00:00Z', status: 'active', settings: {} }
 
@@ -305,9 +299,6 @@ describe('lib/portal/data getPortalData error log branches', () => {
   })
 
   it('handles event with null settings (falls back to {})', async () => {
-    const { verifyPortalToken } = await import('@/lib/portal/token')
-    vi.mocked(verifyPortalToken).mockResolvedValue({ eventId: 'evt-1' } as never)
-
     const { createAdminClient } = await import('@/lib/supabase/admin')
     const mockEvent = { id: 'evt-1', name: 'Test', venue_name: null, start_datetime: '2026-06-15T20:00:00Z', status: 'active', settings: null }
 

@@ -116,7 +116,7 @@ describe('POST /api/workers/send-notification', () => {
         subject: 'Test Subject',
       })
     )
-    expect((res as { body: { success: boolean } }).body.success).toBe(true)
+    expect((res as unknown as { body: { success: boolean } }).body.success).toBe(true)
   })
 
   it('uses default subject when rendered_subject is null', async () => {
@@ -146,7 +146,7 @@ describe('POST /api/workers/send-notification', () => {
     vi.mocked(sendEmail).mockRejectedValueOnce(new Error('Brevo API down'))
     const res = await POST(makeRequest(basePayload))
     expect(res.status).toBe(500)
-    expect((res as { body: { error: string } }).body.error).toContain('Brevo API down')
+    expect((res as unknown as { body: { error: string } }).body.error).toContain('Brevo API down')
   })
 
   it('uses twilio as provider for non-email channels', async () => {

@@ -8,7 +8,7 @@ import { audit } from '@/lib/audit'
 describe('audit', () => {
   it('is a no-op and returns undefined', () => {
     const result = audit({
-      action: 'create',
+      action: 'event.created',
       userId: 'user-1',
       organizationId: 'org-1',
     })
@@ -18,11 +18,11 @@ describe('audit', () => {
   it('accepts optional eventId and metadata without throwing', () => {
     expect(() =>
       audit({
-        action: 'update',
+        action: 'client.update.sent',
         userId: 'u',
         organizationId: 'o',
         eventId: 'e-1',
-        metadata: { key: 'value' },
+        meta: { key: 'value' },
       })
     ).not.toThrow()
   })

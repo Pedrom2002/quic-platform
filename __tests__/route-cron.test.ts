@@ -152,7 +152,7 @@ describe('GET /api/cron/process-scheduled', () => {
 
     const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     expect(res.status).toBe(200)
-    expect((res as { body: { processed: number; hasMore: boolean } }).body).toEqual({
+    expect((res as unknown as { body: { processed: number; hasMore: boolean } }).body).toEqual({
       processed: 0,
       hasMore: false,
     })
@@ -209,7 +209,7 @@ describe('GET /api/cron/process-scheduled', () => {
 
     const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     expect(res.status).toBe(200)
-    const body = (res as { body: { processed: number; failed: number; hasMore: boolean } }).body
+    const body = (res as unknown as { body: { processed: number; failed: number; hasMore: boolean } }).body
     expect(body.processed).toBe(1)
     expect(body.failed).toBe(0)
     expect(body.hasMore).toBe(false)
@@ -228,7 +228,7 @@ describe('GET /api/cron/process-scheduled', () => {
     wireFrom(fetchChain, claimChain, clientsChain, perJobChains)
 
     const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
-    expect((res as { body: { hasMore: boolean } }).body.hasMore).toBe(true)
+    expect((res as unknown as { body: { hasMore: boolean } }).body.hasMore).toBe(true)
   })
 
   it('counts failed jobs when publishJSON rejects', async () => {
@@ -248,7 +248,7 @@ describe('GET /api/cron/process-scheduled', () => {
     mockPublishJSON.mockRejectedValue(new Error('QStash down'))
 
     const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
-    const body = (res as { body: { processed: number; failed: number } }).body
+    const body = (res as unknown as { body: { processed: number; failed: number } }).body
     expect(body.failed).toBe(1)
     expect(body.processed).toBe(0)
   })

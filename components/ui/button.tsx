@@ -58,6 +58,7 @@ function Button({
 // ButtonLink: render Button como <a> ou qualquer outro elemento
 // Uso: <ButtonLink href="/..." variant="outline">texto</ButtonLink>
 import Link from 'next/link'
+import type { Route } from 'next'
 function ButtonLink({
   href,
   className,
@@ -67,7 +68,7 @@ function ButtonLink({
   ...props
 }: { href: string; children: React.ReactNode } & VariantProps<typeof buttonVariants> & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>) {
   return (
-    <Link href={href} className={cn(buttonVariants({ variant, size, className }))} {...props}>
+    <Link href={href as Route} className={cn(buttonVariants({ variant, size, className }))} {...props}>
       {children}
     </Link>
   )

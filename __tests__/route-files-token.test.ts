@@ -95,8 +95,8 @@ describe('GET /api/events/[eventId]/files/token', () => {
     const req = new Request(`${BASE_URL}?filename=contract.pdf&mimeType=application/pdf`)
     const res = await GET(req, { params: Promise.resolve({ eventId: EVENT_ID }) })
     expect(res.status).toBe(200)
-    expect((res as { body: { token: string; pathname: string } }).body.token).toBe('client-blob-token-xyz')
-    expect((res as { body: { token: string; pathname: string } }).body.pathname).toContain('contract')
+    expect((res as unknown as { body: { token: string; pathname: string } }).body.token).toBe('client-blob-token-xyz')
+    expect((res as unknown as { body: { token: string; pathname: string } }).body.pathname).toContain('contract')
   })
 
   it('skips MIME validation when mimeType param is absent', async () => {

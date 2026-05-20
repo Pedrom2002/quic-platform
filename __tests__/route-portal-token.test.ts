@@ -31,7 +31,7 @@ describe('GET /api/portal/[token]', () => {
     const req = new Request('http://localhost/api/portal/bad')
     const res = await GET(req, { params: Promise.resolve({ token: 'bad' }) })
     expect(res.status).toBe(401)
-    expect((res as { body: { error: string } }).body.error).toMatch(/inválido/)
+    expect((res as unknown as { body: { error: string } }).body.error).toMatch(/inválido/)
   })
 
   it('returns 200 with event/items/progress when data found', async () => {
@@ -39,7 +39,7 @@ describe('GET /api/portal/[token]', () => {
     const req = new Request('http://localhost/api/portal/good')
     const res = await GET(req, { params: Promise.resolve({ token: 'good' }) })
     expect(res.status).toBe(200)
-    const body = (res as { body: { event: { name: string }; items: unknown[]; progress: unknown } }).body
+    const body = (res as unknown as { body: { event: { name: string }; items: unknown[]; progress: unknown } }).body
     expect(body.event.name).toBe('Fest')
     expect(body.items).toEqual([])
     expect(body.progress).toEqual({ total: 0, completed: 0, percent: 0 })

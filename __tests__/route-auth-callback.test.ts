@@ -30,13 +30,13 @@ describe('GET /auth/callback', () => {
   it('redirects to /dashboard by default when no next param', async () => {
     const req = new Request('http://localhost/auth/callback?code=abc123')
     const res = await GET(req)
-    expect((res as { redirectUrl: string }).redirectUrl).toBe('http://localhost/dashboard')
+    expect((res as unknown as { redirectUrl: string }).redirectUrl).toBe('http://localhost/dashboard')
   })
 
   it('redirects to custom next param value', async () => {
     const req = new Request('http://localhost/auth/callback?code=abc&next=/events')
     const res = await GET(req)
-    expect((res as { redirectUrl: string }).redirectUrl).toBe('http://localhost/events')
+    expect((res as unknown as { redirectUrl: string }).redirectUrl).toBe('http://localhost/events')
   })
 
   it('does not call exchangeCodeForSession when no code param', async () => {
@@ -54,6 +54,6 @@ describe('GET /auth/callback', () => {
   it('still redirects when code is absent', async () => {
     const req = new Request('http://localhost/auth/callback?next=/settings')
     const res = await GET(req)
-    expect((res as { redirectUrl: string }).redirectUrl).toBe('http://localhost/settings')
+    expect((res as unknown as { redirectUrl: string }).redirectUrl).toBe('http://localhost/settings')
   })
 })

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import type { Route } from 'next'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { Calendar, Users, LayoutDashboard, FileText, Settings, LogOut, Users2, FolderOpen } from 'lucide-react'
@@ -56,7 +57,7 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={item.href as Route}
               aria-current={active ? 'page' : undefined}
               className={cn(
                 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',

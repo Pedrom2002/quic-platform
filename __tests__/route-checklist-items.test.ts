@@ -407,7 +407,7 @@ describe('DELETE /api/events/[eventId]/checklist-items/[itemId]', () => {
     const req = new Request('http://localhost', { method: 'DELETE' })
     const res = await DELETE(req, { params: Promise.resolve({ eventId: 'ev-1', itemId: 'item-1' }) })
     expect(res.status).toBe(200)
-    expect((res as { body: { success: boolean } }).body.success).toBe(true)
+    expect((res as unknown as { body: { success: boolean } }).body.success).toBe(true)
   })
 
   it('returns 500 when DB delete fails', async () => {
