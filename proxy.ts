@@ -197,7 +197,7 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isPublic = pathname.startsWith('/portal/') || pathname.startsWith('/auth/') || pathname.startsWith('/api/portal/') || pathname === '/api/admin/email-health'
+  const isPublic = pathname.startsWith('/portal/') || pathname.startsWith('/auth/') || pathname.startsWith('/api/portal/')
 
   if (!user && !isPublic) {
     // API routes must return 401, not redirect — redirecting breaks REST clients
