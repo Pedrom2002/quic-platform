@@ -18,8 +18,10 @@ export async function GET(request: Request) {
   }
 
   if (!qstashToken) {
-    console.error('[cron] QSTASH_TOKEN não configurado')
-    return NextResponse.json({ error: 'QSTASH_TOKEN não configurado' }, { status: 500 })
+    // QStash não configurado: o dispatcher envia emails síncronamente, pelo que
+    // nenhum job fica em 'queued' à espera do cron. No-op em vez de 500 evita
+    // que o cron diário da Vercel falhe permanentemente.
+    return NextResponse.json({ processed: 0, hasMore: false, skipped: true })
   }
 
   const supabase = createAdminClient()

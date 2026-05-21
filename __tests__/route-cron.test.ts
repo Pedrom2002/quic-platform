@@ -128,10 +128,15 @@ describe('GET /api/cron/process-scheduled', () => {
     expect(res.status).toBe(401)
   })
 
-  it('returns 500 when QSTASH_TOKEN not set', async () => {
+  it('no-ops gracefully when QSTASH_TOKEN not set', async () => {
     delete process.env.QSTASH_TOKEN
     const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
-    expect(res.status).toBe(500)
+    expect(res.status).toBe(200)
+    expect((res as unknown as { body: { skipped?: boolean; processed: number } }).body).toEqual({
+      processed: 0,
+      hasMore: false,
+      skipped: true,
+    })
   })
 
   it('returns 500 when DB fetch fails', async () => {
