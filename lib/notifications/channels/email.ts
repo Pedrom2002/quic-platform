@@ -106,7 +106,7 @@ export function buildEmailHtml(body: string, eventName?: string, progressPercent
             <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
               <tr>
                 <td>
-                  <img src="${appUrl}/logo-branco.png" alt="Quic" height="28" style="display:block;height:28px;width:auto;border:0">
+                  <img src="${appUrl}/logo-branco.png" alt="Quic" height="22" style="display:block;height:22px;width:auto;border:0">
                 </td>
                 ${eventName ? `<td align="right">
                   <span style="color:#71717a;font-size:12px">${eventName.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>

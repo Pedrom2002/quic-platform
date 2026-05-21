@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Calendar, Plus, AlertCircle, CheckCircle2, Bell, ArrowRight } from 'lucide-react'
@@ -51,7 +51,7 @@ export default async function DashboardPage() {
     : { data: null }
   const member = memberRaw as { full_name: string } | null
 
-  const firstName = member?.full_name?.split(' ')[0] ?? 'Olá'
+  const firstName = member?.full_name?.split(' ')[0] ?? 'OlÃ¡'
 
   const eventsNeedingAttention = upcomingEvents?.filter(e => {
     const days = differenceInDays(new Date(e.start_datetime), new Date())
@@ -71,7 +71,7 @@ export default async function DashboardPage() {
 
           {/* Top bar */}
           <div className="flex items-center justify-between py-5 border-b border-white/10">
-            <Image src="/logo-branco.png" alt="Quic" width={200} height={80} priority />
+            <Image src="/logo-branco.png" alt="Quic" width={130} height={52} priority />
             <Link
               href="/dashboard/events/new"
               className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-white/90 transition-colors"
@@ -93,7 +93,7 @@ export default async function DashboardPage() {
               {firstName}
             </h1>
             <p className="text-sm text-white/40">
-              {format(new Date(), "d 'de' MMMM", { locale: pt })} · {activeCount} eventos ativos
+              {format(new Date(), "d 'de' MMMM", { locale: pt })} Â· {activeCount} eventos ativos
             </p>
           </div>
 
@@ -128,7 +128,7 @@ export default async function DashboardPage() {
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <AlertCircle className="w-4 h-4 text-amber-600" />
-                  <span className="text-sm font-semibold text-amber-800">Requerem atenção</span>
+                  <span className="text-sm font-semibold text-amber-800">Requerem atenÃ§Ã£o</span>
                 </div>
                 <div className="space-y-1">
                   {eventsNeedingAttention.map(event => (
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
                       <div>
                         <p className="text-sm font-medium text-stone-800">{event.name}</p>
                         <p className="text-xs text-stone-500 mt-0.5">
-                          {differenceInDays(new Date(event.start_datetime), new Date())} dias · Em planeamento
+                          {differenceInDays(new Date(event.start_datetime), new Date())} dias Â· Em planeamento
                         </p>
                       </div>
                       <ArrowRight className="w-3.5 h-3.5 text-amber-400 group-hover:text-amber-600 transition-colors" />
@@ -162,7 +162,7 @@ export default async function DashboardPage() {
                 {!upcomingEvents?.length ? (
                   <div className="px-5 py-10 text-center">
                     <Calendar className="w-8 h-8 text-stone-300 mx-auto mb-3" />
-                    <p className="text-stone-400 text-sm">Nenhum evento em preparação</p>
+                    <p className="text-stone-400 text-sm">Nenhum evento em preparaÃ§Ã£o</p>
                     <Link href="/dashboard/events/new" className="text-xs text-stone-400 hover:text-stone-700 mt-2 inline-block transition-colors">
                       Criar primeiro evento
                     </Link>
@@ -185,8 +185,8 @@ export default async function DashboardPage() {
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-stone-800 truncate">{event.name}</p>
                             <p className="text-xs text-stone-400 mt-0.5">
-                              {format(new Date(event.start_datetime), "d MMM · HH'h'mm", { locale: pt })}
-                              {event.venue_name && ` · ${event.venue_name}`}
+                              {format(new Date(event.start_datetime), "d MMM Â· HH'h'mm", { locale: pt })}
+                              {event.venue_name && ` Â· ${event.venue_name}`}
                             </p>
                           </div>
                         </div>
@@ -210,7 +210,7 @@ export default async function DashboardPage() {
           <div className="col-span-2">
             <div className="bg-white border border-stone-200 rounded-xl shadow-sm">
               <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100">
-                <h2 className="text-sm font-semibold text-stone-800">Notificações recentes</h2>
+                <h2 className="text-sm font-semibold text-stone-800">NotificaÃ§Ãµes recentes</h2>
                 <Bell className="w-3.5 h-3.5 text-stone-300" />
               </div>
               <div className="divide-y divide-stone-100">
@@ -228,13 +228,13 @@ export default async function DashboardPage() {
                           }
                           <div className="min-w-0">
                             <p className="text-xs font-medium text-stone-700 truncate">
-                              {job.clients?.full_name ?? '—'}
+                              {job.clients?.full_name ?? 'â€”'}
                             </p>
                             <p className="text-xs text-stone-400 truncate mt-0.5">
-                              {job.rendered_subject ?? job.events?.name ?? '—'}
+                              {job.rendered_subject ?? job.events?.name ?? 'â€”'}
                             </p>
                             <p className="text-xs text-stone-300 mt-1">
-                              {sent ? format(sent, "d MMM · HH'h'mm", { locale: pt }) : '—'}
+                              {sent ? format(sent, "d MMM Â· HH'h'mm", { locale: pt }) : 'â€”'}
                             </p>
                           </div>
                         </div>

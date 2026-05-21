@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import type { Route } from 'next'
@@ -45,11 +45,11 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
     <aside className="w-60 min-h-screen bg-zinc-950 border-r border-zinc-800 flex flex-col">
       {/* Logo / Org */}
       <div className="flex items-center px-4 py-4 border-b border-zinc-800 shrink-0">
-        <Image src="/logo-branco.png" alt="Quic" width={200} height={80} className="shrink-0" />
+        <Image src="/logo-branco.png" alt="Quic" width={130} height={52} className="shrink-0" />
       </div>
 
       {/* Nav */}
-      <nav aria-label="Navegação principal" className="flex-1 p-3 space-y-0.5">
+      <nav aria-label="NavegaÃ§Ã£o principal" className="flex-1 p-3 space-y-0.5">
         {navItems.map(item => {
           const active = item.exact
             ? pathname === item.href
@@ -85,7 +85,7 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
           </div>
           <Link
             href="/dashboard/settings"
-            aria-label="Definições"
+            aria-label="DefiniÃ§Ãµes"
             className="p-1 rounded text-zinc-500 hover:text-white focus-visible:opacity-100"
           >
             <Settings className="w-3.5 h-3.5" aria-hidden="true" />
@@ -93,11 +93,11 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
         </div>
         <button
           onClick={handleLogout}
-          aria-label="Terminar sessão"
+          aria-label="Terminar sessÃ£o"
           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-zinc-500 hover:text-red-400 hover:bg-zinc-900 transition-colors"
         >
           <LogOut className="w-4 h-4 shrink-0" aria-hidden="true" />
-          Terminar sessão
+          Terminar sessÃ£o
         </button>
       </div>
     </aside>

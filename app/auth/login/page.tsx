@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -25,7 +25,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError('Email ou password inválidos.')
+      setError('Email ou password invÃ¡lidos.')
       setLoading(false)
       return
     }
@@ -38,15 +38,15 @@ export default function LoginPage() {
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Image src="/logo-branco.png" alt="Quic" width={200} height={80} className="mx-auto" />
-          <p className="text-zinc-400 text-sm mt-1">Plataforma de Gestão de Eventos</p>
+          <Image src="/logo-branco.png" alt="Quic" width={130} height={52} className="mx-auto" />
+          <p className="text-zinc-400 text-sm mt-1">Plataforma de GestÃ£o de Eventos</p>
         </div>
 
         <Card className="border-zinc-800 bg-zinc-900">
           <CardHeader>
             <CardTitle className="text-white">Entrar</CardTitle>
             <CardDescription className="text-zinc-400">
-              Acesso exclusivo à equipa Quic
+              Acesso exclusivo Ã  equipa Quic
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -71,7 +71,7 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                   required
                   className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
                 />
