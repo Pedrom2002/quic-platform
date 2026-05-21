@@ -8,8 +8,8 @@ import { pt } from 'date-fns/locale'
 import { calcProgress } from '@/lib/event-status'
 import type { PortalItem, PortalItemFile } from '@/lib/portal/data'
 
-const FALLBACK_HERO_VIDEO = '/portal_hero.mp4'
-const FALLBACK_CONTENT_VIDEO = '/portal_content.mp4'
+const FALLBACK_HERO_VIDEO = '/qp_1630-148614385.mp4'
+const FALLBACK_CONTENT_VIDEO = ''
 
 interface Props {
   eventId: string
@@ -358,6 +358,9 @@ export function PortalClient({
   contentVideo,
   eventFiles,
 }: Props) {
+  const resolvedHeroVideo = heroVideo ?? FALLBACK_HERO_VIDEO
+  const resolvedContentVideo = contentVideo ?? FALLBACK_CONTENT_VIDEO
+
   const [items, setItems] = useState(initialItems)
   const [progress, setProgress] = useState(initialProgress)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
@@ -492,14 +495,14 @@ export function PortalClient({
       {/* Hero */}
       <section className="text-white relative overflow-hidden flex flex-col justify-between" style={{ height: '100dvh', background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
         {/* Background video */}
-        {heroVideo && (
+        {resolvedHeroVideo && (
           <video
             autoPlay
             muted
             loop
             playsInline
             className="absolute inset-0 w-full h-full object-cover opacity-[0.07] pointer-events-none"
-            src={heroVideo}
+            src={resolvedHeroVideo}
           />
         )}
         {/* Top bar — full-width border */}
@@ -581,14 +584,14 @@ export function PortalClient({
 
       {/* Tab content */}
       <section className="relative" style={{ background: 'linear-gradient(145deg, #1c1c1c 0%, #242424 50%, #181818 100%)' }}>
-        {contentVideo && (
+        {resolvedContentVideo && (
           <video
             autoPlay
             muted
             loop
             playsInline
             className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none"
-            src={contentVideo}
+            src={resolvedContentVideo}
           />
         )}
         <div className="absolute inset-0 pointer-events-none" />
