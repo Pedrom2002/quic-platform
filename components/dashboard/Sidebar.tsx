@@ -45,7 +45,7 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
     <aside className="w-60 min-h-screen bg-zinc-950 border-r border-zinc-800 flex flex-col">
       {/* Logo / Org */}
       <div className="flex items-center px-4 py-4 border-b border-zinc-800 shrink-0">
-        <Image src="/logo-quic.png" alt="Quic" width={200} height={80} className="shrink-0" />
+        <Image src="/logo-branco.png" alt="Quic" width={200} height={80} className="shrink-0" />
       </div>
 
       {/* Nav */}

@@ -71,7 +71,7 @@ export default async function DashboardPage() {
 
           {/* Top bar */}
           <div className="flex items-center justify-between py-5 border-b border-white/10">
-            <Image src="/logo-quic.png" alt="Quic" width={200} height={80} priority />
+            <Image src="/logo-branco.png" alt="Quic" width={200} height={80} priority />
             <Link
               href="/dashboard/events/new"
               className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-white/90 transition-colors"
