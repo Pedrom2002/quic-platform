@@ -10,7 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import type { MessageTemplate } from '@/types/database'
-import type { MessageTemplateInput } from '@/schemas/template.schema'
+import { TEMPLATE_KEYS, type MessageTemplateInput, type TemplateKey } from '@/schemas/template.schema'
+
+const TEMPLATE_KEY_LABEL: Record<TemplateKey, string> = {
+  checklist_complete: 'Conclusão de etapa',
+  welcome: 'Boas-vindas (envio do portal)',
+  client_update: 'Comunicação ao cliente',
+  custom: 'Personalizado',
+}
 import {
   loadMessageTemplatesAction,
   createMessageTemplateAction,
@@ -24,6 +31,7 @@ const EMPTY_FORM: MessageTemplateInput = {
   name: '',
   channel: 'email',
   language: 'pt',
+  template_key: 'custom',
   subject: '',
   body_template: '',
 }
@@ -72,6 +80,7 @@ export default function TemplatesPage() {
       name: t.name,
       channel: t.channel as MessageTemplateInput['channel'],
       language: (t.language ?? 'pt') as MessageTemplateInput['language'],
+      template_key: ((t.template_key ?? 'custom') as TemplateKey),
       subject: t.subject ?? '',
       body_template: t.body_template,
     })
@@ -177,7 +186,9 @@ export default function TemplatesPage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-slate-800 font-medium">{m.name}</p>
-                  <p className="text-slate-400 text-xs mt-0.5 capitalize">{m.channel} · {m.language}</p>
+                  <p className="text-slate-400 text-xs mt-0.5 capitalize">
+                    {m.channel} · {m.language} · {TEMPLATE_KEY_LABEL[(m.template_key ?? 'custom') as TemplateKey] ?? m.template_key}
+                  </p>
                 </div>
                 <div className="flex items-center gap-1">
                   <Button size="sm" variant="ghost" onClick={() => openEdit(m)} disabled={isPending} className="text-slate-400 hover:text-slate-700">
@@ -243,6 +254,25 @@ export default function TemplatesPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-slate-700">Tipo de envio</Label>
+              <Select
+                value={form.template_key}
+                onValueChange={v => setForm(p => ({ ...p, template_key: v as TemplateKey }))}
+              >
+                <SelectTrigger className="bg-white border-slate-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TEMPLATE_KEYS.map(k => (
+                    <SelectItem key={k} value={k}>{TEMPLATE_KEY_LABEL[k]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-slate-400">
+                Determina em que ação o template é usado. Apenas um template ativo por tipo, canal e idioma.
+              </p>
             </div>
             {form.channel === 'email' && (
               <div className="space-y-1.5">

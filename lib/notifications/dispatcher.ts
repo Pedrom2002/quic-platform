@@ -63,10 +63,15 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
     const channels = [...new Set(pairs.map(([ch]) => ch))]
     const languages = [...new Set(pairs.map(([, lang]) => lang))]
 
+    // Lookup is scoped to template_key='checklist_complete' because this
+    // dispatcher only runs on checklist item completion. Without this filter,
+    // any other email template at (org, email, pt) (e.g. welcome) could be
+    // picked up and sent instead — that was the bug being fixed here.
     const { data: templates } = await supabase
       .from('message_templates')
       .select('*')
       .eq('organization_id', ctx.event.organization_id)
+      .eq('template_key', 'checklist_complete')
       .in('channel', channels)
       .in('language', languages)
       .eq('is_active', true)

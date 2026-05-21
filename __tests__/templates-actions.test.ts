@@ -34,15 +34,24 @@ vi.mock('@/lib/supabase/actions', () => ({
 
 describe('templates actions', () => {
   let requireOrgAuth: ReturnType<typeof vi.fn>
+  type TemplateActionInput = {
+    name: string
+    channel: 'email' | 'whatsapp' | 'sms' | 'portal'
+    language: 'pt' | 'en'
+    template_key: 'checklist_complete' | 'welcome' | 'client_update' | 'custom'
+    subject?: string
+    body_template: string
+  }
   let loadMessageTemplatesAction: () => Promise<unknown[]>
-  let createMessageTemplateAction: (input: { name: string; channel: 'email' | 'whatsapp' | 'sms' | 'portal'; language: 'pt' | 'en'; subject?: string; body_template: string }) => Promise<void>
-  let updateMessageTemplateAction: (id: string, input: { name: string; channel: 'email' | 'whatsapp' | 'sms' | 'portal'; language: 'pt' | 'en'; subject?: string; body_template: string }) => Promise<void>
+  let createMessageTemplateAction: (input: TemplateActionInput) => Promise<void>
+  let updateMessageTemplateAction: (id: string, input: TemplateActionInput) => Promise<void>
   let deactivateMessageTemplateAction: (id: string) => Promise<void>
 
-  const validInput = {
+  const validInput: TemplateActionInput = {
     name: 'Confirmação',
-    channel: 'email' as const,
-    language: 'pt' as const,
+    channel: 'email',
+    language: 'pt',
+    template_key: 'custom',
     subject: 'Olá',
     body_template: 'Olá {{client_name}}',
   }

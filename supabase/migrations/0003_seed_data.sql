@@ -93,48 +93,68 @@ INSERT INTO checklist_template_items (template_id, title, client_label, position
     '[{"trigger":"on_complete","delay_minutes":0,"audience":"all_clients","channels":["email","portal"]}]');
 
 -- =========================================================
--- TEMPLATES DE MENSAGEM DEFAULT (email em português)
+-- TEMPLATES DE MENSAGEM DEFAULT (email/portal em PT-PT, tom Quic -> Cliente)
+-- Nota: a coluna template_key é introduzida pela migração 0011.
+--       Aqui ficam apenas os defaults; a migração 0011 (idempotente)
+--       garante o preenchimento do template_key e reescreve o copy
+--       caso este seed tenha sido aplicado antes.
 -- =========================================================
 INSERT INTO message_templates (organization_id, name, channel, language, subject, body_template) VALUES
   ('00000000-0000-0000-0000-000000000001',
-   'Etapa concluída — email',
+   'Conclusão de etapa — email',
    'email', 'pt',
-   '✅ {{event_name}} — {{item_client_label}}',
-   'Olá {{client_name}},
+   'Atualização da preparação do seu evento — {{event_name}}',
+   'Caro(a) {{client_name}},
 
-Temos uma boa notícia sobre o seu evento "{{event_name}}" marcado para {{event_date}}.
+Esperamos que esteja bem.
 
-A etapa "{{item_client_label}}" foi concluída com sucesso.
+Informamos que a etapa **{{item_client_label}}** da preparação do seu evento "{{event_name}}", agendado para {{event_date}}, foi concluída com sucesso pela nossa equipa.
 
-{{#if completion_note}}Nota da equipa: {{completion_note}}{{/if}}
+{{#if completion_note}}Nota da equipa Quic: {{completion_note}}{{/if}}
 
-Pode acompanhar o progresso completo do seu evento no portal dedicado:
-{{portal_url}}
-
-Progresso atual: {{progress_percent}}% concluído.
-
-Qualquer dúvida, estamos à disposição.
-
-Equipa Quic'),
-
-  ('00000000-0000-0000-0000-000000000001',
-   'Boas-vindas ao portal',
-   'email', 'pt',
-   '🎉 O seu evento "{{event_name}}" está em preparação',
-   'Olá {{client_name}},
-
-O seu evento "{{event_name}}" está agora em fase de preparação pela equipa Quic.
-
-Criámos um portal dedicado onde pode acompanhar em tempo real o progresso de todas as etapas de preparação:
+Neste momento, a preparação do evento encontra-se em {{progress_percent}}%. Pode acompanhar o detalhe de cada etapa, em tempo real, através do portal exclusivo do seu evento:
 
 {{portal_url}}
 
-O link acima é exclusivo para o seu evento. Pode partilhá-lo com a sua equipa.
+Permanecemos ao seu dispor para qualquer esclarecimento.
 
+Com os melhores cumprimentos,
 Equipa Quic'),
 
   ('00000000-0000-0000-0000-000000000001',
-   'Etapa concluída — portal',
+   'Boas-vindas ao portal — email',
+   'email', 'pt',
+   'O portal do seu evento "{{event_name}}" está disponível',
+   'Caro(a) {{client_name}},
+
+É com prazer que damos início, formalmente, à preparação do seu evento "{{event_name}}", agendado para {{event_date}}.
+
+A partir deste momento, fica ao seu dispor um portal exclusivo onde poderá acompanhar, em tempo real, o progresso de todas as etapas da organização e consultar marcos concluídos:
+
+{{portal_url}}
+
+O acesso é pessoal e foi gerado especificamente para este evento. Poderá partilhá-lo, em segurança, com os membros da sua equipa que considere relevantes.
+
+A Quic agradece a confiança depositada. Permanecemos inteiramente ao seu dispor para qualquer esclarecimento.
+
+Com os melhores cumprimentos,
+Equipa Quic'),
+
+  ('00000000-0000-0000-0000-000000000001',
+   'Comunicação ao cliente — email',
+   'email', 'pt',
+   'Comunicação sobre o seu evento — {{event_name}}',
+   'Caro(a) {{client_name}},
+
+{{custom_message}}
+
+Permanecemos ao seu dispor para qualquer esclarecimento adicional.
+
+Com os melhores cumprimentos,
+Equipa Quic'),
+
+  ('00000000-0000-0000-0000-000000000001',
+   'Conclusão de etapa — portal',
    'portal', 'pt',
    NULL,
-   '{{item_client_label}} foi concluído.');
+   'Etapa **{{item_client_label}}** concluída pela equipa Quic.');

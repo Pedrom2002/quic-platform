@@ -20,6 +20,7 @@ function makeQuery(result: unknown) {
   q.select = vi.fn(chain)
   q.eq = vi.fn(chain)
   q.single = vi.fn(chain)
+  q.maybeSingle = vi.fn(chain)
   return q
 }
 
@@ -107,13 +108,14 @@ describe('sendPortalLinkAction', () => {
   it('sends email to eligible clients', async () => {
     requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
     fromResults = [
-      { data: { id: 'e1', name: 'Concerto', portal_token: 'tok123', organization_id: 'org-1' }, error: null },
+      { data: { id: 'e1', name: 'Concerto', portal_token: 'tok123', organization_id: 'org-1', start_datetime: '2026-06-01T20:00:00Z' }, error: null },
       {
         data: [
           { notification_prefs: { channels: ['email'] }, opted_out: false, client: { full_name: 'Ana', email: 'ana@example.com' } },
         ],
         error: null,
       },
+      { data: { subject: 'Bem-vindo {{event_name}}', body_template: 'Olá {{client_name}}, {{portal_url}}' }, error: null },
     ]
     await sendPortalLinkAction('e1')
     expect(mockSendEmail).toHaveBeenCalledWith(
@@ -127,16 +129,35 @@ describe('sendPortalLinkAction', () => {
   it('includes portal token in URL passed to email builder', async () => {
     requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
     fromResults = [
-      { data: { id: 'e1', name: 'Concerto', portal_token: 'tok123', organization_id: 'org-1' }, error: null },
+      { data: { id: 'e1', name: 'Concerto', portal_token: 'tok123', organization_id: 'org-1', start_datetime: '2026-06-01T20:00:00Z' }, error: null },
       {
         data: [
           { notification_prefs: { channels: ['email'] }, opted_out: false, client: { full_name: 'Ana', email: 'ana@example.com' } },
         ],
         error: null,
       },
+      { data: { subject: 'Bem-vindo {{event_name}}', body_template: 'Olá {{client_name}}, link: {{portal_url}}' }, error: null },
     ]
     await sendPortalLinkAction('e1')
     const emailBody: string = mockBuildEmailHtml.mock.calls[0][0]
     expect(emailBody).toContain(`${PORTAL_URL}/portal/tok123`)
+  })
+
+  it('uses welcome template fallback when DB has no row', async () => {
+    requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
+    fromResults = [
+      { data: { id: 'e1', name: 'Concerto', portal_token: 'tok123', organization_id: 'org-1', start_datetime: '2026-06-01T20:00:00Z' }, error: null },
+      {
+        data: [
+          { notification_prefs: { channels: ['email'] }, opted_out: false, client: { full_name: 'Ana', email: 'ana@example.com' } },
+        ],
+        error: null,
+      },
+      { data: null, error: null },
+    ]
+    await sendPortalLinkAction('e1')
+    expect(mockSendEmail).toHaveBeenCalledOnce()
+    const subject: string = mockSendEmail.mock.calls[0][0].subject
+    expect(subject).toContain('Concerto')
   })
 })

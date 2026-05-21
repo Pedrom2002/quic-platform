@@ -196,6 +196,7 @@ export type Database = {
           name: string
           channel: 'email' | 'whatsapp' | 'sms' | 'portal'
           language: string
+          template_key: string
           subject: string | null
           body_template: string
           whatsapp_template_id: string | null
@@ -209,6 +210,7 @@ export type Database = {
           name: string
           channel: 'email' | 'whatsapp' | 'sms' | 'portal'
           language?: string
+          template_key?: string
           subject?: string | null
           body_template: string
           whatsapp_template_id?: string | null
@@ -222,6 +224,7 @@ export type Database = {
           name?: string
           channel?: 'email' | 'whatsapp' | 'sms' | 'portal'
           language?: string
+          template_key?: string
           subject?: string | null
           body_template?: string
           whatsapp_template_id?: string | null
