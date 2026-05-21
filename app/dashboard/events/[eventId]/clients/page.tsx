@@ -20,12 +20,7 @@ import {
   removeClientAction,
 } from './actions'
 
-const roleLabel: Record<string, string> = {
-  primary_contact: 'Contacto Principal',
-  cc: 'CC',
-  vip: 'VIP',
-  vendor: 'Fornecedor',
-}
+const DEFAULT_ROLE = 'primary_contact' as const
 
 export default function EventClientsPage() {
   const params = useParams<{ eventId: string }>()
@@ -42,7 +37,6 @@ export default function EventClientsPage() {
 
   const [newClient, setNewClient] = useState({ full_name: '', email: '', phone: '', company: '' })
   const [selectedClientId, setSelectedClientId] = useState('')
-  const [selectedRole, setSelectedRole] = useState('primary_contact')
 
   useEffect(() => { loadData() }, [eventId])
 
@@ -63,7 +57,7 @@ export default function EventClientsPage() {
     if (!selectedClientId) return
     startTransition(async () => {
       try {
-        await addExistingClientAction(eventId, selectedClientId, selectedRole as 'primary_contact' | 'cc' | 'vip' | 'vendor')
+        await addExistingClientAction(eventId, selectedClientId, DEFAULT_ROLE)
         toast.success('Cliente adicionado ao evento')
         setAddOpen(false)
         setSelectedClientId('')
@@ -78,7 +72,7 @@ export default function EventClientsPage() {
     if (!newClient.full_name) return
     startTransition(async () => {
       try {
-        await createAndAddClientAction(eventId, newClient, selectedRole as 'primary_contact' | 'cc' | 'vip' | 'vendor')
+        await createAndAddClientAction(eventId, newClient, DEFAULT_ROLE)
         toast.success('Cliente criado e adicionado ao evento')
         setOpen(false)
         setNewClient({ full_name: '', email: '', phone: '', company: '' })
@@ -162,7 +156,6 @@ export default function EventClientsPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <RoleSelector value={selectedRole} onChange={setSelectedRole} />
                     <Button onClick={addExistingClient} disabled={!selectedClientId || isPending} className="w-full">
                       Adicionar
                     </Button>
@@ -210,7 +203,6 @@ export default function EventClientsPage() {
                   <Input value={newClient.company} onChange={e => setNewClient(p => ({ ...p, company: e.target.value }))}
                     placeholder="Empresa, Lda." />
                 </div>
-                <RoleSelector value={selectedRole} onChange={setSelectedRole} />
                 <Button onClick={createAndAddClient} disabled={!newClient.full_name || isPending} className="w-full">
                   Criar e Adicionar
                 </Button>
@@ -242,9 +234,6 @@ export default function EventClientsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-slate-800 font-medium">{c.full_name}</p>
-                    <span className="text-xs text-slate-400 border border-slate-200 px-1.5 py-0.5 rounded">
-                      {roleLabel[ec.role] ?? ec.role}
-                    </span>
                   </div>
                   <div className="flex items-center gap-4 mt-0.5">
                     {c.email && (
@@ -298,21 +287,3 @@ export default function EventClientsPage() {
   )
 }
 
-function RoleSelector({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-slate-700">Papel</Label>
-      <Select value={value} onValueChange={(val) => val && onChange(val)}>
-        <SelectTrigger className="bg-white border-slate-200">
-          <SelectValue>{roleLabel[value] ?? value}</SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="primary_contact">Contacto Principal</SelectItem>
-          <SelectItem value="cc">CC</SelectItem>
-          <SelectItem value="vip">VIP</SelectItem>
-          <SelectItem value="vendor">Fornecedor</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
-  )
-}
