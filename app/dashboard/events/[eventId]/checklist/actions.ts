@@ -1,6 +1,5 @@
 'use server'
 
-import { after } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireOrgAuth, requireOrgAuthFull, getOrgAuth, assertEventOwnership } from '@/lib/supabase/actions'
 import { put } from '@vercel/blob'
@@ -50,11 +49,9 @@ export async function bulkUpdateChecklistStatusAction(
 
     if (event && completedItems?.length) {
       const completedByName = member.full_name ?? 'Equipa QUIC'
-      after(
-        Promise.allSettled(
-          completedItems.map(item =>
-            dispatchNotificationsForItem({ event, item, completedByName })
-          )
+      await Promise.allSettled(
+        completedItems.map(item =>
+          dispatchNotificationsForItem({ event, item, completedByName })
         )
       )
     }
