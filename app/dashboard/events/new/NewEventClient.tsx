@@ -13,11 +13,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { toast } from 'sonner'
-import { ArrowLeft, Mail, Globe, Eye, EyeOff, Trash2, ChevronRight, Plus } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, Trash2, ChevronRight, Plus } from 'lucide-react'
 import Link from 'next/link'
-import type { EventType } from '@/types/database'
-import type { NotificationRule } from '@/types/app'
-import type { EventChecklistItem } from '@/types/database'
+import type { EventType, EventChecklistItem } from '@/types/database'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -44,15 +42,11 @@ export function NewEventClient({ eventTypes }: Props) {
       const { eventId: id, items } = await createEventAction(data)
       setEventId(id)
       setDrafts(items.map((item: EventChecklistItem) => {
-        const rules = (item.notification_rules as unknown as NotificationRule[]) ?? []
-        const channels: string[] = rules[0]?.channels ?? []
         return {
           id: item.id,
           title: item.title,
           client_label: item.client_label ?? item.title,
           is_client_visible: item.is_client_visible ?? true,
-          notify_email: channels.includes('email'),
-          notify_portal: channels.includes('portal'),
         }
       }))
       setStep(2)
@@ -79,8 +73,6 @@ export function NewEventClient({ eventTypes }: Props) {
         title: '',
         client_label: '',
         is_client_visible: true,
-        notify_email: false,
-        notify_portal: false,
       },
     ])
   }
@@ -250,24 +242,6 @@ export function NewEventClient({ eventTypes }: Props) {
                       )}>
                       {d.is_client_visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
                       Visível cliente
-                    </button>
-                    <button type="button"
-                      onClick={() => updateDraft(d.id, { notify_email: !d.notify_email })}
-                      className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors',
-                        d.notify_email
-                          ? 'border-blue-200 bg-blue-50 text-blue-600'
-                          : 'border-slate-200 bg-white text-slate-400'
-                      )}>
-                      <Mail className="w-3 h-3" />Email
-                    </button>
-                    <button type="button"
-                      onClick={() => updateDraft(d.id, { notify_portal: !d.notify_portal })}
-                      className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border transition-colors',
-                        d.notify_portal
-                          ? 'border-violet-200 bg-violet-50 text-violet-600'
-                          : 'border-slate-200 bg-white text-slate-400'
-                      )}>
-                      <Globe className="w-3 h-3" />Portal
                     </button>
                   </div>
                 </div>

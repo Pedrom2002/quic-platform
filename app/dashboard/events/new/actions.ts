@@ -11,8 +11,6 @@ export interface ChecklistItemDraft {
   title: string
   client_label: string | null
   is_client_visible: boolean
-  notify_email: boolean
-  notify_portal: boolean
 }
 
 export async function saveChecklistDraftsAction(
@@ -32,23 +30,17 @@ export async function saveChecklistDraftsAction(
     .single()
   if (!event) throw new Error('Evento não encontrado')
 
-  const rows = items.map((item, index) => {
-    const channels: string[] = []
-    if (item.notify_email) channels.push('email')
-    if (item.notify_portal) channels.push('portal')
-    const notificationRules = channels.length > 0
-      ? [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels }]
-      : []
-    return {
-      id: item.id,
-      event_id: eventId,
-      title: item.title,
-      client_label: item.client_label || item.title,
-      is_client_visible: item.is_client_visible,
-      notification_rules: notificationRules,
-      position: (index + 1) * 10,
-    }
-  })
+  const DEFAULT_RULES = [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'portal'] }]
+
+  const rows = items.map((item, index) => ({
+    id: item.id,
+    event_id: eventId,
+    title: item.title,
+    client_label: item.client_label || item.title,
+    is_client_visible: item.is_client_visible,
+    notification_rules: DEFAULT_RULES,
+    position: (index + 1) * 10,
+  }))
 
   // Single upsert — atomic at the PostgreSQL statement level.
   // ignoreDuplicates: false ensures existing rows are updated.
@@ -117,7 +109,7 @@ export async function createEventAction(data: CreateEventInput): Promise<{ event
       description: item.description,
       position: item.position,
       is_client_visible: item.is_client_visible,
-      notification_rules: item.default_notification_rules ?? [],
+      notification_rules: [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'portal'] }],
     }))
     await supabase.from('event_checklist_items').insert(items)
   }
