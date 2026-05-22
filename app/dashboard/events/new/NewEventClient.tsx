@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { toast } from 'sonner'
-import { ArrowLeft, Mail, Globe, Eye, EyeOff, Trash2, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Mail, Globe, Eye, EyeOff, Trash2, ChevronRight, Plus } from 'lucide-react'
 import Link from 'next/link'
 import type { EventType } from '@/types/database'
 import type { NotificationRule } from '@/types/app'
@@ -69,6 +69,20 @@ export function NewEventClient({ eventTypes }: Props) {
 
   function removeDraft(id: string) {
     setDrafts(prev => prev.filter(d => d.id !== id))
+  }
+
+  function addDraft() {
+    setDrafts(prev => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        title: '',
+        client_label: '',
+        is_client_visible: true,
+        notify_email: false,
+        notify_portal: false,
+      },
+    ])
   }
 
   async function finishWizard() {
@@ -258,11 +272,23 @@ export function NewEventClient({ eventTypes }: Props) {
                   </div>
                 </div>
               ))}
+
+              <button
+                type="button"
+                onClick={addDraft}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-slate-300 text-slate-500 hover:border-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-colors text-sm"
+              >
+                <Plus className="w-4 h-4" /> Adicionar etapa
+              </button>
             </div>
           </div>
 
           <div className="flex gap-3">
-            <Button onClick={finishWizard} disabled={saving} className="flex-1">
+            <Button
+              onClick={finishWizard}
+              disabled={saving || drafts.some(d => !d.title.trim())}
+              className="flex-1"
+            >
               {saving ? 'A guardar...' : 'Concluir e abrir evento'}
             </Button>
             <Button variant="outline" onClick={() => router.push(`/dashboard/events/${eventId}`)}>
