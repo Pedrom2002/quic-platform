@@ -49,7 +49,7 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
       </div>
 
       {/* Nav */}
-      <nav aria-label="NavegaÃ§Ã£o principal" className="flex-1 p-3 space-y-0.5">
+      <nav aria-label="Navegação principal" className="flex-1 p-3 space-y-0.5">
         {navItems.map(item => {
           const active = item.exact
             ? pathname === item.href
@@ -85,7 +85,7 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
           </div>
           <Link
             href="/dashboard/settings"
-            aria-label="DefiniÃ§Ãµes"
+            aria-label="Definições"
             className="p-1 rounded text-zinc-500 hover:text-white focus-visible:opacity-100"
           >
             <Settings className="w-3.5 h-3.5" aria-hidden="true" />
@@ -93,11 +93,11 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
         </div>
         <button
           onClick={handleLogout}
-          aria-label="Terminar sessÃ£o"
+          aria-label="Terminar sessão"
           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-zinc-500 hover:text-red-400 hover:bg-zinc-900 transition-colors"
         >
           <LogOut className="w-4 h-4 shrink-0" aria-hidden="true" />
-          Terminar sessÃ£o
+          Terminar sessão
         </button>
       </div>
     </aside>
