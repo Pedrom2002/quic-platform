@@ -143,7 +143,7 @@ function VideoPicker({
 
 export function PortalVideoSettings({ eventId }: { eventId: string }) {
   const [heroVideo, setHeroVideo] = useState(AVAILABLE_VIDEOS.find(v => v.id === 'v1')!.url)
-  const [contentVideo, setContentVideo] = useState('')
+  const [contentVideo, setContentVideo] = useState(NO_VIDEO)
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
   const [collapsed, setCollapsed] = useState(true)
