@@ -1,7 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
-import { requireOrgAuth, requireOrgAuthFull, getOrgAuth, assertEventOwnership } from '@/lib/supabase/actions'
+import { requireOrgAuth, requireOrgAuthFull, getOrgAuth, getOrgAuthFull, assertEventOwnership } from '@/lib/supabase/actions'
 import { put } from '@vercel/blob'
 import { MAX_FILE_SIZE } from '@/schemas/file.schema'
 import { dispatchNotificationsForItem } from '@/lib/notifications/dispatcher'
