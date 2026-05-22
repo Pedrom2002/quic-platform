@@ -19,28 +19,38 @@ export async function sendEmail({ to, toName, subject, html }: SendEmailParams):
     ? { name: match[1].trim(), email: match[2].trim() }
     : { email: from }
 
-  const res = await fetch(BREVO_API, {
-    method: 'POST',
-    headers: {
-      'api-key': apiKey,
-      'content-type': 'application/json',
-      accept: 'application/json',
-    },
-    body: JSON.stringify({
-      sender,
-      to: [{ email: to, name: toName }],
-      subject,
-      htmlContent: html,
-    }),
+  const body = JSON.stringify({
+    sender,
+    to: [{ email: to, name: toName }],
+    subject,
+    htmlContent: html,
   })
 
-  if (!res.ok) {
-    const body = await res.text()
-    throw new Error(`Brevo ${res.status}: ${body}`)
+  const headers = {
+    'api-key': apiKey,
+    'content-type': 'application/json',
+    accept: 'application/json',
   }
 
-  const data = await res.json() as { messageId?: string }
-  return data.messageId ?? ''
+  let lastErr: unknown
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await new Promise(r => setTimeout(r, attempt * 500))
+    try {
+      const res = await fetch(BREVO_API, { method: 'POST', headers, body })
+      if (!res.ok) {
+        const text = await res.text()
+        // 4xx = permanent failure, don't retry
+        if (res.status < 500) throw new Error(`Brevo ${res.status}: ${text}`)
+        lastErr = new Error(`Brevo ${res.status}: ${text}`)
+        continue
+      }
+      const data = await res.json() as { messageId?: string }
+      return data.messageId ?? ''
+    } catch (err) {
+      lastErr = err
+    }
+  }
+  throw lastErr
 }
 
 export function buildEmailHtml(body: string, eventName?: string, progressPercent?: number): string {
