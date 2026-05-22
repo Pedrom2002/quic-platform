@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
@@ -361,6 +361,17 @@ export function PortalClient({
   const resolvedHeroVideo = heroVideo ?? FALLBACK_HERO_VIDEO
   const resolvedContentVideo = contentVideo ?? FALLBACK_CONTENT_VIDEO
 
+  const heroVideoRef = useRef<HTMLVideoElement>(null)
+  const contentVideoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    heroVideoRef.current?.play().catch(() => {})
+  }, [resolvedHeroVideo])
+
+  useEffect(() => {
+    contentVideoRef.current?.play().catch(() => {})
+  }, [resolvedContentVideo])
+
   const [items, setItems] = useState(initialItems)
   const [progress, setProgress] = useState(initialProgress)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
@@ -497,6 +508,7 @@ export function PortalClient({
         {/* Background video */}
         {resolvedHeroVideo && (
           <video
+            ref={heroVideoRef}
             autoPlay
             muted
             loop
@@ -587,6 +599,7 @@ export function PortalClient({
       <section className="relative" style={{ background: 'linear-gradient(145deg, #1c1c1c 0%, #242424 50%, #181818 100%)' }}>
         {resolvedContentVideo && (
           <video
+            ref={contentVideoRef}
             autoPlay
             muted
             loop
