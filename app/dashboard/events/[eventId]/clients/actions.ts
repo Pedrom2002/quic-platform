@@ -46,7 +46,7 @@ export async function addExistingClientAction(
 
   const { error } = await supabase
     .from('event_clients')
-    .insert({ event_id: eventId, client_id: clientId, role })
+    .insert({ event_id: eventId, client_id: clientId, role, notification_prefs: { channels: ['email', 'portal'], language: 'pt' } })
   if (error) throw new Error(error.message)
 }
 
@@ -71,7 +71,7 @@ export async function createAndAddClientAction(
 
   const { error: ece } = await supabase
     .from('event_clients')
-    .insert({ event_id: eventId, client_id: client.id, role })
+    .insert({ event_id: eventId, client_id: client.id, role, notification_prefs: { channels: ['email', 'portal'], language: 'pt' } })
   if (ece) throw new Error(ece.message)
 }
 

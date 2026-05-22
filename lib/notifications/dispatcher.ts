@@ -49,10 +49,11 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
   for (const rule of rules) {
     const targets = filterClientsByAudience(eventClients as unknown as (EventClient & { client: Client })[], rule.audience)
     for (const ec of targets) {
-      const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string }
+      const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
+      const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
       const lang = prefs?.language ?? 'pt'
       for (const ch of rule.channels) {
-        if (prefs?.channels?.includes(ch)) templateKeys.add(`${ch}:${lang}`)
+        if (prefChannels.includes(ch)) templateKeys.add(`${ch}:${lang}`)
       }
     }
   }
@@ -116,9 +117,10 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
 
     for (const ec of targetClients) {
       const client = ec.client
-      const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string }
+      const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
+      const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
       const lang = prefs?.language ?? 'pt'
-      const channels = rule.channels.filter(ch => prefs?.channels?.includes(ch))
+      const channels = rule.channels.filter(ch => prefChannels.includes(ch))
 
       for (const channel of channels) {
         const msgTemplate = templateCache.get(`${channel}:${lang}`)
