@@ -33,9 +33,11 @@ export async function POST(
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
   }
 
+  const DEFAULT_RULES = [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'portal'] }]
+
   const { data: item, error } = await supabase
     .from('event_checklist_items')
-    .insert({ ...parsed.data, event_id: eventId })
+    .insert({ ...parsed.data, event_id: eventId, notification_rules: DEFAULT_RULES })
     .select()
     .single()
 
