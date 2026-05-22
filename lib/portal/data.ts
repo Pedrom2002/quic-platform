@@ -87,7 +87,6 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
   const eventSettings = (eventRaw.settings ?? {}) as Record<string, unknown>
   const normalizeVideo = (v: unknown): string | null => {
     if (typeof v !== 'string' || !v) return null
-    if (v.startsWith('/')) return null
     return v
   }
   const heroVideo = normalizeVideo(eventSettings.portal_hero_video)

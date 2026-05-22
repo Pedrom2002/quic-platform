@@ -104,7 +104,7 @@ describe('lib/portal/data getPortalData', () => {
     expect(result!.eventFiles.map(f => f.id)).toContain('f2')
   })
 
-  it('normalizes settings — ignores relative path and empty videos', async () => {
+  it('normalizes settings — passes relative paths through, nullifies empty videos', async () => {
     const mockEvent = {
       id: 'evt-1', name: 'Test', venue_name: null,
       start_datetime: '2026-06-15T20:00:00Z', status: 'active',
@@ -126,7 +126,7 @@ describe('lib/portal/data getPortalData', () => {
 
     const { getPortalData } = await import('@/lib/portal/data')
     const result = await getPortalData('valid-token')
-    expect(result!.heroVideo).toBeNull()
+    expect(result!.heroVideo).toBe('/local/path.mp4')
     expect(result!.contentVideo).toBeNull()
   })
 })

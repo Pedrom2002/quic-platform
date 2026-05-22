@@ -501,6 +501,7 @@ export function PortalClient({
             muted
             loop
             playsInline
+            preload="auto"
             className="absolute inset-0 w-full h-full object-cover opacity-[0.07] pointer-events-none"
             src={resolvedHeroVideo}
           />
@@ -590,6 +591,7 @@ export function PortalClient({
             muted
             loop
             playsInline
+            preload="auto"
             className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none"
             src={resolvedContentVideo}
           />
