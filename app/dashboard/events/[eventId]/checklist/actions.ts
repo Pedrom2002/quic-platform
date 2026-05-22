@@ -116,7 +116,7 @@ export async function updateChecklistItemAction(
     status?: ChecklistItemStatus
   }
 ) {
-  const auth = await getOrgAuth()
+  const auth = await getOrgAuthFull()
   if (!auth) return null
   const { supabase, member } = auth
 
@@ -139,6 +139,15 @@ export async function updateChecklistItemAction(
     .single()
 
   if (error) return null
+
+  if (fields.status === 'completed' && data) {
+    const adminClient = createAdminClient()
+    const { data: event } = await adminClient.from('events').select('*').eq('id', eventId).single()
+    if (event) {
+      dispatchNotificationsForItem({ event, item: data, completedByName: member.full_name ?? 'Equipa QUIC' }).catch(() => {})
+    }
+  }
+
   return data
 }
 
