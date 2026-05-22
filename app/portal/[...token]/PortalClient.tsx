@@ -514,6 +514,8 @@ export function PortalClient({
             loop
             playsInline
             preload="auto"
+            onCanPlay={e => { e.currentTarget.play().catch(() => {}) }}
+            onLoadedData={e => { e.currentTarget.play().catch(() => {}) }}
             className="absolute inset-0 w-full h-full object-cover opacity-[0.07] pointer-events-none"
             src={resolvedHeroVideo}
           />
@@ -605,6 +607,8 @@ export function PortalClient({
             loop
             playsInline
             preload="auto"
+            onCanPlay={e => { e.currentTarget.play().catch(() => {}) }}
+            onLoadedData={e => { e.currentTarget.play().catch(() => {}) }}
             className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none"
             src={resolvedContentVideo}
           />
