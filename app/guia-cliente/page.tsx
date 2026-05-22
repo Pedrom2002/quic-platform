@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import Image from 'next/image'
@@ -12,11 +12,11 @@ import {
 type Tab = 'visao-geral' | 'portal' | 'notificacoes' | 'etapas' | 'faq'
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'visao-geral', label: 'VisÃ£o geral' },
+  { id: 'visao-geral', label: 'Visão geral' },
   { id: 'portal', label: 'O seu portal' },
-  { id: 'notificacoes', label: 'NotificaÃ§Ãµes' },
+  { id: 'notificacoes', label: 'Notificações' },
   { id: 'etapas', label: 'Etapas do evento' },
-  { id: 'faq', label: 'DÃºvidas frequentes' },
+  { id: 'faq', label: 'Dúvidas frequentes' },
 ]
 
 interface FlowItem {
@@ -73,7 +73,7 @@ export default function GuiaClientePage() {
         }
       `}</style>
 
-      {/* â”€â”€ Hero â”€â”€ */}
+      {/* ── Hero ── */}
       <section
         className="relative flex flex-col"
         style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}
@@ -141,7 +141,7 @@ export default function GuiaClientePage() {
         </div>
       </section>
 
-      {/* â”€â”€ Content â”€â”€ */}
+      {/* ── Content ── */}
       <section className="relative">
         <video
           autoPlay muted loop playsInline
@@ -153,19 +153,19 @@ export default function GuiaClientePage() {
         <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-12 py-14 sm:py-20">
           <div className="bg-white/75 backdrop-blur-md rounded-2xl px-6 sm:px-10 py-10">
 
-            {/* VisÃ£o Geral */}
+            {/* Visão Geral */}
             {activeTab === 'visao-geral' && (
               <div>
                 <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-                  <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">VisÃ£o Geral</h2>
+                  <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">Visão Geral</h2>
                   <span className="text-xs text-stone-400 tabular-nums">04</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-stone-100 rounded-xl overflow-hidden border border-stone-100">
                   {[
-                    { icon: Link2, num: '01', title: 'Acesso por link', body: 'Recebe um link pessoal por email. NÃ£o precisa de criar conta nem de se lembrar de passwords.' },
-                    { icon: CheckSquare, num: '02', title: 'Checklist em tempo real', body: 'Acompanha ao vivo o progresso do seu evento â€” cada etapa concluÃ­da aparece actualizada de imediato.' },
-                    { icon: Mail, num: '03', title: 'Avisos automÃ¡ticos', body: 'Recebe emails automÃ¡ticos quando hÃ¡ novidades relevantes, sem precisar de verificar a plataforma.' },
-                    { icon: Lock, num: '04', title: 'Acesso privado', body: 'O seu portal Ã© exclusivo e sÃ³ acessÃ­vel atravÃ©s do seu link pessoal. Os dados sÃ£o protegidos.' },
+                    { icon: Link2, num: '01', title: 'Acesso por link', body: 'Recebe um link pessoal por email. Não precisa de criar conta nem de se lembrar de passwords.' },
+                    { icon: CheckSquare, num: '02', title: 'Checklist em tempo real', body: 'Acompanha ao vivo o progresso do seu evento — cada etapa concluída aparece actualizada de imediato.' },
+                    { icon: Mail, num: '03', title: 'Avisos automáticos', body: 'Recebe emails automáticos quando há novidades relevantes, sem precisar de verificar a plataforma.' },
+                    { icon: Lock, num: '04', title: 'Acesso privado', body: 'O seu portal é exclusivo e só acessível através do seu link pessoal. Os dados são protegidos.' },
                   ].map((card, i) => (
                     <div key={i} className="bg-white p-6">
                       <div className="flex items-center gap-3 mb-3">
@@ -178,7 +178,7 @@ export default function GuiaClientePage() {
                   ))}
                 </div>
                 <TipBox>
-                  <span className="font-semibold text-stone-800">Em resumo:</span> a equipa Quic gere tudo internamente e vai actualizando o estado do seu evento. O cliente acompanha tudo pelo portal e recebe notificaÃ§Ãµes automÃ¡ticas por email.
+                  <span className="font-semibold text-stone-800">Em resumo:</span> a equipa Quic gere tudo internamente e vai actualizando o estado do seu evento. O cliente acompanha tudo pelo portal e recebe notificações automáticas por email.
                 </TipBox>
               </div>
             )}
@@ -194,15 +194,15 @@ export default function GuiaClientePage() {
                 <div className="bg-stone-50 rounded-xl p-5 mb-10 border border-stone-200">
                   <div className="flex items-center gap-2 mb-5 pb-4 border-b border-stone-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                    <span className="text-xs font-medium tracking-widest uppercase text-stone-600">Portal â€” Casamento Silva &amp; Ferreira</span>
+                    <span className="text-xs font-medium tracking-widest uppercase text-stone-600">Portal — Casamento Silva &amp; Ferreira</span>
                     <span className="ml-auto text-xs text-stone-400">actualizado agora</span>
                   </div>
                   <ul className="space-y-2">
                     {[
                       { label: 'Contrato assinado', state: 'done' },
-                      { label: 'Menu de degustaÃ§Ã£o confirmado', state: 'done' },
-                      { label: 'ConfirmaÃ§Ã£o de fornecedores', state: 'progress' },
-                      { label: 'Ensaio e coordenaÃ§Ã£o final', state: 'pending' },
+                      { label: 'Menu de degustação confirmado', state: 'done' },
+                      { label: 'Confirmação de fornecedores', state: 'progress' },
+                      { label: 'Ensaio e coordenação final', state: 'pending' },
                     ].map((item, i) => (
                       <li key={i} className="flex items-center gap-3 bg-white border border-stone-100 rounded-lg px-4 py-2.5">
                         {item.state === 'done'
@@ -218,7 +218,7 @@ export default function GuiaClientePage() {
                           item.state === 'progress' ? 'bg-amber-50 text-amber-700' :
                           'bg-stone-100 text-stone-500'
                         }`}>
-                          {item.state === 'done' ? 'ConcluÃ­do' : item.state === 'progress' ? 'Em curso' : 'Pendente'}
+                          {item.state === 'done' ? 'Concluído' : item.state === 'progress' ? 'Em curso' : 'Pendente'}
                         </span>
                       </li>
                     ))}
@@ -226,28 +226,28 @@ export default function GuiaClientePage() {
                 </div>
 
                 <FlowList items={[
-                  { icon: MailOpen, num: '01', title: 'Recebe o link por email', desc: 'Logo apÃ³s contratar os serviÃ§os Quic, recebe um email com o seu link de acesso pessoal e intransmissÃ­vel.' },
-                  { icon: Smartphone, num: '02', title: 'Abre em qualquer dispositivo', desc: 'O portal funciona no telemÃ³vel, tablet ou computador â€” sem aplicaÃ§Ã£o para instalar.' },
-                  { icon: Eye, num: '03', title: 'VÃª apenas o que lhe diz respeito', desc: 'SÃ³ aparecem as etapas marcadas como visÃ­veis para o cliente â€” sem informaÃ§Ã£o interna da equipa.' },
-                  { icon: RefreshCw, num: '04', title: 'ActualizaÃ§Ãµes em tempo real', desc: 'Quando a equipa conclui uma etapa, o portal actualiza automaticamente. NÃ£o precisa de recarregar.' },
+                  { icon: MailOpen, num: '01', title: 'Recebe o link por email', desc: 'Logo após contratar os serviços Quic, recebe um email com o seu link de acesso pessoal e intransmissível.' },
+                  { icon: Smartphone, num: '02', title: 'Abre em qualquer dispositivo', desc: 'O portal funciona no telemóvel, tablet ou computador — sem aplicação para instalar.' },
+                  { icon: Eye, num: '03', title: 'Vê apenas o que lhe diz respeito', desc: 'Só aparecem as etapas marcadas como visíveis para o cliente — sem informação interna da equipa.' },
+                  { icon: RefreshCw, num: '04', title: 'Actualizações em tempo real', desc: 'Quando a equipa conclui uma etapa, o portal actualiza automaticamente. Não precisa de recarregar.' },
                 ]} />
               </div>
             )}
 
-            {/* NotificaÃ§Ãµes */}
+            {/* Notificações */}
             {activeTab === 'notificacoes' && (
               <div>
                 <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-                  <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">NotificaÃ§Ãµes</h2>
+                  <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">Notificações</h2>
                 </div>
                 <FlowList items={[
-                  { icon: Bell, num: '01', title: 'Quando recebo um email de notificaÃ§Ã£o?', desc: 'Sempre que a equipa Quic conclui uma etapa relevante para si, Ã© enviado automaticamente um email de aviso para o endereÃ§o que forneceu.' },
-                  { icon: Clock, num: '02', title: 'Os emails podem ser imediatos ou agendados', desc: 'Algumas notificaÃ§Ãµes sÃ£o enviadas no momento; outras podem ser programadas para um horÃ¡rio mais adequado (por exemplo, de manhÃ£).' },
-                  { icon: Globe, num: '03', title: 'ConteÃºdo personalizado', desc: 'Os emails utilizam o seu nome e os detalhes do evento, sendo enviados no idioma configurado para o seu perfil.' },
-                  { icon: CheckCircle2, num: '04', title: 'ConfirmaÃ§Ã£o de entrega', desc: 'A plataforma regista automaticamente se o email chegou com sucesso. Em caso de problema, a equipa Ã© alertada.' },
+                  { icon: Bell, num: '01', title: 'Quando recebo um email de notificação?', desc: 'Sempre que a equipa Quic conclui uma etapa relevante para si, é enviado automaticamente um email de aviso para o endereço que forneceu.' },
+                  { icon: Clock, num: '02', title: 'Os emails podem ser imediatos ou agendados', desc: 'Algumas notificações são enviadas no momento; outras podem ser programadas para um horário mais adequado (por exemplo, de manhã).' },
+                  { icon: Globe, num: '03', title: 'Conteúdo personalizado', desc: 'Os emails utilizam o seu nome e os detalhes do evento, sendo enviados no idioma configurado para o seu perfil.' },
+                  { icon: CheckCircle2, num: '04', title: 'Confirmação de entrega', desc: 'A plataforma regista automaticamente se o email chegou com sucesso. Em caso de problema, a equipa é alertada.' },
                 ]} />
                 <TipBox>
-                  <span className="font-semibold text-stone-800">Dica:</span> se nÃ£o receber um email esperado, verifique a pasta de spam ou lixo electrÃ³nico. O remetente serÃ¡ sempre um endereÃ§o oficial da Quic.
+                  <span className="font-semibold text-stone-800">Dica:</span> se não receber um email esperado, verifique a pasta de spam ou lixo electrónico. O remetente será sempre um endereço oficial da Quic.
                 </TipBox>
               </div>
             )}
@@ -261,11 +261,11 @@ export default function GuiaClientePage() {
                 </div>
                 <ul>
                   {[
-                    { done: true, title: 'ContrataÃ§Ã£o e configuraÃ§Ã£o inicial', desc: 'A equipa cria o seu evento na plataforma, configura a checklist personalizada e envia-lhe o link do portal.', tag: 'Feito pela equipa' },
-                    { done: false, title: 'Acompanhamento activo', desc: 'Ã€ medida que os preparativos avanÃ§am, cada etapa Ã© marcada como concluÃ­da. O portal reflecte o progresso em tempo real.', tag: 'ActualizaÃ§Ãµes automÃ¡ticas' },
-                    { done: false, title: 'ConfirmaÃ§Ãµes e fornecedores', desc: 'Quando fornecedores, menus ou detalhes logÃ­sticos sÃ£o confirmados, a etapa correspondente Ã© actualizada.', tag: 'VisÃ­vel no portal' },
-                    { done: false, title: 'CoordenaÃ§Ã£o final', desc: 'Nos dias anteriores ao evento, as Ãºltimas etapas ficam visÃ­veis e o estado Ã© actualizado conforme se conclui.', tag: 'PrÃ³xima etapa' },
-                    { done: false, title: 'Dia do evento', desc: 'A checklist estarÃ¡ completa e o portal serve como confirmaÃ§Ã£o de que tudo foi tratado. A equipa coordena tudo no terreno.', tag: 'Evento realizado' },
+                    { done: true, title: 'Contratação e configuração inicial', desc: 'A equipa cria o seu evento na plataforma, configura a checklist personalizada e envia-lhe o link do portal.', tag: 'Feito pela equipa' },
+                    { done: false, title: 'Acompanhamento activo', desc: 'À medida que os preparativos avançam, cada etapa é marcada como concluída. O portal reflecte o progresso em tempo real.', tag: 'Actualizações automáticas' },
+                    { done: false, title: 'Confirmações e fornecedores', desc: 'Quando fornecedores, menus ou detalhes logísticos são confirmados, a etapa correspondente é actualizada.', tag: 'Visível no portal' },
+                    { done: false, title: 'Coordenação final', desc: 'Nos dias anteriores ao evento, as últimas etapas ficam visíveis e o estado é actualizado conforme se conclui.', tag: 'Próxima etapa' },
+                    { done: false, title: 'Dia do evento', desc: 'A checklist estará completa e o portal serve como confirmação de que tudo foi tratado. A equipa coordena tudo no terreno.', tag: 'Evento realizado' },
                   ].map((step, i) => (
                     <li
                       key={i}
@@ -298,17 +298,17 @@ export default function GuiaClientePage() {
             {activeTab === 'faq' && (
               <div>
                 <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-                  <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">DÃºvidas Frequentes</h2>
+                  <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">Dúvidas Frequentes</h2>
                   <span className="text-xs text-stone-400 tabular-nums">06</span>
                 </div>
                 <div className="divide-y divide-stone-100">
                   {[
-                    { q: 'O link expira?', a: 'O link do portal nÃ£o tem data de expiraÃ§Ã£o. Pode aceder ao seu portal a qualquer momento enquanto o evento estiver ativo. Se perder o acesso, contacte a equipa Quic.' },
-                    { q: 'Posso partilhar o link com alguÃ©m?', a: 'Tecnicamente Ã© possÃ­vel, mas o link Ã© pessoal e dÃ¡ acesso a informaÃ§Ã£o privada do seu evento. Recomendamos que nÃ£o o partilhe com terceiros fora do nÃºcleo de organizaÃ§Ã£o.' },
-                    { q: 'Porque Ã© que nÃ£o vejo todas as etapas?', a: 'A equipa Quic define quais as etapas visÃ­veis para o cliente. Algumas etapas sÃ£o internas e nÃ£o aparecem no portal para nÃ£o sobrecarregar a informaÃ§Ã£o.' },
-                    { q: 'NÃ£o recebi o email de notificaÃ§Ã£o, o que faÃ§o?', a: 'Verifique primeiro a pasta de spam ou promoÃ§Ãµes. Se o email continuar em falta, pode sempre ver o estado actualizado directamente no portal. Contacte a equipa se o problema persistir.' },
-                    { q: 'Posso fazer alteraÃ§Ãµes ao evento pelo portal?', a: 'NÃ£o. O portal do cliente Ã© de consulta. Para qualquer alteraÃ§Ã£o ou pedido, deve contactar directamente a equipa Quic pelos canais habituais (email, telefone).' },
-                    { q: 'A informaÃ§Ã£o Ã© segura?', a: 'Sim. O acesso Ã© protegido por um token criptogrÃ¡fico Ãºnico. Apenas quem tiver o seu link pessoal consegue aceder. A plataforma utiliza HTTPS e nÃ£o armazena passwords.' },
+                    { q: 'O link expira?', a: 'O link do portal não tem data de expiração. Pode aceder ao seu portal a qualquer momento enquanto o evento estiver ativo. Se perder o acesso, contacte a equipa Quic.' },
+                    { q: 'Posso partilhar o link com alguém?', a: 'Tecnicamente é possível, mas o link é pessoal e dá acesso a informação privada do seu evento. Recomendamos que não o partilhe com terceiros fora do núcleo de organização.' },
+                    { q: 'Porque é que não vejo todas as etapas?', a: 'A equipa Quic define quais as etapas visíveis para o cliente. Algumas etapas são internas e não aparecem no portal para não sobrecarregar a informação.' },
+                    { q: 'Não recebi o email de notificação, o que faço?', a: 'Verifique primeiro a pasta de spam ou promoções. Se o email continuar em falta, pode sempre ver o estado actualizado directamente no portal. Contacte a equipa se o problema persistir.' },
+                    { q: 'Posso fazer alterações ao evento pelo portal?', a: 'Não. O portal do cliente é de consulta. Para qualquer alteração ou pedido, deve contactar directamente a equipa Quic pelos canais habituais (email, telefone).' },
+                    { q: 'A informação é segura?', a: 'Sim. O acesso é protegido por um token criptográfico único. Apenas quem tiver o seu link pessoal consegue aceder. A plataforma utiliza HTTPS e não armazena passwords.' },
                   ].map((item, i) => (
                     <div key={i}>
                       <button
@@ -333,7 +333,7 @@ export default function GuiaClientePage() {
         </div>
       </section>
 
-      {/* â”€â”€ Footer â”€â”€ */}
+      {/* ── Footer ── */}
       <footer style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
         <div className="max-w-5xl mx-auto px-6 md:px-12 py-8">
           <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
@@ -344,7 +344,7 @@ export default function GuiaClientePage() {
               </span>
             </div>
             <span className="text-[10px] tracking-[0.2em] uppercase text-white/30">
-              Guia do Cliente Â· Quic
+              Guia do Cliente · Quic
             </span>
           </div>
         </div>

@@ -106,16 +106,18 @@ export async function sendPortalLinkAction(eventId: string) {
       body:
 `Caro(a) {{client_name}},
 
-É com prazer que damos início, formalmente, à preparação do seu evento "{{event_name}}", agendado para {{event_date}}.
+É com prazer que damos início, à produção do seu evento "{{event_name}}", agendado para {{event_date}}.
 
-A partir deste momento, fica ao seu dispor um portal exclusivo onde poderá acompanhar, em tempo real, o progresso de todas as etapas da organização:
+A partir deste momento, fica ao seu dispor um portal exclusivo onde poderá acompanhar, em tempo real, o progresso de todas as etapas da organização e consultar marcos concluídos:
 
 {{portal_url}}
 
-O acesso é pessoal e foi gerado especificamente para este evento.
+O acesso é pessoal e foi gerado especificamente para este evento. Poderá partilhá-lo, em segurança, com os membros da sua equipa que considere relevantes.
+
+A QUIC agradece a confiança depositada. Permanecemos inteiramente ao seu dispor para qualquer esclarecimento.
 
 Com os melhores cumprimentos,
-Equipa Quic`,
+Equipa QUIC`,
     }
   )
 
@@ -197,7 +199,7 @@ export async function sendClientUpdateAction(
 Permanecemos ao seu dispor para qualquer esclarecimento adicional.
 
 Com os melhores cumprimentos,
-Equipa Quic`,
+Equipa QUIC`,
     }
   )
 

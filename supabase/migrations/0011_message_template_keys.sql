@@ -60,7 +60,7 @@ Neste momento, a preparação do evento encontra-se em {{progress_percent}}%. Po
 Permanecemos ao seu dispor para qualquer esclarecimento.
 
 Com os melhores cumprimentos,
-Equipa Quic'
+Equipa QUIC'
 WHERE organization_id = '00000000-0000-0000-0000-000000000001'
   AND channel = 'email'
   AND language = 'pt'
@@ -72,7 +72,7 @@ UPDATE message_templates SET
   body_template =
 'Caro(a) {{client_name}},
 
-É com prazer que damos início, formalmente, à preparação do seu evento "{{event_name}}", agendado para {{event_date}}.
+É com prazer que damos início, à produção do seu evento "{{event_name}}", agendado para {{event_date}}.
 
 A partir deste momento, fica ao seu dispor um portal exclusivo onde poderá acompanhar, em tempo real, o progresso de todas as etapas da organização e consultar marcos concluídos:
 
@@ -80,10 +80,10 @@ A partir deste momento, fica ao seu dispor um portal exclusivo onde poderá acom
 
 O acesso é pessoal e foi gerado especificamente para este evento. Poderá partilhá-lo, em segurança, com os membros da sua equipa que considere relevantes.
 
-A Quic agradece a confiança depositada. Permanecemos inteiramente ao seu dispor para qualquer esclarecimento.
+A QUIC agradece a confiança depositada. Permanecemos inteiramente ao seu dispor para qualquer esclarecimento.
 
 Com os melhores cumprimentos,
-Equipa Quic'
+Equipa QUIC'
 WHERE organization_id = '00000000-0000-0000-0000-000000000001'
   AND channel = 'email'
   AND language = 'pt'
@@ -113,7 +113,7 @@ SELECT
 Permanecemos ao seu dispor para qualquer esclarecimento adicional.
 
 Com os melhores cumprimentos,
-Equipa Quic'
+Equipa QUIC'
 WHERE NOT EXISTS (
   SELECT 1 FROM message_templates
   WHERE organization_id = '00000000-0000-0000-0000-000000000001'

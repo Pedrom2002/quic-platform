@@ -72,7 +72,7 @@ export async function PATCH(
       dispatchNotificationsForItem({
         event,
         item,
-        completedByName: member.full_name ?? 'Equipa Quic',
+        completedByName: member.full_name ?? 'Equipa QUIC',
       }).catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err)
         console.error('[dispatcher] falha ao despachar notificações:', msg)

@@ -119,7 +119,7 @@ Neste momento, a preparação do evento encontra-se em {{progress_percent}}%. Po
 Permanecemos ao seu dispor para qualquer esclarecimento.
 
 Com os melhores cumprimentos,
-Equipa Quic'),
+Equipa QUIC'),
 
   ('00000000-0000-0000-0000-000000000001',
    'Boas-vindas ao portal — email',
@@ -135,10 +135,10 @@ A partir deste momento, fica ao seu dispor um portal exclusivo onde poderá acom
 
 O acesso é pessoal e foi gerado especificamente para este evento. Poderá partilhá-lo, em segurança, com os membros da sua equipa que considere relevantes.
 
-A Quic agradece a confiança depositada. Permanecemos inteiramente ao seu dispor para qualquer esclarecimento.
+A QUIC agradece a confiança depositada. Permanecemos inteiramente ao seu dispor para qualquer esclarecimento.
 
 Com os melhores cumprimentos,
-Equipa Quic'),
+Equipa QUIC'),
 
   ('00000000-0000-0000-0000-000000000001',
    'Comunicação ao cliente — email',
@@ -151,7 +151,7 @@ Equipa Quic'),
 Permanecemos ao seu dispor para qualquer esclarecimento adicional.
 
 Com os melhores cumprimentos,
-Equipa Quic'),
+Equipa QUIC'),
 
   ('00000000-0000-0000-0000-000000000001',
    'Conclusão de etapa — portal',

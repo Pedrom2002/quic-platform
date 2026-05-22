@@ -48,7 +48,7 @@ export async function bulkUpdateChecklistStatusAction(
     ])
 
     if (event && completedItems?.length) {
-      const completedByName = member.full_name ?? 'Equipa Quic'
+      const completedByName = member.full_name ?? 'Equipa QUIC'
       await Promise.allSettled(
         completedItems.map(item =>
           dispatchNotificationsForItem({ event, item, completedByName })
