@@ -227,11 +227,6 @@ function ItemRow({
           <p className={`flex-1 text-sm tracking-tight leading-snug ${isCompleted ? 'text-white/90 font-medium' : 'text-white/55'}`}>
             {item.client_label ?? item.title}
           </p>
-          {!isCompleted && item.due_at && (
-            <span className="text-[10px] font-sans text-white/20 tabular-nums shrink-0">
-              {format(new Date(item.due_at), "d MMM", { locale: pt })}
-            </span>
-          )}
           {hasContent && (
             <span className={`text-white/20 text-xs transition-transform duration-200 shrink-0 ${expanded ? 'rotate-90' : ''}`}>▶</span>
           )}
