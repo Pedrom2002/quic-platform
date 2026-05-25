@@ -271,7 +271,7 @@ function CategorySection({
     <div className="border-b border-black/[0.08] last:border-b-0">
       <button
         onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center gap-4 py-5 text-left group"
+        className="w-full flex items-center gap-4 py-3 text-left group"
       >
         <div className="flex-1 min-w-0">
           <span className="text-xs font-semibold tracking-widest uppercase text-black/70 group-hover:text-black/90 transition-colors">{category}</span>
