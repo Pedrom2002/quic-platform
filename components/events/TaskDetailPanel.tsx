@@ -45,6 +45,7 @@ function OverdueIndicator({ dueAt, status }: { dueAt: string | null; status: Che
 export default function TaskDetailPanel({ eventId, item, orgMembers, currentMemberId, onClose, onUpdate }: TaskDetailPanelProps) {
   const [title, setTitle] = useState(item.title)
   const [description, setDescription] = useState(item.description ?? '')
+  const [clientLabel, setClientLabel] = useState(item.client_label ?? '')
   const [status, setStatus] = useState<ChecklistItemStatus>(item.status)
   const [assignedTo, setAssignedTo] = useState<string>(item.assigned_to ?? '')
   const [dueAt, setDueAt] = useState<string>(
@@ -61,6 +62,10 @@ export default function TaskDetailPanel({ eventId, item, orgMembers, currentMemb
     loadItemNotesAction(eventId, item.id).then(setNotes)
     loadItemFilesAction(eventId, item.id).then(setFileLinks)
   }, [eventId, item.id])
+
+  useEffect(() => {
+    setClientLabel(item.client_label ?? '')
+  }, [item.client_label])
 
   useEffect(() => {
     previousFocusRef.current = document.activeElement
@@ -199,6 +204,21 @@ export default function TaskDetailPanel({ eventId, item, orgMembers, currentMemb
               placeholder="Adicionar descrição..."
               className="w-full text-sm text-slate-700 placeholder-slate-300 border border-slate-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-slate-300"
             />
+          </div>
+
+          {/* Nome no portal */}
+          <div>
+            <label className="text-[10px] font-medium text-slate-400 uppercase tracking-wide block mb-1">
+              Nome no portal do cliente
+            </label>
+            <input
+              value={clientLabel}
+              onChange={e => setClientLabel(e.target.value)}
+              onBlur={() => saveField({ client_label: clientLabel.trim() || null })}
+              placeholder={item.title}
+              className="w-full text-sm text-slate-700 placeholder-slate-300 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-slate-300"
+            />
+            <p className="mt-1 text-[10px] text-slate-400">Se vazio, o portal usa o titulo interno.</p>
           </div>
 
           <div className="border-t border-slate-100" />
