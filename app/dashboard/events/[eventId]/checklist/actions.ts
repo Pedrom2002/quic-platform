@@ -111,6 +111,7 @@ export async function updateChecklistItemAction(
   fields: {
     title?: string
     description?: string | null
+    client_label?: string | null
     due_at?: string | null
     assigned_to?: string | null
     status?: ChecklistItemStatus
