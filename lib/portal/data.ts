@@ -23,6 +23,7 @@ export interface PortalItem {
   completion_note: string | null
   position: number
   due_at: string | null
+  category: string | null
   files: PortalItemFile[]
 }
 
@@ -96,7 +97,7 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
 
   const { data: itemsRaw } = await supabase
     .from('event_checklist_items')
-    .select('id, client_label, title, status, completed_at, completion_note, position, due_at')
+    .select('id, client_label, title, status, completed_at, completion_note, position, due_at, category')
     .eq('event_id', eventId)
     .eq('is_client_visible', true)
     .order('position', { ascending: true })

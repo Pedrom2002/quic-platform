@@ -189,158 +189,185 @@ function DocumentsTab({ files }: { files: PortalItemFile[] }) {
   )
 }
 
-function ProgressTab({
-  completedItems,
-  pendingItems,
+function ItemRow({
+  item,
+  idx,
   animatingOut,
   justCompleted,
 }: {
-  completedItems: PortalItem[]
-  pendingItems: PortalItem[]
+  item: PortalItem
+  idx: number
   animatingOut: Set<string>
   justCompleted: Set<string>
 }) {
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  const [expanded, setExpanded] = useState(false)
+  const isCompleted = item.status === 'completed'
+  const isNew = justCompleted.has(item.id)
+  const hasContent = !!(item.completion_note || item.files.length > 0)
 
-  function toggle(id: string) {
-    setExpandedIds(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+  return (
+    <li
+      onClick={hasContent ? () => setExpanded(v => !v) : undefined}
+      className={`border-b border-white/[0.06] last:border-b-0 overflow-hidden anim-fade-in ${
+        isNew ? 'anim-item-enter' : ''
+      } ${animatingOut.has(item.id) ? 'anim-item-exit' : ''} ${hasContent ? 'cursor-pointer' : ''}`}
+      style={isNew ? undefined : { animationDelay: `${200 + idx * 35}ms` }}
+    >
+      <div className="flex gap-4 py-4">
+        <span className="text-xs font-sans text-white/30 tabular-nums w-6 text-right shrink-0 self-start pt-0.5">
+          {String(idx + 1).padStart(2, '0')}
+        </span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3">
+            <p className={`flex-1 text-sm tracking-tight leading-snug ${isCompleted ? 'text-white/90 font-medium' : 'text-white/50'}`}>
+              {item.client_label ?? item.title}
+            </p>
+            {isCompleted && item.completed_at && (
+              <span className="text-[10px] font-sans tracking-widest uppercase text-amber-400/70 shrink-0">
+                {format(new Date(item.completed_at), "d MMM", { locale: pt })}
+              </span>
+            )}
+            {isCompleted && (
+              <span className="w-4 h-4 rounded-full border border-amber-400/50 flex items-center justify-center text-[7px] text-amber-400/80 shrink-0">✓</span>
+            )}
+            {!isCompleted && item.due_at && (
+              <span className="text-[10px] font-sans text-white/20 tabular-nums shrink-0">
+                {format(new Date(item.due_at), "d MMM", { locale: pt })}
+              </span>
+            )}
+            {hasContent && (
+              <span className={`text-white/20 text-xs transition-transform duration-200 shrink-0 ${expanded ? 'rotate-90' : ''}`}>▶</span>
+            )}
+          </div>
+          {expanded && (item.completion_note || item.files.length > 0) && (
+            <div className="pt-3 pb-1 space-y-3">
+              {item.completion_note && (
+                <p className="text-white/35 text-sm italic leading-relaxed">{item.completion_note}</p>
+              )}
+              {item.files.length > 0 && (
+                <div className="space-y-2">
+                  {item.files.map(file => <FileRow key={file.id} file={file} />)}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </li>
+  )
+}
+
+function CategorySection({
+  category,
+  items,
+  animatingOut,
+  justCompleted,
+  initialOpen,
+}: {
+  category: string
+  items: PortalItem[]
+  animatingOut: Set<string>
+  justCompleted: Set<string>
+  initialOpen: boolean
+}) {
+  const [open, setOpen] = useState(initialOpen)
+  const completed = items.filter(i => i.status === 'completed').length
+  const total = items.length
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0
+
+  return (
+    <div className="border-b border-white/[0.08] last:border-b-0">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center gap-4 py-5 text-left group"
+      >
+        <div className="flex-1 min-w-0">
+          <span className="text-xs font-semibold tracking-widest uppercase text-white/60 group-hover:text-white/80 transition-colors">
+            {category}
+          </span>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          {/* mini progress bar */}
+          <div className="hidden sm:flex items-center gap-2">
+            <div className="w-16 h-px bg-white/10 overflow-hidden rounded-full">
+              <div
+                className="h-full bg-amber-400/60 rounded-full transition-all duration-500"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <span className="text-[10px] text-white/30 tabular-nums w-12 text-right">
+              {completed}/{total}
+            </span>
+          </div>
+          <span className="sm:hidden text-[10px] text-white/30 tabular-nums">{completed}/{total}</span>
+          <span className={`text-white/25 text-xs transition-transform duration-200 ${open ? 'rotate-90' : ''}`}>▶</span>
+        </div>
+      </button>
+
+      {open && (
+        <ul className="pb-4">
+          {items.map((item, idx) => (
+            <ItemRow
+              key={item.id}
+              item={item}
+              idx={idx}
+              animatingOut={animatingOut}
+              justCompleted={justCompleted}
+            />
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function ProgressTab({
+  items,
+  animatingOut,
+  justCompleted,
+}: {
+  items: PortalItem[]
+  animatingOut: Set<string>
+  justCompleted: Set<string>
+}) {
+  // derive ordered categories: items with category first (sorted alpha), then null -> "Geral"
+  const categoryOrder = Array.from(
+    new Set(items.map(i => i.category ?? 'Geral'))
+  ).sort((a, b) => {
+    if (a === 'Geral') return 1
+    if (b === 'Geral') return -1
+    return a.localeCompare(b, 'pt')
+  })
+
+  const grouped = new Map<string, PortalItem[]>()
+  for (const cat of categoryOrder) grouped.set(cat, [])
+  for (const item of items) {
+    const key = item.category ?? 'Geral'
+    grouped.get(key)!.push(item)
   }
+
+  // if no categories at all (all null), fall back to flat list behaviour via single "Geral" group
+  const hasCategories = items.some(i => i.category !== null)
 
   return (
     <div className="anim-tab-fade">
-      {completedItems.length > 0 && (
-        <div className="mb-16 sm:mb-20 md:mb-24">
-          <div className="flex items-baseline justify-between mb-10 pb-4 border-b border-white/12">
-            <h2 className="text-xs font-medium tracking-widest uppercase text-white/40">
-              Concluído
-            </h2>
-            <span className="text-xs text-white/25 tabular-nums">
-              {String(completedItems.length).padStart(2, '0')}
-            </span>
-          </div>
-          <ul>
-            {completedItems.map((item, idx) => {
-              const isNew = justCompleted.has(item.id)
-              const hasContent = !!(item.completion_note || item.files.length > 0 || item.completed_at)
-              const isExpanded = expandedIds.has(item.id)
-              return (
-                <li
-                  key={item.id}
-                  onClick={hasContent ? () => toggle(item.id) : undefined}
-                  className={`relative border-b border-white/[0.06] last:border-b-0 overflow-hidden anim-fade-in ${
-                    isNew ? 'anim-item-enter' : ''
-                  } ${hasContent ? 'cursor-pointer' : ''}`}
-                  style={isNew ? undefined : { animationDelay: `${300 + idx * 40}ms` }}
-                >
-                  <div className="flex gap-4 py-5">
-                    <span className="text-base font-sans text-white/50 tabular-nums w-8 text-right shrink-0 self-start pt-0.5">
-                      {String(idx + 1).padStart(2, '0')}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3">
-                        <p className="flex-1 text-white/90 text-sm font-medium tracking-tight leading-snug">
-                          {item.client_label ?? item.title}
-                        </p>
-                        {item.completed_at && (
-                          <span className="text-[10px] font-sans tracking-widest uppercase text-amber-400/70 shrink-0">
-                            {format(new Date(item.completed_at), "d MMM", { locale: pt })}
-                          </span>
-                        )}
-                        <span className="w-4 h-4 rounded-full border border-amber-400/50 flex items-center justify-center text-[7px] text-amber-400/80 shrink-0">✓</span>
-                        {hasContent && (
-                          <span className={`text-white/20 text-xs transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
-                        )}
-                      </div>
-                      {!isExpanded && item.files.length > 0 && (
-                        <div className="flex gap-2 mt-3">
-                          {item.files.slice(0, 3).map(file => file.mime_type?.startsWith('image/') && (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img key={file.id} src={file.blob_url} alt="" className="w-10 h-10 rounded object-cover opacity-60" />
-                          ))}
-                          {item.files.length > 3 && (
-                            <span className="w-10 h-10 rounded border border-white/10 flex items-center justify-center text-[10px] text-white/50 font-sans">
-                              +{item.files.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      {isExpanded && (item.completion_note || item.files.length > 0) && (
-                        <div className="pt-3 pb-2 space-y-3">
-                          {item.completion_note && (
-                            <p className="text-white/35 text-sm italic leading-relaxed">{item.completion_note}</p>
-                          )}
-                          {item.files.length > 0 && (
-                            <div className="space-y-2">
-                              {item.files.map(file => <FileRow key={file.id} file={file} />)}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      )}
-
-      {pendingItems.length > 0 && (
-        <div>
-          <div className="flex items-baseline justify-between mb-10 pb-4 border-b border-white/[0.08]">
-            <h2 className="text-xs font-medium tracking-widest uppercase text-white/25">
-              Em Preparação
-            </h2>
-            <span className="text-xs text-white/20 tabular-nums">
-              {String(pendingItems.length).padStart(2, '0')}
-            </span>
-          </div>
-          <ul>
-            {pendingItems.map((item, idx) => {
-              const hasFiles = item.files.length > 0
-              const isExpanded = expandedIds.has(item.id)
-              return (
-                <li
-                  key={item.id}
-                  onClick={hasFiles ? () => toggle(item.id) : undefined}
-                  className={`border-b border-white/[0.05] last:border-0 overflow-hidden anim-fade-in ${
-                    animatingOut.has(item.id) ? 'anim-item-exit' : ''
-                  } ${hasFiles ? 'cursor-pointer' : ''}`}
-                  style={{ animationDelay: `${300 + idx * 40}ms` }}
-                >
-                  <div className="flex items-center gap-4 py-4">
-                    <span className="text-base font-sans text-white/50 tabular-nums w-8 text-right shrink-0">
-                      {String(idx + 1).padStart(2, '0')}
-                    </span>
-                    <p className="flex-1 text-white/55 text-sm tracking-tight leading-snug">
-                      {item.client_label ?? item.title}
-                    </p>
-                    {(item.status === 'pending' || item.status === 'in_progress') && item.due_at && (
-                      <span className="text-[10px] font-sans text-white/20 tabular-nums shrink-0">
-                        {format(new Date(item.due_at), "d MMM", { locale: pt })}
-                      </span>
-                    )}
-                    {hasFiles && (
-                      <span className={`text-white/20 text-xs transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
-                    )}
-                  </div>
-                  {isExpanded && hasFiles && (
-                    <div className="pb-4 space-y-2">
-                      {item.files.map(file => (
-                        <FileRow key={file.id} file={file} />
-                      ))}
-                    </div>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        </div>
+      {categoryOrder.map((cat, catIdx) => {
+        const catItems = grouped.get(cat) ?? []
+        if (!catItems.length) return null
+        const hasCompleted = catItems.some(i => i.status === 'completed')
+        return (
+          <CategorySection
+            key={cat}
+            category={cat}
+            items={catItems}
+            animatingOut={animatingOut}
+            justCompleted={justCompleted}
+            initialOpen={catIdx === 0 || !hasCompleted}
+          />
+        )
+      })}
+      {!hasCategories && items.length === 0 && (
+        <p className="text-white/20 text-sm text-center py-12">Sem etapas disponíveis.</p>
       )}
     </div>
   )
@@ -449,11 +476,6 @@ export function PortalClient({
 
     return () => { supabase.removeChannel(channel) }
   }, [eventId])
-
-  const completedItems = items.filter(i => i.status === 'completed')
-    .sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime())
-
-  const pendingItems = items.filter(i => i.status !== 'completed')
 
   return (
     <div className="min-h-screen bg-white">
@@ -622,8 +644,7 @@ export function PortalClient({
         <section className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-16 md:py-24">
           {activeTab === 'progress' && (
             <ProgressTab
-              completedItems={completedItems}
-              pendingItems={pendingItems}
+              items={items}
               animatingOut={animatingOut}
               justCompleted={justCompleted}
             />
