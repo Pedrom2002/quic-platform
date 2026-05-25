@@ -227,11 +227,6 @@ function ItemRow({
           <p className={`flex-1 text-sm tracking-tight leading-snug ${isCompleted ? 'text-white/90 font-medium' : 'text-white/55'}`}>
             {item.client_label ?? item.title}
           </p>
-          {isCompleted && item.completed_at && (
-            <span className="text-[10px] font-sans tracking-widest uppercase text-amber-400/70 shrink-0">
-              {format(new Date(item.completed_at), "d MMM", { locale: pt })}
-            </span>
-          )}
           {!isCompleted && item.due_at && (
             <span className="text-[10px] font-sans text-white/20 tabular-nums shrink-0">
               {format(new Date(item.due_at), "d MMM", { locale: pt })}
