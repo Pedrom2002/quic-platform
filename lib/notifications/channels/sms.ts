@@ -29,20 +29,21 @@ export async function sendSms({ to, message }: SendSmsParams): Promise<string> {
   let lastErr: unknown
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) await new Promise(r => setTimeout(r, attempt * 500))
+    let res: Response
     try {
-      const res = await fetch(BREVO_SMS_API, { method: 'POST', headers, body })
-      if (!res.ok) {
-        const text = await res.text()
-        if (res.status < 500) throw new Error(`Brevo SMS ${res.status}: ${text}`)
-        lastErr = new Error(`Brevo SMS ${res.status}: ${text}`)
-        continue
-      }
-      const data = await res.json() as { messageId?: string }
-      return data.messageId ?? ''
+      res = await fetch(BREVO_SMS_API, { method: 'POST', headers, body })
     } catch (err) {
-      if (err instanceof Error && err.message.startsWith('Brevo SMS 4')) throw err
       lastErr = err
+      continue
     }
+    if (!res.ok) {
+      const text = await res.text()
+      if (res.status < 500) throw new Error(`Brevo SMS ${res.status}: ${text}`)
+      lastErr = new Error(`Brevo SMS ${res.status}: ${text}`)
+      continue
+    }
+    const data = await res.json() as { messageId?: string }
+    return data.messageId ?? ''
   }
   throw lastErr
 }
