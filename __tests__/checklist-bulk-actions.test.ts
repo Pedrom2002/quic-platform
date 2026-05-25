@@ -26,6 +26,8 @@ const supabaseMock = {
 
 vi.mock('@/lib/supabase/server', () => ({ createClient: () => Promise.resolve(supabaseMock) }))
 vi.mock('@/lib/supabase/actions', () => ({ requireOrgAuthFull: vi.fn(), assertEventOwnership: vi.fn() }))
+vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: vi.fn() }))
+vi.mock('@/lib/notifications/dispatcher', () => ({ dispatchStartNotificationForItem: vi.fn() }))
 
 global.fetch = mockFetch as unknown as typeof fetch
 
@@ -86,6 +88,18 @@ describe('bulkUpdateChecklistStatusAction', () => {
     ;(helpers.assertEventOwnership as ReturnType<typeof vi.fn>).mockResolvedValue(true)
     fromResults = [{ data: null, error: null }] // bulk update
     mockFetch.mockResolvedValue({ ok: true, json: async () => ({ item: {} }) })
+
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    const adminMock = {
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        in: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { id: 'ev-1', name: 'Event' } }),
+      }),
+    }
+    vi.mocked(createAdminClient).mockReturnValue(adminMock as never)
+
     await bulkUpdateChecklistStatusAction('e1', ['i1', 'i2'], 'in_progress')
     expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({ status: 'in_progress' }))
   })

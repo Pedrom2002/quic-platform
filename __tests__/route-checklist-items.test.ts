@@ -8,6 +8,7 @@ vi.mock('next/server', () => ({
 
 vi.mock('@/lib/notifications/dispatcher', () => ({
   dispatchNotificationsForItem: vi.fn().mockResolvedValue(undefined),
+  dispatchStartNotificationForItem: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('@/lib/supabase/admin', () => ({
@@ -198,6 +199,16 @@ describe('PATCH /api/events/[eventId]/checklist-items/[itemId]', () => {
       }),
     }
     vi.mocked(createClient).mockResolvedValue(userSupabase as never)
+
+    const adminSupabase = {
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { id: 'ev-1', name: 'Concerto' } }),
+      }),
+    }
+    vi.mocked(createAdminClient).mockReturnValue(adminSupabase as never)
+
     const req = new Request('http://localhost', { method: 'PATCH', body: JSON.stringify({ status: 'in_progress' }) })
     const res = await PATCH(req, { params: Promise.resolve({ eventId: 'ev-1', itemId: 'item-1' }) })
     expect(res.status).toBe(200)
