@@ -425,7 +425,7 @@ const SEED_ITEMS: { title: string; category: string }[] = [
   { title: 'Line-array 8 topos por lado + subgrave 1 por lado', category: 'Sistema de Som' },
   { title: 'Mesa de mistura de palco independente stage 1', category: 'Sistema de Som' },
   { title: 'Mesa de mistura de palco independente stage 2', category: 'Sistema de Som' },
-  { title: 'Monitores — até 8 unidades por stage', category: 'Sistema de Som' },
+  { title: 'Monitores, até 8 unidades por stage', category: 'Sistema de Som' },
   { title: '2 side-fills por lado', category: 'Sistema de Som' },
   { title: '8 canais in-ear', category: 'Sistema de Som' },
   { title: 'Microfonia adequada', category: 'Sistema de Som' },
@@ -443,7 +443,7 @@ const SEED_ITEMS: { title: string; category: string }[] = [
   { title: 'Followspot', category: 'Sistema de Iluminação' },
   // Energia
   { title: 'Gerador até 50 KVA devidamente certificado', category: 'Energia' },
-  { title: 'Ecrã LED P3.9 — 2x3 metros, suspenso', category: 'Energia' },
+  { title: 'Ecrã LED P3.9, 2x3 metros, suspenso', category: 'Energia' },
   // Artigos Decorativos
   { title: '2 pórticos luminosos de entrada', category: 'Artigos Decorativos' },
   { title: '14 mastros', category: 'Artigos Decorativos' },
