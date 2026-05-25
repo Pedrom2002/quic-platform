@@ -218,7 +218,7 @@ function ItemRow({
         {isCompleted ? (
           <span className="w-4 h-4 rounded-full border border-emerald-600 flex items-center justify-center text-[7px] text-emerald-700">✓</span>
         ) : (
-          <span className="w-4 h-4 flex items-center justify-center text-black/40 group-hover:text-black/60 transition-colors text-[10px]">·</span>
+          <span className="w-4 h-4 flex items-center justify-center text-black/40 group-hover:text-black/60 transition-colors text-[8px]">•</span>
         )}
       </div>
 
