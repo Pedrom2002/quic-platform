@@ -147,7 +147,7 @@ function TabBar({
   if (tabs.length < 2) return null
 
   return (
-    <div className="border-b border-white/10">
+    <div className="border-b border-black/10">
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 md:px-8 flex">
         {tabs.map(tab => (
           <button
@@ -155,8 +155,8 @@ function TabBar({
             onClick={() => onChange(tab.key)}
             className={`px-4 py-3.5 text-xs font-semibold tracking-widest uppercase transition-colors border-b-2 ${
               active === tab.key
-                ? 'border-white text-white'
-                : 'border-transparent text-white/40 hover:text-white/70'
+                ? 'border-black text-black'
+                : 'border-transparent text-black/40 hover:text-black/70'
             }`}
           >
             {tab.label}
