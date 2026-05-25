@@ -208,7 +208,7 @@ function ItemRow({
   return (
     <li
       onClick={hasContent ? () => setExpanded(v => !v) : undefined}
-      className={`group flex gap-4 py-4 border-b border-white/[0.06] last:border-b-0 overflow-hidden anim-fade-in ${
+      className={`group flex gap-4 py-4 border-b border-black/[0.06] last:border-b-0 overflow-hidden anim-fade-in ${
         isNew ? 'anim-item-enter' : ''
       } ${animatingOut.has(item.id) ? 'anim-item-exit' : ''} ${hasContent ? 'cursor-pointer' : ''}`}
       style={isNew ? undefined : { animationDelay: `${150 + idx * 30}ms` }}
@@ -216,25 +216,25 @@ function ItemRow({
       {/* checkbox visual */}
       <div className="shrink-0 mt-0.5">
         {isCompleted ? (
-          <span className="w-4 h-4 rounded-full border border-amber-400/50 flex items-center justify-center text-[7px] text-amber-400/80">✓</span>
+          <span className="w-4 h-4 rounded-full border border-emerald-500/60 flex items-center justify-center text-[7px] text-emerald-600">✓</span>
         ) : (
-          <span className="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors" />
+          <span className="w-4 h-4 rounded-full border border-black/20 flex items-center justify-center group-hover:border-black/40 transition-colors" />
         )}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-3">
-          <p className={`flex-1 text-sm tracking-tight leading-snug ${isCompleted ? 'text-white/90 font-medium' : 'text-white/55'}`}>
+          <p className={`flex-1 text-sm tracking-tight leading-snug ${isCompleted ? 'text-black/90 font-medium' : 'text-black/45'}`}>
             {item.client_label ?? item.title}
           </p>
           {hasContent && (
-            <span className={`text-white/20 text-xs transition-transform duration-200 shrink-0 ${expanded ? 'rotate-90' : ''}`}>▶</span>
+            <span className={`text-black/20 text-xs transition-transform duration-200 shrink-0 ${expanded ? 'rotate-90' : ''}`}>▶</span>
           )}
         </div>
         {expanded && (item.completion_note || item.files.length > 0) && (
           <div className="pt-3 pb-1 space-y-3">
             {item.completion_note && (
-              <p className="text-white/35 text-sm italic leading-relaxed">{item.completion_note}</p>
+              <p className="text-black/35 text-sm italic leading-relaxed">{item.completion_note}</p>
             )}
             {item.files.length > 0 && (
               <div className="space-y-2">
@@ -268,31 +268,31 @@ function CategorySection({
   const allDone = completed === total
 
   return (
-    <div className="border-b border-white/[0.08] last:border-b-0">
+    <div className="border-b border-black/[0.08] last:border-b-0">
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center gap-4 py-5 text-left group"
       >
         <div className="flex-1 min-w-0">
-          <span className="text-xs font-semibold tracking-widest uppercase text-white/60 group-hover:text-white/80 transition-colors">{category}</span>
+          <span className="text-xs font-semibold tracking-widest uppercase text-black/50 group-hover:text-black/70 transition-colors">{category}</span>
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
             allDone
-              ? 'bg-emerald-500/20 text-emerald-400'
+              ? 'bg-emerald-500/15 text-emerald-600'
               : completed > 0
-              ? 'bg-amber-400/15 text-amber-400'
-              : 'bg-white/5 text-white/30'
+              ? 'bg-amber-400/15 text-amber-600'
+              : 'bg-black/5 text-black/30'
           }`}>
             {completed}/{total}
           </span>
-          <div className="hidden sm:block w-20 h-1 bg-white/10 rounded-full overflow-hidden">
+          <div className="hidden sm:block w-20 h-1 bg-black/10 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${allDone ? 'bg-emerald-400' : 'bg-amber-400/60'}`}
               style={{ width: `${pct}%` }}
             />
           </div>
-          <span className={`text-white/25 text-xs transition-transform duration-200 ${open ? 'rotate-90' : ''}`}>▶</span>
+          <span className={`text-black/25 text-xs transition-transform duration-200 ${open ? 'rotate-90' : ''}`}>▶</span>
         </div>
       </button>
 
@@ -359,7 +359,7 @@ function ProgressTab({
         )
       })}
       {items.length === 0 && (
-        <p className="text-white/20 text-sm text-center py-12">Sem etapas disponíveis.</p>
+        <p className="text-black/20 text-sm text-center py-12">Sem etapas disponíveis.</p>
       )}
     </div>
   )
@@ -608,7 +608,7 @@ export function PortalClient({
       )}
 
       {/* Content */}
-      <section className="relative" style={{ background: 'linear-gradient(145deg, #1c1c1c 0%, #242424 50%, #181818 100%)' }}>
+      <section className="relative bg-white">
         <section className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-16 md:py-24">
           <ProgressTab
             items={items}
