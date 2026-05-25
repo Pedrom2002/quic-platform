@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { requireOrgAuth, requireOrgAuthFull, getOrgAuth, getOrgAuthFull, assertEventOwnership } from '@/lib/supabase/actions'
 import { put } from '@vercel/blob'
 import { MAX_FILE_SIZE } from '@/schemas/file.schema'
-import { dispatchNotificationsForItem } from '@/lib/notifications/dispatcher'
+import { dispatchNotificationsForItem, dispatchStartNotificationForItem } from '@/lib/notifications/dispatcher'
 import type { ChecklistItemStatus, ChecklistItemNote, ChecklistItemFileLink, EventFileWithUploader } from '@/types/app'
 
 export async function bulkUpdateChecklistStatusAction(
@@ -52,6 +52,26 @@ export async function bulkUpdateChecklistStatusAction(
       await Promise.allSettled(
         completedItems.map(item =>
           dispatchNotificationsForItem({ event, item, completedByName })
+        )
+      )
+    }
+  }
+
+  if (status === 'in_progress') {
+    const adminClient = createAdminClient()
+    const [{ data: event }, { data: startedItems }] = await Promise.all([
+      adminClient.from('events').select('*').eq('id', eventId).single(),
+      adminClient
+        .from('event_checklist_items')
+        .select('*')
+        .in('id', ids)
+        .eq('event_id', eventId),
+    ])
+
+    if (event && startedItems?.length) {
+      await Promise.allSettled(
+        startedItems.map(item =>
+          dispatchStartNotificationForItem({ event, item })
         )
       )
     }
@@ -146,6 +166,14 @@ export async function updateChecklistItemAction(
     const { data: event } = await adminClient.from('events').select('*').eq('id', eventId).single()
     if (event) {
       dispatchNotificationsForItem({ event, item: data, completedByName: member.full_name ?? 'Equipa QUIC' }).catch(() => {})
+    }
+  }
+
+  if (fields.status === 'in_progress' && data) {
+    const adminClient = createAdminClient()
+    const { data: event } = await adminClient.from('events').select('*').eq('id', eventId).single()
+    if (event) {
+      dispatchStartNotificationForItem({ event, item: data }).catch(() => {})
     }
   }
 
