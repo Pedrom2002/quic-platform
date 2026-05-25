@@ -10,6 +10,7 @@ export const updateChecklistItemSchema = z.object({
   assigned_to: z.string().uuid().nullable().optional(),
   due_at: z.string().datetime().nullable().optional(),
   position: z.number().int().positive().optional(),
+  category: z.string().max(100).nullable().optional(),
 })
 
 export const createChecklistItemSchema = z.object({
@@ -19,6 +20,7 @@ export const createChecklistItemSchema = z.object({
   is_client_visible: z.boolean().default(true),
   assigned_to: z.string().uuid().nullable().optional(),
   position: z.number().int().positive(),
+  category: z.string().max(100).nullable().optional(),
 })
 
 export type UpdateChecklistItemInput = z.infer<typeof updateChecklistItemSchema>
