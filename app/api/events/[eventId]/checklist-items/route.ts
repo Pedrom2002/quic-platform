@@ -48,3 +48,30 @@ export async function POST(
 
   return NextResponse.json({ item }, { status: 201 })
 }
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ eventId: string }> }
+) {
+  const { eventId } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+  const { data: member } = await supabase
+    .from('team_members')
+    .select('organization_id')
+    .eq('auth_user_id', user.id)
+    .single()
+  if (!member) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+  const { data: items, error } = await supabase
+    .from('event_checklist_items')
+    .select('*, assigned_member:team_members!assigned_to(id, full_name, avatar_url)')
+    .eq('event_id', eventId)
+    .order('position', { ascending: true })
+
+  if (error) return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+
+  return NextResponse.json({ items: items ?? [] })
+}
