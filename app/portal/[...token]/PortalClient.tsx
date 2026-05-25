@@ -217,6 +217,10 @@ function ItemRow({
       <div className="shrink-0 mt-0.5">
         {isCompleted ? (
           <span className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[9px] font-bold shadow-sm">✓</span>
+        ) : item.status === 'in_progress' ? (
+          <span className="w-5 h-5 rounded-full border-2 border-amber-400 bg-amber-50 flex items-center justify-center">
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
+          </span>
         ) : (
           <span className="w-5 h-5 rounded-full border-2 border-stone-200 flex items-center justify-center group-hover:border-stone-400 transition-colors" />
         )}
@@ -224,7 +228,7 @@ function ItemRow({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-start gap-2">
-          <p className={`flex-1 text-sm leading-snug ${isCompleted ? 'text-stone-400 line-through' : 'text-stone-800 font-medium'}`}>
+          <p className={`flex-1 text-sm leading-snug ${isCompleted ? 'text-stone-400 line-through' : item.status === 'in_progress' ? 'text-stone-800 font-medium' : 'text-stone-600'}`}>
             {item.client_label ?? item.title}
           </p>
           <div className="flex items-center gap-2 shrink-0 mt-0.5">
