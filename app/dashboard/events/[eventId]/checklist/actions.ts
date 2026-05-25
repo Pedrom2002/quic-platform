@@ -414,12 +414,12 @@ export async function uploadFileToItemAction(
 
 const SEED_ITEMS: { title: string; category: string }[] = [
   // Estruturas em Falta
-  { title: 'Painel de luz para a zona dos camarins', category: 'Estruturas em Falta' },
-  { title: 'Ligações elétricas para todas as estruturas, cablagem geral', category: 'Estruturas em Falta' },
-  { title: '16 piquetes com disponibilidade para manutenção 24 horas', category: 'Estruturas em Falta' },
-  { title: 'Photo Booth', category: 'Estruturas em Falta' },
-  { title: 'Material logístico de apoio - Tenda com dimensões de 2m por 2m', category: 'Estruturas em Falta' },
-  { title: 'Palco com dimensões de 10m x 10m e régies cobertas com dimensões de 3m x 3m', category: 'Estruturas em Falta' },
+  { title: 'Painel de luz para a zona dos camarins', category: 'Estruturas' },
+  { title: 'Ligações elétricas para todas as estruturas, cablagem geral', category: 'Estruturas' },
+  { title: '16 piquetes com disponibilidade para manutenção 24 horas', category: 'Estruturas' },
+  { title: 'Photo Booth', category: 'Estruturas' },
+  { title: 'Material logístico de apoio - Tenda com dimensões de 2m por 2m', category: 'Estruturas' },
+  { title: 'Palco com dimensões de 10m x 10m e régies cobertas com dimensões de 3m x 3m', category: 'Estruturas' },
   // Sistema de Som
   { title: 'Sistema line-array com 8 topos por lado e subgrave (1 por lado)', category: 'Sistema de Som' },
   { title: '2 mesas de mistura de palco independentes por stage, até 8 monitores', category: 'Sistema de Som' },
