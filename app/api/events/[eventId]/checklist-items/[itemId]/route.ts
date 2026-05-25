@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { assertEventOwnership, resolveOrgMemberFull } from '@/lib/supabase/actions'
 import { updateChecklistItemSchema } from '@/schemas/checklist.schema'
-import { dispatchNotificationsForItem } from '@/lib/notifications/dispatcher'
+import { dispatchNotificationsForItem, dispatchStartNotificationForItem } from '@/lib/notifications/dispatcher'
 
 export async function PATCH(
   request: Request,
@@ -43,7 +43,9 @@ export async function PATCH(
     }
   }
 
-  if (parsed.data.status === 'in_progress') {
+  const isStarting = parsed.data.status === 'in_progress'
+
+  if (isStarting) {
     updates.started_at = new Date().toISOString()
   }
 
@@ -76,6 +78,22 @@ export async function PATCH(
       }).catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err)
         console.error('[dispatcher] falha ao despachar notificações:', msg)
+      })
+    }
+  }
+
+  if (isStarting) {
+    const adminClient = createAdminClient()
+    const { data: event } = await adminClient
+      .from('events')
+      .select('*')
+      .eq('id', eventId)
+      .single()
+
+    if (event) {
+      dispatchStartNotificationForItem({ event, item }).catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error('[dispatcher] falha ao despachar notificação de início:', msg)
       })
     }
   }
