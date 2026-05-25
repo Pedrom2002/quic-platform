@@ -208,7 +208,7 @@ function ItemRow({
   return (
     <li
       onClick={hasContent ? () => setExpanded(v => !v) : undefined}
-      className={`group flex gap-3 py-3 border-b border-stone-100 last:border-b-0 overflow-hidden anim-fade-in ${
+      className={`group flex gap-4 py-4 border-b border-white/[0.06] last:border-b-0 overflow-hidden anim-fade-in ${
         isNew ? 'anim-item-enter' : ''
       } ${animatingOut.has(item.id) ? 'anim-item-exit' : ''} ${hasContent ? 'cursor-pointer' : ''}`}
       style={isNew ? undefined : { animationDelay: `${150 + idx * 30}ms` }}
@@ -216,41 +216,35 @@ function ItemRow({
       {/* checkbox visual */}
       <div className="shrink-0 mt-0.5">
         {isCompleted ? (
-          <span className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[9px] font-bold shadow-sm">✓</span>
-        ) : item.status === 'in_progress' ? (
-          <span className="w-5 h-5 rounded-full border-2 border-amber-400 bg-amber-50 flex items-center justify-center">
-            <span className="w-2 h-2 rounded-full bg-amber-400" />
-          </span>
+          <span className="w-4 h-4 rounded-full border border-amber-400/50 flex items-center justify-center text-[7px] text-amber-400/80">✓</span>
         ) : (
-          <span className="w-5 h-5 rounded-full border-2 border-stone-200 flex items-center justify-center group-hover:border-stone-400 transition-colors" />
+          <span className="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors" />
         )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-start gap-2">
-          <p className={`flex-1 text-sm leading-snug ${isCompleted ? 'text-stone-400 line-through' : item.status === 'in_progress' ? 'text-stone-800 font-medium' : 'text-stone-600'}`}>
+        <div className="flex items-center gap-3">
+          <p className={`flex-1 text-sm tracking-tight leading-snug ${isCompleted ? 'text-white/90 font-medium' : 'text-white/55'}`}>
             {item.client_label ?? item.title}
           </p>
-          <div className="flex items-center gap-2 shrink-0 mt-0.5">
-            {isCompleted && item.completed_at && (
-              <span className="text-[10px] text-stone-400 tabular-nums">
-                {format(new Date(item.completed_at), "d MMM", { locale: pt })}
-              </span>
-            )}
-            {!isCompleted && item.due_at && (
-              <span className="text-[10px] text-stone-400 tabular-nums">
-                {format(new Date(item.due_at), "d MMM", { locale: pt })}
-              </span>
-            )}
-            {hasContent && (
-              <span className={`text-stone-300 text-xs transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}>▶</span>
-            )}
-          </div>
+          {isCompleted && item.completed_at && (
+            <span className="text-[10px] font-sans tracking-widest uppercase text-amber-400/70 shrink-0">
+              {format(new Date(item.completed_at), "d MMM", { locale: pt })}
+            </span>
+          )}
+          {!isCompleted && item.due_at && (
+            <span className="text-[10px] font-sans text-white/20 tabular-nums shrink-0">
+              {format(new Date(item.due_at), "d MMM", { locale: pt })}
+            </span>
+          )}
+          {hasContent && (
+            <span className={`text-white/20 text-xs transition-transform duration-200 shrink-0 ${expanded ? 'rotate-90' : ''}`}>▶</span>
+          )}
         </div>
         {expanded && (item.completion_note || item.files.length > 0) && (
           <div className="pt-3 pb-1 space-y-3">
             {item.completion_note && (
-              <p className="text-stone-500 text-sm italic leading-relaxed border-l-2 border-stone-200 pl-3">{item.completion_note}</p>
+              <p className="text-white/35 text-sm italic leading-relaxed">{item.completion_note}</p>
             )}
             {item.files.length > 0 && (
               <div className="space-y-2">
@@ -284,40 +278,36 @@ function CategorySection({
   const allDone = completed === total
 
   return (
-    <div className="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden mb-3">
+    <div className="border-b border-white/[0.08] last:border-b-0">
       <button
         onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-stone-50 transition-colors"
+        className="w-full flex items-center gap-4 py-5 text-left group"
       >
-        {/* category icon dot */}
-        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${allDone ? 'bg-emerald-400' : 'bg-amber-400'}`} />
         <div className="flex-1 min-w-0">
-          <span className="text-sm font-semibold text-stone-800">{category}</span>
+          <span className="text-xs font-semibold tracking-widest uppercase text-white/60 group-hover:text-white/80 transition-colors">{category}</span>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          {/* progress pill */}
           <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
             allDone
-              ? 'bg-emerald-50 text-emerald-700'
+              ? 'bg-emerald-500/20 text-emerald-400'
               : completed > 0
-              ? 'bg-amber-50 text-amber-700'
-              : 'bg-stone-100 text-stone-500'
+              ? 'bg-amber-400/15 text-amber-400'
+              : 'bg-white/5 text-white/30'
           }`}>
             {completed}/{total}
           </span>
-          {/* mini bar */}
-          <div className="hidden sm:block w-20 h-1.5 bg-stone-100 rounded-full overflow-hidden">
+          <div className="hidden sm:block w-20 h-1 bg-white/10 rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all duration-500 ${allDone ? 'bg-emerald-400' : 'bg-amber-400'}`}
+              className={`h-full rounded-full transition-all duration-500 ${allDone ? 'bg-emerald-400' : 'bg-amber-400/60'}`}
               style={{ width: `${pct}%` }}
             />
           </div>
-          <span className={`text-stone-300 text-xs transition-transform duration-200 ${open ? 'rotate-90' : ''}`}>▶</span>
+          <span className={`text-white/25 text-xs transition-transform duration-200 ${open ? 'rotate-90' : ''}`}>▶</span>
         </div>
       </button>
 
       {open && (
-        <ul className="px-5 pb-2 border-t border-stone-50">
+        <ul className="pb-4">
           {items.map((item, idx) => (
             <ItemRow
               key={item.id}
@@ -378,7 +368,7 @@ function ProgressTab({
           />
         )
       })}
-      {!hasCategories && items.length === 0 && (
+      {items.length === 0 && (
         <p className="text-white/20 text-sm text-center py-12">Sem etapas disponíveis.</p>
       )}
     </div>
@@ -628,18 +618,14 @@ export function PortalClient({
         </div>
       )}
 
-      {/* Tab content — dark header anchors to hero, white body below */}
-      <section className="relative">
-        {/* dark band that connects seamlessly to the hero */}
-        <div className="bg-stone-900">
-          <TabBar
-            active={activeTab}
-            hasDocuments={eventFiles.length > 0}
-            onChange={setActiveTab}
-          />
-        </div>
-        <section className="bg-stone-50 w-full">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16">
+      {/* Tab content */}
+      <section className="relative" style={{ background: 'linear-gradient(145deg, #1c1c1c 0%, #242424 50%, #181818 100%)' }}>
+        <TabBar
+          active={activeTab}
+          hasDocuments={eventFiles.length > 0}
+          onChange={setActiveTab}
+        />
+        <section className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-16 md:py-24">
           {activeTab === 'progress' && (
             <ProgressTab
               items={items}
@@ -650,7 +636,6 @@ export function PortalClient({
           {activeTab === 'documents' && eventFiles.length > 0 && (
             <DocumentsTab files={eventFiles} />
           )}
-        </div>
         </section>
       </section>
 
