@@ -9,6 +9,7 @@ const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono"
 export const metadata: Metadata = {
   title: "Quic — Gestão de Eventos",
   description: "Plataforma de automatização de comunicação com clientes Quic",
+  icons: { icon: "/logo-branco.png" },
 };
 
 export default async function RootLayout({
