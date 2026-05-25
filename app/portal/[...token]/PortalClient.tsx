@@ -364,7 +364,7 @@ function ProgressTab({
             items={catItems}
             animatingOut={animatingOut}
             justCompleted={justCompleted}
-            initialOpen={catIdx === 0 || !hasCompleted}
+            initialOpen={false}
           />
         )
       })}
