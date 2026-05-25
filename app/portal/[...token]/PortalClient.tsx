@@ -147,7 +147,7 @@ function TabBar({
   if (tabs.length < 2) return null
 
   return (
-    <div className="border-b border-stone-200 bg-white sticky top-0 z-10">
+    <div className="border-b border-white/10">
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 md:px-8 flex">
         {tabs.map(tab => (
           <button
@@ -155,8 +155,8 @@ function TabBar({
             onClick={() => onChange(tab.key)}
             className={`px-4 py-3.5 text-xs font-semibold tracking-widest uppercase transition-colors border-b-2 ${
               active === tab.key
-                ? 'border-stone-900 text-stone-900'
-                : 'border-transparent text-stone-400 hover:text-stone-600'
+                ? 'border-white text-white'
+                : 'border-transparent text-white/40 hover:text-white/70'
             }`}
           >
             {tab.label}
@@ -624,17 +624,18 @@ export function PortalClient({
         </div>
       )}
 
-      {/* Cross-fade bridge: dark hero -> white content */}
-      <div className="h-16 relative z-10 pointer-events-none" style={{ background: 'linear-gradient(to bottom, #111111, #f8f8f8)' }} />
-
-      {/* Tab content — white background */}
-      <section className="relative bg-stone-50">
-        <TabBar
-          active={activeTab}
-          hasDocuments={eventFiles.length > 0}
-          onChange={setActiveTab}
-        />
-        <section className="w-full max-w-3xl mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16">
+      {/* Tab content — dark header anchors to hero, white body below */}
+      <section className="relative">
+        {/* dark band that connects seamlessly to the hero */}
+        <div className="bg-stone-900">
+          <TabBar
+            active={activeTab}
+            hasDocuments={eventFiles.length > 0}
+            onChange={setActiveTab}
+          />
+        </div>
+        <section className="bg-stone-50 w-full">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16">
           {activeTab === 'progress' && (
             <ProgressTab
               items={items}
@@ -645,6 +646,7 @@ export function PortalClient({
           {activeTab === 'documents' && eventFiles.length > 0 && (
             <DocumentsTab files={eventFiles} />
           )}
+        </div>
         </section>
       </section>
 
