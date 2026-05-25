@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { verifyQStashSignature } from '@/lib/qstash/verify'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail, buildEmailHtml } from '@/lib/notifications/channels/email'
+import { sendSms } from '@/lib/notifications/channels/sms'
 
 const payloadSchema = z.object({
   job_id: z.string().min(1),
@@ -50,6 +51,12 @@ export async function POST(request: Request) {
         subject: payload.rendered_subject ?? 'Atualização do seu evento — Quic',
         html,
       })
+    } else if (payload.channel === 'sms') {
+      if (!payload.client_phone) throw new Error('Telefone do cliente em falta')
+      providerId = await sendSms({
+        to: payload.client_phone,
+        message: payload.rendered_body,
+      })
     }
 
     await supabase
@@ -61,7 +68,7 @@ export async function POST(request: Request) {
       notification_job_id: payload.job_id,
       event_type: 'sent',
       channel: payload.channel,
-      provider: payload.channel === 'email' ? 'brevo' : 'twilio',
+      provider: payload.channel === 'email' || payload.channel === 'sms' ? 'brevo' : 'twilio',
       provider_message_id: providerId,
     })
 

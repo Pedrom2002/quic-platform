@@ -35,6 +35,10 @@ vi.mock('@/lib/notifications/channels/email', () => ({
   buildEmailHtml: vi.fn().mockReturnValue('<html>email</html>'),
 }))
 
+vi.mock('@/lib/notifications/channels/sms', () => ({
+  sendSms: vi.fn().mockResolvedValue('sms-provider-id'),
+}))
+
 vi.mock('next/server', () => ({
   NextResponse: {
     json: vi.fn((body: unknown, init?: ResponseInit) => ({ body, status: init?.status ?? 200 })),
@@ -44,6 +48,7 @@ vi.mock('next/server', () => ({
 import { POST } from '@/app/api/workers/send-notification/route'
 import { verifyQStashSignature } from '@/lib/qstash/verify'
 import { sendEmail } from '@/lib/notifications/channels/email'
+import { sendSms } from '@/lib/notifications/channels/sms'
 
 const basePayload = {
   job_id: '00000000-0000-0000-0000-000000000001',
@@ -194,6 +199,50 @@ describe('POST /api/workers/send-notification', () => {
     await POST(makeRequest(basePayload))
     expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({ provider: 'brevo', channel: 'email' })
+    )
+  })
+
+  it('sends SMS and returns 200 for sms channel', async () => {
+    const res = await POST(
+      makeRequest({ ...basePayload, channel: 'sms', client_phone: '+351912345678' })
+    )
+    expect(res.status).toBe(200)
+    expect(sendSms).toHaveBeenCalledWith({
+      to: '+351912345678',
+      message: 'Test body text',
+    })
+    expect((res as unknown as { body: { success: boolean } }).body.success).toBe(true)
+  })
+
+  it('returns 500 when client_phone is missing for sms channel', async () => {
+    const res = await POST(
+      makeRequest({ ...basePayload, channel: 'sms', client_phone: null })
+    )
+    expect(res.status).toBe(500)
+  })
+
+  it('returns 500 and logs failure when sendSms throws', async () => {
+    vi.mocked(sendSms).mockRejectedValueOnce(new Error('Brevo SMS down'))
+    const res = await POST(
+      makeRequest({ ...basePayload, channel: 'sms', client_phone: '+351912345678' })
+    )
+    expect(res.status).toBe(500)
+    expect((res as unknown as { body: { error: string } }).body.error).toContain('Brevo SMS down')
+  })
+
+  it('uses brevo as provider for sms channel', async () => {
+    const eqMock = vi.fn().mockResolvedValue({ error: null })
+    mockInsert = vi.fn().mockResolvedValue({ error: null })
+    mockFrom = vi.fn((table: string) => {
+      if (table === 'events') {
+        return { select: mockSelect, eq: mockEq, single: mockSingle }
+      }
+      return { update: mockUpdate, insert: mockInsert, eq: eqMock }
+    })
+
+    await POST(makeRequest({ ...basePayload, channel: 'sms', client_phone: '+351912345678' }))
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({ provider: 'brevo', channel: 'sms' })
     )
   })
 })
