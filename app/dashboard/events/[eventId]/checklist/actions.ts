@@ -467,33 +467,24 @@ export async function seedChecklistTasksAction(
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) throw new Error('Evento não encontrado')
 
-  // Fetch existing items to skip duplicates (title + category)
+  // Fetch existing items to skip duplicates and track max positions
   const { data: existing } = await supabase
     .from('event_checklist_items')
-    .select('title, category')
+    .select('title, category, position')
     .eq('event_id', eventId)
-    .eq('organization_id', member.organization_id)
 
   const existingKeys = new Set(
     (existing ?? []).map(i => `${i.title}__${i.category ?? ''}`)
   )
 
-  // Get current max position per category
-  const { data: positions } = await supabase
-    .from('event_checklist_items')
-    .select('category, position')
-    .eq('event_id', eventId)
-    .eq('organization_id', member.organization_id)
-
   const maxPositionByCategory = new Map<string, number>()
-  for (const row of positions ?? []) {
+  for (const row of existing ?? []) {
     const cat = row.category ?? '__geral__'
     maxPositionByCategory.set(cat, Math.max(maxPositionByCategory.get(cat) ?? 0, row.position))
   }
 
   const toInsert: {
     event_id: string
-    organization_id: string
     title: string
     category: string
     position: number
@@ -508,12 +499,11 @@ export async function seedChecklistTasksAction(
 
     const cat = item.category
     const currentMax = maxPositionByCategory.get(cat) ?? 0
-    const nextPos = currentMax + toInsert.filter(i => i.category === cat).length + 1
-    maxPositionByCategory.set(cat, currentMax) // keep original for offset calc
+    const nextPos = currentMax + 1
+    maxPositionByCategory.set(cat, nextPos) // advance for next item in same category
 
     toInsert.push({
       event_id: eventId,
-      organization_id: member.organization_id,
       title: item.title,
       category: item.category,
       position: nextPos,
@@ -552,6 +542,7 @@ export async function syncCategoriesToTemplateAction(
     .single()
 
   if (!event) throw new Error('Evento não encontrado')
+  if (!event.event_type_id) throw new Error('Evento sem tipo definido')
 
   // Find or create active template for this event type
   let { data: template } = await supabase
@@ -582,24 +573,18 @@ export async function syncCategoriesToTemplateAction(
     template = created
   }
 
-  // Fetch existing template items to skip duplicates
+  // Fetch existing template items to skip duplicates and track max positions
   const { data: existingTemplateItems } = await supabase
     .from('checklist_template_items')
-    .select('title, category')
+    .select('title, category, position')
     .eq('template_id', template.id)
 
   const existingKeys = new Set(
     (existingTemplateItems ?? []).map(i => `${i.title}__${i.category ?? ''}`)
   )
 
-  // Get max position per category in template
-  const { data: tplPositions } = await supabase
-    .from('checklist_template_items')
-    .select('category, position')
-    .eq('template_id', template.id)
-
   const maxPosByCategory = new Map<string, number>()
-  for (const row of tplPositions ?? []) {
+  for (const row of existingTemplateItems ?? []) {
     const cat = row.category ?? '__geral__'
     maxPosByCategory.set(cat, Math.max(maxPosByCategory.get(cat) ?? 0, row.position))
   }
@@ -619,7 +604,8 @@ export async function syncCategoriesToTemplateAction(
 
     const cat = item.category
     const currentMax = maxPosByCategory.get(cat) ?? 0
-    const nextPos = currentMax + toInsert.filter(i => i.category === cat).length + 1
+    const nextPos = currentMax + 1
+    maxPosByCategory.set(cat, nextPos) // advance for next item in same category
 
     toInsert.push({
       template_id: template.id,
