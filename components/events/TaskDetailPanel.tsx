@@ -214,8 +214,12 @@ export default function TaskDetailPanel({ eventId, item, orgMembers, currentMemb
             <input
               value={clientLabel}
               onChange={e => setClientLabel(e.target.value)}
-              onBlur={() => saveField({ client_label: clientLabel.trim() || null })}
+              onBlur={() => {
+                const next = clientLabel.trim() || null
+                if (next !== (item.client_label ?? null)) saveField({ client_label: next })
+              }}
               placeholder={item.title}
+              maxLength={200}
               className="w-full text-sm text-slate-700 placeholder-slate-300 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-slate-300"
             />
             <p className="mt-1 text-[10px] text-slate-400">Se vazio, o portal usa o título interno.</p>
