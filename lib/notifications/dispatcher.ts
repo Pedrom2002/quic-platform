@@ -300,7 +300,7 @@ export async function dispatchStartNotificationForItem(ctx: StartDispatchContext
 
   // Collect (channel, language) pairs needed for template lookup
   const templateKeys = new Set<string>()
-  const hardcodedChannels: NotificationChannel[] = ['email', 'portal']
+  const hardcodedChannels: NotificationChannel[] = ['email', 'portal', 'sms']
   for (const ec of eventClients as unknown as (EventClient & { client: Client })[]) {
     const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
     const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
