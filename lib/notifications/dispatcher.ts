@@ -278,6 +278,233 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
   )
 }
 
+interface StartDispatchContext {
+  event: Event
+  item: EventChecklistItem
+}
+
+export async function dispatchStartNotificationForItem(ctx: StartDispatchContext): Promise<void> {
+  const supabase = createAdminClient()
+
+  const { data: eventClients } = await supabase
+    .from('event_clients')
+    .select('*, client:clients(*)')
+    .eq('event_id', ctx.event.id)
+    .eq('opted_out', false)
+
+  if (!eventClients?.length) return
+
+  const portalBase = process.env.NEXT_PUBLIC_PORTAL_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const portalUrl = `${portalBase}/portal/${ctx.event.portal_token}`
+  const eventDate = format(new Date(ctx.event.start_datetime), "d 'de' MMMM 'de' yyyy", { locale: pt })
+
+  // Collect (channel, language) pairs needed for template lookup
+  const templateKeys = new Set<string>()
+  const hardcodedChannels: NotificationChannel[] = ['email', 'portal']
+  for (const ec of eventClients as unknown as (EventClient & { client: Client })[]) {
+    const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
+    const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
+    const lang = prefs?.language ?? 'pt'
+    for (const ch of hardcodedChannels) {
+      if (prefChannels.includes(ch)) templateKeys.add(`${ch}:${lang}`)
+    }
+  }
+
+  const templateCache = new Map<string, MessageTemplate>()
+  if (templateKeys.size > 0) {
+    const pairs = [...templateKeys].map(k => k.split(':'))
+    const channels = [...new Set(pairs.map(([ch]) => ch))]
+    const languages = [...new Set(pairs.map(([, lang]) => lang))]
+
+    const { data: templates } = await supabase
+      .from('message_templates')
+      .select('*')
+      .eq('organization_id', ctx.event.organization_id)
+      .eq('template_key', 'checklist_start')
+      .in('channel', channels)
+      .in('language', languages)
+      .eq('is_active', true)
+
+    for (const t of templates ?? []) {
+      templateCache.set(`${t.channel}:${t.language}`, t as MessageTemplate)
+    }
+  }
+
+  const { QSTASH_TOKEN: qstashToken, NEXT_PUBLIC_APP_URL: appUrl } = getEnv()
+  const useQStash = !!qstashToken
+
+  let qstash: import('@upstash/qstash').Client | null = null
+  if (useQStash) {
+    const { Client: QStashClient } = await import('@upstash/qstash')
+    qstash = new QStashClient({ token: qstashToken! })
+  }
+
+  const workerUrl = `${appUrl}/api/workers/send-notification`
+
+  type StartJobDraft = {
+    event_id: string
+    checklist_item_id: string
+    client_id: string
+    channel: 'email' | 'whatsapp' | 'sms' | 'portal'
+    message_template_id: string
+    rendered_subject: string | null
+    rendered_body: string
+    status: 'queued'
+    scheduled_at: string
+    _client: Client
+  }
+
+  const jobDrafts: StartJobDraft[] = []
+
+  for (const ec of eventClients as unknown as (EventClient & { client: Client })[]) {
+    const client = ec.client
+    const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
+    const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
+    const lang = prefs?.language ?? 'pt'
+    const channels = hardcodedChannels.filter(ch => prefChannels.includes(ch))
+
+    for (const channel of channels) {
+      const msgTemplate = templateCache.get(`${channel}:${lang}`)
+      if (!msgTemplate) continue
+
+      const templateVars = {
+        client_name: client.full_name,
+        event_name: ctx.event.name,
+        event_date: eventDate,
+        item_client_label: ctx.item.client_label ?? ctx.item.title,
+        portal_url: portalUrl,
+      }
+
+      const renderedSubject = msgTemplate.subject
+        ? renderTemplate(msgTemplate.subject, templateVars)
+        : null
+      const renderedBody = renderTemplate(msgTemplate.body_template, templateVars)
+
+      jobDrafts.push({
+        event_id: ctx.event.id,
+        checklist_item_id: ctx.item.id,
+        client_id: client.id,
+        channel: channel as 'email' | 'whatsapp' | 'sms' | 'portal',
+        message_template_id: msgTemplate.id,
+        rendered_subject: renderedSubject,
+        rendered_body: renderedBody,
+        status: 'queued' as const,
+        scheduled_at: new Date().toISOString(),
+        _client: client as unknown as Client,
+      })
+    }
+  }
+
+  if (jobDrafts.length === 0) return
+
+  const { data: insertedJobs, error: insertError } = await supabase
+    .from('notification_jobs')
+    .insert(jobDrafts.map(({ _client: _c, ...row }) => row))
+    .select()
+
+  if (insertError || !insertedJobs?.length) {
+    log.error('falha ao inserir start jobs', { error: insertError?.message })
+    return
+  }
+
+  type StartDraftKey = string
+  const draftByKey = new Map<StartDraftKey, (typeof jobDrafts)[number]>()
+  for (const draft of jobDrafts) {
+    draftByKey.set(`${draft.client_id}:${draft.channel}:${draft.checklist_item_id}`, draft)
+  }
+
+  await Promise.allSettled(
+    insertedJobs.map(async (jobRow) => {
+      const job = jobRow as NotificationJob
+      const key = `${job.client_id}:${job.channel}:${job.checklist_item_id ?? ''}`
+      const draft = draftByKey.get(key)
+      if (!draft) {
+        log.error('start draft não encontrado para job', { jobId: job.id, key })
+        await supabase
+          .from('notification_jobs')
+          .update({ status: 'failed', last_error: 'draft lookup failed after insert' })
+          .eq('id', job.id)
+        return
+      }
+
+      if (qstash) {
+        try {
+          const payload: NotificationJobPayload = {
+            job_id: job.id,
+            event_id: ctx.event.id,
+            client_id: draft._client.id,
+            channel: draft.channel,
+            rendered_subject: draft.rendered_subject,
+            rendered_body: draft.rendered_body,
+            client_email: draft._client.email,
+            client_phone: draft._client.phone,
+            client_whatsapp: draft._client.whatsapp,
+          }
+
+          const qstashResponse = await qstash!.publishJSON({
+            url: workerUrl,
+            body: payload,
+            retries: 3,
+          })
+
+          await Promise.all([
+            supabase
+              .from('notification_jobs')
+              .update({ qstash_message_id: qstashResponse.messageId })
+              .eq('id', job.id),
+            supabase.from('notification_log').insert({
+              notification_job_id: job.id,
+              event_type: 'queued' as const,
+              channel: draft.channel,
+              provider: 'qstash',
+              provider_message_id: qstashResponse.messageId,
+            }),
+          ])
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err)
+          log.error('qstash start dispatch failed', { jobId: job.id, error: msg })
+          await supabase
+            .from('notification_jobs')
+            .update({ status: 'failed', last_error: msg })
+            .eq('id', job.id)
+        }
+      } else {
+        try {
+          if (draft.channel === 'email' && draft._client.email) {
+            const html = buildEmailHtml(draft.rendered_body, ctx.event.name, 0)
+            const providerId = await sendEmail({
+              to: draft._client.email,
+              toName: draft._client.full_name,
+              subject: draft.rendered_subject ?? 'A preparação do seu evento começou — Quic',
+              html,
+            })
+            await Promise.all([
+              supabase
+                .from('notification_jobs')
+                .update({ status: 'delivered', sent_at: new Date().toISOString() })
+                .eq('id', job.id),
+              supabase.from('notification_log').insert({
+                notification_job_id: job.id,
+                event_type: 'sent' as const,
+                channel: draft.channel,
+                provider: 'brevo',
+                provider_message_id: providerId,
+              }),
+            ])
+          }
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err)
+          log.error('direct start dispatch failed', { jobId: job.id, error: msg })
+          await supabase
+            .from('notification_jobs')
+            .update({ status: 'failed', last_error: msg })
+            .eq('id', job.id)
+        }
+      }
+    })
+  )
+}
+
 // "specific_clients" targets primary contacts only — the audience rule means
 // "the client(s) directly responsible for this event", not a generic subset.
 function filterClientsByAudience(

@@ -383,3 +383,145 @@ describe('dispatchNotificationsForItem', () => {
     expect(mockSendEmail).not.toHaveBeenCalled()
   })
 })
+
+describe('dispatchStartNotificationForItem', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    tableData = {}
+    delete process.env.QSTASH_TOKEN
+    process.env.NEXT_PUBLIC_PORTAL_URL = 'http://localhost:3000'
+    process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
+    vi.resetModules()
+    mockSendEmail.mockResolvedValue('brevo-msg-id-start')
+  })
+
+  const mockStartTemplate = {
+    id: 'tpl-start-1',
+    organization_id: 'org-1',
+    name: 'Início email PT',
+    channel: 'email',
+    language: 'pt',
+    template_key: 'checklist_start',
+    subject: 'Início: {{event_name}}',
+    body_template: 'Olá {{client_name}}, {{item_client_label}} começou.',
+    is_active: true,
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+  }
+
+  const mockStartJob = {
+    id: 'job-start-1',
+    event_id: 'event-1',
+    checklist_item_id: 'item-1',
+    client_id: 'client-1',
+    channel: 'email',
+    rendered_subject: 'Início: Concerto Teste',
+    rendered_body: 'Olá Ana Silva, Palco montado começou.',
+    status: 'queued',
+    scheduled_at: new Date().toISOString(),
+    qstash_message_id: null,
+    message_template_id: 'tpl-start-1',
+    attempt_count: 0,
+    last_error: null,
+    sent_at: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+
+  function setupStartHappyPath() {
+    tableData = {
+      event_clients: { data: [mockEventClient], error: null },
+      message_templates: { data: [mockStartTemplate], error: null },
+      notification_jobs: { data: [mockStartJob], error: null },
+      notification_log: { data: null, error: null },
+    }
+  }
+
+  it('sends email for all clients when item goes in_progress', async () => {
+    setupStartHappyPath()
+    const { dispatchStartNotificationForItem } = await import('@/lib/notifications/dispatcher')
+
+    await dispatchStartNotificationForItem({ event: makeEvent(), item: makeItem({ status: 'in_progress' }) })
+
+    expect(mockSendEmail).toHaveBeenCalledOnce()
+    expect(mockSendEmail).toHaveBeenCalledWith(expect.objectContaining({
+      to: 'ana@exemplo.pt',
+      subject: 'Início: Concerto Teste',
+    }))
+  })
+
+  it('returns early when no event clients', async () => {
+    tableData = {
+      event_clients: { data: [], error: null },
+      message_templates: { data: [mockStartTemplate], error: null },
+    }
+    const { dispatchStartNotificationForItem } = await import('@/lib/notifications/dispatcher')
+
+    await dispatchStartNotificationForItem({ event: makeEvent(), item: makeItem({ status: 'in_progress' }) })
+
+    expect(mockSendEmail).not.toHaveBeenCalled()
+    expect(mockInsert).not.toHaveBeenCalled()
+  })
+
+  it('does not send when no checklist_start template exists', async () => {
+    tableData = {
+      event_clients: { data: [mockEventClient], error: null },
+      message_templates: { data: [], error: null },
+      notification_jobs: { data: null, error: null },
+    }
+    const { dispatchStartNotificationForItem } = await import('@/lib/notifications/dispatcher')
+
+    await dispatchStartNotificationForItem({ event: makeEvent(), item: makeItem({ status: 'in_progress' }) })
+
+    expect(mockInsert).not.toHaveBeenCalled()
+    expect(mockSendEmail).not.toHaveBeenCalled()
+  })
+
+  it('renders template variables into subject and body', async () => {
+    setupStartHappyPath()
+    const { dispatchStartNotificationForItem } = await import('@/lib/notifications/dispatcher')
+
+    await dispatchStartNotificationForItem({
+      event: makeEvent({ name: 'Festival Verão' }),
+      item: makeItem({ client_label: 'Palco principal', status: 'in_progress' }),
+    })
+
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          rendered_subject: 'Início: Festival Verão',
+          rendered_body: 'Olá Ana Silva, Palco principal começou.',
+        }),
+      ])
+    )
+  })
+
+  it('respects client channel preferences — skips email if client prefers portal only', async () => {
+    tableData = {
+      event_clients: {
+        data: [{ ...mockEventClient, notification_prefs: { channels: ['portal'], language: 'pt' } }],
+        error: null,
+      },
+      message_templates: { data: [mockStartTemplate], error: null },
+      notification_jobs: { data: null, error: null },
+    }
+    const { dispatchStartNotificationForItem } = await import('@/lib/notifications/dispatcher')
+
+    await dispatchStartNotificationForItem({ event: makeEvent(), item: makeItem({ status: 'in_progress' }) })
+
+    expect(mockInsert).not.toHaveBeenCalled()
+    expect(mockSendEmail).not.toHaveBeenCalled()
+  })
+
+  it('marks job as failed when sendEmail throws', async () => {
+    setupStartHappyPath()
+    mockSendEmail.mockRejectedValueOnce(new Error('Brevo 500'))
+    const { dispatchStartNotificationForItem } = await import('@/lib/notifications/dispatcher')
+
+    await expect(
+      dispatchStartNotificationForItem({ event: makeEvent(), item: makeItem({ status: 'in_progress' }) })
+    ).resolves.toBeUndefined()
+
+    expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({ status: 'failed' }))
+  })
+})
