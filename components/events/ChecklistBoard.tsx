@@ -66,20 +66,6 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
-  async function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-    const previousItems = items
-    const reordered = arrayMove(items, items.findIndex(i => i.id === active.id), items.findIndex(i => i.id === over.id))
-    setItems(reordered)
-    try {
-      await reorderChecklistItemsAction(eventId, reordered.map(i => i.id))
-    } catch (err: unknown) {
-      setItems(previousItems)
-      toast.error(err instanceof Error ? err.message : 'Erro ao reordenar')
-    }
-  }
-
   async function handleBoardDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -218,7 +204,7 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
 
   const categories: string[] = Array.from(
     new Set(
-      items.map(i => (i as ItemWithMemberAndCounts & { category?: string | null }).category ?? 'Geral')
+      items.map(i => i.category ?? 'Geral')
     )
   ).sort((a, b) => {
     if (a === 'Geral') return 1
@@ -231,10 +217,16 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
     return a.localeCompare(b)
   })
 
+  useEffect(() => {
+    if (activeTab !== 'Todas' && !categories.includes(activeTab)) {
+      setActiveTab('Todas')
+    }
+  }, [items, activeTab, categories])
+
   function itemsForTab(tab: string) {
     if (tab === 'Todas') return items
     return items.filter(i =>
-      ((i as ItemWithMemberAndCounts & { category?: string | null }).category ?? 'Geral') === tab
+      (i.category ?? 'Geral') === tab
     )
   }
 
@@ -253,11 +245,13 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
       if (res.ok) {
         const { items: fresh } = await res.json() as { items: ItemWithMemberAndCounts[] }
         setItems(fresh)
+      } else {
+        toast.error('Tarefas importadas mas erro ao recarregar — recarregue a página')
       }
       toast.success(
         eventInserted > 0
           ? `${eventInserted} tarefas adicionadas · ${templateInserted} adicionadas ao template`
-          : 'Tarefas já existentes — nenhuma duplicada'
+          : 'Tarefas já existentes, nenhuma duplicada'
       )
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Erro ao importar tarefas')
@@ -408,55 +402,94 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
             <TabsContent key={tab} value={tab}>
               {/* List view */}
               {view === 'list' && (
-                <DndContext sensors={sensors} collisionDetection={closestCenter}
-                  onDragEnd={e => {
-                    const { active, over } = e
-                    if (!over || active.id === over.id) return
-                    const previousItems = items
-                    const reordered = arrayMove(
-                      items,
-                      items.findIndex(i => i.id === active.id),
-                      items.findIndex(i => i.id === over.id)
-                    )
-                    setItems(reordered)
-                    reorderChecklistItemsAction(eventId, reordered.map(i => i.id)).catch(() => setItems(previousItems))
-                  }}>
-                  <SortableContext items={tabItems.map(i => i.id)} strategy={verticalListSortingStrategy}>
-                    <div className="space-y-2 mb-4">
-                      {tabItems.map(item =>
-                        editingId === item.id ? (
-                          <EditRow
-                            key={item.id}
-                            item={item}
-                            orgMembers={orgMembers}
-                            onSave={edits => saveEdit(item.id, edits)}
-                            onCancel={() => setEditingId(null)}
-                            isLoading={loadingId === item.id}
-                          />
-                        ) : (
-                          <SortableChecklistItem
-                            key={item.id}
-                            item={item}
-                            orgMembers={orgMembers}
-                            isLoading={loadingId === item.id}
-                            isSelected={selected.has(item.id)}
-                            onToggleSelect={() => toggleSelect(item.id)}
-                            onComplete={() => updateStatus(item.id, 'completed')}
-                            onStart={() => updateStatus(item.id, 'in_progress')}
-                            onSkip={() => updateStatus(item.id, 'skipped')}
-                            onReset={() => updateStatus(item.id, 'pending')}
-                            onEdit={() => setEditingId(item.id)}
-                            onDelete={() => deleteItem(item.id)}
-                            onOpenDetail={() => setSelectedItemId(item.id)}
-                          />
-                        )
-                      )}
-                      {!tabItems.length && (
-                        <p className="text-slate-400 text-sm text-center py-8">Nenhuma etapa adicionada ainda.</p>
-                      )}
-                    </div>
-                  </SortableContext>
-                </DndContext>
+                tab === 'Todas' ? (
+                  <DndContext sensors={sensors} collisionDetection={closestCenter}
+                    onDragEnd={e => {
+                      const { active, over } = e
+                      if (!over || active.id === over.id) return
+                      const previousItems = items
+                      const reordered = arrayMove(
+                        items,
+                        items.findIndex(i => i.id === active.id),
+                        items.findIndex(i => i.id === over.id)
+                      )
+                      setItems(reordered)
+                      reorderChecklistItemsAction(eventId, reordered.map(i => i.id)).catch(() => {
+                        setItems(previousItems)
+                        toast.error('Erro ao reordenar')
+                      })
+                    }}>
+                    <SortableContext items={tabItems.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                      <div className="space-y-2 mb-4">
+                        {tabItems.map(item =>
+                          editingId === item.id ? (
+                            <EditRow
+                              key={item.id}
+                              item={item}
+                              orgMembers={orgMembers}
+                              onSave={edits => saveEdit(item.id, edits)}
+                              onCancel={() => setEditingId(null)}
+                              isLoading={loadingId === item.id}
+                            />
+                          ) : (
+                            <SortableChecklistItem
+                              key={item.id}
+                              item={item}
+                              orgMembers={orgMembers}
+                              isLoading={loadingId === item.id}
+                              isSelected={selected.has(item.id)}
+                              onToggleSelect={() => toggleSelect(item.id)}
+                              onComplete={() => updateStatus(item.id, 'completed')}
+                              onStart={() => updateStatus(item.id, 'in_progress')}
+                              onSkip={() => updateStatus(item.id, 'skipped')}
+                              onReset={() => updateStatus(item.id, 'pending')}
+                              onEdit={() => setEditingId(item.id)}
+                              onDelete={() => deleteItem(item.id)}
+                              onOpenDetail={() => setSelectedItemId(item.id)}
+                            />
+                          )
+                        )}
+                        {!tabItems.length && (
+                          <p className="text-slate-400 text-sm text-center py-8">Nenhuma etapa adicionada ainda.</p>
+                        )}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                ) : (
+                  <div className="space-y-2 mb-4">
+                    {tabItems.map(item =>
+                      editingId === item.id ? (
+                        <EditRow
+                          key={item.id}
+                          item={item}
+                          orgMembers={orgMembers}
+                          onSave={edits => saveEdit(item.id, edits)}
+                          onCancel={() => setEditingId(null)}
+                          isLoading={loadingId === item.id}
+                        />
+                      ) : (
+                        <SortableChecklistItem
+                          key={item.id}
+                          item={item}
+                          orgMembers={orgMembers}
+                          isLoading={loadingId === item.id}
+                          isSelected={selected.has(item.id)}
+                          onToggleSelect={() => toggleSelect(item.id)}
+                          onComplete={() => updateStatus(item.id, 'completed')}
+                          onStart={() => updateStatus(item.id, 'in_progress')}
+                          onSkip={() => updateStatus(item.id, 'skipped')}
+                          onReset={() => updateStatus(item.id, 'pending')}
+                          onEdit={() => setEditingId(item.id)}
+                          onDelete={() => deleteItem(item.id)}
+                          onOpenDetail={() => setSelectedItemId(item.id)}
+                        />
+                      )
+                    )}
+                    {!tabItems.length && (
+                      <p className="text-slate-400 text-sm text-center py-8">Nenhuma etapa adicionada ainda.</p>
+                    )}
+                  </div>
+                )
               )}
 
               {/* Board view */}
