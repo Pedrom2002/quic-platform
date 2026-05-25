@@ -407,3 +407,237 @@ export async function uploadFileToItemAction(
 
   return data ?? null
 }
+
+// ---------------------------------------------------------------------------
+// SEED DATA
+// ---------------------------------------------------------------------------
+
+const SEED_ITEMS: { title: string; category: string }[] = [
+  // Estruturas em Falta
+  { title: 'Painel de luz para a zona dos camarins', category: 'Estruturas em Falta' },
+  { title: 'Ligações elétricas para todas as estruturas, cablagem geral', category: 'Estruturas em Falta' },
+  { title: '16 piquetes com disponibilidade para manutenção 24 horas', category: 'Estruturas em Falta' },
+  { title: 'Photo Booth', category: 'Estruturas em Falta' },
+  { title: 'Tenda logística 2m x 2m', category: 'Estruturas em Falta' },
+  { title: 'Palco 10m x 10m', category: 'Estruturas em Falta' },
+  { title: 'Régies cobertas 3m x 3m', category: 'Estruturas em Falta' },
+  // Sistema de Som
+  { title: 'Line-array 8 topos por lado + subgrave 1 por lado', category: 'Sistema de Som' },
+  { title: 'Mesa de mistura de palco independente stage 1', category: 'Sistema de Som' },
+  { title: 'Mesa de mistura de palco independente stage 2', category: 'Sistema de Som' },
+  { title: 'Monitores — até 8 unidades por stage', category: 'Sistema de Som' },
+  { title: '2 side-fills por lado', category: 'Sistema de Som' },
+  { title: '8 canais in-ear', category: 'Sistema de Som' },
+  { title: 'Microfonia adequada', category: 'Sistema de Som' },
+  { title: 'Cablagem e acessórios de som', category: 'Sistema de Som' },
+  // Sistema de Iluminação
+  { title: '8 projetores Spot One', category: 'Sistema de Iluminação' },
+  { title: '8 Wash LED', category: 'Sistema de Iluminação' },
+  { title: '4 Beam', category: 'Sistema de Iluminação' },
+  { title: '6 Strobes', category: 'Sistema de Iluminação' },
+  { title: '1 máquina de fumo/haze', category: 'Sistema de Iluminação' },
+  { title: '4 blinders de 4 unidades', category: 'Sistema de Iluminação' },
+  { title: '4 blinders de 2 unidades', category: 'Sistema de Iluminação' },
+  { title: '2 varas de Par 56 para frente de palco', category: 'Sistema de Iluminação' },
+  { title: 'Mesa de controlo de iluminação', category: 'Sistema de Iluminação' },
+  { title: 'Followspot', category: 'Sistema de Iluminação' },
+  // Energia
+  { title: 'Gerador até 50 KVA devidamente certificado', category: 'Energia' },
+  { title: 'Ecrã LED P3.9 — 2x3 metros, suspenso', category: 'Energia' },
+  // Artigos Decorativos
+  { title: '2 pórticos luminosos de entrada', category: 'Artigos Decorativos' },
+  { title: '14 mastros', category: 'Artigos Decorativos' },
+  { title: 'Gambiarras', category: 'Artigos Decorativos' },
+  { title: 'Festões', category: 'Artigos Decorativos' },
+  { title: 'Grinaldas de Luzes', category: 'Artigos Decorativos' },
+  // Plano de Marketing e Assessoria
+  { title: 'Seleção de meios', category: 'Plano de Marketing e Assessoria' },
+  { title: 'Comunicação e Assessoria de Imprensa', category: 'Plano de Marketing e Assessoria' },
+]
+
+// ---------------------------------------------------------------------------
+// seedChecklistTasksAction
+// ---------------------------------------------------------------------------
+
+export async function seedChecklistTasksAction(
+  eventId: string
+): Promise<{ inserted: number }> {
+  const { supabase, member } = await requireOrgAuth()
+
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) throw new Error('Evento não encontrado')
+
+  // Fetch existing items to skip duplicates (title + category)
+  const { data: existing } = await supabase
+    .from('event_checklist_items')
+    .select('title, category')
+    .eq('event_id', eventId)
+    .eq('organization_id', member.organization_id)
+
+  const existingKeys = new Set(
+    (existing ?? []).map(i => `${i.title}__${i.category ?? ''}`)
+  )
+
+  // Get current max position per category
+  const { data: positions } = await supabase
+    .from('event_checklist_items')
+    .select('category, position')
+    .eq('event_id', eventId)
+    .eq('organization_id', member.organization_id)
+
+  const maxPositionByCategory = new Map<string, number>()
+  for (const row of positions ?? []) {
+    const cat = row.category ?? '__geral__'
+    maxPositionByCategory.set(cat, Math.max(maxPositionByCategory.get(cat) ?? 0, row.position))
+  }
+
+  const toInsert: {
+    event_id: string
+    organization_id: string
+    title: string
+    category: string
+    position: number
+    is_client_visible: boolean
+    status: 'pending'
+    notification_rules: { trigger: string; delay_minutes: number; audience: string; channels: string[] }[]
+  }[] = []
+
+  for (const item of SEED_ITEMS) {
+    const key = `${item.title}__${item.category}`
+    if (existingKeys.has(key)) continue
+
+    const cat = item.category
+    const currentMax = maxPositionByCategory.get(cat) ?? 0
+    const nextPos = currentMax + toInsert.filter(i => i.category === cat).length + 1
+    maxPositionByCategory.set(cat, currentMax) // keep original for offset calc
+
+    toInsert.push({
+      event_id: eventId,
+      organization_id: member.organization_id,
+      title: item.title,
+      category: item.category,
+      position: nextPos,
+      is_client_visible: true,
+      status: 'pending',
+      notification_rules: [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'portal'] }],
+    })
+  }
+
+  if (!toInsert.length) return { inserted: 0 }
+
+  const { error } = await supabase
+    .from('event_checklist_items')
+    .insert(toInsert)
+
+  if (error) throw new Error(error.message)
+
+  return { inserted: toInsert.length }
+}
+
+// ---------------------------------------------------------------------------
+// syncCategoriesToTemplateAction
+// ---------------------------------------------------------------------------
+
+export async function syncCategoriesToTemplateAction(
+  eventId: string
+): Promise<{ inserted: number }> {
+  const { supabase, member } = await requireOrgAuthFull()
+
+  // Get event + event_type_id
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, event_type_id')
+    .eq('id', eventId)
+    .eq('organization_id', member.organization_id)
+    .single()
+
+  if (!event) throw new Error('Evento não encontrado')
+
+  // Find or create active template for this event type
+  let { data: template } = await supabase
+    .from('checklist_templates')
+    .select('id')
+    .eq('organization_id', member.organization_id)
+    .eq('event_type_id', event.event_type_id)
+    .eq('is_active', true)
+    .order('version', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (!template) {
+    const { data: created, error: createErr } = await supabase
+      .from('checklist_templates')
+      .insert({
+        organization_id: member.organization_id,
+        event_type_id: event.event_type_id,
+        name: 'Template Base',
+        version: 1,
+        is_active: true,
+        created_by: member.id,
+      })
+      .select('id')
+      .single()
+
+    if (createErr || !created) throw new Error('Erro ao criar template')
+    template = created
+  }
+
+  // Fetch existing template items to skip duplicates
+  const { data: existingTemplateItems } = await supabase
+    .from('checklist_template_items')
+    .select('title, category')
+    .eq('template_id', template.id)
+
+  const existingKeys = new Set(
+    (existingTemplateItems ?? []).map(i => `${i.title}__${i.category ?? ''}`)
+  )
+
+  // Get max position per category in template
+  const { data: tplPositions } = await supabase
+    .from('checklist_template_items')
+    .select('category, position')
+    .eq('template_id', template.id)
+
+  const maxPosByCategory = new Map<string, number>()
+  for (const row of tplPositions ?? []) {
+    const cat = row.category ?? '__geral__'
+    maxPosByCategory.set(cat, Math.max(maxPosByCategory.get(cat) ?? 0, row.position))
+  }
+
+  const toInsert: {
+    template_id: string
+    title: string
+    category: string
+    position: number
+    is_client_visible: boolean
+    default_notification_rules: { trigger: string; delay_minutes: number; audience: string; channels: string[] }[]
+  }[] = []
+
+  for (const item of SEED_ITEMS) {
+    const key = `${item.title}__${item.category}`
+    if (existingKeys.has(key)) continue
+
+    const cat = item.category
+    const currentMax = maxPosByCategory.get(cat) ?? 0
+    const nextPos = currentMax + toInsert.filter(i => i.category === cat).length + 1
+
+    toInsert.push({
+      template_id: template.id,
+      title: item.title,
+      category: item.category,
+      position: nextPos,
+      is_client_visible: true,
+      default_notification_rules: [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'portal'] }],
+    })
+  }
+
+  if (!toInsert.length) return { inserted: 0 }
+
+  const { error } = await supabase
+    .from('checklist_template_items')
+    .insert(toInsert)
+
+  if (error) throw new Error(error.message)
+
+  return { inserted: toInsert.length }
+}
