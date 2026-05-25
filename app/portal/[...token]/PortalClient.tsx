@@ -407,7 +407,6 @@ export function PortalClient({
   const [animatingOut, setAnimatingOut] = useState<Set<string>>(new Set())
   const [justCompleted, setJustCompleted] = useState<Set<string>>(new Set())
   const [isConnected, setIsConnected] = useState(false)
-  const [activeTab, setActiveTab] = useState<'progress' | 'documents'>('progress')
 
   const displayedPercent = useCountUp(progress.percent, 2200, 1100)
 
@@ -618,24 +617,14 @@ export function PortalClient({
         </div>
       )}
 
-      {/* Tab content */}
+      {/* Content */}
       <section className="relative" style={{ background: 'linear-gradient(145deg, #1c1c1c 0%, #242424 50%, #181818 100%)' }}>
-        <TabBar
-          active={activeTab}
-          hasDocuments={eventFiles.length > 0}
-          onChange={setActiveTab}
-        />
         <section className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-16 md:py-24">
-          {activeTab === 'progress' && (
-            <ProgressTab
-              items={items}
-              animatingOut={animatingOut}
-              justCompleted={justCompleted}
-            />
-          )}
-          {activeTab === 'documents' && eventFiles.length > 0 && (
-            <DocumentsTab files={eventFiles} />
-          )}
+          <ProgressTab
+            items={items}
+            animatingOut={animatingOut}
+            justCompleted={justCompleted}
+          />
         </section>
       </section>
 
