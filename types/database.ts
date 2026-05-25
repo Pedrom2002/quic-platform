@@ -159,6 +159,7 @@ export type Database = {
           default_notification_rules: Json
           created_at: string
           updated_at: string
+          category: string | null
         }
         Insert: {
           id?: string
@@ -173,6 +174,7 @@ export type Database = {
           default_notification_rules?: Json
           created_at?: string
           updated_at?: string
+          category?: string | null
         }
         Update: {
           id?: string
@@ -186,6 +188,7 @@ export type Database = {
           estimated_duration_h?: number | null
           default_notification_rules?: Json
           updated_at?: string
+          category?: string | null
         }
         Relationships: []
       }
@@ -409,6 +412,7 @@ export type Database = {
           notification_rules: Json
           created_at: string
           updated_at: string
+          category: string | null
         }
         Insert: {
           id?: string
@@ -430,6 +434,7 @@ export type Database = {
           notification_rules?: Json
           created_at?: string
           updated_at?: string
+          category?: string | null
         }
         Update: {
           id?: string
@@ -450,6 +455,7 @@ export type Database = {
           completion_note?: string | null
           notification_rules?: Json
           updated_at?: string
+          category?: string | null
         }
         Relationships: []
       }
