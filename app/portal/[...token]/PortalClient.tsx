@@ -216,15 +216,15 @@ function ItemRow({
       {/* checkbox visual */}
       <div className="shrink-0 mt-0.5">
         {isCompleted ? (
-          <span className="w-4 h-4 rounded-full border border-emerald-500/60 flex items-center justify-center text-[7px] text-emerald-600">✓</span>
+          <span className="w-4 h-4 rounded-full border border-emerald-600 flex items-center justify-center text-[7px] text-emerald-700">✓</span>
         ) : (
-          <span className="w-4 h-4 rounded-full border border-black/20 flex items-center justify-center group-hover:border-black/40 transition-colors" />
+          <span className="w-4 h-4 flex items-center justify-center text-black/40 group-hover:text-black/60 transition-colors text-[10px]">·</span>
         )}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-3">
-          <p className={`flex-1 text-sm tracking-tight leading-snug ${isCompleted ? 'text-black/90 font-medium' : 'text-black/45'}`}>
+          <p className={`flex-1 text-sm tracking-tight leading-snug ${isCompleted ? 'text-black font-medium' : 'text-black/60'}`}>
             {item.client_label ?? item.title}
           </p>
           {hasContent && (
@@ -274,15 +274,15 @@ function CategorySection({
         className="w-full flex items-center gap-4 py-5 text-left group"
       >
         <div className="flex-1 min-w-0">
-          <span className="text-xs font-semibold tracking-widest uppercase text-black/50 group-hover:text-black/70 transition-colors">{category}</span>
+          <span className="text-xs font-semibold tracking-widest uppercase text-black/70 group-hover:text-black/90 transition-colors">{category}</span>
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
             allDone
-              ? 'bg-emerald-500/15 text-emerald-600'
+              ? 'bg-emerald-500/20 text-emerald-700'
               : completed > 0
-              ? 'bg-amber-400/15 text-amber-600'
-              : 'bg-black/5 text-black/30'
+              ? 'bg-amber-400/20 text-amber-700'
+              : 'bg-black/8 text-black/50'
           }`}>
             {completed}/{total}
           </span>
