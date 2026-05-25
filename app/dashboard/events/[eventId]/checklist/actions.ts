@@ -418,18 +418,13 @@ const SEED_ITEMS: { title: string; category: string }[] = [
   { title: 'Ligações elétricas para todas as estruturas, cablagem geral', category: 'Estruturas em Falta' },
   { title: '16 piquetes com disponibilidade para manutenção 24 horas', category: 'Estruturas em Falta' },
   { title: 'Photo Booth', category: 'Estruturas em Falta' },
-  { title: 'Tenda logística 2m x 2m', category: 'Estruturas em Falta' },
-  { title: 'Palco 10m x 10m', category: 'Estruturas em Falta' },
-  { title: 'Régies cobertas 3m x 3m', category: 'Estruturas em Falta' },
+  { title: 'Material logístico de apoio - Tenda com dimensões de 2m por 2m', category: 'Estruturas em Falta' },
+  { title: 'Palco com dimensões de 10m x 10m e régies cobertas com dimensões de 3m x 3m', category: 'Estruturas em Falta' },
   // Sistema de Som
-  { title: 'Line-array 8 topos por lado + subgrave 1 por lado', category: 'Sistema de Som' },
-  { title: 'Mesa de mistura de palco independente stage 1', category: 'Sistema de Som' },
-  { title: 'Mesa de mistura de palco independente stage 2', category: 'Sistema de Som' },
-  { title: 'Monitores, até 8 unidades por stage', category: 'Sistema de Som' },
+  { title: 'Sistema line-array com 8 topos por lado e subgrave (1 por lado)', category: 'Sistema de Som' },
+  { title: '2 mesas de mistura de palco independentes por stage, até 8 monitores', category: 'Sistema de Som' },
   { title: '2 side-fills por lado', category: 'Sistema de Som' },
-  { title: '8 canais in-ear', category: 'Sistema de Som' },
-  { title: 'Microfonia adequada', category: 'Sistema de Som' },
-  { title: 'Cablagem e acessórios de som', category: 'Sistema de Som' },
+  { title: '8 canais in-ear, microfonia adequada, bem como toda a cablagem e acessórios necessários ao funcionamento do sistema', category: 'Sistema de Som' },
   // Sistema de Iluminação
   { title: '8 projetores Spot One', category: 'Sistema de Iluminação' },
   { title: '8 Wash LED', category: 'Sistema de Iluminação' },
@@ -438,12 +433,10 @@ const SEED_ITEMS: { title: string; category: string }[] = [
   { title: '1 máquina de fumo/haze', category: 'Sistema de Iluminação' },
   { title: '4 blinders de 4 unidades', category: 'Sistema de Iluminação' },
   { title: '4 blinders de 2 unidades', category: 'Sistema de Iluminação' },
-  { title: '2 varas de Par 56 para frente de palco', category: 'Sistema de Iluminação' },
-  { title: 'Mesa de controlo de iluminação', category: 'Sistema de Iluminação' },
-  { title: 'Followspot', category: 'Sistema de Iluminação' },
+  { title: '2 varas de Par 56 para frente de palco, mesa de controlo de iluminação e followspot', category: 'Sistema de Iluminação' },
   // Energia
-  { title: 'Gerador até 50 KVA devidamente certificado', category: 'Energia' },
-  { title: 'Ecrã LED P3.9, 2x3 metros, suspenso', category: 'Energia' },
+  { title: '1 gerador até 50 KVA devidamente certificado', category: 'Energia' },
+  { title: '1 ecrã LED P3.9 com dimensões de 2x3 metros, suspenso', category: 'Energia' },
   // Artigos Decorativos
   { title: '2 pórticos luminosos de entrada', category: 'Artigos Decorativos' },
   { title: '14 mastros', category: 'Artigos Decorativos' },
@@ -453,6 +446,11 @@ const SEED_ITEMS: { title: string; category: string }[] = [
   // Plano de Marketing e Assessoria
   { title: 'Seleção de meios', category: 'Plano de Marketing e Assessoria' },
   { title: 'Comunicação e Assessoria de Imprensa', category: 'Plano de Marketing e Assessoria' },
+  // Segurança
+  { title: 'Segurança no recinto desde sexta-feira (22/05)', category: 'Segurança' },
+  // Mapeamento do Evento
+  { title: 'Elaboração do mapeamento do evento', category: 'Mapeamento do Evento' },
+  { title: 'Plano de emergência', category: 'Mapeamento do Evento' },
 ]
 
 // ---------------------------------------------------------------------------

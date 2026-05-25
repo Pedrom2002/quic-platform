@@ -85,12 +85,12 @@ BEGIN
   -- Checklist items (18 itens realistas)
   -- -------------------------------------------------------
   INSERT INTO event_checklist_items (
-    id, event_id, organization_id, title, client_label, description,
+    id, event_id, title, client_label, description,
     position, status, is_client_visible, assigned_to, due_at, completed_at, completion_note
   ) VALUES
 
   -- CONCLUÍDOS
-  (i01, v_event_id, v_org_id,
+  (i01, v_event_id,
    'Licença de ocupação do espaço público',
    'Autorização camarária aprovada',
    'Pedido e aprovação da licença de ocupação do Largo de Campolide junto à CML. Inclui planta do espaço, memorial descritivo e seguro de responsabilidade civil.',
@@ -98,7 +98,7 @@ BEGIN
    '2025-05-15 18:00:00+01', '2025-05-14 15:32:00+01',
    'Licença aprovada pela CML a 14 de maio. Processo nº 2025/LC/4872. Válida até 14 de junho.'),
 
-  (i02, v_event_id, v_org_id,
+  (i02, v_event_id,
    'Contratação e rider técnico dos artistas',
    'Artistas confirmados',
    'Formalização dos contratos com os três artistas do palco principal: Dino d''Santiago, Calema e DJ Marfox. Recolha e análise dos riders técnicos de cada artista.',
@@ -106,7 +106,7 @@ BEGIN
    '2025-05-20 18:00:00+01', '2025-05-18 11:15:00+01',
    'Todos os contratos assinados. Riders técnicos recebidos e enviados para a produção de som.'),
 
-  (i03, v_event_id, v_org_id,
+  (i03, v_event_id,
    'Planta de segurança e plano de evacuação',
    'Plano de segurança aprovado',
    'Elaboração do plano de segurança conforme RJSE. Definição de saídas de emergência, zonas de concentração e percursos de evacuação. Submetido à PSP e ANEPC.',
@@ -114,7 +114,7 @@ BEGIN
    '2025-05-25 18:00:00+01', '2025-05-22 09:45:00+01',
    'Plano validado pela PSP Lisboa a 22 de maio. 4 saídas de emergência definidas, capacidade máxima de 3.200 pessoas.'),
 
-  (i04, v_event_id, v_org_id,
+  (i04, v_event_id,
    'Estrutura do palco principal montada',
    'Palco principal montado',
    'Montagem da estrutura metálica do palco principal (12m x 8m x 6m de altura). Inclui cobertura, alas laterais, iluminação de estrutura e barricadas de segurança frontais.',
@@ -122,7 +122,7 @@ BEGIN
    '2025-06-11 20:00:00+01', '2025-06-11 18:30:00+01',
    'Palco montado pela Stageco Portugal. Inspeção de segurança realizada e aprovada. Certificado de segurança estrutural emitido.'),
 
-  (i05, v_event_id, v_org_id,
+  (i05, v_event_id,
    'Sistema de som — instalação e teste',
    'Sistema de som testado e aprovado',
    'Instalação do sistema d&b audiotechnik J-Series. PA principal (8+4 caixas por lado), sub-graves (12 unidades), sistema de fill e in-ears para os artistas. Teste de linha completo.',
@@ -130,7 +130,7 @@ BEGIN
    '2025-06-12 22:00:00+01', '2025-06-12 20:15:00+01',
    'Sistema instalado e testado. SPL máximo medido: 103 dB(A) a 50m. Dentro dos limites legais. FOH e monitor worlds operacionais.'),
 
-  (i06, v_event_id, v_org_id,
+  (i06, v_event_id,
    'Sistema de iluminação — rig e foco',
    'Iluminação do palco configurada',
    'Instalação do rig de iluminação: 24 moving heads Robe BMFL, 16 LED wash, 8 strobes Atomic, 2 follow spots. Programação base de show e foco de todos os fixtures.',
@@ -138,7 +138,7 @@ BEGIN
    '2025-06-12 23:00:00+01', '2025-06-12 22:45:00+01',
    'Rig completo instalado e focado. Patch no grandMA3. Show file base carregado e testado com a equipa de iluminação.'),
 
-  (i07, v_event_id, v_org_id,
+  (i07, v_event_id,
    'Ecrã LED — instalação e teste de sinal',
    'Ecrã LED instalado',
    'Instalação do ecrã LED de fundo de palco (12m x 4m, pixel pitch 3.9mm). Teste de sinal com o sistema de vídeo (Disguise GX2) e câmaras de IMAG.',
@@ -147,77 +147,77 @@ BEGIN
    'Ecrã instalado e com sinal estável. 2 câmaras de IMAG (PTZ + ENG) operacionais. Sistema de retransmissão para ecrãs laterais ativo.'),
 
   -- EM PROGRESSO / PENDENTES
-  (i08, v_event_id, v_org_id,
+  (i08, v_event_id,
    'Geração elétrica — ligação e carga',
    'Fornecimento de energia assegurado',
    'Instalação de 3 geradores (500 KVA + 250 KVA + 100 KVA de backup). Ligação ao quadro de distribuição principal, quadros satélite para palco, FOH e área de catering. Teste de carga progressiva.',
    80, 'pending', true, v_member_id,
    '2025-06-13 12:00:00+01', null, null),
 
-  (i09, v_event_id, v_org_id,
+  (i09, v_event_id,
    'Sinalética e controlo de acessos',
    'Sinalética e acessos em montagem',
    'Instalação de sinalética direcional, placas de emergência e sinalização de capacidade. Montagem das bilheteiras e pontos de controlo de acessos. Briefing com a equipa de segurança (60 elementos).',
    90, 'pending', true, v_member_id,
    '2025-06-13 14:00:00+01', null, null),
 
-  (i10, v_event_id, v_org_id,
+  (i10, v_event_id,
    'Estruturas de catering — tendas e equipamento',
    'Área gastronómica em montagem',
    'Montagem de 8 tendas de restauração (sardinhas, bifanas, pataniscas, bebidas). Instalação de fritadeiras industriais, grelhadores e bancadas refrigeradas. Ligação elétrica de cada ponto.',
    100, 'pending', true, v_member_id,
    '2025-06-13 14:00:00+01', null, null),
 
-  (i11, v_event_id, v_org_id,
+  (i11, v_event_id,
    'WCs portáteis — colocação e limpeza inicial',
    'Instalações sanitárias prontas',
    'Entrega e colocação de 20 WCs portáteis (16 standard + 4 acessíveis) e 2 módulos de lavatórios. Posicionamento conforme planta aprovada. Limpeza e abastecimento iniciais.',
    110, 'pending', true, v_member_id,
    '2025-06-13 16:00:00+01', null, null),
 
-  (i12, v_event_id, v_org_id,
+  (i12, v_event_id,
    'Comunicações — rádios e rede de produção',
    'Comunicações de produção ativas',
    'Distribuição de 35 rádios Motorola DP4800e por departamentos (produção, segurança, técnicos, catering). Teste de cobertura em todo o recinto. Ativação da rede WiFi de produção.',
    120, 'pending', false, v_member_id,
    '2025-06-13 17:00:00+01', null, null),
 
-  (i13, v_event_id, v_org_id,
+  (i13, v_event_id,
    'Ensaio de som — Dino d''Santiago',
    'Ensaio do 1º artista concluído',
    'Soundcheck completo com a banda de Dino d''Santiago (8 elementos). Afinação do sistema de PA com o FOH engineer do artista. Teste de in-ears e monitor mix.',
    130, 'pending', true, v_member_id,
    '2025-06-13 17:00:00+01', null, null),
 
-  (i14, v_event_id, v_org_id,
+  (i14, v_event_id,
    'Ensaio de som — Calema',
    'Ensaio do 2º artista concluído',
    'Soundcheck com o duo Calema (2 elementos + backing track). Confirmação de patch, in-ears e rider técnico. Teste de playback e sincronização com vídeo.',
    140, 'pending', true, v_member_id,
    '2025-06-13 18:30:00+01', null, null),
 
-  (i15, v_event_id, v_org_id,
+  (i15, v_event_id,
    'Ensaio de som — DJ Marfox',
    'Ensaio do 3º artista concluído',
    'Setup e teste completo do sistema de DJ (Pioneer CDJ-3000 + DJM-900NXS2). Verificação do canal de retorno para monitor e ligação ao sistema de luzes do DJ.',
    150, 'pending', true, v_member_id,
    '2025-06-13 19:30:00+01', null, null),
 
-  (i16, v_event_id, v_org_id,
+  (i16, v_event_id,
    'Credenciação da imprensa e fotógrafos',
    'Acreditação de media concluída',
    'Entrega de credenciais aos jornalistas e fotógrafos acreditados (23 elementos). Briefing sobre zonas permitidas, pit de fotografia e regras de cobertura.',
    160, 'pending', false, v_member_id,
    '2025-06-13 19:00:00+01', null, null),
 
-  (i17, v_event_id, v_org_id,
+  (i17, v_event_id,
    'Briefing geral de produção',
    'Equipa briefada e pronta',
    'Reunião de produção com todos os chefes de departamento. Confirmação de timings, protocolos de emergência, pontos de contacto e plano de contingência meteorológica.',
    170, 'pending', true, v_member_id,
    '2025-06-13 20:00:00+01', null, null),
 
-  (i18, v_event_id, v_org_id,
+  (i18, v_event_id,
    'Abertura de portas ao público',
    'Evento aberto ao público',
    'Abertura oficial das entradas ao público. Ativação do sistema de contagem de acessos, posicionamento final da segurança e início dos grupos de animação de rua.',
@@ -302,7 +302,7 @@ BEGIN
    'A empresa de segurança (Securitas) confirma 60 elementos: 40 no controlo de acessos, 12 no interior do recinto, 8 em reserva. Reunião de briefing às 19h no local.'),
 
   (i10, v_event_id, v_org_id, v_member_id,
-   'Confirmar com a Câmara a utilização de fritadeiras a gás — aguardar aprovação da DGEG. Alternativa elétrica em standby se necessário.'),
+   'Confirmar com a Câmara a utilização de fritadeiras a gás, aguardar aprovação da DGEG. Alternativa elétrica em standby se necessário.'),
 
   (i13, v_event_id, v_org_id, v_member_id,
    'FOH engineer do Dino (Miguel Santos) chega às 15h. Rider pede 2h de soundcheck. Confirmar que o camarim está disponível a partir das 14h.'),
