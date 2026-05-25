@@ -218,7 +218,7 @@ export default function TaskDetailPanel({ eventId, item, orgMembers, currentMemb
               placeholder={item.title}
               className="w-full text-sm text-slate-700 placeholder-slate-300 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-slate-300"
             />
-            <p className="mt-1 text-[10px] text-slate-400">Se vazio, o portal usa o titulo interno.</p>
+            <p className="mt-1 text-[10px] text-slate-400">Se vazio, o portal usa o título interno.</p>
           </div>
 
           <div className="border-t border-slate-100" />
