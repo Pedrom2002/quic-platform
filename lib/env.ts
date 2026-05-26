@@ -23,6 +23,7 @@ const schema = z.object({
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
   QSTASH_CURRENT_SIGNING_KEY: z.string().min(1).optional(),
   QSTASH_NEXT_SIGNING_KEY: z.string().min(1).optional(),
+  SMTP_ENCRYPTION_KEY: z.string().length(64, 'SMTP_ENCRYPTION_KEY must be 64 hex chars (32 bytes) — generate with: openssl rand -hex 32').optional(),
 })
 
 export type ServerEnv = z.infer<typeof schema>
