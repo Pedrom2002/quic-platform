@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { useParams } from 'next/navigation'
-import { Plus, Mail, Phone, Trash2, UserCircle, Globe, Upload } from 'lucide-react'
+import { Plus, Mail, Phone, Trash2, UserCircle, Globe, Upload, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -251,17 +251,19 @@ export default function EventClientsPage() {
                   <div className="flex gap-1.5 mt-2">
                     {[
                       { key: 'email', icon: <Mail className="w-3 h-3" />, label: 'Email', on: 'border-blue-200 bg-blue-50 text-blue-600', off: 'border-slate-200 bg-white text-slate-400' },
+                      { key: 'sms', icon: <MessageSquare className="w-3 h-3" />, label: 'SMS', on: 'border-green-200 bg-green-50 text-green-600', off: 'border-slate-200 bg-white text-slate-400', disabled: !c.phone },
                       { key: 'portal', icon: <Globe className="w-3 h-3" />, label: 'Portal', on: 'border-violet-200 bg-violet-50 text-violet-600', off: 'border-slate-200 bg-white text-slate-400' },
-                    ].map(({ key, icon, label, on, off }) => {
+                    ].map(({ key, icon, label, on, off, disabled }) => {
                       const channels: string[] = prefs.channels ?? ['email', 'portal']
                       const active = channels.includes(key)
                       return (
                         <button
                           key={key}
                           type="button"
-                          onClick={() => toggleChannel(ec.id, key, channels)}
-                          disabled={isPending}
-                          className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded border transition-colors ${active ? on : off}`}
+                          onClick={() => !disabled && toggleChannel(ec.id, key, channels)}
+                          disabled={isPending || !!disabled}
+                          title={disabled ? 'Cliente sem número de telefone' : undefined}
+                          className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded border transition-colors ${disabled ? 'opacity-30 cursor-not-allowed border-slate-200 bg-white text-slate-300' : active ? on : off}`}
                         >
                           {icon}{label}
                         </button>
