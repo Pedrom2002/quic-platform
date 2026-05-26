@@ -32,6 +32,7 @@ export async function pollBounces(creds: ImapCredentials, since: Date): Promise<
     const sinceStr = since.toISOString().split('T')[0]
 
     for await (const msg of client.fetch(`SINCE ${sinceStr}`, { envelope: true })) {
+      if (!msg.envelope) continue
       const from = msg.envelope.from?.[0]?.address?.toLowerCase() ?? ''
       const subject = msg.envelope.subject?.toLowerCase() ?? ''
 
