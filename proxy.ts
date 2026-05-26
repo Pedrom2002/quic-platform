@@ -85,7 +85,7 @@ function getClientIp(request: NextRequest): string {
 const isProd = process.env.NODE_ENV === 'production'
 
 // Routes that legitimately receive cross-origin POST (external callers — no CSRF guard).
-const CSRF_EXEMPT_PREFIXES = ['/api/webhooks/', '/api/workers/', '/api/cron/', '/api/portal/']
+const CSRF_EXEMPT_PREFIXES = ['/api/webhooks/', '/api/workers/', '/api/cron/', '/api/portal/', '/api/marketing/send', '/api/marketing/bounce-poll', '/api/marketing/track/', '/api/marketing/unsubscribe']
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
 
 function isCsrfExempt(pathname: string): boolean {
@@ -197,7 +197,14 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isPublic = pathname.startsWith('/portal/') || pathname.startsWith('/auth/') || pathname.startsWith('/api/portal/')
+  const isPublic =
+    pathname.startsWith('/portal/') ||
+    pathname.startsWith('/auth/') ||
+    pathname.startsWith('/api/portal/') ||
+    pathname.startsWith('/api/marketing/track/') ||
+    pathname.startsWith('/api/marketing/unsubscribe') ||
+    pathname.startsWith('/api/marketing/send') ||
+    pathname.startsWith('/api/marketing/bounce-poll')
 
   if (!user && !isPublic) {
     // API routes must return 401, not redirect — redirecting breaks REST clients
