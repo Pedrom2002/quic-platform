@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { renderTemplate } from './template-renderer'
 import { sendEmail, buildEmailHtml } from './channels/email'
+import { sendSms } from './channels/sms'
 import { getEnv } from '@/lib/env'
 import { createLogger } from '@/lib/logger'
 import type { NotificationRule, NotificationChannel, NotificationJobPayload } from '@/types/app'
@@ -243,28 +244,36 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
         }
       } else {
         try {
+          let providerId: string | null = null
           if (draft.channel === 'email' && draft._client.email) {
             const html = buildEmailHtml(draft.rendered_body, ctx.event.name, progressPercent)
-            const providerId = await sendEmail({
+            providerId = await sendEmail({
               to: draft._client.email,
               toName: draft._client.full_name,
               subject: draft.rendered_subject ?? 'Atualização do seu evento — Quic',
               html,
             })
-            await Promise.all([
-              supabase
-                .from('notification_jobs')
-                .update({ status: 'delivered', sent_at: new Date().toISOString() })
-                .eq('id', job.id),
-              supabase.from('notification_log').insert({
-                notification_job_id: job.id,
-                event_type: 'sent' as const,
-                channel: draft.channel,
-                provider: 'brevo',
-                provider_message_id: providerId,
-              }),
-            ])
+          } else if (draft.channel === 'sms' && draft._client.phone) {
+            providerId = await sendSms({
+              to: draft._client.phone,
+              message: draft.rendered_body,
+            })
+          } else {
+            return
           }
+          await Promise.all([
+            supabase
+              .from('notification_jobs')
+              .update({ status: 'delivered', sent_at: new Date().toISOString() })
+              .eq('id', job.id),
+            supabase.from('notification_log').insert({
+              notification_job_id: job.id,
+              event_type: 'sent' as const,
+              channel: draft.channel,
+              provider: 'brevo',
+              provider_message_id: providerId,
+            }),
+          ])
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err)
           log.error('direct dispatch failed', { jobId: job.id, error: msg })
@@ -470,28 +479,36 @@ export async function dispatchStartNotificationForItem(ctx: StartDispatchContext
         }
       } else {
         try {
+          let providerId: string | null = null
           if (draft.channel === 'email' && draft._client.email) {
             const html = buildEmailHtml(draft.rendered_body, ctx.event.name, 0)
-            const providerId = await sendEmail({
+            providerId = await sendEmail({
               to: draft._client.email,
               toName: draft._client.full_name,
               subject: draft.rendered_subject ?? 'A preparação do seu evento começou — Quic',
               html,
             })
-            await Promise.all([
-              supabase
-                .from('notification_jobs')
-                .update({ status: 'delivered', sent_at: new Date().toISOString() })
-                .eq('id', job.id),
-              supabase.from('notification_log').insert({
-                notification_job_id: job.id,
-                event_type: 'sent' as const,
-                channel: draft.channel,
-                provider: 'brevo',
-                provider_message_id: providerId,
-              }),
-            ])
+          } else if (draft.channel === 'sms' && draft._client.phone) {
+            providerId = await sendSms({
+              to: draft._client.phone,
+              message: draft.rendered_body,
+            })
+          } else {
+            return
           }
+          await Promise.all([
+            supabase
+              .from('notification_jobs')
+              .update({ status: 'delivered', sent_at: new Date().toISOString() })
+              .eq('id', job.id),
+            supabase.from('notification_log').insert({
+              notification_job_id: job.id,
+              event_type: 'sent' as const,
+              channel: draft.channel,
+              provider: 'brevo',
+              provider_message_id: providerId,
+            }),
+          ])
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err)
           log.error('direct start dispatch failed', { jobId: job.id, error: msg })

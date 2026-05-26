@@ -16,7 +16,7 @@ SELECT
   'pt',
   'checklist_complete',
   NULL,
-  'QUIC: Etapa "{{item_client_label}}" do seu evento concluida ({{progress_percent}}%). Acompanhe em: {{portal_url}}'
+  'QUIC: Etapa "{{item_client_label}}" concluida ({{progress_percent}}%). Acompanhe: {{portal_url}}'
 WHERE NOT EXISTS (
   SELECT 1 FROM message_templates
   WHERE organization_id = '00000000-0000-0000-0000-000000000001'
@@ -34,7 +34,7 @@ SELECT
   'pt',
   'checklist_start',
   NULL,
-  'QUIC: Iniciamos a etapa "{{item_client_label}}" do seu evento. Acompanhe em: {{portal_url}}'
+  'QUIC: Iniciamos a etapa "{{item_client_label}}" do seu evento. Acompanhe: {{portal_url}}'
 WHERE NOT EXISTS (
   SELECT 1 FROM message_templates
   WHERE organization_id = '00000000-0000-0000-0000-000000000001'
