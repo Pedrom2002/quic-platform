@@ -15,7 +15,7 @@ export async function sendSms({ to, message }: SendSmsParams): Promise<string> {
 
   const body = JSON.stringify({
     sender,
-    recipient: to,
+    recipient: to.replace(/\s/g, ''),
     content: message,
     type: 'transactional',
   })
