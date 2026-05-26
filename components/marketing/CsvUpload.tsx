@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Papa from 'papaparse'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 
 interface Props {
   listId: string
@@ -31,10 +31,20 @@ export function CsvUpload({ listId, onImported }: Props) {
       })
     } else if (ext === 'xlsx' || ext === 'xls') {
       const buffer = await file.arrayBuffer()
-      const wb = XLSX.read(buffer)
-      const ws = wb.Sheets[wb.SheetNames[0]]
-      const data = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: '' })
-      setHeaders(Object.keys(data[0] ?? {}))
+      const wb = new ExcelJS.Workbook()
+      await wb.xlsx.load(buffer)
+      const ws = wb.worksheets[0]
+      const headerRow = ws.getRow(1).values as (string | undefined)[]
+      const hdrs = headerRow.slice(1).map(v => String(v ?? ''))
+      const data: Record<string, string>[] = []
+      ws.eachRow((row, i) => {
+        if (i === 1) return
+        const vals = row.values as (ExcelJS.CellValue | undefined)[]
+        const obj: Record<string, string> = {}
+        hdrs.forEach((h, idx) => { obj[h] = String(vals[idx + 1] ?? '') })
+        data.push(obj)
+      })
+      setHeaders(hdrs)
       setRows(data)
     }
   }
