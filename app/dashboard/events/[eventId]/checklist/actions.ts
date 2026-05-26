@@ -5,6 +5,7 @@ import { requireOrgAuth, requireOrgAuthFull, getOrgAuth, getOrgAuthFull, assertE
 import { put } from '@vercel/blob'
 import { MAX_FILE_SIZE } from '@/schemas/file.schema'
 import { dispatchNotificationsForItem, dispatchStartNotificationForItem } from '@/lib/notifications/dispatcher'
+import { after } from 'next/server'
 import type { ChecklistItemStatus, ChecklistItemNote, ChecklistItemFileLink, EventFileWithUploader } from '@/types/app'
 
 export async function bulkUpdateChecklistStatusAction(
@@ -49,9 +50,11 @@ export async function bulkUpdateChecklistStatusAction(
 
     if (event && completedItems?.length) {
       const completedByName = member.full_name ?? 'Equipa QUIC'
-      await Promise.allSettled(
-        completedItems.map(item =>
-          dispatchNotificationsForItem({ event, item, completedByName })
+      after(
+        Promise.allSettled(
+          completedItems.map(item =>
+            dispatchNotificationsForItem({ event, item, completedByName })
+          )
         )
       )
     }
@@ -69,9 +72,11 @@ export async function bulkUpdateChecklistStatusAction(
     ])
 
     if (event && startedItems?.length) {
-      await Promise.allSettled(
-        startedItems.map(item =>
-          dispatchStartNotificationForItem({ event, item })
+      after(
+        Promise.allSettled(
+          startedItems.map(item =>
+            dispatchStartNotificationForItem({ event, item })
+          )
         )
       )
     }
@@ -165,7 +170,7 @@ export async function updateChecklistItemAction(
     const adminClient = createAdminClient()
     const { data: event } = await adminClient.from('events').select('*').eq('id', eventId).single()
     if (event) {
-      dispatchNotificationsForItem({ event, item: data, completedByName: member.full_name ?? 'Equipa QUIC' }).catch(() => {})
+      after(dispatchNotificationsForItem({ event, item: data, completedByName: member.full_name ?? 'Equipa QUIC' }))
     }
   }
 
@@ -173,7 +178,7 @@ export async function updateChecklistItemAction(
     const adminClient = createAdminClient()
     const { data: event } = await adminClient.from('events').select('*').eq('id', eventId).single()
     if (event) {
-      dispatchStartNotificationForItem({ event, item: data }).catch(() => {})
+      after(dispatchStartNotificationForItem({ event, item: data }))
     }
   }
 
