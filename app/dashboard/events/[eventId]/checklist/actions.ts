@@ -507,7 +507,7 @@ export async function seedChecklistTasksAction(
       position: nextPos,
       is_client_visible: true,
       status: 'pending',
-      notification_rules: [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'portal'] }],
+      notification_rules: [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'sms', 'portal'] }],
     })
   }
 
@@ -611,7 +611,7 @@ export async function syncCategoriesToTemplateAction(
       category: item.category,
       position: nextPos,
       is_client_visible: true,
-      default_notification_rules: [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'portal'] }],
+      default_notification_rules: [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'sms', 'portal'] }],
     })
   }
 
