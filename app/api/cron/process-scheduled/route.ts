@@ -15,11 +15,7 @@ export async function GET(request: Request) {
 
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({
-      error: 'Não autorizado',
-      debug_secret_prefix: cronSecret.slice(0, 6),
-      debug_header_prefix: authHeader?.slice(0, 13) ?? null,
-    }, { status: 401 })
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
   const supabase = createAdminClient()
