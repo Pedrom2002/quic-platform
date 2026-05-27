@@ -45,19 +45,6 @@ export async function GET(request: Request) {
     console.warn(`[cron] fila tem mais de ${BATCH_SIZE} jobs pendentes`)
   }
 
-  const jobIds = jobs.map(j => j.id)
-
-  const { error: claimErr } = await supabase
-    .from('notification_jobs')
-    .update({ status: 'processing' as unknown as 'queued' })
-    .in('id', jobIds)
-    .eq('status', 'queued')
-
-  if (claimErr) {
-    console.error('[cron] erro ao reclamar jobs:', claimErr.message)
-    return NextResponse.json({ error: claimErr.message }, { status: 500 })
-  }
-
   const clientIds = [...new Set(jobs.map(j => j.client_id))]
   const { data: clientsRaw } = await supabase
     .from('clients')
