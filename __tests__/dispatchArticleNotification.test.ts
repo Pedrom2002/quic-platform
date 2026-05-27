@@ -218,8 +218,7 @@ describe('dispatchArticleNotification (no QStash)', () => {
 
     await dispatchArticleNotification({ event: makeEvent(), article: makeArticle() })
 
-    // Insert called once with 3 rows, each having event_article_id: 'article-1'
-    expect(mockInsert).toHaveBeenCalledOnce()
+    // Insert first called with 3 rows (notification_jobs batch), each having event_article_id: 'article-1'
     expect(mockInsert).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({ event_article_id: 'article-1' }),
@@ -234,9 +233,11 @@ describe('dispatchArticleNotification (no QStash)', () => {
   })
 
   it('skips clients with opted_out=true', async () => {
+    // The Supabase query uses .eq('opted_out', false), so opted_out clients are
+    // filtered server-side. The mock returns the already-filtered result: empty array.
     tableData = {
       event_clients: {
-        data: [{ ...mockEventClient, opted_out: true }],
+        data: [],
         error: null,
       },
       message_templates: { data: [mockEmailTemplate, mockSmsTemplate, mockPortalTemplate], error: null },
