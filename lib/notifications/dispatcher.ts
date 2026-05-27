@@ -1,7 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { renderTemplate } from './template-renderer'
-import { sendEmail, buildEmailHtml } from './channels/email'
-import { sendSms } from './channels/sms'
 import { getEnv } from '@/lib/env'
 import { createLogger } from '@/lib/logger'
 import type { NotificationRule, NotificationChannel, NotificationJobPayload } from '@/types/app'
@@ -11,6 +9,105 @@ import { pt } from 'date-fns/locale'
 import { calcProgress } from '@/lib/event-status'
 
 const log = createLogger('notifications/dispatcher')
+
+// Shared helper: insert jobs into DB and publish to QStash (or leave queued for cron).
+// Returns number of jobs inserted. Does NOT call Brevo directly — that happens in
+// the worker (QStash path) or the cron (no-QStash fallback).
+async function insertAndEnqueue(
+  supabase: ReturnType<typeof createAdminClient>,
+  jobDrafts: Array<{
+    event_id: string
+    checklist_item_id: string
+    client_id: string
+    channel: 'email' | 'whatsapp' | 'sms' | 'portal'
+    message_template_id: string
+    rendered_subject: string | null
+    rendered_body: string
+    status: 'queued'
+    scheduled_at: string
+    _client: Client
+    _delay_minutes?: number
+  }>,
+  eventId: string,
+  appUrl: string,
+): Promise<number> {
+  if (jobDrafts.length === 0) return 0
+
+  const { data: insertedJobs, error: insertError } = await supabase
+    .from('notification_jobs')
+    .insert(jobDrafts.map(({ _client: _c, _delay_minutes: _d, ...row }) => row))
+    .select()
+
+  if (insertError || !insertedJobs?.length) {
+    log.error('falha ao inserir jobs', { error: insertError?.message })
+    return 0
+  }
+
+  const { QSTASH_TOKEN: qstashToken } = getEnv()
+  if (!qstashToken) return insertedJobs.length
+
+  let qstash: import('@upstash/qstash').Client
+  try {
+    const { Client: QStashClient } = await import('@upstash/qstash')
+    qstash = new QStashClient({ token: qstashToken })
+  } catch {
+    return insertedJobs.length
+  }
+
+  const workerUrl = `${appUrl}/api/workers/send-notification`
+  const draftByKey = new Map<string, (typeof jobDrafts)[number]>()
+  for (const draft of jobDrafts) {
+    draftByKey.set(`${draft.client_id}:${draft.channel}:${draft.checklist_item_id}`, draft)
+  }
+
+  await Promise.allSettled(
+    insertedJobs.map(async (jobRow) => {
+      const job = jobRow as NotificationJob
+      const key = `${job.client_id}:${job.channel}:${job.checklist_item_id ?? ''}`
+      const draft = draftByKey.get(key)
+      if (!draft) return
+
+      try {
+        const payload: NotificationJobPayload = {
+          job_id: job.id,
+          event_id: eventId,
+          client_id: draft._client.id,
+          channel: draft.channel,
+          rendered_subject: draft.rendered_subject,
+          rendered_body: draft.rendered_body,
+          client_email: draft._client.email,
+          client_phone: draft._client.phone,
+          client_whatsapp: draft._client.whatsapp,
+        }
+        const delay = draft._delay_minutes ?? 0
+        const res = await qstash.publishJSON({
+          url: workerUrl,
+          body: payload,
+          ...(delay > 0 && { delay: delay * 60 }),
+          retries: 3,
+        })
+        await Promise.all([
+          supabase
+            .from('notification_jobs')
+            .update({ qstash_message_id: res.messageId })
+            .eq('id', job.id),
+          supabase.from('notification_log').insert({
+            notification_job_id: job.id,
+            event_type: 'queued' as const,
+            channel: draft.channel,
+            provider: 'qstash',
+            provider_message_id: res.messageId,
+          }),
+        ])
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        log.error('qstash enqueue failed', { jobId: job.id, error: msg })
+      }
+    })
+  )
+
+  return insertedJobs.length
+}
 
 interface DispatchContext {
   event: Event
@@ -45,7 +142,6 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
   const portalUrl = `${portalBase}/portal/${ctx.event.portal_token}`
   const eventDate = format(new Date(ctx.event.start_datetime), "d 'de' MMMM 'de' yyyy", { locale: pt })
 
-  // Collect all (channel, language) pairs needed to batch template lookups into one query
   const templateKeys = new Set<string>()
   for (const rule of rules) {
     const targets = filterClientsByAudience(eventClients as unknown as (EventClient & { client: Client })[], rule.audience)
@@ -65,10 +161,7 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
     const channels = [...new Set(pairs.map(([ch]) => ch))]
     const languages = [...new Set(pairs.map(([, lang]) => lang))]
 
-    // Lookup is scoped to template_key='checklist_complete' because this
-    // dispatcher only runs on checklist item completion. Without this filter,
-    // any other email template at (org, email, pt) (e.g. welcome) could be
-    // picked up and sent instead — that was the bug being fixed here.
+    // Scoped to checklist_complete to avoid picking up other templates at same (org, channel, lang)
     const { data: templates } = await supabase
       .from('message_templates')
       .select('*')
@@ -83,34 +176,9 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
     }
   }
 
-  const { QSTASH_TOKEN: qstashToken, NEXT_PUBLIC_APP_URL: appUrl } = getEnv()
-  const useQStash = !!qstashToken
+  const { NEXT_PUBLIC_APP_URL: appUrl } = getEnv()
 
-  // Instantiate QStash client once outside the loop
-  let qstash: import('@upstash/qstash').Client | null = null
-  if (useQStash) {
-    const { Client: QStashClient } = await import('@upstash/qstash')
-    qstash = new QStashClient({ token: qstashToken! })
-  }
-
-  const workerUrl = `${appUrl}/api/workers/send-notification`
-
-  // Build all jobs to insert in one batch
-  type JobDraft = {
-    event_id: string
-    checklist_item_id: string
-    client_id: string
-    channel: 'email' | 'whatsapp' | 'sms' | 'portal'
-    message_template_id: string
-    rendered_subject: string | null
-    rendered_body: string
-    status: 'queued'
-    scheduled_at: string
-    // carry-along for dispatch step (not inserted)
-    _client: Client
-    _rule: NotificationRule
-  }
-
+  type JobDraft = Parameters<typeof insertAndEnqueue>[1][number]
   const jobDrafts: JobDraft[] = []
 
   for (const rule of rules) {
@@ -137,154 +205,26 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
           progress_percent: String(progressPercent),
         }
 
-        const renderedSubject = msgTemplate.subject
-          ? renderTemplate(msgTemplate.subject, templateVars)
-          : null
-        const renderedBody = renderTemplate(msgTemplate.body_template, templateVars)
-
         jobDrafts.push({
           event_id: ctx.event.id,
           checklist_item_id: ctx.item.id,
           client_id: client.id,
           channel: channel as 'email' | 'whatsapp' | 'sms' | 'portal',
           message_template_id: msgTemplate.id,
-          rendered_subject: renderedSubject,
-          rendered_body: renderedBody,
+          rendered_subject: msgTemplate.subject ? renderTemplate(msgTemplate.subject, templateVars) : null,
+          rendered_body: renderTemplate(msgTemplate.body_template, templateVars),
           status: 'queued' as const,
           scheduled_at: rule.delay_minutes > 0
             ? new Date(Date.now() + rule.delay_minutes * 60 * 1000).toISOString()
             : new Date().toISOString(),
           _client: client as unknown as Client,
-          _rule: rule,
+          _delay_minutes: rule.delay_minutes,
         })
       }
     }
   }
 
-  if (jobDrafts.length === 0) return
-
-  // Insert all jobs in one batch
-  const { data: insertedJobs, error: insertError } = await supabase
-    .from('notification_jobs')
-    .insert(jobDrafts.map(({ _client: _c, _rule: _r, ...row }) => row))
-    .select()
-
-  if (insertError || !insertedJobs?.length) {
-    log.error('falha ao inserir jobs', { error: insertError?.message })
-    return
-  }
-
-  // Build a lookup map from the natural composite key to the draft.
-  // Supabase does not guarantee insert order matches input order, so
-  // indexing by position is unsafe — use the unique (client_id, channel,
-  // checklist_item_id) tuple instead.
-  type DraftKey = string
-  const draftByKey = new Map<DraftKey, (typeof jobDrafts)[number]>()
-  for (const draft of jobDrafts) {
-    draftByKey.set(`${draft.client_id}:${draft.channel}:${draft.checklist_item_id}`, draft)
-  }
-
-  // Dispatch all jobs in parallel
-  await Promise.allSettled(
-    insertedJobs.map(async (jobRow) => {
-      const job = jobRow as NotificationJob
-      // checklist_item_id is always set for jobs created by this dispatcher
-      const key = `${job.client_id}:${job.channel}:${job.checklist_item_id ?? ''}`
-      const draft = draftByKey.get(key)
-      if (!draft) {
-        log.error('draft não encontrado para job', { jobId: job.id, key })
-        await supabase
-          .from('notification_jobs')
-          .update({ status: 'failed', last_error: 'draft lookup failed after insert' })
-          .eq('id', job.id)
-        return
-      }
-
-      if (qstash) {
-        try {
-          const payload: NotificationJobPayload = {
-            job_id: job.id,
-            event_id: ctx.event.id,
-            client_id: draft._client.id,
-            channel: draft.channel,
-            rendered_subject: draft.rendered_subject,
-            rendered_body: draft.rendered_body,
-            client_email: draft._client.email,
-            client_phone: draft._client.phone,
-            client_whatsapp: draft._client.whatsapp,
-          }
-
-          const qstashResponse = await qstash!.publishJSON({
-            url: workerUrl,
-            body: payload,
-            ...(draft._rule.delay_minutes > 0 && { delay: draft._rule.delay_minutes * 60 }),
-            retries: 3,
-          })
-
-          await Promise.all([
-            supabase
-              .from('notification_jobs')
-              .update({ qstash_message_id: qstashResponse.messageId })
-              .eq('id', job.id),
-            supabase.from('notification_log').insert({
-              notification_job_id: job.id,
-              event_type: 'queued' as const,
-              channel: draft.channel,
-              provider: 'qstash',
-              provider_message_id: qstashResponse.messageId,
-            }),
-          ])
-        } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : String(err)
-          log.error('qstash dispatch failed', { jobId: job.id, error: msg })
-          await supabase
-            .from('notification_jobs')
-            .update({ status: 'failed', last_error: msg })
-            .eq('id', job.id)
-        }
-      } else {
-        try {
-          let providerId: string | null = null
-          if (draft.channel === 'email' && draft._client.email) {
-            const html = buildEmailHtml(draft.rendered_body, ctx.event.name, progressPercent)
-            providerId = await sendEmail({
-              to: draft._client.email,
-              toName: draft._client.full_name,
-              subject: draft.rendered_subject ?? 'Atualização do seu evento — Quic',
-              html,
-            })
-          } else if (draft.channel === 'sms' && draft._client.phone) {
-            providerId = await sendSms({
-              to: draft._client.phone,
-              message: draft.rendered_body,
-            })
-          } else {
-            return
-          }
-          await Promise.all([
-            supabase
-              .from('notification_jobs')
-              .update({ status: 'delivered', sent_at: new Date().toISOString() })
-              .eq('id', job.id),
-            supabase.from('notification_log').insert({
-              notification_job_id: job.id,
-              event_type: 'sent' as const,
-              channel: draft.channel,
-              provider: 'brevo',
-              provider_message_id: providerId,
-            }),
-          ])
-        } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : String(err)
-          log.error('direct dispatch failed', { jobId: job.id, error: msg })
-          await supabase
-            .from('notification_jobs')
-            .update({ status: 'failed', last_error: msg })
-            .eq('id', job.id)
-        }
-      }
-    })
-  )
+  await insertAndEnqueue(supabase, jobDrafts, ctx.event.id, appUrl)
 }
 
 interface StartDispatchContext {
@@ -338,17 +278,6 @@ export async function dispatchStartNotificationForItem(ctx: StartDispatchContext
       templateCache.set(`${t.channel}:${t.language}`, t as MessageTemplate)
     }
   }
-
-  const { QSTASH_TOKEN: qstashToken, NEXT_PUBLIC_APP_URL: appUrl } = getEnv()
-  const useQStash = !!qstashToken
-
-  let qstash: import('@upstash/qstash').Client | null = null
-  if (useQStash) {
-    const { Client: QStashClient } = await import('@upstash/qstash')
-    qstash = new QStashClient({ token: qstashToken! })
-  }
-
-  const workerUrl = `${appUrl}/api/workers/send-notification`
 
   type StartJobDraft = {
     event_id: string
@@ -404,122 +333,8 @@ export async function dispatchStartNotificationForItem(ctx: StartDispatchContext
     }
   }
 
-  if (jobDrafts.length === 0) return
-
-  const { data: insertedJobs, error: insertError } = await supabase
-    .from('notification_jobs')
-    .insert(jobDrafts.map(({ _client: _c, ...row }) => row))
-    .select()
-
-  if (insertError || !insertedJobs?.length) {
-    log.error('falha ao inserir start jobs', { error: insertError?.message })
-    return
-  }
-
-  type StartDraftKey = string
-  const draftByKey = new Map<StartDraftKey, (typeof jobDrafts)[number]>()
-  for (const draft of jobDrafts) {
-    draftByKey.set(`${draft.client_id}:${draft.channel}:${draft.checklist_item_id}`, draft)
-  }
-
-  await Promise.allSettled(
-    insertedJobs.map(async (jobRow) => {
-      const job = jobRow as NotificationJob
-      const key = `${job.client_id}:${job.channel}:${job.checklist_item_id ?? ''}`
-      const draft = draftByKey.get(key)
-      if (!draft) {
-        log.error('start draft não encontrado para job', { jobId: job.id, key })
-        await supabase
-          .from('notification_jobs')
-          .update({ status: 'failed', last_error: 'draft lookup failed after insert' })
-          .eq('id', job.id)
-        return
-      }
-
-      if (qstash) {
-        try {
-          const payload: NotificationJobPayload = {
-            job_id: job.id,
-            event_id: ctx.event.id,
-            client_id: draft._client.id,
-            channel: draft.channel,
-            rendered_subject: draft.rendered_subject,
-            rendered_body: draft.rendered_body,
-            client_email: draft._client.email,
-            client_phone: draft._client.phone,
-            client_whatsapp: draft._client.whatsapp,
-          }
-
-          const qstashResponse = await qstash!.publishJSON({
-            url: workerUrl,
-            body: payload,
-            retries: 3,
-          })
-
-          await Promise.all([
-            supabase
-              .from('notification_jobs')
-              .update({ qstash_message_id: qstashResponse.messageId })
-              .eq('id', job.id),
-            supabase.from('notification_log').insert({
-              notification_job_id: job.id,
-              event_type: 'queued' as const,
-              channel: draft.channel,
-              provider: 'qstash',
-              provider_message_id: qstashResponse.messageId,
-            }),
-          ])
-        } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : String(err)
-          log.error('qstash start dispatch failed', { jobId: job.id, error: msg })
-          await supabase
-            .from('notification_jobs')
-            .update({ status: 'failed', last_error: msg })
-            .eq('id', job.id)
-        }
-      } else {
-        try {
-          let providerId: string | null = null
-          if (draft.channel === 'email' && draft._client.email) {
-            const html = buildEmailHtml(draft.rendered_body, ctx.event.name, 0)
-            providerId = await sendEmail({
-              to: draft._client.email,
-              toName: draft._client.full_name,
-              subject: draft.rendered_subject ?? 'A preparação do seu evento começou — Quic',
-              html,
-            })
-          } else if (draft.channel === 'sms' && draft._client.phone) {
-            providerId = await sendSms({
-              to: draft._client.phone,
-              message: draft.rendered_body,
-            })
-          } else {
-            return
-          }
-          await Promise.all([
-            supabase
-              .from('notification_jobs')
-              .update({ status: 'delivered', sent_at: new Date().toISOString() })
-              .eq('id', job.id),
-            supabase.from('notification_log').insert({
-              notification_job_id: job.id,
-              event_type: 'sent' as const,
-              channel: draft.channel,
-              provider: 'brevo',
-              provider_message_id: providerId,
-            }),
-          ])
-        } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : String(err)
-          log.error('direct start dispatch failed', { jobId: job.id, error: msg })
-          await supabase
-            .from('notification_jobs')
-            .update({ status: 'failed', last_error: msg })
-            .eq('id', job.id)
-        }
-      }
-    })
-  )
+  const { NEXT_PUBLIC_APP_URL: appUrl } = getEnv()
+  await insertAndEnqueue(supabase, jobDrafts, ctx.event.id, appUrl)
 }
 
 // "specific_clients" targets primary contacts only — the audience rule means
