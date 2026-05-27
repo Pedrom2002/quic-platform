@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Users, Bell, ExternalLink, MapPin, Pencil, UserCog, Paperclip, ListTree } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Users, Bell, ExternalLink, MapPin, Pencil, UserCog, Paperclip, ListTree, Newspaper } from 'lucide-react'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { EVENT_STATUS_LABEL, EVENT_STATUS_COLOR, calcProgress } from '@/lib/event-status'
@@ -33,6 +33,7 @@ export default async function EventDetailPage({
     { count: teamCount },
     { count: fileCount },
     { count: taskCount },
+    { count: articleCount },
     { data: checklistActivity },
     { data: notifActivity },
     { data: clientActivity },
@@ -44,6 +45,7 @@ export default async function EventDetailPage({
     supabase.from('event_team_assignments').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
     supabase.from('event_files').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
     supabase.from('event_tasks').select('id', { count: 'exact', head: true }).eq('event_id', eventId).is('parent_id', null),
+    supabase.from('event_articles').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
     supabase.from('event_checklist_items').select('id, title, client_label, status, updated_at').eq('event_id', eventId).not('status', 'eq', 'pending').order('updated_at', { ascending: false }).limit(30),
     supabase.from('notification_jobs').select('id, channel, status, sent_at, created_at, clients(full_name)').eq('event_id', eventId).order('created_at', { ascending: false }).limit(30),
     supabase.from('event_clients').select('id, role, created_at, clients(full_name)').eq('event_id', eventId).order('created_at', { ascending: false }).limit(30),
@@ -176,7 +178,7 @@ export default async function EventDetailPage({
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-6 gap-4">
+      <div className="grid grid-cols-7 gap-4">
         <Link
           href={`/dashboard/events/${eventId}/checklist`}
           className="flex items-center gap-3 p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 hover:shadow transition-all"
@@ -252,6 +254,19 @@ export default async function EventDetailPage({
           <div>
             <p className="text-slate-800 font-medium">Tarefas</p>
             <p className="text-slate-400 text-xs">{taskCount ?? 0} tarefas</p>
+          </div>
+        </Link>
+
+        <Link
+          href={`/dashboard/events/${eventId}/cliping` as never}
+          className="flex items-center gap-3 p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 hover:shadow transition-all"
+        >
+          <div className="p-2 bg-rose-50 rounded-lg">
+            <Newspaper className="w-5 h-5 text-rose-600" />
+          </div>
+          <div>
+            <p className="text-slate-800 font-medium">Cliping</p>
+            <p className="text-slate-400 text-xs">{articleCount ?? 0} artigos</p>
           </div>
         </Link>
       </div>
