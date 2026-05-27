@@ -38,7 +38,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Image src="/logo-branco.png" alt="Quic" width={130} height={52} className="mx-auto" />
+          <Image src="/logo-branco.png" alt="QUIC" width={130} height={52} className="mx-auto" />
           <p className="text-zinc-400 text-sm mt-1">Event Management Platform</p>
         </div>
 
@@ -46,7 +46,7 @@ export default function LoginPage() {
           <CardHeader>
             <CardTitle className="text-white">Entrar</CardTitle>
             <CardDescription className="text-zinc-400">
-              Acesso exclusivo à equipa Quic
+              Acesso exclusivo à equipa QUIC
             </CardDescription>
           </CardHeader>
           <CardContent>
