@@ -33,7 +33,7 @@ export async function POST(
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
   }
 
-  const DEFAULT_RULES = [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'portal'] }]
+  const DEFAULT_RULES = [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'sms', 'portal'] }]
 
   const { data: item, error } = await supabase
     .from('event_checklist_items')
