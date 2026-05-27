@@ -64,6 +64,7 @@ function makeEvent(overrides: Partial<Event> = {}): Event {
     description: null,
     portal_token: 'portal-tok',
     portal_token_expires_at: null,
+    portal_token_revoked_at: null,
     event_type_id: 'type-1',
     settings: {},
     created_by: null,
@@ -204,17 +205,19 @@ describe('dispatchNotificationsForItem', () => {
     expect(mockSendEmail).not.toHaveBeenCalled()
   })
 
-  it('sends email directly in dev mode (no QSTASH_TOKEN)', async () => {
+  it('inserts job into DB in dev mode (no QSTASH_TOKEN)', async () => {
     setupHappyPath()
     const { dispatchNotificationsForItem } = await import('@/lib/notifications/dispatcher')
 
     await dispatchNotificationsForItem({ event: makeEvent(), item: makeItem(), completedByName: 'Rui' })
 
-    expect(mockSendEmail).toHaveBeenCalledOnce()
-    expect(mockSendEmail).toHaveBeenCalledWith(expect.objectContaining({
-      to: 'ana@exemplo.pt',
-      subject: 'Atualização: Concerto Teste',
-    }))
+    expect(mockInsert).toHaveBeenCalledOnce()
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ client_id: 'client-1', channel: 'email', status: 'queued' }),
+      ])
+    )
+    expect(mockSendEmail).not.toHaveBeenCalled()
   })
 
   it('skips client when channel preference does not include the rule channel', async () => {
@@ -236,16 +239,21 @@ describe('dispatchNotificationsForItem', () => {
     expect(mockSendEmail).not.toHaveBeenCalled()
   })
 
-  it('marks job as failed when sendEmail throws', async () => {
-    setupHappyPath()
-    mockSendEmail.mockRejectedValueOnce(new Error('Brevo 500: rate limit'))
+  it('returns silently when DB insert fails (no jobs dispatched)', async () => {
+    tableData = {
+      event_clients: { data: [mockEventClient], error: null },
+      event_checklist_items: { data: [{ id: 'item-1', status: 'completed' }], error: null },
+      message_templates: { data: [mockTemplate], error: null },
+      notification_jobs: { data: null, error: { message: 'DB insert error' } },
+      notification_log: { data: null, error: null },
+    }
     const { dispatchNotificationsForItem } = await import('@/lib/notifications/dispatcher')
 
     await expect(
       dispatchNotificationsForItem({ event: makeEvent(), item: makeItem(), completedByName: 'Rui' })
     ).resolves.toBeUndefined()
 
-    expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({ status: 'failed' }))
+    expect(mockSendEmail).not.toHaveBeenCalled()
   })
 
   it('filters vip_only audience — only sends to VIP clients', async () => {
@@ -278,8 +286,10 @@ describe('dispatchNotificationsForItem', () => {
 
     await dispatchNotificationsForItem({ event: makeEvent(), item, completedByName: 'Rui' })
 
-    expect(mockSendEmail).toHaveBeenCalledOnce()
-    expect(mockSendEmail).toHaveBeenCalledWith(expect.objectContaining({ to: 'vip@exemplo.pt' }))
+    expect(mockInsert).toHaveBeenCalledOnce()
+    const inserted = mockInsert.mock.calls[0][0] as Array<{ client_id: string }>
+    expect(inserted).toHaveLength(1)
+    expect(inserted[0].client_id).toBe('client-2') // vip client only
   })
 
   it('filters specific_clients audience — only sends to primary_contact', async () => {
@@ -311,8 +321,10 @@ describe('dispatchNotificationsForItem', () => {
 
     await dispatchNotificationsForItem({ event: makeEvent(), item, completedByName: 'Rui' })
 
-    expect(mockSendEmail).toHaveBeenCalledOnce()
-    expect(mockSendEmail).toHaveBeenCalledWith(expect.objectContaining({ to: 'ana@exemplo.pt' }))
+    expect(mockInsert).toHaveBeenCalledOnce()
+    const inserted = mockInsert.mock.calls[0][0] as Array<{ client_id: string }>
+    expect(inserted).toHaveLength(1)
+    expect(inserted[0].client_id).toBe('client-1') // primary_contact only
   })
 
   it('renders template variables into subject and body', async () => {
@@ -438,17 +450,19 @@ describe('dispatchStartNotificationForItem', () => {
     }
   }
 
-  it('sends email for all clients when item goes in_progress', async () => {
+  it('inserts start job into DB when item goes in_progress', async () => {
     setupStartHappyPath()
     const { dispatchStartNotificationForItem } = await import('@/lib/notifications/dispatcher')
 
     await dispatchStartNotificationForItem({ event: makeEvent(), item: makeItem({ status: 'in_progress' }) })
 
-    expect(mockSendEmail).toHaveBeenCalledOnce()
-    expect(mockSendEmail).toHaveBeenCalledWith(expect.objectContaining({
-      to: 'ana@exemplo.pt',
-      subject: 'Início: Concerto Teste',
-    }))
+    expect(mockInsert).toHaveBeenCalledOnce()
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ client_id: 'client-1', channel: 'email', status: 'queued' }),
+      ])
+    )
+    expect(mockSendEmail).not.toHaveBeenCalled()
   })
 
   it('returns early when no event clients', async () => {
@@ -514,15 +528,19 @@ describe('dispatchStartNotificationForItem', () => {
     expect(mockSendEmail).not.toHaveBeenCalled()
   })
 
-  it('marks job as failed when sendEmail throws', async () => {
-    setupStartHappyPath()
-    mockSendEmail.mockRejectedValueOnce(new Error('Brevo 500'))
+  it('returns silently when DB insert fails for start notification', async () => {
+    tableData = {
+      event_clients: { data: [mockEventClient], error: null },
+      message_templates: { data: [mockStartTemplate], error: null },
+      notification_jobs: { data: null, error: { message: 'DB insert error' } },
+      notification_log: { data: null, error: null },
+    }
     const { dispatchStartNotificationForItem } = await import('@/lib/notifications/dispatcher')
 
     await expect(
       dispatchStartNotificationForItem({ event: makeEvent(), item: makeItem({ status: 'in_progress' }) })
     ).resolves.toBeUndefined()
 
-    expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({ status: 'failed' }))
+    expect(mockSendEmail).not.toHaveBeenCalled()
   })
 })

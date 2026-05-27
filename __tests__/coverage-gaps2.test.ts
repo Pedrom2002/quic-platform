@@ -171,9 +171,8 @@ describe('dispatcher additional branches', () => {
 
   it('filterClientsByAudience default case returns all clients', async () => {
     const { createAdminClient } = await import('@/lib/supabase/admin')
-    const { sendEmail } = await import('@/lib/notifications/channels/email')
-    const mockSendEmail = vi.mocked(sendEmail)
 
+    const mockInsert = vi.fn()
     const insertedJob = { id: 'job-1', event_id: 'event-1', checklist_item_id: 'item-1', client_id: 'client-1', channel: 'email' }
     const tableData: Record<string, unknown> = {
       event_clients: { data: [mockEventClient], error: null },
@@ -183,7 +182,16 @@ describe('dispatcher additional branches', () => {
       notification_log: { data: null, error: null },
     }
 
-    const supabaseMock = { from: vi.fn((table: string) => makeQuery(tableData[table] ?? { data: null, error: null })) }
+    const supabaseMock = {
+      from: vi.fn((table: string) => {
+        const q = makeQuery(tableData[table] ?? { data: null, error: null })
+        ;(q as Record<string, unknown>).insert = vi.fn((...args: unknown[]) => {
+          mockInsert(...args)
+          return makeQuery(tableData[table] ?? { data: null, error: null })
+        })
+        return q
+      }),
+    }
     vi.mocked(createAdminClient).mockReturnValue(supabaseMock as never)
     delete process.env.QSTASH_TOKEN
 
@@ -192,8 +200,8 @@ describe('dispatcher additional branches', () => {
     const { dispatchNotificationsForItem } = await import('@/lib/notifications/dispatcher')
     await dispatchNotificationsForItem({ event: makeEvent() as never, item: itemWithDefaultAudience as never, completedByName: 'Rui' })
 
-    // Default returns all clients → email sent
-    expect(mockSendEmail).toHaveBeenCalled()
+    // Default returns all clients → job inserted for the client
+    expect(mockInsert).toHaveBeenCalled()
   })
 
   it('insert fails: logs error and returns early when notification_jobs insert errors', async () => {
@@ -256,6 +264,9 @@ describe('lib/portal/data getPortalData error log branches', () => {
         if (table === 'event_files') {
           return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockResolvedValue({ data: [], error: null }) }
         }
+        if (table === 'event_articles') {
+          return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockResolvedValue({ data: [], error: null }) }
+        }
         return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null }) }
       }),
     } as never)
@@ -287,6 +298,9 @@ describe('lib/portal/data getPortalData error log branches', () => {
         if (table === 'event_files') {
           return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockResolvedValue({ data: null, error: { message: 'EF error' } }) }
         }
+        if (table === 'event_articles') {
+          return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockResolvedValue({ data: [], error: null }) }
+        }
         return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null }) }
       }),
     } as never)
@@ -310,7 +324,12 @@ describe('lib/portal/data getPortalData error log branches', () => {
         if (table === 'event_checklist_items') {
           return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockResolvedValue({ data: [] }) }
         }
-        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), in: vi.fn().mockResolvedValue({ data: [], error: null }), order: vi.fn().mockResolvedValue({ data: [], error: null }) }
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          in: vi.fn().mockResolvedValue({ data: [], error: null }),
+          order: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }
       }),
     } as never)
 

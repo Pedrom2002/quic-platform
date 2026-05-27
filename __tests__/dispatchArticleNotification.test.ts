@@ -12,6 +12,7 @@ const mockSendSms = vi.fn().mockResolvedValue('brevo-sms-id-1')
 vi.mock('@/lib/notifications/channels/email', () => ({
   sendEmail: (...args: unknown[]) => mockSendEmail(...args),
   buildEmailHtml: () => '<html>mock</html>',
+  buildArticleEmailHtml: () => '<html>mock-article</html>',
 }))
 
 vi.mock('@/lib/notifications/channels/sms', () => ({
@@ -65,6 +66,7 @@ function makeEvent(overrides: Partial<Event> = {}): Event {
     description: null,
     portal_token: 'tok',
     portal_token_expires_at: null,
+    portal_token_revoked_at: null,
     event_type_id: 'type-1',
     settings: {},
     created_by: null,

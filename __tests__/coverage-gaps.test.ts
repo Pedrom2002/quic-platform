@@ -88,6 +88,9 @@ describe('lib/portal/data getPortalData', () => {
       if (table === 'event_files') {
         return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockResolvedValue({ data: mockEventFiles, error: null }) }
       }
+      if (table === 'event_articles') {
+        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockResolvedValue({ data: [], error: null }) }
+      }
       return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null }) }
     })
     vi.mocked(createAdminClient).mockReturnValue({ from: mockFrom } as never)
@@ -120,7 +123,12 @@ describe('lib/portal/data getPortalData', () => {
         if (table === 'event_checklist_items') {
           return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockResolvedValue({ data: [] }) }
         }
-        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), in: vi.fn().mockResolvedValue({ data: [], error: null }), order: vi.fn().mockResolvedValue({ data: [], error: null }) }
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          in: vi.fn().mockResolvedValue({ data: [], error: null }),
+          order: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }
       }),
     } as never)
 
@@ -592,31 +600,48 @@ describe('cron/process-scheduled additional branches', () => {
     return { headers: { get: (h: string) => h === 'authorization' ? authHeader : null } }
   }
 
-  it('returns 500 when claim update errors', async () => {
+  it('returns 200 with failed:1 when no QSTASH_TOKEN and email client has no email', async () => {
+    delete process.env.QSTASH_TOKEN
     const { createAdminClient } = await import('@/lib/supabase/admin')
-    let callCount = 0
+
     vi.mocked(createAdminClient).mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        is: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockReturnThis(),
-        in: vi.fn().mockReturnThis(),
-        update: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockImplementation(() => {
-          callCount++
-          if (callCount === 1) {
-            return Promise.resolve({ data: [{ id: 'j1', event_id: 'e1', client_id: 'c1', channel: 'email', rendered_subject: 'Hi', rendered_body: 'Body', qstash_message_id: null }], error: null })
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'notification_jobs') {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            is: vi.fn().mockReturnThis(),
+            lte: vi.fn().mockReturnThis(),
+            update: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ error: null }),
+            }),
+            limit: vi.fn().mockResolvedValue({
+              data: [{ id: 'j1', event_id: 'e1', client_id: 'c1', channel: 'email',
+                rendered_subject: 'Hi', rendered_body: 'Body', qstash_message_id: null }],
+              error: null,
+            }),
           }
-          return Promise.resolve({ data: null, error: null })
-        }),
-        then: (resolve: (v: unknown) => void) => Promise.resolve({ error: { message: 'DB error' } }).then(resolve),
+        }
+        if (table === 'clients') {
+          return {
+            select: vi.fn().mockReturnThis(),
+            in: vi.fn().mockResolvedValue({ data: [{ id: 'c1', email: null, full_name: 'Test', phone: null, whatsapp: null }], error: null }),
+          }
+        }
+        if (table === 'events') {
+          return {
+            select: vi.fn().mockReturnThis(),
+            in: vi.fn().mockResolvedValue({ data: [{ id: 'e1', name: 'Test Event' }], error: null }),
+          }
+        }
+        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis() }
       }),
     } as never)
 
     const { GET } = await import('@/app/api/cron/process-scheduled/route')
     const res = await GET(makeRequest() as never)
-    expect(res.status).toBe(500)
+    expect(res.status).toBe(200)
+    expect((res as unknown as { body: { failed: number } }).body.failed).toBe(1)
   })
 
   it('logs warning and sets hasMore:true when 51+ jobs pending', async () => {

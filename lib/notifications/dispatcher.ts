@@ -44,15 +44,6 @@ async function insertAndEnqueue(
   }
 
   const { QSTASH_TOKEN: qstashToken } = getEnv()
-  if (!qstashToken) return insertedJobs.length
-
-  let qstash: import('@upstash/qstash').Client
-  try {
-    const { Client: QStashClient } = await import('@upstash/qstash')
-    qstash = new QStashClient({ token: qstashToken })
-  } catch {
-    return insertedJobs.length
-  }
 
   const workerUrl = `${appUrl}/api/workers/send-notification`
   const draftByKey = new Map<string, (typeof jobDrafts)[number]>()
@@ -60,12 +51,33 @@ async function insertAndEnqueue(
     draftByKey.set(`${draft.client_id}:${draft.channel}:${draft.checklist_item_id}`, draft)
   }
 
+  let qstash: import('@upstash/qstash').Client | null = null
+  if (qstashToken) {
+    try {
+      const { Client: QStashClient } = await import('@upstash/qstash')
+      qstash = new QStashClient({ token: qstashToken })
+    } catch {
+      // QStash unavailable — jobs stay queued for cron pickup
+    }
+  }
+
   await Promise.allSettled(
     insertedJobs.map(async (jobRow) => {
       const job = jobRow as NotificationJob
       const key = `${job.client_id}:${job.channel}:${job.checklist_item_id ?? ''}`
       const draft = draftByKey.get(key)
-      if (!draft) return
+
+      if (!draft) {
+        log.error('draft lookup failed after insert', { jobId: job.id })
+        await supabase
+          .from('notification_jobs')
+          .update({ status: 'failed', last_error: 'draft lookup failed after insert' })
+          .eq('id', job.id)
+        return
+      }
+
+      // No QStash — jobs remain queued and will be processed by the cron
+      if (!qstash) return
 
       try {
         const payload: NotificationJobPayload = {
@@ -80,7 +92,7 @@ async function insertAndEnqueue(
           client_whatsapp: draft._client.whatsapp,
         }
         const delay = draft._delay_minutes ?? 0
-        const res = await qstash.publishJSON({
+        const res = await qstash!.publishJSON({
           url: workerUrl,
           body: payload,
           ...(delay > 0 && { delay: delay * 60 }),
@@ -102,6 +114,10 @@ async function insertAndEnqueue(
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
         log.error('qstash enqueue failed', { jobId: job.id, error: msg })
+        await supabase
+          .from('notification_jobs')
+          .update({ status: 'failed', last_error: msg })
+          .eq('id', job.id)
       }
     })
   )

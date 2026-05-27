@@ -42,22 +42,11 @@ function makeFetchChain(data: unknown[], error: unknown = null) {
   }
 }
 
-// Build the claim chain: update().in().eq() - used to mark jobs as 'processing'
-function makeClaimChain(error: unknown = null) {
+// Build the per-job update chain: update().eq() - used to set qstash_message_id or mark failed
+function makeUpdateEqChain(error: unknown = null) {
   return {
     update: vi.fn().mockReturnValue({
-      in: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({ error }),
-      }),
-    }),
-  }
-}
-
-// Build the per-job update chain: update().eq() - used to set qstash_message_id or failed
-function makeUpdateEqChain() {
-  return {
-    update: vi.fn().mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ error: null }),
+      eq: vi.fn().mockResolvedValue({ error }),
     }),
   }
 }
@@ -71,16 +60,14 @@ function makeClientsChain(clients: unknown[]) {
   }
 }
 
-type AnyChain = ReturnType<typeof makeFetchChain> | ReturnType<typeof makeClaimChain> | ReturnType<typeof makeClientsChain> | ReturnType<typeof makeUpdateEqChain>
+type AnyChain = ReturnType<typeof makeFetchChain> | ReturnType<typeof makeClientsChain> | ReturnType<typeof makeUpdateEqChain>
 
 // Wire up mockFrom so that:
-//   first call to 'notification_jobs' -> fetchChain (SELECT)
-//   second call to 'notification_jobs' -> claimChain (UPDATE...IN...EQ)
-//   subsequent calls to 'notification_jobs' -> updateEqChain (UPDATE...EQ per job)
+//   first call to 'notification_jobs' -> fetchChain (SELECT queued jobs)
+//   subsequent calls to 'notification_jobs' -> updateEqChain (UPDATE per job)
 //   any call to 'clients' -> clientsChain
 function wireFrom(
   fetchChain: ReturnType<typeof makeFetchChain>,
-  claimChain: ReturnType<typeof makeClaimChain>,
   clientsChain: ReturnType<typeof makeClientsChain>,
   perJobChains: ReturnType<typeof makeUpdateEqChain>[] = [],
 ) {
@@ -90,9 +77,8 @@ function wireFrom(
     // table === 'notification_jobs'
     notificationJobsCallCount++
     if (notificationJobsCallCount === 1) return fetchChain
-    if (notificationJobsCallCount === 2) return claimChain
-    // 3rd+ calls are per-job updates (after publishJSON)
-    const idx = notificationJobsCallCount - 3
+    // 2nd+ calls are per-job updates (after publishJSON)
+    const idx = notificationJobsCallCount - 2
     return perJobChains[idx] ?? makeUpdateEqChain()
   })
 }
@@ -128,32 +114,11 @@ describe('GET /api/cron/process-scheduled', () => {
     expect(res.status).toBe(401)
   })
 
-  it('no-ops gracefully when QSTASH_TOKEN not set', async () => {
+  it('no-ops gracefully when QSTASH_TOKEN not set (empty queue)', async () => {
     delete process.env.QSTASH_TOKEN
-    const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
-    expect(res.status).toBe(200)
-    expect((res as unknown as { body: { skipped?: boolean; processed: number } }).body).toEqual({
-      processed: 0,
-      hasMore: false,
-      skipped: true,
-    })
-  })
-
-  it('returns 500 when DB fetch fails', async () => {
-    const fetchChain = makeFetchChain([], { message: 'DB error' })
-    const claimChain = makeClaimChain()
-    const clientsChain = makeClientsChain([])
-    wireFrom(fetchChain, claimChain, clientsChain)
-
-    const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
-    expect(res.status).toBe(500)
-  })
-
-  it('returns {processed:0, hasMore:false} when no jobs', async () => {
     const fetchChain = makeFetchChain([])
-    const claimChain = makeClaimChain()
     const clientsChain = makeClientsChain([])
-    wireFrom(fetchChain, claimChain, clientsChain)
+    wireFrom(fetchChain, clientsChain)
 
     const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     expect(res.status).toBe(200)
@@ -163,7 +128,29 @@ describe('GET /api/cron/process-scheduled', () => {
     })
   })
 
-  it('returns 500 when claimErr is set', async () => {
+  it('returns 500 when DB fetch fails', async () => {
+    const fetchChain = makeFetchChain([], { message: 'DB error' })
+    const clientsChain = makeClientsChain([])
+    wireFrom(fetchChain, clientsChain)
+
+    const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
+    expect(res.status).toBe(500)
+  })
+
+  it('returns {processed:0, hasMore:false} when no jobs', async () => {
+    const fetchChain = makeFetchChain([])
+    const clientsChain = makeClientsChain([])
+    wireFrom(fetchChain, clientsChain)
+
+    const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
+    expect(res.status).toBe(200)
+    expect((res as unknown as { body: { processed: number; hasMore: boolean } }).body).toEqual({
+      processed: 0,
+      hasMore: false,
+    })
+  })
+
+  it('returns 200 with failed:1 when publishJSON rejects for a job', async () => {
     const jobs = [
       {
         id: 'j1', event_id: 'e1', client_id: 'c1', channel: 'email',
@@ -171,12 +158,17 @@ describe('GET /api/cron/process-scheduled', () => {
       },
     ]
     const fetchChain = makeFetchChain(jobs)
-    const claimChain = makeClaimChain({ message: 'claim error' })
     const clientsChain = makeClientsChain([])
-    wireFrom(fetchChain, claimChain, clientsChain)
+    const perJobChain = makeUpdateEqChain()
+    wireFrom(fetchChain, clientsChain, [perJobChain])
+
+    mockPublishJSON.mockRejectedValueOnce(new Error('QStash down'))
 
     const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
-    expect(res.status).toBe(500)
+    expect(res.status).toBe(200)
+    const body = (res as unknown as { body: { processed: number; failed: number } }).body
+    expect(body.failed).toBe(1)
+    expect(body.processed).toBe(0)
   })
 
   it('returns 500 when NEXT_PUBLIC_APP_URL not set after fetching jobs', async () => {
@@ -189,9 +181,8 @@ describe('GET /api/cron/process-scheduled', () => {
       },
     ]
     const fetchChain = makeFetchChain(jobs)
-    const claimChain = makeClaimChain()
     const clientsChain = makeClientsChain([])
-    wireFrom(fetchChain, claimChain, clientsChain)
+    wireFrom(fetchChain, clientsChain)
 
     const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     expect(res.status).toBe(500)
@@ -205,10 +196,9 @@ describe('GET /api/cron/process-scheduled', () => {
       },
     ]
     const fetchChain = makeFetchChain(jobs)
-    const claimChain = makeClaimChain()
     const clientsChain = makeClientsChain([{ id: 'c1', email: 'c@x.com', phone: null, whatsapp: null }])
     const perJobChain = makeUpdateEqChain()
-    wireFrom(fetchChain, claimChain, clientsChain, [perJobChain])
+    wireFrom(fetchChain, clientsChain, [perJobChain])
 
     mockPublishJSON.mockResolvedValue({ messageId: 'qm-ok' })
 
@@ -226,35 +216,37 @@ describe('GET /api/cron/process-scheduled', () => {
       rendered_subject: null, rendered_body: 'B', qstash_message_id: null,
     }))
     const fetchChain = makeFetchChain(jobs)
-    const claimChain = makeClaimChain()
     const clientsChain = makeClientsChain([])
     // 50 per-job update chains (one per dispatched job)
     const perJobChains = Array.from({ length: 50 }, () => makeUpdateEqChain())
-    wireFrom(fetchChain, claimChain, clientsChain, perJobChains)
+    wireFrom(fetchChain, clientsChain, perJobChains)
 
     const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     expect((res as unknown as { body: { hasMore: boolean } }).body.hasMore).toBe(true)
   })
 
-  it('counts failed jobs when publishJSON rejects', async () => {
+  it('counts failed jobs when publishJSON rejects (multiple)', async () => {
     const jobs = [
       {
         id: 'j1', event_id: 'e1', client_id: 'c1', channel: 'email',
         rendered_subject: null, rendered_body: 'B', qstash_message_id: null,
       },
+      {
+        id: 'j2', event_id: 'e1', client_id: 'c2', channel: 'email',
+        rendered_subject: null, rendered_body: 'B2', qstash_message_id: null,
+      },
     ]
     const fetchChain = makeFetchChain(jobs)
-    const claimChain = makeClaimChain()
     const clientsChain = makeClientsChain([])
     // On failure, the error handler calls update().eq() on 'notification_jobs'
-    const perJobChain = makeUpdateEqChain()
-    wireFrom(fetchChain, claimChain, clientsChain, [perJobChain])
+    const perJobChains = [makeUpdateEqChain(), makeUpdateEqChain()]
+    wireFrom(fetchChain, clientsChain, perJobChains)
 
     mockPublishJSON.mockRejectedValue(new Error('QStash down'))
 
     const res = await GET(makeRequest('Bearer my-secret-for-cron-tests-32chars!!'))
     const body = (res as unknown as { body: { processed: number; failed: number } }).body
-    expect(body.failed).toBe(1)
+    expect(body.failed).toBe(2)
     expect(body.processed).toBe(0)
   })
 })

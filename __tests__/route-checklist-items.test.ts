@@ -345,7 +345,7 @@ describe('PATCH /api/events/[eventId]/checklist-items/[itemId]', () => {
     expect(res.status).toBe(200)
     // Wait for fire-and-forget catch to execute
     await new Promise(r => setTimeout(r, 20))
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('falha ao despachar'), 'dispatch failed')
+    expect(errorSpy).toHaveBeenCalledWith('[dispatcher] falha:', 'dispatch failed')
     errorSpy.mockRestore()
   })
 
