@@ -62,7 +62,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 
-  if (isCompleting) {
+  if (isCompleting || isStarting) {
     const adminClient = createAdminClient()
     const { data: event } = await adminClient
       .from('events')
@@ -71,30 +71,16 @@ export async function PATCH(
       .single()
 
     if (event) {
-      dispatchNotificationsForItem({
-        event,
-        item,
-        completedByName: member.full_name ?? 'Equipa QUIC',
-      }).catch((err: unknown) => {
+      try {
+        if (isCompleting) {
+          await dispatchNotificationsForItem({ event, item, completedByName: member.full_name ?? 'Equipa QUIC' })
+        } else {
+          await dispatchStartNotificationForItem({ event, item })
+        }
+      } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
-        console.error('[dispatcher] falha ao despachar notificações:', msg)
-      })
-    }
-  }
-
-  if (isStarting) {
-    const adminClient = createAdminClient()
-    const { data: event } = await adminClient
-      .from('events')
-      .select('*')
-      .eq('id', eventId)
-      .single()
-
-    if (event) {
-      dispatchStartNotificationForItem({ event, item }).catch((err: unknown) => {
-        const msg = err instanceof Error ? err.message : String(err)
-        console.error('[dispatcher] falha ao despachar notificação de início:', msg)
-      })
+        console.error('[dispatcher] falha:', msg)
+      }
     }
   }
 
