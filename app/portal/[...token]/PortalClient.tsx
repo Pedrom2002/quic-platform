@@ -131,22 +131,19 @@ function FileRow({ file }: { file: PortalItemFile }) {
   )
 }
 
-type TabKey = 'progress' | 'documents' | 'clipping'
+type TabKey = 'progress' | 'clipping'
 
 function TabBar({
   active,
-  hasDocuments,
   hasClipping,
   onChange,
 }: {
   active: TabKey
-  hasDocuments: boolean
   hasClipping: boolean
   onChange: (tab: TabKey) => void
 }) {
   const tabs: Array<{ key: TabKey; label: string }> = [
     { key: 'progress', label: 'Progresso' },
-    ...(hasDocuments ? [{ key: 'documents' as const, label: 'Documentos' }] : []),
     ...(hasClipping ? [{ key: 'clipping' as const, label: 'Imprensa' }] : []),
   ]
 
@@ -443,7 +440,7 @@ export function PortalClient({
   const [animatingOut, setAnimatingOut] = useState<Set<string>>(new Set())
   const [justCompleted, setJustCompleted] = useState<Set<string>>(new Set())
   const [isConnected, setIsConnected] = useState(false)
-  const [activeTab, setActiveTab] = useState<TabKey>('progress')
+  const [activeTab, setActiveTab] = useState<'progress' | 'clipping'>('progress')
 
   const displayedPercent = useCountUp(progress.percent, 2200, 1100)
 
@@ -658,7 +655,6 @@ export function PortalClient({
       <section className="relative bg-white">
         <TabBar
           active={activeTab}
-          hasDocuments={eventFiles.length > 0}
           hasClipping={articles.length > 0}
           onChange={setActiveTab}
         />
@@ -669,9 +665,6 @@ export function PortalClient({
               animatingOut={animatingOut}
               justCompleted={justCompleted}
             />
-          )}
-          {activeTab === 'documents' && (
-            <DocumentsTab files={eventFiles} />
           )}
           {activeTab === 'clipping' && (
             <ClippingTab articles={articles} />
