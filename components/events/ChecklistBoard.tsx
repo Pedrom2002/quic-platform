@@ -70,10 +70,11 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
     const { active, over } = event
     if (!over || active.id === over.id) return
     const statuses: ChecklistItemStatus[] = ['pending', 'in_progress', 'completed', 'skipped']
-    const targetStatus = statuses.includes(over.id as ChecklistItemStatus)
+    const rawStatus = statuses.includes(over.id as ChecklistItemStatus)
       ? (over.id as ChecklistItemStatus)
       : items.find(i => i.id === over.id)?.status
-    if (!targetStatus) return
+    if (!rawStatus) return
+    const targetStatus = rawStatus as ChecklistItemStatus
     const draggedItem = items.find(i => i.id === active.id)
     if (!draggedItem || draggedItem.status === targetStatus) return
     const previousStatus = draggedItem.status

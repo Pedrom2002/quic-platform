@@ -46,7 +46,7 @@ export default function TaskDetailPanel({ eventId, item, orgMembers, currentMemb
   const [title, setTitle] = useState(item.title)
   const [description, setDescription] = useState(item.description ?? '')
   const [clientLabel, setClientLabel] = useState(item.client_label ?? '')
-  const [status, setStatus] = useState<ChecklistItemStatus>(item.status)
+  const [status, setStatus] = useState<ChecklistItemStatus>(item.status as ChecklistItemStatus)
   const [assignedTo, setAssignedTo] = useState<string>(item.assigned_to ?? '')
   const [dueAt, setDueAt] = useState<string>(
     item.due_at ? format(new Date(item.due_at), "yyyy-MM-dd'T'HH:mm") : ''
