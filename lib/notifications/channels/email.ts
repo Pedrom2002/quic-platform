@@ -53,6 +53,104 @@ export async function sendEmail({ to, toName, subject, html }: SendEmailParams):
   throw lastErr
 }
 
+export function buildArticleEmailHtml(params: {
+  clientName: string
+  eventName: string
+  articleTitle: string
+  articleUrl: string
+  articleSource: string | null
+  portalUrl: string
+}): string {
+  const appUrl = getEnv().NEXT_PUBLIC_APP_URL
+  const e = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const safeUrl = (u: string) => (/^https?:\/\//.test(u) ? u.replace(/"/g, '%22') : '#')
+
+  return `<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Novo artigo - ${e(params.eventName)}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f4f4f5;padding:40px 16px">
+    <tr><td align="center">
+      <table width="100%" style="max-width:580px" cellpadding="0" cellspacing="0" role="presentation">
+
+        <!-- Header dark -->
+        <tr>
+          <td style="background:#111111;padding:28px 36px 24px;border-radius:12px 12px 0 0">
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+              <tr>
+                <td style="padding-bottom:20px">
+                  <img src="${appUrl}/logo-branco.png" alt="Quic" height="20" style="display:block;height:20px;width:auto;border:0">
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p style="margin:0 0 6px;font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:#71717a">Imprensa</p>
+                  <h1 style="margin:0;font-size:22px;font-weight:700;color:#ffffff;line-height:1.25;letter-spacing:-0.02em">${e(params.articleTitle)}</h1>
+                  ${params.articleSource ? `<p style="margin:10px 0 0;font-size:12px;color:#52525b;letter-spacing:0.05em">${e(params.articleSource)}</p>` : ''}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Body white -->
+        <tr>
+          <td style="background:#ffffff;padding:32px 36px;border-left:1px solid #e4e4e7;border-right:1px solid #e4e4e7">
+            <p style="margin:0 0 20px;color:#3f3f46;font-size:15px;line-height:1.7">
+              Ola <strong>${e(params.clientName)}</strong>,
+            </p>
+            <p style="margin:0 0 28px;color:#3f3f46;font-size:15px;line-height:1.7">
+              O evento <strong>${e(params.eventName)}</strong> foi mencionado na imprensa. Pode consultar o artigo completo no link abaixo.
+            </p>
+
+            <!-- Article card -->
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:28px">
+              <tr>
+                <td style="background:#fafafa;border:1px solid #e4e4e7;border-left:3px solid #18181b;border-radius:6px;padding:20px 22px">
+                  <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#18181b;line-height:1.4">${e(params.articleTitle)}</p>
+                  ${params.articleSource ? `<p style="margin:0 0 12px;font-size:11px;color:#71717a;text-transform:uppercase;letter-spacing:0.08em">${e(params.articleSource)}</p>` : '<div style="margin-bottom:12px"></div>'}
+                  <a href="${safeUrl(params.articleUrl)}" style="display:inline-block;font-size:13px;font-weight:600;color:#18181b;text-decoration:none;border-bottom:1px solid #18181b;padding-bottom:1px">
+                    Ler artigo &rarr;
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Portal CTA -->
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+              <tr>
+                <td align="center" style="padding:4px 0 8px">
+                  <a href="${safeUrl(params.portalUrl)}" style="display:inline-block;background:#18181b;color:#ffffff;text-decoration:none;font-size:13px;font-weight:600;padding:12px 32px;border-radius:8px;letter-spacing:0.02em">
+                    Ver todos os artigos no portal &rarr;
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#fafafa;padding:20px 36px;border:1px solid #e4e4e7;border-top:none;border-radius:0 0 12px 12px">
+            <p style="margin:0;color:#a1a1aa;font-size:11px;line-height:1.6">
+              Este email foi enviado automaticamente pela equipa Quic.<br>
+              Para deixar de receber notificações, contacte a sua equipa Quic.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
 export function buildEmailHtml(body: string, eventName?: string, progressPercent?: number): string {
   const appUrl = getEnv().NEXT_PUBLIC_APP_URL
   // Parse **bold** markers

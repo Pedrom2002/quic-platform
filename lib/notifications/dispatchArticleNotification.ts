@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { renderTemplate } from './template-renderer'
-import { sendEmail, buildEmailHtml } from './channels/email'
+import { sendEmail, buildArticleEmailHtml } from './channels/email'
 import { sendSms } from './channels/sms'
 import { getEnv } from '@/lib/env'
 import { createLogger } from '@/lib/logger'
@@ -193,7 +193,14 @@ export async function dispatchArticleNotification(ctx: ArticleDispatchContext): 
         try {
           let providerId: string | null = null
           if (draft.channel === 'email' && draft._client.email) {
-            const html = buildEmailHtml(draft.rendered_body, ctx.event.name, 0)
+            const html = buildArticleEmailHtml({
+              clientName: draft._client.full_name,
+              eventName: ctx.event.name,
+              articleTitle: ctx.article.title,
+              articleUrl: ctx.article.url,
+              articleSource: ctx.article.source ?? null,
+              portalUrl,
+            })
             providerId = await sendEmail({
               to: draft._client.email,
               toName: draft._client.full_name,
