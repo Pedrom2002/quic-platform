@@ -31,7 +31,7 @@ export default async function NotificationsPage({
     supabase.from('events').select('id, name').eq('id', eventId).single(),
     supabase
       .from('notification_jobs')
-      .select('*, client:clients(full_name, email), checklist_item:event_checklist_items(title, client_label)')
+      .select('*, client:clients(full_name, email), checklist_item:event_checklist_items(title, client_label), article:event_articles(title)')
       .eq('event_id', eventId)
       .order('created_at', { ascending: false })
       .limit(100),
@@ -58,6 +58,8 @@ export default async function NotificationsPage({
             type JobItem = { title: string; client_label: string | null } | null
             const client = job.client as JobClient
             const item = job.checklist_item as JobItem
+            type JobArticle = { title: string } | null
+            const article = job.article as JobArticle
             const cfg = statusConfig[job.status] ?? statusConfig.queued
             const Icon = cfg.icon
             return (
@@ -71,6 +73,11 @@ export default async function NotificationsPage({
                   {item && (
                     <p className="text-slate-500 text-xs mt-0.5">
                       {item.client_label ?? item.title}
+                    </p>
+                  )}
+                  {article && (
+                    <p className="text-slate-500 text-xs mt-0.5">
+                      Artigo: {article.title}
                     </p>
                   )}
                   {job.rendered_subject && (
