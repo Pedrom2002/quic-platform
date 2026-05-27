@@ -108,7 +108,7 @@ describe('POST /api/cron/marketing-followup', () => {
     const { POST } = await import('@/app/api/cron/marketing-followup/route')
     const res = await POST(makeRequest(`Bearer ${CRON_SECRET}`))
     expect((res as { status: number }).status).toBe(200)
-    expect((res as { body: { dispatched: number } }).body.dispatched).toBe(0)
+    expect((res as unknown as { body: { dispatched: number } }).body.dispatched).toBe(0)
   })
 
   it('skips dispatch when no QSTASH_TOKEN (qstash is null)', async () => {
@@ -134,7 +134,7 @@ describe('POST /api/cron/marketing-followup', () => {
     const { POST } = await import('@/app/api/cron/marketing-followup/route')
     const res = await POST(makeRequest(`Bearer ${CRON_SECRET}`))
     expect(mockPublishJSON).not.toHaveBeenCalled()
-    expect((res as { body: { dispatched: number } }).body.dispatched).toBe(0)
+    expect((res as unknown as { body: { dispatched: number } }).body.dispatched).toBe(0)
   })
 
   it('dispatches followup when campaigns have eligible sends and QStash is available', async () => {
@@ -159,7 +159,7 @@ describe('POST /api/cron/marketing-followup', () => {
     const { POST } = await import('@/app/api/cron/marketing-followup/route')
     const res = await POST(makeRequest(`Bearer ${CRON_SECRET}`))
     expect((res as { status: number }).status).toBe(200)
-    expect((res as { body: { dispatched: number } }).body.dispatched).toBe(1)
+    expect((res as unknown as { body: { dispatched: number } }).body.dispatched).toBe(1)
     expect(mockPublishJSON).toHaveBeenCalledTimes(1)
     expect(mockPublishJSON).toHaveBeenCalledWith(expect.objectContaining({
       body: expect.objectContaining({ send_id: 's1', campaign_id: 'camp-1', is_followup: true }),
@@ -185,7 +185,7 @@ describe('POST /api/cron/marketing-followup', () => {
 
     const { POST } = await import('@/app/api/cron/marketing-followup/route')
     const res = await POST(makeRequest(`Bearer ${CRON_SECRET}`))
-    expect((res as { body: { dispatched: number } }).body.dispatched).toBe(0)
+    expect((res as unknown as { body: { dispatched: number } }).body.dispatched).toBe(0)
     expect(mockPublishJSON).not.toHaveBeenCalled()
   })
 })

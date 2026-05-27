@@ -97,7 +97,7 @@ describe('GET /api/marketing/track/click', () => {
     const { GET } = await import('@/app/api/marketing/track/click/route')
     const res = await GET(makeNextReq('http://localhost/api/marketing/track/click?url=https%3A%2F%2Fdestination.com') as never)
     expect(mockFrom).not.toHaveBeenCalled()
-    expect((res as { redirect_url: string }).redirect_url).toBe('https://destination.com')
+    expect((res as unknown as { redirect_url: string }).redirect_url).toBe('https://destination.com')
   })
 
   it('records click and redirects when sid is present and send found', async () => {
@@ -113,7 +113,7 @@ describe('GET /api/marketing/track/click', () => {
     const { GET } = await import('@/app/api/marketing/track/click/route')
     const res = await GET(makeNextReq('http://localhost/api/marketing/track/click?url=https%3A%2F%2Fdest.com&sid=s1') as never)
     expect(mockRpc).toHaveBeenCalledWith('marketing_increment_score', expect.objectContaining({ p_contact_id: 'c1' }))
-    expect((res as { redirect_url: string }).redirect_url).toBe('https://dest.com')
+    expect((res as unknown as { redirect_url: string }).redirect_url).toBe('https://dest.com')
   })
 
   it('redirects without DB update when send not found', async () => {
@@ -277,6 +277,6 @@ describe('POST /api/marketing/contacts/import', () => {
     })
     const res = await POST(req)
     expect((res as { status: number }).status).toBe(200)
-    expect((res as { body: { imported: number } }).body.imported).toBe(2)
+    expect((res as unknown as { body: { imported: number } }).body.imported).toBe(2)
   })
 })

@@ -244,7 +244,7 @@ describe('POST /api/marketing/bounce-poll', () => {
 
     const { POST } = await import('@/app/api/marketing/bounce-poll/route')
     const res = await POST(makeMockRequest({}))
-    expect((res as { body: { processed: number } }).body.processed).toBe(0)
+    expect((res as unknown as { body: { processed: number } }).body.processed).toBe(0)
   })
 
   it('skips user when IMAP credentials are missing', async () => {
@@ -262,7 +262,7 @@ describe('POST /api/marketing/bounce-poll', () => {
     const { POST } = await import('@/app/api/marketing/bounce-poll/route')
     const res = await POST(makeMockRequest({}))
     expect(mockPollBounces).not.toHaveBeenCalled()
-    expect((res as { body: { processed: number } }).body.processed).toBe(0)
+    expect((res as unknown as { body: { processed: number } }).body.processed).toBe(0)
   })
 
   it('handles IMAP errors gracefully and returns 200', async () => {
@@ -354,7 +354,7 @@ describe('POST /api/marketing/bounce-poll', () => {
 
     const { POST } = await import('@/app/api/marketing/bounce-poll/route')
     const res = await POST(makeMockRequest({}))
-    expect((res as { body: { processed: number } }).body.processed).toBeGreaterThanOrEqual(1)
+    expect((res as unknown as { body: { processed: number } }).body.processed).toBeGreaterThanOrEqual(1)
     expect(mockRpc).toHaveBeenCalledWith('marketing_increment_score', expect.objectContaining({ p_contact_id: 'c1' }))
   })
 })
