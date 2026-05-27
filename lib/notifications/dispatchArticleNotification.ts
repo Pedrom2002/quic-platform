@@ -52,6 +52,7 @@ export async function dispatchArticleNotification(ctx: ArticleDispatchContext): 
     const { data: templates } = await supabase
       .from('message_templates')
       .select('*')
+      .eq('organization_id', ctx.event.organization_id)
       .eq('template_key', 'article_new')
       .in('channel', channels)
       .in('language', languages)
