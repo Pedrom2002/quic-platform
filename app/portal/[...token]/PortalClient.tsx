@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { calcProgress } from '@/lib/event-status'
-import type { PortalItem, PortalItemFile } from '@/lib/portal/data'
+import type { PortalItem, PortalItemFile, PortalArticle } from '@/lib/portal/data'
 
 const FALLBACK_HERO_VIDEO = '/qp_1630-148614385.mp4'
 const FALLBACK_CONTENT_VIDEO = ''
@@ -23,6 +23,7 @@ interface Props {
   heroVideo: string | null
   contentVideo: string | null
   eventFiles: PortalItemFile[]
+  articles: PortalArticle[]
 }
 
 function useCountUp(target: number, duration = 900, delay = 0): number {
@@ -130,18 +131,23 @@ function FileRow({ file }: { file: PortalItemFile }) {
   )
 }
 
+type TabKey = 'progress' | 'documents' | 'clipping'
+
 function TabBar({
   active,
   hasDocuments,
+  hasClipping,
   onChange,
 }: {
-  active: 'progress' | 'documents'
+  active: TabKey
   hasDocuments: boolean
-  onChange: (tab: 'progress' | 'documents') => void
+  hasClipping: boolean
+  onChange: (tab: TabKey) => void
 }) {
-  const tabs: Array<{ key: 'progress' | 'documents'; label: string }> = [
+  const tabs: Array<{ key: TabKey; label: string }> = [
     { key: 'progress', label: 'Progresso' },
     ...(hasDocuments ? [{ key: 'documents' as const, label: 'Documentos' }] : []),
+    ...(hasClipping ? [{ key: 'clipping' as const, label: 'Imprensa' }] : []),
   ]
 
   if (tabs.length < 2) return null
@@ -163,6 +169,45 @@ function TabBar({
           </button>
         ))}
       </div>
+    </div>
+  )
+}
+
+function ClippingTab({ articles }: { articles: PortalArticle[] }) {
+  return (
+    <div className="anim-tab-fade">
+      <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
+        <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">
+          Imprensa
+        </h2>
+        <span className="text-xs text-stone-400 tabular-nums">
+          {String(articles.length).padStart(2, '0')}
+        </span>
+      </div>
+      <ul className="space-y-4">
+        {articles.map(article => (
+          <li key={article.id}>
+            <a
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group block bg-stone-50 border border-stone-100 rounded px-4 py-3 hover:border-stone-300 hover:bg-white transition-colors"
+            >
+              <p className="text-sm font-medium text-stone-900 group-hover:underline leading-snug">
+                {article.title}
+              </p>
+              <div className="flex items-center gap-3 mt-1.5">
+                {article.source && (
+                  <span className="text-xs text-stone-400">{article.source}</span>
+                )}
+                <span className="text-xs text-stone-300 tabular-nums">
+                  {format(new Date(article.created_at), "d MMM yyyy", { locale: pt })}
+                </span>
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
@@ -376,6 +421,7 @@ export function PortalClient({
   heroVideo,
   contentVideo,
   eventFiles,
+  articles,
 }: Props) {
   const resolvedHeroVideo = heroVideo ?? FALLBACK_HERO_VIDEO
   const resolvedContentVideo = contentVideo ?? FALLBACK_CONTENT_VIDEO
@@ -397,6 +443,7 @@ export function PortalClient({
   const [animatingOut, setAnimatingOut] = useState<Set<string>>(new Set())
   const [justCompleted, setJustCompleted] = useState<Set<string>>(new Set())
   const [isConnected, setIsConnected] = useState(false)
+  const [activeTab, setActiveTab] = useState<TabKey>('progress')
 
   const displayedPercent = useCountUp(progress.percent, 2200, 1100)
 
@@ -609,12 +656,26 @@ export function PortalClient({
 
       {/* Content */}
       <section className="relative bg-white">
+        <TabBar
+          active={activeTab}
+          hasDocuments={eventFiles.length > 0}
+          hasClipping={articles.length > 0}
+          onChange={setActiveTab}
+        />
         <section className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-16 md:py-24">
-          <ProgressTab
-            items={items}
-            animatingOut={animatingOut}
-            justCompleted={justCompleted}
-          />
+          {activeTab === 'progress' && (
+            <ProgressTab
+              items={items}
+              animatingOut={animatingOut}
+              justCompleted={justCompleted}
+            />
+          )}
+          {activeTab === 'documents' && (
+            <DocumentsTab files={eventFiles} />
+          )}
+          {activeTab === 'clipping' && (
+            <ClippingTab articles={articles} />
+          )}
         </section>
       </section>
 
