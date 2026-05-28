@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Users, Bell, ExternalLink, MapPin, Pencil, UserCog, Paperclip, ListTree, Newspaper } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Users, Bell, ExternalLink, MapPin, Pencil, UserCog, Paperclip, ListTree, Newspaper, Dices } from 'lucide-react'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { EVENT_STATUS_LABEL, EVENT_STATUS_COLOR, calcProgress } from '@/lib/event-status'
@@ -38,6 +38,7 @@ export default async function EventDetailPage({
     { data: notifActivity },
     { data: clientActivity },
     { data: eventNotes },
+    { count: raffleCount },
   ] = await Promise.all([
     supabase.from('events').select('*, event_types(name, color, icon)').eq('id', eventId).single(),
     supabase.from('event_checklist_items').select('status').eq('event_id', eventId),
@@ -50,6 +51,7 @@ export default async function EventDetailPage({
     supabase.from('notification_jobs').select('id, channel, status, sent_at, created_at, clients(full_name)').eq('event_id', eventId).order('created_at', { ascending: false }).limit(30),
     supabase.from('event_clients').select('id, role, created_at, clients(full_name)').eq('event_id', eventId).order('created_at', { ascending: false }).limit(30),
     supabase.from('event_notes').select('*, author:team_members!author_id(id, full_name, avatar_url)').eq('event_id', eventId).order('created_at', { ascending: false }).limit(50).returns<EventNoteWithAuthor[]>(),
+    supabase.from('event_raffles').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
   ])
 
   if (!eventRaw) notFound()
@@ -178,7 +180,7 @@ export default async function EventDetailPage({
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-7 gap-4">
+      <div className="grid grid-cols-8 gap-4">
         <Link
           href={`/dashboard/events/${eventId}/checklist`}
           className="flex items-center gap-3 p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 hover:shadow transition-all"
@@ -267,6 +269,19 @@ export default async function EventDetailPage({
           <div>
             <p className="text-slate-800 font-medium">Cliping</p>
             <p className="text-slate-400 text-xs">{articleCount ?? 0} artigos</p>
+          </div>
+        </Link>
+
+        <Link
+          href={`/dashboard/events/${eventId}/sorteios` as never}
+          className="flex items-center gap-3 p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 hover:shadow transition-all"
+        >
+          <div className="p-2 bg-emerald-50 rounded-lg">
+            <Dices className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div>
+            <p className="text-slate-800 font-medium">Sorteios</p>
+            <p className="text-slate-400 text-xs">{raffleCount ?? 0} sorteios</p>
           </div>
         </Link>
       </div>
