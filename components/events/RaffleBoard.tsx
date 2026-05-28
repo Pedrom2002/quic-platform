@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { Plus, Trash2, Users, Trophy, Shuffle, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import type { EventRaffleWithEntries, EventRaffleEntry } from '@/types/app'
+import type { EventRaffleWithEntries } from '@/types/app'
 import {
+  loadRafflesAction,
   createRaffleAction,
   deleteRaffleAction,
   addEntryAction,
@@ -31,7 +32,13 @@ export function RaffleBoard({ eventId, initialRaffles }: RaffleBoardProps) {
   const [bulkText, setBulkText] = useState<Record<string, string>>({})
   const [showBulk, setShowBulk] = useState<string | null>(null)
   const [addingBulk, setAddingBulk] = useState<string | null>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
+  async function reloadRaffleEntries(raffleId: string) {
+    const updated = await loadRafflesAction(eventId)
+    const fresh = updated.find(r => r.id === raffleId)
+    if (fresh) {
+      setRaffles(prev => prev.map(r => r.id === raffleId ? fresh : r))
+    }
+  }
 
   async function handleCreate() {
     if (!newTitle.trim()) return
@@ -51,6 +58,7 @@ export function RaffleBoard({ eventId, initialRaffles }: RaffleBoardProps) {
   }
 
   async function handleDelete(raffleId: string) {
+    if (!window.confirm('Eliminar este sorteio? Esta acção não pode ser desfeita.')) return
     try {
       await deleteRaffleAction(raffleId)
       setRaffles(prev => prev.filter(r => r.id !== raffleId))
@@ -85,19 +93,7 @@ export function RaffleBoard({ eventId, initialRaffles }: RaffleBoardProps) {
     setAddingBulk(raffleId)
     try {
       const count = await addEntriesBulkAction(raffleId, names)
-      const newEntries: EventRaffleEntry[] = names.map((participant_name, i) => ({
-        id: `temp-${Date.now()}-${i}`,
-        raffle_id: raffleId,
-        organization_id: '',
-        participant_name,
-        is_winner: false,
-        drawn_at: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }))
-      setRaffles(prev => prev.map(r =>
-        r.id === raffleId ? { ...r, entries: [...r.entries, ...newEntries] } : r
-      ))
+      await reloadRaffleEntries(raffleId)
       setBulkText(prev => ({ ...prev, [raffleId]: '' }))
       setShowBulk(null)
       toast.success(`${count} participantes adicionados`)
@@ -140,19 +136,7 @@ export function RaffleBoard({ eventId, initialRaffles }: RaffleBoardProps) {
     setAddingBulk(raffleId)
     try {
       const count = await addEntriesBulkAction(raffleId, names)
-      const newEntries: EventRaffleEntry[] = names.map((participant_name, i) => ({
-        id: `temp-${Date.now()}-${i}`,
-        raffle_id: raffleId,
-        organization_id: '',
-        participant_name,
-        is_winner: false,
-        drawn_at: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }))
-      setRaffles(prev => prev.map(r =>
-        r.id === raffleId ? { ...r, entries: [...r.entries, ...newEntries] } : r
-      ))
+      await reloadRaffleEntries(raffleId)
       toast.success(`${count} participantes importados do CSV`)
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Erro inesperado')
@@ -308,22 +292,20 @@ export function RaffleBoard({ eventId, initialRaffles }: RaffleBoardProps) {
                     </button>
                     <span className="text-slate-300">·</span>
                     <button
-                      onClick={() => fileRef.current?.click()}
+                      onClick={() => {
+                        const input = document.createElement('input')
+                        input.type = 'file'
+                        input.accept = '.csv,.txt'
+                        input.onchange = e => {
+                          const file = (e.target as HTMLInputElement).files?.[0]
+                          if (file) handleCSV(raffle.id, file)
+                        }
+                        input.click()
+                      }}
                       className="text-xs text-slate-500 hover:text-slate-700 underline underline-offset-2"
                     >
                       Importar CSV
                     </button>
-                    <input
-                      ref={fileRef}
-                      type="file"
-                      accept=".csv,.txt"
-                      className="hidden"
-                      onChange={e => {
-                        const file = e.target.files?.[0]
-                        if (file) handleCSV(raffle.id, file)
-                        e.target.value = ''
-                      }}
-                    />
                   </div>
 
                   {showBulk === raffle.id && (
