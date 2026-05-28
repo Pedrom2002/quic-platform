@@ -1,10 +1,12 @@
 'use server'
 
-import { requireOrgAuth, requireOrgAuthFull } from '@/lib/supabase/actions'
+import { getOrgAuth, requireOrgAuthFull } from '@/lib/supabase/actions'
 import type { EventRaffle, EventRaffleEntry, EventRaffleWithEntries } from '@/types/app'
 
 export async function loadRafflesAction(eventId: string): Promise<EventRaffleWithEntries[]> {
-  const { supabase } = await requireOrgAuth()
+  const auth = await getOrgAuth()
+  if (!auth) return []
+  const { supabase } = auth
 
   const { data, error } = await supabase
     .from('event_raffles')
@@ -39,12 +41,13 @@ export async function createRaffleAction(
 }
 
 export async function deleteRaffleAction(raffleId: string): Promise<void> {
-  const { supabase } = await requireOrgAuth()
+  const { supabase, member } = await requireOrgAuthFull()
 
   const { error } = await supabase
     .from('event_raffles')
     .delete()
     .eq('id', raffleId)
+    .eq('organization_id', member.organization_id)
 
   if (error) throw new Error(error.message)
 }
@@ -54,6 +57,8 @@ export async function addEntryAction(
   participantName: string
 ): Promise<EventRaffleEntry> {
   const { supabase, member } = await requireOrgAuthFull()
+
+  if (!participantName.trim()) throw new Error('Nome do participante não pode estar vazio')
 
   const { data, error } = await supabase
     .from('event_raffle_entries')
@@ -95,19 +100,22 @@ export async function addEntriesBulkAction(
 }
 
 export async function drawWinnerAction(raffleId: string): Promise<EventRaffleEntry> {
-  const { supabase } = await requireOrgAuth()
+  const { supabase, member } = await requireOrgAuthFull()
 
   // Reset previous winners for this raffle
-  await supabase
+  const { error: resetError } = await supabase
     .from('event_raffle_entries')
     .update({ is_winner: false, drawn_at: null })
     .eq('raffle_id', raffleId)
+    .eq('organization_id', member.organization_id)
+  if (resetError) throw new Error(resetError.message)
 
   // Pick a random entry
   const { data: entries, error: fetchError } = await supabase
     .from('event_raffle_entries')
     .select('id')
     .eq('raffle_id', raffleId)
+    .eq('organization_id', member.organization_id)
 
   if (fetchError) throw new Error(fetchError.message)
   if (!entries?.length) throw new Error('Sem participantes para sortear')
@@ -118,16 +126,19 @@ export async function drawWinnerAction(raffleId: string): Promise<EventRaffleEnt
     .from('event_raffle_entries')
     .update({ is_winner: true, drawn_at: new Date().toISOString() })
     .eq('id', winner.id)
+    .eq('organization_id', member.organization_id)
     .select()
     .single()
 
   if (error) throw new Error(error.message)
 
   // Mark raffle as completed
-  await supabase
+  const { error: statusError } = await supabase
     .from('event_raffles')
     .update({ status: 'completed', drawn_at: new Date().toISOString() })
     .eq('id', raffleId)
+    .eq('organization_id', member.organization_id)
+  if (statusError) throw new Error(statusError.message)
 
   return data as EventRaffleEntry
 }
@@ -136,12 +147,13 @@ export async function updateRaffleStatusAction(
   raffleId: string,
   status: 'draft' | 'active' | 'completed'
 ): Promise<void> {
-  const { supabase } = await requireOrgAuth()
+  const { supabase, member } = await requireOrgAuthFull()
 
   const { error } = await supabase
     .from('event_raffles')
     .update({ status })
     .eq('id', raffleId)
+    .eq('organization_id', member.organization_id)
 
   if (error) throw new Error(error.message)
 }
