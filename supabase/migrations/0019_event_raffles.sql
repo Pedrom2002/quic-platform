@@ -32,8 +32,12 @@ CREATE TABLE event_raffle_entries (
   participant_name text NOT NULL CHECK (char_length(participant_name) >= 1 AND char_length(participant_name) <= 200),
   is_winner        boolean NOT NULL DEFAULT false,
   drawn_at         timestamptz,
-  created_at       timestamptz DEFAULT now()
+  created_at       timestamptz DEFAULT now(),
+  updated_at       timestamptz DEFAULT now()
 );
+
+CREATE TRIGGER event_raffle_entries_updated_at BEFORE UPDATE ON event_raffle_entries
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 CREATE INDEX idx_ere_raffle ON event_raffle_entries(raffle_id);
 CREATE INDEX idx_ere_org    ON event_raffle_entries(organization_id);
