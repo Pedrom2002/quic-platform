@@ -1,7 +1,7 @@
 -- =========================================================
 -- Quic Platform — Marketing: organization_id real (fix arquitetural)
 -- =========================================================
--- A migration 0019 escopou a RLS do marketing por organização através de
+-- A migration 0027 escopou a RLS do marketing por organização através de
 -- subqueries created_by → team_members. Funciona, mas é frágil e destoa do
 -- resto do modelo, que tem organization_id explícito em cada tabela.
 --
@@ -112,7 +112,7 @@ CREATE INDEX IF NOT EXISTS idx_marketing_contacts_org  ON marketing_contacts(org
 CREATE INDEX IF NOT EXISTS idx_marketing_sends_org     ON marketing_sends(organization_id);
 
 -- ---------------------------------------------------------
--- 5. RLS direta por organization_id (substitui 0015 "team access" e 0019 "org access")
+-- 5. RLS direta por organization_id (substitui 0015 "team access" e 0027 "org access")
 -- ---------------------------------------------------------
 DROP POLICY IF EXISTS "team access" ON marketing_lists;
 DROP POLICY IF EXISTS "org access"  ON marketing_lists;
@@ -137,3 +137,19 @@ DROP POLICY IF EXISTS "org access"  ON marketing_sends;
 CREATE POLICY "org access" ON marketing_sends FOR ALL
   USING (organization_id = get_user_org_id())
   WITH CHECK (organization_id = get_user_org_id());
+
+-- marketing_sender_warmup (criada em 0026) tinha a mesma falha: "team access
+-- warmup" permitia a qualquer membro de qualquer org ver/alterar os contadores
+-- de warmup de TODOS. É keyed por user_id (sem organization_id), por isso
+-- escopa-se via user_id → team_members.organization_id. As funções
+-- marketing_check_warmup_limit / marketing_record_send são SECURITY DEFINER e
+-- continuam a funcionar (ignoram RLS).
+DROP POLICY IF EXISTS "team access warmup" ON marketing_sender_warmup;
+DROP POLICY IF EXISTS "org access warmup"  ON marketing_sender_warmup;
+CREATE POLICY "org access warmup" ON marketing_sender_warmup FOR ALL
+  USING (
+    user_id IN (SELECT auth_user_id FROM team_members WHERE organization_id = get_user_org_id())
+  )
+  WITH CHECK (
+    user_id IN (SELECT auth_user_id FROM team_members WHERE organization_id = get_user_org_id())
+  );

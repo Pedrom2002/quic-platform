@@ -1,4 +1,4 @@
-// Aplica as migrations 0019–0021 (isolamento de tenant do marketing + claim
+// Aplica as migrations 0027–0029 (isolamento de tenant do marketing + claim
 // atómico de notification_jobs). São escritas de forma idempotente
 // (IF EXISTS / IF NOT EXISTS / CREATE OR REPLACE), por isso é seguro re-correr.
 //
@@ -22,9 +22,9 @@ if (!DB_URL) {
 }
 
 const migrations = [
-  '0019_marketing_rls_org_scope.sql',
-  '0020_marketing_organization_id.sql',
-  '0021_notification_jobs_atomic_claim.sql',
+  '0027_marketing_rls_org_scope.sql',
+  '0028_marketing_organization_id.sql',
+  '0029_notification_jobs_atomic_claim.sql',
 ]
 
 const { default: postgres } = await import('postgres')
@@ -46,5 +46,5 @@ for (const file of migrations) {
   }
 }
 
-console.log('\n✅ Migrations 0019–0021 aplicadas com sucesso.')
+console.log('\n✅ Migrations 0027–0029 aplicadas com sucesso.')
 await sql.end()

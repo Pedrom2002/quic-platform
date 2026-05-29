@@ -102,6 +102,8 @@ describe('POST /api/marketing/send', () => {
   beforeEach(() => {
     mockFrom.mockReset()
     mockRpc.mockReset()
+    // marketing_check_warmup_limit → allowed; marketing_record_send → ignored
+    mockRpc.mockResolvedValue({ data: { allowed: true, daily_limit: 50, sent_today: 0 } })
     mockVerifyQStash.mockReset()
     mockVerifyQStash.mockResolvedValue(true)
     mockSendMarketingEmail.mockReset()

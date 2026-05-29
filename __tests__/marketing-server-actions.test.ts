@@ -63,22 +63,42 @@ describe('createList', () => {
 // ─── saveSmtpCredentials / testSmtpCredentials ─────────────────────────────────
 
 describe('saveSmtpCredentials', () => {
-  it('throws when not authenticated', async () => {
+  // Form-action signature: (prevState, formData) → { ok, message } (never throws).
+  it('returns not-authenticated message when no user', async () => {
     mockGetUser.mockResolvedValueOnce({ data: { user: null } })
     const { saveSmtpCredentials } = await import('@/app/dashboard/marketing/settings/actions')
-    await expect(saveSmtpCredentials(fd({ password: 'x' }))).rejects.toThrow('Não autenticado')
+    expect(await saveSmtpCredentials(null, fd({ password: 'x' }))).toEqual({ ok: false, message: 'Não autenticado' })
   })
 
-  it('encrypts the password and upserts by user_id', async () => {
+  it('encrypts the password, upserts by user_id and verifies', async () => {
     const upsert = vi.fn().mockResolvedValue({ error: null })
-    mockFrom.mockReturnValue({ upsert })
+    mockFrom.mockReturnValue({ upsert, update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }) })
+    mockTestSmtp.mockResolvedValueOnce(undefined)
     const { saveSmtpCredentials } = await import('@/app/dashboard/marketing/settings/actions')
-    await saveSmtpCredentials(fd({ host: 'smtp.x.com', port: '587', username: 'u', password: 'secret', from_name: 'S' }))
+    const res = await saveSmtpCredentials(null, fd({ host: 'smtp.x.com', port: '587', username: 'u', password: 'secret', from_name: 'S' }))
     expect(mockEncrypt).toHaveBeenCalledWith('secret')
     expect(upsert).toHaveBeenCalledWith(
       expect.objectContaining({ user_id: 'user-1', host: 'smtp.x.com', port: 587, password_enc: 'enc-pw' }),
       { onConflict: 'user_id' },
     )
+    expect(res).toEqual({ ok: true, message: 'Guardado e verificado com sucesso' })
+  })
+
+  it('returns ok with a warning when verification fails', async () => {
+    mockFrom.mockReturnValue({ upsert: vi.fn().mockResolvedValue({ error: null }), update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }) })
+    mockTestSmtp.mockRejectedValueOnce(new Error('auth failed'))
+    const { saveSmtpCredentials } = await import('@/app/dashboard/marketing/settings/actions')
+    const res = await saveSmtpCredentials(null, fd({ host: 'h', port: '587', username: 'u', password: 'p', from_name: 'S' }))
+    expect(res.ok).toBe(true)
+    expect(res.message).toContain('verificação falhou')
+  })
+
+  it('returns error when upsert fails', async () => {
+    mockFrom.mockReturnValue({ upsert: vi.fn().mockResolvedValue({ error: { message: 'db down' } }) })
+    const { saveSmtpCredentials } = await import('@/app/dashboard/marketing/settings/actions')
+    const res = await saveSmtpCredentials(null, fd({ host: 'h', port: '587', username: 'u', password: 'p', from_name: 'S' }))
+    expect(res.ok).toBe(false)
+    expect(res.message).toContain('Erro ao guardar')
   })
 })
 

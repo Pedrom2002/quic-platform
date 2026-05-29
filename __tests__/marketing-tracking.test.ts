@@ -62,6 +62,8 @@ function makeUpdateChain() {
 
 function makeUpsertChain(error: unknown = null) {
   return {
+    // dedup pre-query: .select('email,status,list_id').in('email', emails)
+    select: vi.fn().mockReturnValue({ in: vi.fn().mockResolvedValue({ data: [] }) }),
     upsert: vi.fn().mockResolvedValue({ error }),
   }
 }
@@ -157,8 +159,10 @@ describe('GET /api/marketing/track/open', () => {
     expect((res as { status: number }).status).toBe(200)
   })
 
-  it('records open and returns pixel when status=sent', async () => {
-    const singleChain = makeSingleChain({ id: 's1', contact_id: 'c1', status: 'sent' })
+  it('records open (bottom pixel) and returns pixel when status=sent', async () => {
+    // Real user: top pixel loaded earlier (> BOT_GAP_MS ago), now bottom fires → counts open.
+    const topAt = new Date(Date.now() - 60_000).toISOString()
+    const singleChain = makeSingleChain({ id: 's1', contact_id: 'c1', status: 'sent', pixel_top_at: topAt, pixel_bottom_at: null, bot_suspected: false })
     const updateChain = makeUpdateChain()
     let calls = 0
     mockFrom.mockImplementation(() => {
@@ -168,13 +172,15 @@ describe('GET /api/marketing/track/open', () => {
     })
 
     const { GET } = await import('@/app/api/marketing/track/open/route')
-    const res = await GET(makeNextReq('http://localhost/api/marketing/track/open?sid=s1') as never)
+    const res = await GET(makeNextReq('http://localhost/api/marketing/track/open?sid=s1&pos=bottom') as never)
     expect((res as { status: number }).status).toBe(200)
     expect(mockRpc).toHaveBeenCalledWith('marketing_increment_score', expect.objectContaining({ p_contact_id: 'c1' }))
   })
 
-  it('returns pixel without update when status is already opened', async () => {
-    mockFrom.mockReturnValue(makeSingleChain({ id: 's1', contact_id: 'c1', status: 'opened' }))
+  it('returns pixel without DB update when both pixels already recorded', async () => {
+    const t = new Date(Date.now() - 60_000).toISOString()
+    // both pixels already set + no pos → update is empty → no .update()/rpc
+    mockFrom.mockReturnValue(makeSingleChain({ id: 's1', contact_id: 'c1', status: 'opened', pixel_top_at: t, pixel_bottom_at: t, bot_suspected: false }))
     const { GET } = await import('@/app/api/marketing/track/open/route')
     await GET(makeNextReq('http://localhost/api/marketing/track/open?sid=s1') as never)
     expect(mockRpc).not.toHaveBeenCalled()
@@ -291,6 +297,8 @@ describe('POST /api/marketing/contacts/import', () => {
     })
     const res = await POST(req)
     expect((res as { status: number }).status).toBe(200)
-    expect((res as unknown as { body: { imported: number } }).body.imported).toBe(2)
+    const body = (res as unknown as { body: { submitted: number; inserted_or_existing: number } }).body
+    expect(body.submitted).toBe(2)
+    expect(body.inserted_or_existing).toBe(2)
   })
 })
