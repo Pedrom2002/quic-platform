@@ -29,7 +29,7 @@ export default async function MarketingContactsPage() {
               <p className="font-medium">{list.name}</p>
               <p className="text-sm text-zinc-500">{list.contact_count} contactos</p>
             </div>
-            <CsvUpload listId={list.id} onImported={() => {}} />
+            <CsvUpload listId={list.id} />
           </div>
         ))}
         {!lists?.length && (

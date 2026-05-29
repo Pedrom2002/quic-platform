@@ -1,15 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Papa from 'papaparse'
 import ExcelJS from 'exceljs'
 
 interface Props {
   listId: string
-  onImported: (count: number) => void
+  onImported?: (count: number) => void
 }
 
 export function CsvUpload({ listId, onImported }: Props) {
+  const router = useRouter()
   const [rows, setRows] = useState<Record<string, string>[]>([])
   const [mapping, setMapping] = useState<Record<string, string>>({})
   const [headers, setHeaders] = useState<string[]>([])
@@ -68,10 +70,11 @@ export function CsvUpload({ listId, onImported }: Props) {
     })
 
     if (res.ok) {
-      onImported(contacts.length)
+      onImported?.(contacts.length)
       setRows([])
       setHeaders([])
       setMapping({})
+      router.refresh()
     }
     setLoading(false)
   }
