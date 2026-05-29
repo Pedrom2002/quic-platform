@@ -63,7 +63,7 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
       {repliesList.length > 0 && (
         <div className="mb-8 border-2 border-emerald-200 bg-emerald-50/50 rounded-lg p-5">
           <h2 className="text-sm font-semibold text-emerald-900 mb-3 flex items-center gap-2">
-            💬 {repliesList.length} {repliesList.length === 1 ? 'resposta' : 'respostas'}
+            {repliesList.length} {repliesList.length === 1 ? 'resposta recebida' : 'respostas recebidas'}
           </h2>
           <div className="space-y-3">
             {repliesList.map(s => {
@@ -114,7 +114,7 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
                       {STATUS_LABELS[s.status] ?? s.status}
                     </span>
                     {s.bot_suspected && (
-                      <span className="ml-1 text-xs text-zinc-400" title="Open por proxy (Apple/Gmail)">🤖</span>
+                      <span className="ml-1 text-[10px] text-zinc-400 uppercase tracking-wide" title="Open detetado via proxy (Apple/Gmail)">proxy</span>
                     )}
                   </td>
                   <td className="px-4 py-3">{contact?.engagement_score ?? 0}</td>
