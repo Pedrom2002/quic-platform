@@ -1,4 +1,16 @@
+import { createHmac } from 'node:crypto'
+import { getEnv } from '@/lib/env'
+
 const VAR_RE = /\{\{(\w+)\}\}/g
+
+// HMAC do par sid|url para o tracking de cliques. Sem isto, o endpoint de
+// redirect aceitaria qualquer URL (open redirect → phishing a partir de um
+// domínio confiável). A chave é o CRON_SECRET (sempre presente, >=32 chars).
+export function signTrackedLink(sid: string, url: string): string {
+  return createHmac('sha256', getEnv().CRON_SECRET)
+    .update(`${sid}|${url}`)
+    .digest('base64url')
+}
 
 export interface ContactVars {
   nome?: string
@@ -32,7 +44,8 @@ function rewriteLinks(html: string, sendId: string, appUrl: string): string {
     (_, url) => {
       if (url.includes('/api/marketing/unsubscribe')) return `href="${url}"`
       const encoded = encodeURIComponent(url)
-      return `href="${appUrl}/api/marketing/track/click?sid=${sendId}&url=${encoded}"`
+      const sig = signTrackedLink(sendId, url)
+      return `href="${appUrl}/api/marketing/track/click?sid=${sendId}&url=${encoded}&sig=${sig}"`
     }
   )
 }

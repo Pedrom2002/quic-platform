@@ -23,7 +23,10 @@ export async function POST(req: Request) {
   const { error } = await supabase.from('marketing_contacts')
     .upsert(parsed.data.contacts, { onConflict: 'list_id,email', ignoreDuplicates: true })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[marketing/contacts/import]', error.message)
+    return NextResponse.json({ error: 'Erro ao importar contactos' }, { status: 500 })
+  }
 
   return NextResponse.json({ imported: parsed.data.contacts.length })
 }

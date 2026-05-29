@@ -16,7 +16,7 @@ Plataforma multi-tenant de gestão de eventos e comunicação automatizada com c
 | AI | Google Gemini |
 | UI | shadcn/ui + Tailwind CSS v4 |
 | Validação | Zod |
-| Testes | Vitest (92%+ cobertura) |
+| Testes | Vitest (unit, ~86% em `lib`/`app/api`/`schemas`) + Playwright (e2e) |
 
 ---
 
@@ -110,13 +110,23 @@ Brevo → POST /api/webhooks/resend (delivery events)
     Regista evento em notification_log
 ```
 
-### Cron (`/api/cron/process-scheduled`)
+### Crons (Vercel Cron — ver `vercel.json`)
 
-Corre a cada hora via Vercel Cron. Processa jobs `queued` sem `qstash_message_id` que já passaram o `scheduled_at`. Usa update atómico para `processing` como guarda de idempotência antes de publicar no QStash.
+Todos os crons são invocados por GET com `Authorization: Bearer ${CRON_SECRET}`, validado em tempo constante (`lib/cron-auth.ts`).
+
+| Path | Schedule | Função |
+|------|----------|--------|
+| `/api/cron/process-scheduled` | `0 * * * *` (de hora a hora) | Envia notificações agendadas |
+| `/api/cron/marketing-followup` | `0 9 * * *` (diário) | Dispara follow-ups de campanhas |
+| `/api/marketing/bounce-poll` | `0 */6 * * *` (de 6 em 6 h) | Faz polling IMAP de bounces |
+
+> Schedules abaixo de "diário" requerem o plano **Vercel Pro**. No plano Hobby, ajustar para `@daily`.
+
+`process-scheduled` reclama os jobs `queued` (passado o `scheduled_at`) através da função SQL `claim_notification_jobs`, que usa `FOR UPDATE SKIP LOCKED` — garante que execuções concorrentes nunca processam o mesmo job (sem envios duplicados).
 
 ### Portal de cliente (`/portal/[token]`)
 
-Acesso público via token URL-safe armazenado em `events.portal_token`. Mostra apenas itens `is_client_visible = true`.
+Acesso público via token URL-safe (12 bytes aleatórios, **não** JWT) armazenado em `events.portal_token`. Mostra apenas itens `is_client_visible = true`. Revogação via `events.portal_token_expires_at`.
 
 ---
 
@@ -132,13 +142,16 @@ components/
   events/            ChecklistBoard
   ui/                Componentes shadcn/ui
 lib/
-  notifications/     Dispatcher, template renderer, canais (email)
-  portal/            JWT sign/verify
+  notifications/     Dispatcher, template renderer, canais (email/sms)
+  marketing/         SMTP, IMAP, render/tracking, scoring, crypto
+  portal/            Geração de token aleatório + leitura de dados do portal
   qstash/            Verificação de assinatura
+  cron-auth.ts       Validação constant-time do CRON_SECRET
   supabase/          Clientes browser / server / admin
-schemas/             Validação Zod (eventos, checklist)
+schemas/             Validação Zod (eventos, checklist, ficheiros, etc.)
 types/               DTOs da app + tipos gerados pelo Supabase
 __tests__/           Testes unitários Vitest
+e2e/                 Testes end-to-end Playwright
 ```
 
 ---
@@ -146,11 +159,12 @@ __tests__/           Testes unitários Vitest
 ## Testes
 
 ```bash
-npm test              # correr todos os testes
-npm test -- --watch   # modo watch
+npm test               # unit tests (Vitest)
+npm run test:coverage  # com relatório de cobertura
+npm run test:watch     # modo watch
 ```
 
-Cobertura atual: `lib/notifications/template-renderer`, `lib/notifications/channels/email`, `lib/portal/token`, `lib/event-status`.
+A cobertura é medida sobre `lib/`, `app/api/` e `schemas/` **e** sobre as Server Actions em `app/dashboard/**/actions.ts`, com thresholds mínimos definidos em `vitest.config.ts` (linhas 80%, funções 80%, branches 70%). O CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) corre lint, typecheck, testes com cobertura e `npm audit`.
 
 ---
 

@@ -14,9 +14,21 @@ export async function createCampaign(formData: FormData) {
   const scheduleNow = formData.get('schedule_now') === 'true'
   const scheduledAt = formData.get('scheduled_at') as string | null
 
+  const listId = formData.get('list_id') as string
+
+  // Ownership da lista: o dispatch usa o admin client (ignora RLS), por isso
+  // confirmamos aqui — com o cliente RLS-scoped — que a lista pertence à org
+  // do utilizador antes de criar/disparar a campanha.
+  const { data: list } = await supabase
+    .from('marketing_lists')
+    .select('id')
+    .eq('id', listId)
+    .single()
+  if (!list) throw new Error('Lista não encontrada')
+
   const { data: campaign, error } = await supabase.from('marketing_campaigns').insert({
     name: formData.get('name') as string,
-    list_id: formData.get('list_id') as string,
+    list_id: listId,
     created_by: user.id,
     subject_template: formData.get('subject_template') as string,
     body_template: formData.get('body_template') as string,

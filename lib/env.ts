@@ -4,9 +4,6 @@ const schema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url('NEXT_PUBLIC_SUPABASE_URL must be a valid URL'),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1, 'NEXT_PUBLIC_SUPABASE_ANON_KEY is required'),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY is required'),
-  // Optional — was used when portal tokens were JWTs; now tokens are random bytes
-  // (lib/portal/token.ts). Keep for dev seed script compatibility but not required at runtime.
-  PORTAL_JWT_SECRET: z.string().min(32).optional(),
   CRON_SECRET: z
     .string()
     .min(32, 'CRON_SECRET must be at least 32 characters — generate with: openssl rand -hex 32'),

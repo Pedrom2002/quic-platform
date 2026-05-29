@@ -6,6 +6,7 @@
  *   - POST /api/marketing/contacts/import
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { signTrackedLink } from '@/lib/marketing/render'
 
 // ─── Hoisted mocks ────────────────────────────────────────────────────────────
 
@@ -93,14 +94,25 @@ describe('GET /api/marketing/track/click', () => {
     expect((res as { status: number }).status).toBe(400)
   })
 
-  it('redirects to url when sid is absent', async () => {
+  it('returns 400 (no open redirect) when sid is absent', async () => {
     const { GET } = await import('@/app/api/marketing/track/click/route')
     const res = await GET(makeNextReq('http://localhost/api/marketing/track/click?url=https%3A%2F%2Fdestination.com') as never)
     expect(mockFrom).not.toHaveBeenCalled()
-    expect((res as unknown as { redirect_url: string }).redirect_url).toBe('https://destination.com')
+    expect((res as { status: number }).status).toBe(400)
   })
 
-  it('records click and redirects when sid is present and send found', async () => {
+  it('returns 400 (no open redirect) when sig is missing or invalid', async () => {
+    const { GET } = await import('@/app/api/marketing/track/click/route')
+    // sid present but no signature → must not redirect (this was the open-redirect vector)
+    const noSig = await GET(makeNextReq('http://localhost/api/marketing/track/click?url=https%3A%2F%2Fevil.com&sid=s1') as never)
+    expect((noSig as { status: number }).status).toBe(400)
+    // tampered signature
+    const badSig = await GET(makeNextReq('http://localhost/api/marketing/track/click?url=https%3A%2F%2Fevil.com&sid=s1&sig=deadbeef') as never)
+    expect((badSig as { status: number }).status).toBe(400)
+    expect(mockFrom).not.toHaveBeenCalled()
+  })
+
+  it('records click and redirects when sid + valid sig present and send found', async () => {
     const singleChain = makeSingleChain({ id: 's1', contact_id: 'c1' })
     const updateChain = makeUpdateChain()
     let calls = 0
@@ -110,16 +122,18 @@ describe('GET /api/marketing/track/click', () => {
       return updateChain
     })
 
+    const sig = signTrackedLink('s1', 'https://dest.com')
     const { GET } = await import('@/app/api/marketing/track/click/route')
-    const res = await GET(makeNextReq('http://localhost/api/marketing/track/click?url=https%3A%2F%2Fdest.com&sid=s1') as never)
+    const res = await GET(makeNextReq(`http://localhost/api/marketing/track/click?url=https%3A%2F%2Fdest.com&sid=s1&sig=${sig}`) as never)
     expect(mockRpc).toHaveBeenCalledWith('marketing_increment_score', expect.objectContaining({ p_contact_id: 'c1' }))
     expect((res as unknown as { redirect_url: string }).redirect_url).toBe('https://dest.com')
   })
 
-  it('redirects without DB update when send not found', async () => {
+  it('redirects without DB update when send not found (valid sig)', async () => {
     mockFrom.mockReturnValue(makeSingleChain(null))
+    const sig = signTrackedLink('missing', 'https://dest.com')
     const { GET } = await import('@/app/api/marketing/track/click/route')
-    await GET(makeNextReq('http://localhost/api/marketing/track/click?url=https%3A%2F%2Fdest.com&sid=missing') as never)
+    await GET(makeNextReq(`http://localhost/api/marketing/track/click?url=https%3A%2F%2Fdest.com&sid=missing&sig=${sig}`) as never)
     expect(mockRpc).not.toHaveBeenCalled()
   })
 })

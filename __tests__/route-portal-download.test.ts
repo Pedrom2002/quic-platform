@@ -1,4 +1,20 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
+
+// event_files lookup result — controllable per test. Default: file exists.
+const { mockMaybeSingle } = vi.hoisted(() => ({
+  mockMaybeSingle: vi.fn(),
+}))
+
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: vi.fn(() => ({
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      maybeSingle: mockMaybeSingle,
+    })),
+  })),
+}))
 
 vi.mock('next/server', () => {
   class MockNextResponse {
@@ -30,9 +46,22 @@ function makeRequest(params: Record<string, string>): unknown {
 describe('GET /api/portal/download', () => {
   const originalFetch = global.fetch
 
+  beforeEach(() => {
+    // Default: the requested url corresponds to a stored event file.
+    mockMaybeSingle.mockReset()
+    mockMaybeSingle.mockResolvedValue({ data: { id: 'file-1' } })
+  })
+
   afterEach(() => {
     global.fetch = originalFetch
     vi.restoreAllMocks()
+  })
+
+  it('returns 403 when url is allowed-host but not a stored event file', async () => {
+    mockMaybeSingle.mockResolvedValueOnce({ data: null })
+    const req = makeRequest({ url: 'https://project.supabase.co/storage/v1/not-ours.pdf' })
+    const res = await GET(req as never)
+    expect(res.status).toBe(403)
   })
 
   it('returns 400 when url param is missing', async () => {

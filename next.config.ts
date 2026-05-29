@@ -14,6 +14,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
+      // Matches MAX_FILE_SIZE (schemas/file.schema.ts): Server Actions like
+      // uploadFileAction / uploadFileToItemAction receive files via FormData,
+      // so the body limit must cover a full 50 MB upload.
       bodySizeLimit: '50mb',
     },
     typedRoutes: true,

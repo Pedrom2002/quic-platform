@@ -1,12 +1,27 @@
+import { timingSafeEqual } from 'node:crypto'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { SCORE_DELTA } from '@/lib/marketing/scoring'
+import { signTrackedLink } from '@/lib/marketing/render'
 
 export async function GET(request: NextRequest) {
   const sid = request.nextUrl.searchParams.get('sid')
   const url = request.nextUrl.searchParams.get('url')
+  const sig = request.nextUrl.searchParams.get('sig')
 
   if (!url || (!url.startsWith('https://') && !url.startsWith('http://'))) {
+    return new NextResponse('Bad Request', { status: 400 })
+  }
+
+  // Anti open-redirect: só redirecionamos para URLs que o próprio sistema
+  // assinou ao injetar o tracking. Sem assinatura válida (sid + url) → 400.
+  if (!sid || !sig) {
+    return new NextResponse('Bad Request', { status: 400 })
+  }
+  const expected = signTrackedLink(sid, url)
+  const sigBuf = Buffer.from(sig)
+  const expBuf = Buffer.from(expected)
+  if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
     return new NextResponse('Bad Request', { status: 400 })
   }
 

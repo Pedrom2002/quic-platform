@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server'
-import { verifyQStashSignature } from '@/lib/qstash/verify'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getEnv } from '@/lib/env'
+import { isValidCronAuth } from '@/lib/cron-auth'
 import { pollBounces } from '@/lib/marketing/imap'
 import { SCORE_DELTA } from '@/lib/marketing/scoring'
 
-export async function POST(request: Request) {
-  const clonedForSig = request.clone()
-  if (!await verifyQStashSignature(clonedForSig)) {
-    return NextResponse.json({ error: 'Assinatura inválida' }, { status: 401 })
+// Invocado pelo Vercel Cron (GET de 6 em 6 horas — ver vercel.json) com
+// Authorization: Bearer ${CRON_SECRET}.
+export async function GET(request: Request) {
+  const authHeader = request.headers.get('authorization')
+  if (!isValidCronAuth(authHeader, getEnv().CRON_SECRET)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const supabase = createAdminClient()

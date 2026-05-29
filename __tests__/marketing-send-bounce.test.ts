@@ -211,15 +211,22 @@ describe('POST /api/marketing/send', () => {
   })
 })
 
-// ─── POST /api/marketing/bounce-poll ─────────────────────────────────────────
+// ─── GET /api/marketing/bounce-poll (Vercel Cron + CRON_SECRET) ──────────────
 
-describe('POST /api/marketing/bounce-poll', () => {
+const CRON_SECRET = 'test-cron-secret-minimum-32-chars-pad!'
+function makeCronRequest(authHeader?: string): Request {
+  return new Request('http://localhost/api/marketing/bounce-poll', {
+    method: 'GET',
+    headers: authHeader ? { authorization: authHeader } : {},
+  })
+}
+
+describe('GET /api/marketing/bounce-poll', () => {
   beforeEach(() => {
+    process.env.CRON_SECRET = CRON_SECRET
     mockFrom.mockReset()
     mockRpc.mockReset()
     mockRpc.mockResolvedValue({ data: null, error: null })
-    mockVerifyQStash.mockReset()
-    mockVerifyQStash.mockResolvedValue(true)
     mockPollBounces.mockReset()
     mockPollBounces.mockResolvedValue([])
     mockNextResponseJson.mockImplementation((body: unknown, init?: { status?: number }) => ({
@@ -228,11 +235,15 @@ describe('POST /api/marketing/bounce-poll', () => {
     }))
   })
 
-  it('returns 401 when QStash signature is invalid', async () => {
-    mockVerifyQStash.mockResolvedValueOnce(false)
-    const { POST } = await import('@/app/api/marketing/bounce-poll/route')
-    const req = makeMockRequest({})
-    const res = await POST(req)
+  it('returns 401 when authorization header is missing', async () => {
+    const { GET } = await import('@/app/api/marketing/bounce-poll/route')
+    const res = await GET(makeCronRequest())
+    expect((res as { status: number }).status).toBe(401)
+  })
+
+  it('returns 401 when authorization header is wrong', async () => {
+    const { GET } = await import('@/app/api/marketing/bounce-poll/route')
+    const res = await GET(makeCronRequest('Bearer wrong-secret'))
     expect((res as { status: number }).status).toBe(401)
   })
 
@@ -242,8 +253,8 @@ describe('POST /api/marketing/bounce-poll', () => {
       in: vi.fn().mockResolvedValue({ data: [] }),
     })
 
-    const { POST } = await import('@/app/api/marketing/bounce-poll/route')
-    const res = await POST(makeMockRequest({}))
+    const { GET } = await import('@/app/api/marketing/bounce-poll/route')
+    const res = await GET(makeCronRequest(`Bearer ${CRON_SECRET}`))
     expect((res as unknown as { body: { processed: number } }).body.processed).toBe(0)
   })
 
@@ -259,8 +270,8 @@ describe('POST /api/marketing/bounce-poll', () => {
       return {}
     })
 
-    const { POST } = await import('@/app/api/marketing/bounce-poll/route')
-    const res = await POST(makeMockRequest({}))
+    const { GET } = await import('@/app/api/marketing/bounce-poll/route')
+    const res = await GET(makeCronRequest(`Bearer ${CRON_SECRET}`))
     expect(mockPollBounces).not.toHaveBeenCalled()
     expect((res as unknown as { body: { processed: number } }).body.processed).toBe(0)
   })
@@ -280,8 +291,8 @@ describe('POST /api/marketing/bounce-poll', () => {
     })
     mockPollBounces.mockRejectedValueOnce(new Error('IMAP connection refused'))
 
-    const { POST } = await import('@/app/api/marketing/bounce-poll/route')
-    const res = await POST(makeMockRequest({}))
+    const { GET } = await import('@/app/api/marketing/bounce-poll/route')
+    const res = await GET(makeCronRequest(`Bearer ${CRON_SECRET}`))
     expect((res as { status: number }).status).toBe(200)
   })
 
@@ -307,8 +318,8 @@ describe('POST /api/marketing/bounce-poll', () => {
       return {}
     })
 
-    const { POST } = await import('@/app/api/marketing/bounce-poll/route')
-    const res = await POST(makeMockRequest({}))
+    const { GET } = await import('@/app/api/marketing/bounce-poll/route')
+    const res = await GET(makeCronRequest(`Bearer ${CRON_SECRET}`))
     expect(mockRpc).not.toHaveBeenCalled()
     expect((res as { status: number }).status).toBe(200)
   })
@@ -331,8 +342,6 @@ describe('POST /api/marketing/bounce-poll', () => {
         return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: creds }) }
       }
       if (table === 'marketing_contacts') {
-        // First call: maybeSingle to find contact by email
-        // Second call: update to mark as bounced
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
@@ -352,8 +361,8 @@ describe('POST /api/marketing/bounce-poll', () => {
       return {}
     })
 
-    const { POST } = await import('@/app/api/marketing/bounce-poll/route')
-    const res = await POST(makeMockRequest({}))
+    const { GET } = await import('@/app/api/marketing/bounce-poll/route')
+    const res = await GET(makeCronRequest(`Bearer ${CRON_SECRET}`))
     expect((res as unknown as { body: { processed: number } }).body.processed).toBeGreaterThanOrEqual(1)
     expect(mockRpc).toHaveBeenCalledWith('marketing_increment_score', expect.objectContaining({ p_contact_id: 'c1' }))
   })

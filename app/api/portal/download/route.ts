@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const ALLOWED_SUFFIXES = [
   '.public.blob.vercel-storage.com',
@@ -25,6 +26,21 @@ export async function GET(request: NextRequest) {
 
   const allowed = ALLOWED_SUFFIXES.some(s => parsed.hostname.endsWith(s))
   if (!allowed) {
+    return new NextResponse('Forbidden', { status: 403 })
+  }
+
+  // Anti open-proxy: só fazemos stream de URLs que correspondem a um ficheiro
+  // realmente armazenado (event_files.blob_url). Sem isto, o endpoint público
+  // serviria conteúdo arbitrário de qualquer projeto Supabase / blob Vercel
+  // sob o nosso domínio.
+  const supabase = createAdminClient()
+  const { data: file } = await supabase
+    .from('event_files')
+    .select('id')
+    .eq('blob_url', url)
+    .limit(1)
+    .maybeSingle()
+  if (!file) {
     return new NextResponse('Forbidden', { status: 403 })
   }
 

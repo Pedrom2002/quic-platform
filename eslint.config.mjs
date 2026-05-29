@@ -3,7 +3,19 @@ import nextConfig from 'eslint-config-next'
 const config = [
   ...nextConfig,
   {
-    // TODO: fix these React 19 strict rules in UI components
+    // Legacy components predating the React 19 compiler lint rules.
+    // Scoped off here (instead of globally) so all NEW/other code is held to
+    // the standard. Tracked for incremental refactor.
+    files: [
+      'app/dashboard/page.tsx',
+      // glob (not literal): brackets in [...token] are a minimatch char-class
+      '**/PortalClient.tsx',
+      'components/contacts/EditContactDialog.tsx',
+      'components/events/ChecklistBoard.tsx',
+      'components/events/TaskDetailPanel.tsx',
+      'components/events/TaskSidePanel.tsx',
+      'components/events/checklist/ChecklistItemRow.tsx',
+    ],
     rules: {
       'react-hooks/purity': 'off',
       'react-hooks/refs': 'off',

@@ -10,7 +10,6 @@ describe('getEnv', () => {
     'BLOB_READ_WRITE_TOKEN',
   ]
   const optionalKeys = [
-    'PORTAL_JWT_SECRET',
     'QSTASH_CURRENT_SIGNING_KEY',
     'QSTASH_NEXT_SIGNING_KEY',
   ]
@@ -26,7 +25,6 @@ describe('getEnv', () => {
     process.env.CRON_SECRET = 'cron-secret-32-chars-minimum-pad!!'
     process.env.NEXT_PUBLIC_APP_URL = 'https://app.example.com'
     process.env.BLOB_READ_WRITE_TOKEN = 'vercel_blob_rw_test_token'
-    process.env.PORTAL_JWT_SECRET = 'secret-32-chars-minimum-padding!!'
     process.env.QSTASH_CURRENT_SIGNING_KEY = 'current-key'
     process.env.QSTASH_NEXT_SIGNING_KEY = 'next-key'
   })
@@ -44,16 +42,8 @@ describe('getEnv', () => {
     expect(env.NEXT_PUBLIC_SUPABASE_URL).toBe('https://test.supabase.co')
     expect(env.NEXT_PUBLIC_SUPABASE_ANON_KEY).toBe('anon-key')
     expect(env.SUPABASE_SERVICE_ROLE_KEY).toBe('service-role-key')
-    expect(env.PORTAL_JWT_SECRET).toBe('secret-32-chars-minimum-padding!!')
     expect(env.QSTASH_CURRENT_SIGNING_KEY).toBe('current-key')
     expect(env.QSTASH_NEXT_SIGNING_KEY).toBe('next-key')
-  })
-
-  it('PORTAL_JWT_SECRET is optional — startup succeeds without it', async () => {
-    delete process.env.PORTAL_JWT_SECRET
-    const { getEnv } = await import('@/lib/env')
-    const env = getEnv()
-    expect(env.PORTAL_JWT_SECRET).toBeUndefined()
   })
 
   it('returns undefined for optional keys when not set', async () => {

@@ -2,7 +2,15 @@
   "crons": [
     {
       "path": "/api/cron/process-scheduled",
-      "schedule": "0 0 * * *"
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/marketing-followup",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/marketing/bounce-poll",
+      "schedule": "0 */6 * * *"
     }
   ],
   "functions": {

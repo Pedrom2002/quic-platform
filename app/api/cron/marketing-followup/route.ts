@@ -2,11 +2,14 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Client } from '@upstash/qstash'
 import { getEnv } from '@/lib/env'
+import { isValidCronAuth } from '@/lib/cron-auth'
 
-export async function POST(request: Request) {
+// Invocado pelo Vercel Cron (GET diário — ver vercel.json) com
+// Authorization: Bearer ${CRON_SECRET}.
+export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
   const env = getEnv()
-  if (authHeader !== `Bearer ${env.CRON_SECRET}`) {
+  if (!isValidCronAuth(authHeader, env.CRON_SECRET)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

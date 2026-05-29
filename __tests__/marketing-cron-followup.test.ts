@@ -1,5 +1,5 @@
 /**
- * Tests for POST /api/cron/marketing-followup
+ * Tests for GET /api/cron/marketing-followup
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
@@ -62,14 +62,14 @@ function makeUpdateChain() {
 
 function makeRequest(authHeader?: string) {
   return new Request('http://localhost/api/cron/marketing-followup', {
-    method: 'POST',
+    method: 'GET',
     headers: authHeader ? { authorization: authHeader } : {},
   })
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe('POST /api/cron/marketing-followup', () => {
+describe('GET /api/cron/marketing-followup', () => {
   const CRON_SECRET = 'test-cron-secret-minimum-32-chars-pad!'
 
   beforeEach(() => {
@@ -91,22 +91,22 @@ describe('POST /api/cron/marketing-followup', () => {
   })
 
   it('returns 401 when authorization header is wrong', async () => {
-    const { POST } = await import('@/app/api/cron/marketing-followup/route')
-    const res = await POST(makeRequest('Bearer wrong'))
+    const { GET } = await import('@/app/api/cron/marketing-followup/route')
+    const res = await GET(makeRequest('Bearer wrong'))
     expect((res as { status: number }).status).toBe(401)
   })
 
   it('returns 401 when authorization header is missing', async () => {
-    const { POST } = await import('@/app/api/cron/marketing-followup/route')
-    const res = await POST(makeRequest())
+    const { GET } = await import('@/app/api/cron/marketing-followup/route')
+    const res = await GET(makeRequest())
     expect((res as { status: number }).status).toBe(401)
   })
 
   it('returns {dispatched:0} when no active campaigns', async () => {
     mockFrom.mockReturnValue(makeChain([]))
 
-    const { POST } = await import('@/app/api/cron/marketing-followup/route')
-    const res = await POST(makeRequest(`Bearer ${CRON_SECRET}`))
+    const { GET } = await import('@/app/api/cron/marketing-followup/route')
+    const res = await GET(makeRequest(`Bearer ${CRON_SECRET}`))
     expect((res as { status: number }).status).toBe(200)
     expect((res as unknown as { body: { dispatched: number } }).body.dispatched).toBe(0)
   })
@@ -131,8 +131,8 @@ describe('POST /api/cron/marketing-followup', () => {
       return makeChain([eligibleSend])                  // eligible sends
     })
 
-    const { POST } = await import('@/app/api/cron/marketing-followup/route')
-    const res = await POST(makeRequest(`Bearer ${CRON_SECRET}`))
+    const { GET } = await import('@/app/api/cron/marketing-followup/route')
+    const res = await GET(makeRequest(`Bearer ${CRON_SECRET}`))
     expect(mockPublishJSON).not.toHaveBeenCalled()
     expect((res as unknown as { body: { dispatched: number } }).body.dispatched).toBe(0)
   })
@@ -156,8 +156,8 @@ describe('POST /api/cron/marketing-followup', () => {
       return makeUpdateChain()                              // update send
     })
 
-    const { POST } = await import('@/app/api/cron/marketing-followup/route')
-    const res = await POST(makeRequest(`Bearer ${CRON_SECRET}`))
+    const { GET } = await import('@/app/api/cron/marketing-followup/route')
+    const res = await GET(makeRequest(`Bearer ${CRON_SECRET}`))
     expect((res as { status: number }).status).toBe(200)
     expect((res as unknown as { body: { dispatched: number } }).body.dispatched).toBe(1)
     expect(mockPublishJSON).toHaveBeenCalledTimes(1)
@@ -183,8 +183,8 @@ describe('POST /api/cron/marketing-followup', () => {
       return makeChain([]) // no eligible sends
     })
 
-    const { POST } = await import('@/app/api/cron/marketing-followup/route')
-    const res = await POST(makeRequest(`Bearer ${CRON_SECRET}`))
+    const { GET } = await import('@/app/api/cron/marketing-followup/route')
+    const res = await GET(makeRequest(`Bearer ${CRON_SECRET}`))
     expect((res as unknown as { body: { dispatched: number } }).body.dispatched).toBe(0)
     expect(mockPublishJSON).not.toHaveBeenCalled()
   })

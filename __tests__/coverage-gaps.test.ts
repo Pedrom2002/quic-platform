@@ -600,28 +600,31 @@ describe('cron/process-scheduled additional branches', () => {
     return { headers: { get: (h: string) => h === 'authorization' ? authHeader : null } }
   }
 
+  // claim_notification_jobs RPC: route awaits supabase.rpc(...) directly.
+  function makeClaim(data: unknown[]) {
+    return { then: (r: (v: unknown) => void) => Promise.resolve({ data, error: null }).then(r) }
+  }
+  // notification_jobs chain: remaining-count query (select.eq.is.lte -> {count}) + update.eq
+  function jobsChain(count: number) {
+    return {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          is: vi.fn().mockReturnValue({ lte: vi.fn().mockResolvedValue({ count }) }),
+        }),
+      }),
+      update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }),
+    }
+  }
+
   it('returns 200 with failed:1 when no QSTASH_TOKEN and email client has no email', async () => {
     delete process.env.QSTASH_TOKEN
     const { createAdminClient } = await import('@/lib/supabase/admin')
 
     vi.mocked(createAdminClient).mockReturnValue({
+      rpc: vi.fn(() => makeClaim([{ id: 'j1', event_id: 'e1', client_id: 'c1', channel: 'email',
+        rendered_subject: 'Hi', rendered_body: 'Body' }])),
       from: vi.fn().mockImplementation((table: string) => {
-        if (table === 'notification_jobs') {
-          return {
-            select: vi.fn().mockReturnThis(),
-            eq: vi.fn().mockReturnThis(),
-            is: vi.fn().mockReturnThis(),
-            lte: vi.fn().mockReturnThis(),
-            update: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({ error: null }),
-            }),
-            limit: vi.fn().mockResolvedValue({
-              data: [{ id: 'j1', event_id: 'e1', client_id: 'c1', channel: 'email',
-                rendered_subject: 'Hi', rendered_body: 'Body', qstash_message_id: null }],
-              error: null,
-            }),
-          }
-        }
+        if (table === 'notification_jobs') return jobsChain(0)
         if (table === 'clients') {
           return {
             select: vi.fn().mockReturnThis(),
@@ -644,29 +647,18 @@ describe('cron/process-scheduled additional branches', () => {
     expect((res as unknown as { body: { failed: number } }).body.failed).toBe(1)
   })
 
-  it('logs warning and sets hasMore:true when 51+ jobs pending', async () => {
+  it('logs warning and sets hasMore:true when jobs remain after the batch', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const { createAdminClient } = await import('@/lib/supabase/admin')
 
-    const jobs51 = Array.from({ length: 51 }, (_, i) => ({
-      id: `j${i}`, event_id: 'e1', client_id: 'c1', channel: 'email',
-      rendered_subject: 'Hi', rendered_body: 'Body', qstash_message_id: null,
-    }))
-
     vi.mocked(createAdminClient).mockReturnValue({
-      from: vi.fn().mockImplementation((table: string) => ({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        is: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockReturnThis(),
-        in: vi.fn().mockReturnThis(),
-        update: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue({ data: jobs51, error: null }),
-        then: (resolve: (v: unknown) => void) => {
-          if (table === 'notification_jobs') return Promise.resolve({ error: null }).then(resolve)
-          return Promise.resolve({ data: [] }).then(resolve)
-        },
-      })),
+      rpc: vi.fn(() => makeClaim([{ id: 'j1', event_id: 'e1', client_id: 'c1', channel: 'email',
+        rendered_subject: 'Hi', rendered_body: 'Body' }])),
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'notification_jobs') return jobsChain(50) // 50 still queued
+        if (table === 'clients') return { select: vi.fn().mockReturnThis(), in: vi.fn().mockResolvedValue({ data: [] }) }
+        return { select: vi.fn().mockReturnThis(), in: vi.fn().mockResolvedValue({ data: [] }) }
+      }),
     } as never)
 
     const { GET } = await import('@/app/api/cron/process-scheduled/route')

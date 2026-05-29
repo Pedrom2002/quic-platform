@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getEnv } from '@/lib/env'
+import { isValidCronAuth } from '@/lib/cron-auth'
 import { sendEmail, buildEmailHtml } from '@/lib/notifications/channels/email'
 import { sendSms } from '@/lib/notifications/channels/sms'
 import type { NotificationJobPayload } from '@/types/app'
@@ -14,35 +15,47 @@ export async function GET(request: Request) {
   }
 
   const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!isValidCronAuth(authHeader, cronSecret)) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
   const supabase = createAdminClient()
   const BATCH_SIZE = 50
 
-  const { data: jobsRaw, error: fetchErr } = await supabase
-    .from('notification_jobs')
-    .select('id, event_id, client_id, channel, rendered_subject, rendered_body, qstash_message_id')
-    .eq('status', 'queued')
-    .is('qstash_message_id', null)
-    .lte('scheduled_at', new Date().toISOString())
-    .limit(BATCH_SIZE + 1)
+  // Claim atómico (FOR UPDATE SKIP LOCKED no lado da BD): garante que execuções
+  // concorrentes nunca processam o mesmo job → sem envios duplicados.
+  type ClaimedJob = {
+    id: string
+    event_id: string
+    client_id: string
+    channel: string
+    rendered_subject: string | null
+    rendered_body: string
+  }
+  const claim = await supabase.rpc('claim_notification_jobs', { p_batch_size: BATCH_SIZE })
+  const fetchErr = claim.error
+  const jobs = (claim.data ?? null) as ClaimedJob[] | null
 
   if (fetchErr) {
-    console.error('[cron] erro ao buscar jobs:', fetchErr.message)
-    return NextResponse.json({ error: fetchErr.message }, { status: 500 })
+    console.error('[cron] erro ao reclamar jobs:', fetchErr.message)
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 
-  if (!jobsRaw?.length) {
+  if (!jobs?.length) {
     return NextResponse.json({ processed: 0, hasMore: false })
   }
 
-  const hasMore = jobsRaw.length > BATCH_SIZE
-  const jobs = hasMore ? jobsRaw.slice(0, BATCH_SIZE) : jobsRaw
+  // Sobraram jobs prontos para a próxima execução?
+  const { count: remaining } = await supabase
+    .from('notification_jobs')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'queued')
+    .is('qstash_message_id', null)
+    .lte('scheduled_at', new Date().toISOString())
+  const hasMore = (remaining ?? 0) > 0
 
   if (hasMore) {
-    console.warn(`[cron] fila tem mais de ${BATCH_SIZE} jobs pendentes`)
+    console.warn(`[cron] ainda há ${remaining} jobs pendentes após este lote`)
   }
 
   const clientIds = [...new Set(jobs.map(j => j.client_id))]
@@ -78,9 +91,12 @@ export async function GET(request: Request) {
 
         const res = await qstash.publishJSON({ url: workerUrl, body: payload, retries: 3 })
 
+        // Mantém status 'processing' + grava o message id; o worker
+        // (/api/workers/send-notification) move para 'delivered'/'failed'.
+        // NÃO voltar a 'queued' — seria re-reclamado pelo próximo cron.
         await supabase
           .from('notification_jobs')
-          .update({ status: 'queued', qstash_message_id: res.messageId })
+          .update({ qstash_message_id: res.messageId })
           .eq('id', job.id)
       })
     )
