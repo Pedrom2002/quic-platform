@@ -116,11 +116,10 @@ Todos os crons são invocados por GET com `Authorization: Bearer ${CRON_SECRET}`
 
 | Path | Schedule | Função |
 |------|----------|--------|
-| `/api/cron/process-scheduled` | `0 * * * *` (de hora a hora) | Envia notificações agendadas |
-| `/api/cron/marketing-followup` | `0 9 * * *` (diário) | Dispara follow-ups de campanhas |
-| `/api/marketing/bounce-poll` | `0 */6 * * *` (de 6 em 6 h) | Faz polling IMAP de bounces |
+| `/api/cron/process-scheduled` | `0 6 * * *` (diário) | Envia notificações agendadas |
+| `/api/cron/marketing-maintenance` | `0 7 * * *` (diário) | Follow-ups de campanhas + polling IMAP de bounces |
 
-> Schedules abaixo de "diário" requerem o plano **Vercel Pro**. No plano Hobby, ajustar para `@daily`.
+> O plano **Vercel Hobby** limita a **2 cron jobs, só diários** — por isso o follow-up e o bounce-poll estão agrupados em `marketing-maintenance`. Em **Pro** podes separá-los e usar schedules sub-diários (ex.: `process-scheduled` de hora a hora). As rotas `/api/cron/marketing-followup` e `/api/marketing/bounce-poll` continuam a existir para invocação manual/QStash.
 
 `process-scheduled` reclama os jobs `queued` (passado o `scheduled_at`) através da função SQL `claim_notification_jobs`, que usa `FOR UPDATE SKIP LOCKED` — garante que execuções concorrentes nunca processam o mesmo job (sem envios duplicados).
 

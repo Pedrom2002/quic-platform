@@ -2,15 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/process-scheduled",
-      "schedule": "0 * * * *"
+      "schedule": "0 6 * * *"
     },
     {
-      "path": "/api/cron/marketing-followup",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/marketing/bounce-poll",
-      "schedule": "0 */6 * * *"
+      "path": "/api/cron/marketing-maintenance",
+      "schedule": "0 7 * * *"
     }
   ],
   "functions": {
@@ -20,6 +16,7 @@
     "app/api/ai/generate-tasks/route.ts": { "maxDuration": 60 },
     "app/api/ai/risk-analysis/route.ts": { "maxDuration": 60 },
     "app/api/ai/suggest-assignee/route.ts": { "maxDuration": 60 },
-    "app/api/cron/process-scheduled/route.ts": { "maxDuration": 30 }
+    "app/api/cron/process-scheduled/route.ts": { "maxDuration": 30 },
+    "app/api/cron/marketing-maintenance/route.ts": { "maxDuration": 60 }
   }
 }
