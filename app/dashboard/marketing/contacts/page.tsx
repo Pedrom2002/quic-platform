@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createList } from './actions'
 import { CsvUpload } from '@/components/marketing/CsvUpload'
+import { ListContacts } from '@/components/marketing/ListContacts'
 
 export default async function MarketingContactsPage() {
   const supabase = await createClient()
@@ -8,6 +9,35 @@ export default async function MarketingContactsPage() {
     .from('marketing_lists')
     .select('id, name, contact_count, created_at')
     .order('created_at', { ascending: false })
+
+  type ContactRow = {
+    id: string
+    list_id: string
+    email: string
+    name: string | null
+    company: string | null
+    role: string | null
+    status: string
+    engagement_score: number
+  }
+
+  const listIds = (lists ?? []).map(l => l.id)
+  let allContacts: ContactRow[] = []
+  if (listIds.length) {
+    const { data } = await supabase
+      .from('marketing_contacts')
+      .select('id, list_id, email, name, company, role, status, engagement_score')
+      .in('list_id', listIds)
+      .order('created_at', { ascending: false })
+    allContacts = (data ?? []) as ContactRow[]
+  }
+
+  const contactsByList = new Map<string, ContactRow[]>()
+  for (const c of allContacts) {
+    const arr = contactsByList.get(c.list_id) ?? []
+    arr.push(c)
+    contactsByList.set(c.list_id, arr)
+  }
 
   return (
     <div className="p-8">
@@ -22,14 +52,21 @@ export default async function MarketingContactsPage() {
           </button>
         </form>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-6">
         {lists?.map(list => (
-          <div key={list.id} className="border rounded-lg p-4">
-            <div className="mb-3">
-              <p className="font-medium">{list.name}</p>
-              <p className="text-sm text-zinc-500">{list.contact_count} contactos</p>
+          <div key={list.id} className="border rounded-lg p-5 space-y-4">
+            <div>
+              <p className="font-medium text-lg">{list.name}</p>
             </div>
-            <CsvUpload listId={list.id} />
+            <ListContacts listId={list.id} contacts={contactsByList.get(list.id) ?? []} />
+            <details className="border-t pt-3">
+              <summary className="text-sm text-zinc-600 cursor-pointer hover:text-zinc-900">
+                Importar em massa (CSV / Excel)
+              </summary>
+              <div className="pt-3">
+                <CsvUpload listId={list.id} />
+              </div>
+            </details>
           </div>
         ))}
         {!lists?.length && (

@@ -55,18 +55,27 @@ ${contactStr || 'Unknown'}
 Return ONLY valid JSON with this structure (no markdown, no explanation):
 {"subject": "...", "body": "..."}`
 
-    const result = await model.generateContent(prompt)
-    const text = result.response.text().trim()
+    let text: string
+    try {
+      const result = await model.generateContent(prompt)
+      text = result.response.text().trim()
+    } catch (err) {
+      console.error('[generate-marketing-email] Gemini error:', err)
+      const msg = err instanceof Error ? err.message : 'AI error'
+      return Response.json({ error: msg }, { status: 500 })
+    }
 
     if (mode === 'opening-only') {
       return Response.json({ opening: text })
     }
 
+    const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim()
     try {
-      const parsed = JSON.parse(text)
+      const parsed = JSON.parse(cleaned)
       return Response.json(parsed)
     } catch {
-      return Response.json({ error: 'AI returned invalid JSON' }, { status: 500 })
+      console.error('[generate-marketing-email] invalid JSON:', cleaned.slice(0, 200))
+      return Response.json({ error: 'AI returned invalid JSON', raw: cleaned.slice(0, 500) }, { status: 500 })
     }
   })
 }
