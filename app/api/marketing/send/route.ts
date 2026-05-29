@@ -42,6 +42,14 @@ export async function POST(request: Request) {
       throw new Error('Missing required data')
     }
 
+    // Warmup check: rate limit per sender based on account age
+    const { data: warmup } = await supabase.rpc('marketing_check_warmup_limit', {
+      p_user_id: sender_user_id,
+    })
+    if (warmup && !warmup.allowed) {
+      throw new Error(`Limite diário atingido (${warmup.daily_limit}/dia durante warmup). Tente amanhã.`)
+    }
+
     const vars = {
       nome: contact.name ?? '',
       empresa: contact.company ?? '',
@@ -58,11 +66,14 @@ export async function POST(request: Request) {
 
     const htmlWithTracking = injectTracking(bodyHtml, send_id, appUrl)
 
+    const unsubscribeUrl = `${appUrl}/api/marketing/unsubscribe?sid=${send_id}`
     const messageId = await sendMarketingEmail({
       credentials: smtpCreds,
       to: contact.email,
       subject,
       html: htmlWithTracking,
+      unsubscribeUrl,
+      replyTo: smtpCreds.username,
     })
 
     await supabase.from('marketing_sends').update({
@@ -72,6 +83,8 @@ export async function POST(request: Request) {
       sent_at: new Date().toISOString(),
       message_id: messageId,
     }).eq('id', send_id)
+
+    await supabase.rpc('marketing_record_send', { p_user_id: sender_user_id })
 
     return NextResponse.json({ success: true })
   } catch (err) {

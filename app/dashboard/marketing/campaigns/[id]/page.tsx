@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { CampaignMetrics } from '@/components/marketing/CampaignMetrics'
 import { InsightsCard } from '@/components/marketing/InsightsCard'
+import { OpenHeatmap } from '@/components/marketing/OpenHeatmap'
 
 export default async function CampaignDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -17,9 +18,13 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
 
   const { data: sends } = await supabase
     .from('marketing_sends')
-    .select('id, status, sent_at, replied_at, reply_snippet, bot_suspected, marketing_contacts(name, company, email, engagement_score)')
+    .select('id, status, sent_at, opened_at, replied_at, reply_snippet, bot_suspected, marketing_contacts(name, company, email, engagement_score)')
     .eq('campaign_id', id)
     .order('sent_at', { ascending: false })
+
+  const realOpens = (sends ?? [])
+    .filter(s => s.opened_at && !s.bot_suspected)
+    .map(s => ({ opened_at: s.opened_at as string }))
 
   const total = sends?.length ?? 0
   const sent = sends?.filter(s => s.status !== 'pending').length ?? 0
@@ -88,6 +93,8 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
           </div>
         </div>
       )}
+
+      <OpenHeatmap opens={realOpens} />
 
       <InsightsCard campaignId={id} />
 

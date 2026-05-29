@@ -16,6 +16,7 @@ export function CsvUpload({ listId, onImported }: Props) {
   const [mapping, setMapping] = useState<Record<string, string>>({})
   const [headers, setHeaders] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
+  const [summary, setSummary] = useState<string | null>(null)
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -70,6 +71,19 @@ export function CsvUpload({ listId, onImported }: Props) {
     })
 
     if (res.ok) {
+      const data = await res.json() as {
+        submitted: number
+        skipped_blocked: number
+        already_in_list: number
+        duplicate_in_other_lists: number
+      }
+      const parts = [
+        `${data.submitted} processados`,
+        data.skipped_blocked > 0 ? `${data.skipped_blocked} ignorados (cancelados/bounce)` : null,
+        data.already_in_list > 0 ? `${data.already_in_list} já existiam nesta lista` : null,
+        data.duplicate_in_other_lists > 0 ? `${data.duplicate_in_other_lists} também noutras listas` : null,
+      ].filter(Boolean)
+      setSummary(parts.join(' · '))
       onImported?.(contacts.length)
       setRows([])
       setHeaders([])
@@ -84,6 +98,11 @@ export function CsvUpload({ listId, onImported }: Props) {
   return (
     <div className="space-y-3">
       <input type="file" accept=".csv,.xlsx,.xls" onChange={handleFile} className="text-sm" />
+      {summary && (
+        <div className="text-xs px-3 py-2 rounded bg-blue-50 border border-blue-200 text-blue-800">
+          {summary}
+        </div>
+      )}
       {headers.length > 0 && (
         <div className="space-y-2">
           <p className="text-sm font-medium">Mapear colunas:</p>

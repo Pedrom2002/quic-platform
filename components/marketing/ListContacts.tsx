@@ -20,9 +20,21 @@ type State = { ok: boolean; message: string } | null
 export function ListContacts({ listId, contacts }: { listId: string; contacts: Contact[] }) {
   const [open, setOpen] = useState(false)
   const [state, formAction, pending] = useActionState<State, FormData>(addContact, null)
-  const [showAll, setShowAll] = useState(false)
+  const [page, setPage] = useState(0)
+  const [query, setQuery] = useState('')
 
-  const visible = showAll ? contacts : contacts.slice(0, 5)
+  const PAGE_SIZE = 25
+  const filtered = query.trim()
+    ? contacts.filter(c => {
+        const q = query.toLowerCase()
+        return c.email.toLowerCase().includes(q) ||
+               (c.name?.toLowerCase().includes(q) ?? false) ||
+               (c.company?.toLowerCase().includes(q) ?? false)
+      })
+    : contacts
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const visible = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   return (
     <div className="space-y-3">
@@ -66,7 +78,17 @@ export function ListContacts({ listId, contacts }: { listId: string; contacts: C
       )}
 
       {contacts.length > 0 && (
-        <div className="border rounded-lg overflow-hidden">
+        <>
+          {contacts.length > 10 && (
+            <input
+              type="text"
+              placeholder="Pesquisar email, nome ou empresa..."
+              value={query}
+              onChange={e => { setQuery(e.target.value); setPage(0) }}
+              className="w-full border rounded px-3 py-1.5 text-sm"
+            />
+          )}
+          <div className="border rounded-lg overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-zinc-50 text-xs text-zinc-500 uppercase">
               <tr>
@@ -109,13 +131,21 @@ export function ListContacts({ listId, contacts }: { listId: string; contacts: C
               ))}
             </tbody>
           </table>
-          {contacts.length > 5 && (
-            <button onClick={() => setShowAll(s => !s)}
-              className="w-full text-center text-xs text-zinc-500 hover:text-zinc-900 py-2 border-t bg-zinc-50">
-              {showAll ? 'Mostrar menos' : `Ver todos (${contacts.length})`}
-            </button>
+          {pageCount > 1 && (
+            <div className="flex items-center justify-between border-t bg-zinc-50 px-3 py-2">
+              <p className="text-xs text-zinc-500">
+                {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} de {filtered.length}
+              </p>
+              <div className="flex gap-1">
+                <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
+                  className="px-2 py-1 text-xs rounded border bg-white disabled:opacity-40">Anterior</button>
+                <button onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))} disabled={page >= pageCount - 1}
+                  className="px-2 py-1 text-xs rounded border bg-white disabled:opacity-40">Seguinte</button>
+              </div>
+            </div>
           )}
         </div>
+        </>
       )}
     </div>
   )
