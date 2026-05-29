@@ -19,11 +19,20 @@ export function injectTracking(html: string, sendId: string, appUrl: string): st
 }
 
 function injectOpenPixel(html: string, sendId: string, appUrl: string): string {
-  const pixel = `<img src="${appUrl}/api/marketing/track/open?sid=${sendId}" width="1" height="1" style="display:none" alt="">`
-  if (html.includes('</body>')) {
-    return html.replace('</body>', `${pixel}</body>`)
+  const topPixel = `<img src="${appUrl}/api/marketing/track/open?sid=${sendId}&pos=top" width="1" height="1" style="display:none" alt="">`
+  const bottomPixel = `<img src="${appUrl}/api/marketing/track/open?sid=${sendId}&pos=bottom" width="1" height="1" style="display:none" alt="">`
+  let out = html
+  if (out.includes('<body')) {
+    out = out.replace(/(<body[^>]*>)/i, `$1${topPixel}`)
+  } else {
+    out = topPixel + out
   }
-  return html + pixel
+  if (out.includes('</body>')) {
+    out = out.replace('</body>', `${bottomPixel}</body>`)
+  } else {
+    out = out + bottomPixel
+  }
+  return out
 }
 
 function rewriteLinks(html: string, sendId: string, appUrl: string): string {

@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
     const htmlWithTracking = injectTracking(bodyHtml, send_id, appUrl)
 
-    await sendMarketingEmail({
+    const messageId = await sendMarketingEmail({
       credentials: smtpCreds,
       to: contact.email,
       subject,
@@ -70,6 +70,7 @@ export async function POST(request: Request) {
       subject_rendered: subject,
       body_rendered: htmlWithTracking,
       sent_at: new Date().toISOString(),
+      message_id: messageId,
     }).eq('id', send_id)
 
     return NextResponse.json({ success: true })
