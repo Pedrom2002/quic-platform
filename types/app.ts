@@ -282,3 +282,34 @@ export interface EventTaskFileLink {
   created_at: string
   file: EventFileWithUploader
 }
+
+// Sorteios
+export type RaffleStatus = 'draft' | 'active' | 'completed'
+
+export interface EventRaffle {
+  id: string
+  event_id: string
+  organization_id: string
+  title: string
+  description: string | null
+  prize: string | null
+  status: RaffleStatus
+  drawn_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface EventRaffleEntry {
+  id: string
+  raffle_id: string
+  organization_id: string
+  participant_name: string
+  is_winner: boolean
+  drawn_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface EventRaffleWithEntries extends EventRaffle {
+  entries: EventRaffleEntry[]
+}
