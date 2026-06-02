@@ -182,7 +182,7 @@ export default async function EventDetailPage({
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-9 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <Link
           href={`/dashboard/events/${eventId}/checklist`}
           className="flex items-center gap-3 p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 hover:shadow transition-all"
