@@ -91,6 +91,9 @@ describe('lib/portal/data getPortalData', () => {
       if (table === 'event_articles') {
         return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockResolvedValue({ data: [], error: null }) }
       }
+      if (table === 'event_reports') {
+        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockReturnValue({ order: vi.fn().mockResolvedValue({ data: [], error: null }) }) }
+      }
       return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null }) }
     })
     vi.mocked(createAdminClient).mockReturnValue({ from: mockFrom } as never)
@@ -127,7 +130,11 @@ describe('lib/portal/data getPortalData', () => {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
           in: vi.fn().mockResolvedValue({ data: [], error: null }),
-          order: vi.fn().mockResolvedValue({ data: [], error: null }),
+          // Awaitable for single `.order()`, chainable for `.order().order()`
+          order: vi.fn(() => Object.assign(
+            Promise.resolve({ data: [], error: null }),
+            { order: vi.fn().mockResolvedValue({ data: [], error: null }) },
+          )),
         }
       }),
     } as never)

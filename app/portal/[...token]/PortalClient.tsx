@@ -416,41 +416,41 @@ const REPORT_TYPE_LABEL: Record<string, string> = {
   contract: 'Execução de Contrato',
 }
 
+function ReportSection({ title, items }: { title: string; items: PortalReport[] }) {
+  if (!items.length) return null
+  return (
+    <div className="mb-8">
+      <h3 className="text-xs font-semibold tracking-widest uppercase text-stone-500 mb-4">{title}</h3>
+      <ul className="space-y-3">
+        {items.map(r => {
+          const downloadHref = `/api/portal/download?url=${encodeURIComponent(r.blob_url)}&name=${encodeURIComponent(r.file_name)}`
+          return (
+            <li key={r.id} className="bg-stone-50 border border-stone-100 rounded px-4 py-3 flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-stone-900 truncate">{r.title}</p>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  {r.file_name}
+                  {r.file_size ? ` · ${r.file_size < 1024 * 1024 ? `${Math.round(r.file_size / 1024)} KB` : `${(r.file_size / (1024 * 1024)).toFixed(1)} MB`}` : ''}
+                </p>
+              </div>
+              <a
+                href={downloadHref}
+                download={r.file_name}
+                className="text-xs text-stone-400 border border-stone-200 px-2 py-1 rounded hover:border-stone-400 hover:text-stone-600 transition-colors shrink-0"
+              >
+                ↓
+              </a>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
 function ReportsTab({ reports }: { reports: PortalReport[] }) {
   const technical = reports.filter(r => r.type === 'technical')
   const contract = reports.filter(r => r.type === 'contract')
-
-  function Section({ title, items }: { title: string; items: PortalReport[] }) {
-    if (!items.length) return null
-    return (
-      <div className="mb-8">
-        <h3 className="text-xs font-semibold tracking-widest uppercase text-stone-500 mb-4">{title}</h3>
-        <ul className="space-y-3">
-          {items.map(r => {
-            const downloadHref = `/api/portal/download?url=${encodeURIComponent(r.blob_url)}&name=${encodeURIComponent(r.file_name)}`
-            return (
-              <li key={r.id} className="bg-stone-50 border border-stone-100 rounded px-4 py-3 flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-stone-900 truncate">{r.title}</p>
-                  <p className="text-xs text-stone-400 mt-0.5">
-                    {r.file_name}
-                    {r.file_size ? ` · ${r.file_size < 1024 * 1024 ? `${Math.round(r.file_size / 1024)} KB` : `${(r.file_size / (1024 * 1024)).toFixed(1)} MB`}` : ''}
-                  </p>
-                </div>
-                <a
-                  href={downloadHref}
-                  download={r.file_name}
-                  className="text-xs text-stone-400 border border-stone-200 px-2 py-1 rounded hover:border-stone-400 hover:text-stone-600 transition-colors shrink-0"
-                >
-                  ↓
-                </a>
-              </li>
-            )
-          })}
-        </ul>
-      </div>
-    )
-  }
 
   return (
     <div className="anim-tab-fade">
@@ -462,8 +462,8 @@ function ReportsTab({ reports }: { reports: PortalReport[] }) {
           {String(reports.length).padStart(2, '0')}
         </span>
       </div>
-      <Section title={REPORT_TYPE_LABEL.technical} items={technical} />
-      <Section title={REPORT_TYPE_LABEL.contract} items={contract} />
+      <ReportSection title={REPORT_TYPE_LABEL.technical} items={technical} />
+      <ReportSection title={REPORT_TYPE_LABEL.contract} items={contract} />
     </div>
   )
 }
