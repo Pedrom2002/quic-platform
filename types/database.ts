@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -748,6 +753,178 @@ export type Database = {
           },
         ]
       }
+      event_raffle_entries: {
+        Row: {
+          created_at: string | null
+          drawn_at: string | null
+          id: string
+          is_winner: boolean
+          organization_id: string
+          participant_name: string
+          raffle_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          drawn_at?: string | null
+          id?: string
+          is_winner?: boolean
+          organization_id: string
+          participant_name: string
+          raffle_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          drawn_at?: string | null
+          id?: string
+          is_winner?: boolean
+          organization_id?: string
+          participant_name?: string
+          raffle_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_raffle_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_raffle_entries_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "event_raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_raffles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          drawn_at: string | null
+          event_id: string
+          id: string
+          organization_id: string
+          prize: string | null
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          drawn_at?: string | null
+          event_id: string
+          id?: string
+          organization_id: string
+          prize?: string | null
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          drawn_at?: string | null
+          event_id?: string
+          id?: string
+          organization_id?: string
+          prize?: string | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_raffles_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_raffles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_reports: {
+        Row: {
+          blob_pathname: string | null
+          blob_url: string
+          created_at: string
+          event_id: string
+          file_name: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          organization_id: string
+          title: string
+          type: Database["public"]["Enums"]["report_type"]
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          blob_pathname?: string | null
+          blob_url: string
+          created_at?: string
+          event_id: string
+          file_name: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          organization_id: string
+          title: string
+          type: Database["public"]["Enums"]["report_type"]
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          blob_pathname?: string | null
+          blob_url?: string
+          created_at?: string
+          event_id?: string
+          file_name?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          organization_id?: string
+          title?: string
+          type?: Database["public"]["Enums"]["report_type"]
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_reports_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_reports_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_task_files: {
         Row: {
           created_at: string | null
@@ -1136,6 +1313,7 @@ export type Database = {
           id: string
           list_id: string
           name: string
+          organization_id: string
           scheduled_at: string | null
           status: Database["public"]["Enums"]["marketing_campaign_status"]
           subject_template: string
@@ -1154,6 +1332,7 @@ export type Database = {
           id?: string
           list_id: string
           name: string
+          organization_id: string
           scheduled_at?: string | null
           status?: Database["public"]["Enums"]["marketing_campaign_status"]
           subject_template: string
@@ -1172,6 +1351,7 @@ export type Database = {
           id?: string
           list_id?: string
           name?: string
+          organization_id?: string
           scheduled_at?: string | null
           status?: Database["public"]["Enums"]["marketing_campaign_status"]
           subject_template?: string
@@ -1182,6 +1362,13 @@ export type Database = {
             columns: ["list_id"]
             isOneToOne: false
             referencedRelation: "marketing_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_campaigns_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -1195,6 +1382,7 @@ export type Database = {
           id: string
           list_id: string
           name: string | null
+          organization_id: string
           role: string | null
           status: Database["public"]["Enums"]["marketing_contact_status"]
           tags: string[]
@@ -1207,6 +1395,7 @@ export type Database = {
           id?: string
           list_id: string
           name?: string | null
+          organization_id: string
           role?: string | null
           status?: Database["public"]["Enums"]["marketing_contact_status"]
           tags?: string[]
@@ -1219,6 +1408,7 @@ export type Database = {
           id?: string
           list_id?: string
           name?: string | null
+          organization_id?: string
           role?: string | null
           status?: Database["public"]["Enums"]["marketing_contact_status"]
           tags?: string[]
@@ -1231,6 +1421,13 @@ export type Database = {
             referencedRelation: "marketing_lists"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "marketing_contacts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       marketing_lists: {
@@ -1240,6 +1437,7 @@ export type Database = {
           created_by: string
           id: string
           name: string
+          organization_id: string
         }
         Insert: {
           contact_count?: number
@@ -1247,6 +1445,7 @@ export type Database = {
           created_by: string
           id?: string
           name: string
+          organization_id: string
         }
         Update: {
           contact_count?: number
@@ -1254,12 +1453,46 @@ export type Database = {
           created_by?: string
           id?: string
           name?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_lists_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_sender_warmup: {
+        Row: {
+          daily_sent: number
+          first_send_at: string
+          last_send_at: string | null
+          total_sent: number
+          user_id: string
+        }
+        Insert: {
+          daily_sent?: number
+          first_send_at?: string
+          last_send_at?: string | null
+          total_sent?: number
+          user_id: string
+        }
+        Update: {
+          daily_sent?: number
+          first_send_at?: string
+          last_send_at?: string | null
+          total_sent?: number
+          user_id?: string
         }
         Relationships: []
       }
       marketing_sends: {
         Row: {
           body_rendered: string | null
+          bot_suspected: boolean
           campaign_id: string
           clicked_at: string | null
           contact_id: string
@@ -1267,13 +1500,20 @@ export type Database = {
           followup_count: number
           id: string
           last_followup_at: string | null
+          message_id: string | null
           opened_at: string | null
+          organization_id: string
+          pixel_bottom_at: string | null
+          pixel_top_at: string | null
+          replied_at: string | null
+          reply_snippet: string | null
           sent_at: string | null
           status: Database["public"]["Enums"]["marketing_send_status"]
           subject_rendered: string | null
         }
         Insert: {
           body_rendered?: string | null
+          bot_suspected?: boolean
           campaign_id: string
           clicked_at?: string | null
           contact_id: string
@@ -1281,13 +1521,20 @@ export type Database = {
           followup_count?: number
           id?: string
           last_followup_at?: string | null
+          message_id?: string | null
           opened_at?: string | null
+          organization_id: string
+          pixel_bottom_at?: string | null
+          pixel_top_at?: string | null
+          replied_at?: string | null
+          reply_snippet?: string | null
           sent_at?: string | null
           status?: Database["public"]["Enums"]["marketing_send_status"]
           subject_rendered?: string | null
         }
         Update: {
           body_rendered?: string | null
+          bot_suspected?: boolean
           campaign_id?: string
           clicked_at?: string | null
           contact_id?: string
@@ -1295,7 +1542,13 @@ export type Database = {
           followup_count?: number
           id?: string
           last_followup_at?: string | null
+          message_id?: string | null
           opened_at?: string | null
+          organization_id?: string
+          pixel_bottom_at?: string | null
+          pixel_top_at?: string | null
+          replied_at?: string | null
+          reply_snippet?: string | null
           sent_at?: string | null
           status?: Database["public"]["Enums"]["marketing_send_status"]
           subject_rendered?: string | null
@@ -1313,6 +1566,13 @@ export type Database = {
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "marketing_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_sends_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -1655,11 +1915,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_notification_jobs: {
+        Args: { p_batch_size: number }
+        Returns: {
+          channel: string
+          client_id: string
+          event_id: string
+          id: string
+          rendered_body: string
+          rendered_subject: string
+        }[]
+      }
       get_user_org_id: { Args: never; Returns: string }
+      marketing_check_warmup_limit: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       marketing_increment_score: {
         Args: { p_contact_id: string; p_delta: number }
         Returns: undefined
       }
+      marketing_record_send: { Args: { p_user_id: string }; Returns: undefined }
     }
     Enums: {
       marketing_campaign_status:
@@ -1677,6 +1953,8 @@ export type Database = {
         | "bounced"
         | "unsubscribed"
         | "failed"
+        | "replied"
+      report_type: "technical" | "contract"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1823,10 +2101,16 @@ export const Constants = {
         "bounced",
         "unsubscribed",
         "failed",
+        "replied",
       ],
+      report_type: ["technical", "contract"],
     },
   },
 } as const
+
+export type ReportType = 'technical' | 'contract'
+export type EventReport = Database['public']['Tables']['event_reports']['Row']
+export type EventArticle = Database['public']['Tables']['event_articles']['Row']
 
 // Aliases convenientes
 export type Organization = Database['public']['Tables']['organizations']['Row']
@@ -1850,5 +2134,3 @@ export type ChecklistItemFileLinkRow = Database['public']['Tables']['checklist_i
 export type EventTaskRow = Database['public']['Tables']['event_tasks']['Row']
 export type EventTaskNoteRow = Database['public']['Tables']['event_task_notes']['Row']
 export type EventTaskFileRow = Database['public']['Tables']['event_task_files']['Row']
-export type EventArticle = Database['public']['Tables']['event_articles']['Row']
-
