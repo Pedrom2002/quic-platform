@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { calcProgress } from '@/lib/event-status'
-import type { PortalItem, PortalItemFile, PortalArticle } from '@/lib/portal/data'
+import type { PortalItem, PortalItemFile, PortalArticle, PortalReport } from '@/lib/portal/data'
 
 const FALLBACK_HERO_VIDEO = '/qp_1630-148614385.mp4'
 const FALLBACK_CONTENT_VIDEO = ''
@@ -24,6 +24,7 @@ interface Props {
   contentVideo: string | null
   eventFiles: PortalItemFile[]
   articles: PortalArticle[]
+  reports: PortalReport[]
 }
 
 function useCountUp(target: number, duration = 900, delay = 0): number {
@@ -131,20 +132,23 @@ function FileRow({ file }: { file: PortalItemFile }) {
   )
 }
 
-type TabKey = 'progress' | 'clipping'
+type TabKey = 'progress' | 'clipping' | 'reports'
 
 function TabBar({
   active,
   hasClipping,
+  hasReports,
   onChange,
 }: {
   active: TabKey
   hasClipping: boolean
+  hasReports: boolean
   onChange: (tab: TabKey) => void
 }) {
   const tabs: Array<{ key: TabKey; label: string }> = [
     { key: 'progress', label: 'Progresso' },
     ...(hasClipping ? [{ key: 'clipping' as const, label: 'Imprensa' }] : []),
+    ...(hasReports ? [{ key: 'reports' as const, label: 'Relatórios' }] : []),
   ]
 
   if (tabs.length < 2) return null
@@ -407,6 +411,63 @@ function ProgressTab({
   )
 }
 
+const REPORT_TYPE_LABEL: Record<string, string> = {
+  technical: 'Relatórios Técnicos',
+  contract: 'Execução de Contrato',
+}
+
+function ReportsTab({ reports }: { reports: PortalReport[] }) {
+  const technical = reports.filter(r => r.type === 'technical')
+  const contract = reports.filter(r => r.type === 'contract')
+
+  function Section({ title, items }: { title: string; items: PortalReport[] }) {
+    if (!items.length) return null
+    return (
+      <div className="mb-8">
+        <h3 className="text-xs font-semibold tracking-widest uppercase text-stone-500 mb-4">{title}</h3>
+        <ul className="space-y-3">
+          {items.map(r => {
+            const downloadHref = `/api/portal/download?url=${encodeURIComponent(r.blob_url)}&name=${encodeURIComponent(r.file_name)}`
+            return (
+              <li key={r.id} className="bg-stone-50 border border-stone-100 rounded px-4 py-3 flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-stone-900 truncate">{r.title}</p>
+                  <p className="text-xs text-stone-400 mt-0.5">
+                    {r.file_name}
+                    {r.file_size ? ` · ${r.file_size < 1024 * 1024 ? `${Math.round(r.file_size / 1024)} KB` : `${(r.file_size / (1024 * 1024)).toFixed(1)} MB`}` : ''}
+                  </p>
+                </div>
+                <a
+                  href={downloadHref}
+                  download={r.file_name}
+                  className="text-xs text-stone-400 border border-stone-200 px-2 py-1 rounded hover:border-stone-400 hover:text-stone-600 transition-colors shrink-0"
+                >
+                  ↓
+                </a>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+    )
+  }
+
+  return (
+    <div className="anim-tab-fade">
+      <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
+        <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">
+          Relatórios
+        </h2>
+        <span className="text-xs text-stone-400 tabular-nums">
+          {String(reports.length).padStart(2, '0')}
+        </span>
+      </div>
+      <Section title={REPORT_TYPE_LABEL.technical} items={technical} />
+      <Section title={REPORT_TYPE_LABEL.contract} items={contract} />
+    </div>
+  )
+}
+
 export function PortalClient({
   eventId,
   eventName,
@@ -419,6 +480,7 @@ export function PortalClient({
   contentVideo,
   eventFiles,
   articles,
+  reports,
 }: Props) {
   const resolvedHeroVideo = heroVideo ?? FALLBACK_HERO_VIDEO
   const resolvedContentVideo = contentVideo ?? FALLBACK_CONTENT_VIDEO
@@ -440,7 +502,7 @@ export function PortalClient({
   const [animatingOut, setAnimatingOut] = useState<Set<string>>(new Set())
   const [justCompleted, setJustCompleted] = useState<Set<string>>(new Set())
   const [isConnected, setIsConnected] = useState(false)
-  const [activeTab, setActiveTab] = useState<'progress' | 'clipping'>('progress')
+  const [activeTab, setActiveTab] = useState<TabKey>('progress')
 
   const displayedPercent = useCountUp(progress.percent, 2200, 1100)
 
@@ -656,6 +718,7 @@ export function PortalClient({
         <TabBar
           active={activeTab}
           hasClipping={articles.length > 0}
+          hasReports={reports.length > 0}
           onChange={setActiveTab}
         />
         <section className="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-16 md:py-24">
@@ -668,6 +731,9 @@ export function PortalClient({
           )}
           {activeTab === 'clipping' && (
             <ClippingTab articles={articles} />
+          )}
+          {activeTab === 'reports' && (
+            <ReportsTab reports={reports} />
           )}
         </section>
       </section>

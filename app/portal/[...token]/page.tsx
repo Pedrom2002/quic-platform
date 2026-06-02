@@ -27,6 +27,7 @@ export default async function PortalPage({
       contentVideo={data.contentVideo}
       eventFiles={data.eventFiles}
       articles={data.articles}
+      reports={data.reports}
     />
   )
 }

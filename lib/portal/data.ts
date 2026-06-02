@@ -35,6 +35,17 @@ export interface PortalArticle {
   created_at: string
 }
 
+export interface PortalReport {
+  id: string
+  title: string
+  type: 'technical' | 'contract'
+  file_name: string
+  file_size: number | null
+  mime_type: string | null
+  blob_url: string
+  created_at: string
+}
+
 export interface PortalEventData {
   event: {
     id: string
@@ -50,6 +61,7 @@ export interface PortalEventData {
   contentVideo: string | null
   eventFiles: PortalItemFile[]
   articles: PortalArticle[]
+  reports: PortalReport[]
 }
 
 export function groupFilesByItem(
@@ -134,6 +146,13 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
     .eq('event_id', eventId)
     .order('created_at', { ascending: false })
 
+  const { data: reportsRaw } = await supabase
+    .from('event_reports')
+    .select('id, title, type, file_name, file_size, mime_type, blob_url, created_at')
+    .eq('event_id', eventId)
+    .order('type', { ascending: true })
+    .order('created_at', { ascending: false })
+
   const itemFilesRows = (itemFilesRaw ?? []) as unknown as Array<{
     checklist_item_id: string
     event_file: PortalItemFile
@@ -163,5 +182,6 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
     contentVideo,
     eventFiles,
     articles: (articlesRaw ?? []) as PortalArticle[],
+    reports: (reportsRaw ?? []) as PortalReport[],
   }
 }
