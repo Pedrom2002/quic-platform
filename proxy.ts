@@ -119,7 +119,7 @@ function buildCsp(nonce: string): string {
     `script-src ${scriptSrc}`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     "font-src 'self' https://fonts.gstatic.com",
-    `img-src 'self' data: blob: ${supabaseUrl} https://*.unsplash.com https://images.unsplash.com ${VERCEL_BLOB_HOST}`,
+    `img-src 'self' data: blob: ${supabaseUrl} https://*.unsplash.com https://images.unsplash.com ${VERCEL_BLOB_HOST} https://api.qrserver.com`,
     `frame-src https://images.unsplash.com ${VERCEL_BLOB_HOST}`,
     `connect-src 'self' ${supabaseUrl} https://*.supabase.com wss://*.supabase.co ${VERCEL_BLOB_HOST} ${VERCEL_BLOB_API}`,
     `media-src 'self' blob: ${VERCEL_BLOB_HOST}`,
