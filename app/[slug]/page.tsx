@@ -53,9 +53,22 @@ export async function generateMetadata({
   const member = (members ?? []).find(m => toSlug(m.full_name) === slug)
   if (!member) return { title: 'Quic' }
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.quic.pt'
   return {
     title: `${member.full_name} · Quic`,
     description: `${roleLabels[member.role] ?? member.role} na Quic`,
+    openGraph: {
+      title: `${member.full_name} · Quic`,
+      description: `${roleLabels[member.role] ?? member.role} na Quic`,
+      url: `${appUrl}/${slug}`,
+      siteName: 'Quic',
+      type: 'profile',
+    },
+    twitter: {
+      card: 'summary',
+      title: `${member.full_name} · Quic`,
+      description: `${roleLabels[member.role] ?? member.role} na Quic`,
+    },
   }
 }
 
