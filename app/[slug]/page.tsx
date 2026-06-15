@@ -1,8 +1,18 @@
-import { createClient } from '@/lib/supabase/server'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Image from 'next/image'
+import { createAdminClient } from '@/lib/supabase/admin'
+import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
+
+function toSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
 
 function buildVcard(name: string, role: string, email: string, cardUrl: string) {
   const parts = name.split(' ')
@@ -22,72 +32,71 @@ function buildVcard(name: string, role: string, email: string, cardUrl: string) 
   return lines.join('\r\n') + '\r\n'
 }
 
-export default async function MemberCardPage({
+const roleLabels: Record<string, string> = {
+  admin: 'Admin',
+  manager: 'Manager',
+  member: 'Membro',
+}
+
+export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
-
-  const { data: member } = await supabase
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const supabase = createAdminClient()
+  const { data: members } = await supabase
     .from('team_members')
-    .select('id, full_name, email, role, organization_id')
-    .eq('id', id)
+    .select('full_name, role')
     .eq('is_active', true)
-    .single()
 
+  const member = (members ?? []).find(m => toSlug(m.full_name) === slug)
+  if (!member) return { title: 'Quic' }
+
+  return {
+    title: `${member.full_name} · Quic`,
+    description: `${roleLabels[member.role] ?? member.role} na Quic`,
+  }
+}
+
+export default async function PublicCardPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params
+  const supabase = createAdminClient()
+
+  const { data: members } = await supabase
+    .from('team_members')
+    .select('id, full_name, email, role')
+    .eq('is_active', true)
+
+  const member = (members ?? []).find(m => toSlug(m.full_name) === slug)
   if (!member) notFound()
 
-  // Verify viewer belongs to same org
-  const { data: me } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-
-  if (!me || me.organization_id !== member.organization_id) notFound()
-
-  const roleLabels: Record<string, string> = {
-    admin: 'Admin',
-    manager: 'Manager',
-    member: 'Membro',
-  }
-
-  const slug = member.full_name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-  const cardUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.quic.pt'}/${slug}`
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.quic.pt'
+  const cardUrl = `${appUrl}/${slug}`
   const vcard = buildVcard(member.full_name, roleLabels[member.role] ?? member.role, member.email, cardUrl)
-  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data=${encodeURIComponent(cardUrl)}`
   const vcfData = `data:text/vcard;charset=utf-8,${encodeURIComponent(vcard)}`
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data=${encodeURIComponent(cardUrl)}`
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-8">
       <div className="w-full max-w-sm flex flex-col items-center">
-        {/* Top accent */}
         <div style={{ width: 48, height: 2, background: '#fff', marginBottom: 36 }} />
 
-        {/* Logo */}
         <div style={{ marginBottom: 28 }}>
           <Image src="/logo-branco.png" alt="Quic" width={160} height={64} style={{ height: 64, width: 'auto' }} priority />
         </div>
 
-        {/* Identity */}
         <div className="text-center mb-2">
           <h1 className="text-2xl font-bold text-white tracking-tight">{member.full_name}</h1>
           <p className="text-xs text-zinc-500 uppercase tracking-widest mt-1.5">{roleLabels[member.role] ?? member.role}</p>
         </div>
 
-        {/* Divider */}
         <hr style={{ border: 'none', borderTop: '1px solid #1e1e1e', width: '100%', margin: '28px 0' }} />
 
-        {/* Email row */}
         <ul style={{ listStyle: 'none', width: '100%', padding: 0, marginBottom: 28, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <li>
             <a
@@ -112,7 +121,6 @@ export default async function MemberCardPage({
           </li>
         </ul>
 
-        {/* Save contact */}
         <a
           href={vcfData}
           download={`${member.full_name.replace(/\s+/g, '-').toLowerCase()}.vcf`}
@@ -125,18 +133,16 @@ export default async function MemberCardPage({
           Guardar Contacto
         </a>
 
-        {/* QR Code */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
           <p style={{ fontSize: 10, color: '#333', textTransform: 'uppercase', letterSpacing: '2px' }}>
             Partilhar este cartão
           </p>
           <div style={{ background: '#fff', borderRadius: 12, padding: 10, display: 'inline-flex' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={qrSrc} alt={`QR code para partilhar o cartão de ${member.full_name}`} width={160} height={160} style={{ display: 'block', borderRadius: 4 }} />
+            <img src={qrSrc} alt={`QR code para ${member.full_name}`} width={160} height={160} style={{ display: 'block', borderRadius: 4 }} />
           </div>
         </div>
 
-        {/* Bottom accent */}
         <div style={{ width: 48, height: 2, background: '#1e1e1e', marginTop: 36 }} />
       </div>
     </div>
