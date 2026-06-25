@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     .from('marketing_sends')
     .select('id, campaign_id, contact_id, error, marketing_campaigns(created_by)')
     .eq('status', 'failed')
-    .gte('campaign_id', cutoff)
+    .gte('created_at', cutoff)
     .limit(100)
 
   if (!failedSends?.length) return NextResponse.json({ retried: 0 })

@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/marketing-maintenance",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/marketing-retry",
+      "schedule": "0 9 * * *"
     }
   ],
   "functions": {
@@ -17,6 +21,7 @@
     "app/api/ai/risk-analysis/route.ts": { "maxDuration": 60 },
     "app/api/ai/suggest-assignee/route.ts": { "maxDuration": 60 },
     "app/api/cron/process-scheduled/route.ts": { "maxDuration": 30 },
-    "app/api/cron/marketing-maintenance/route.ts": { "maxDuration": 60 }
+    "app/api/cron/marketing-maintenance/route.ts": { "maxDuration": 60 },
+    "app/api/cron/marketing-retry/route.ts": { "maxDuration": 60 }
   }
 }
