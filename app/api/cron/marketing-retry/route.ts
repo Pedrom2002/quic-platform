@@ -13,16 +13,19 @@ export async function POST(request: Request) {
   }
 
   const supabase = createAdminClient()
-  const cutoff = new Date(Date.now() - MAX_RETRY_AGE_HOURS * 60 * 60 * 1000).toISOString()
-
   const { data: failedSends } = await supabase
     .from('marketing_sends')
-    .select('id, campaign_id, contact_id, error, marketing_campaigns(created_by)')
+    .select('id, campaign_id, contact_id, error, marketing_campaigns(created_by, created_at)')
     .eq('status', 'failed')
-    .gte('created_at', cutoff)
     .limit(100)
 
-  if (!failedSends?.length) return NextResponse.json({ retried: 0 })
+  const cutoff = new Date(Date.now() - MAX_RETRY_AGE_HOURS * 60 * 60 * 1000).toISOString()
+  const recentFailed = (failedSends ?? []).filter(s => {
+    const camp = s.marketing_campaigns as { created_at?: string } | null
+    return camp?.created_at && camp.created_at >= cutoff
+  })
+
+  if (!recentFailed.length) return NextResponse.json({ retried: 0 })
 
   const env = getEnv()
   const qstashUrl = env.QSTASH_URL
@@ -34,7 +37,7 @@ export async function POST(request: Request) {
   }
 
   let retried = 0
-  for (const s of failedSends) {
+  for (const s of recentFailed) {
     // Skip permanent failures
     if (s.error && /invalid|not found|550|unauthorized/i.test(s.error)) continue
 
