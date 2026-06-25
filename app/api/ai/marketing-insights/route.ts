@@ -54,10 +54,11 @@ Return ONLY a JSON array like:
     const text = result.response.text().trim()
 
     try {
-      const insights = JSON.parse(text)
+      const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+      const insights = JSON.parse(cleaned)
       return Response.json({ insights })
     } catch {
-      return Response.json({ insights: [] })
+      return Response.json({ insights: [], raw: text })
     }
   })
 }
