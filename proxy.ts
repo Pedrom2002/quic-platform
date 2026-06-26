@@ -85,7 +85,7 @@ function getClientIp(request: NextRequest): string {
 const isProd = process.env.NODE_ENV === 'production'
 
 // Routes that legitimately receive cross-origin POST (external callers — no CSRF guard).
-const CSRF_EXEMPT_PREFIXES = ['/api/webhooks/', '/api/workers/', '/api/cron/', '/api/portal/', '/api/marketing/send', '/api/marketing/bounce-poll', '/api/marketing/reply-poll', '/api/marketing/track/', '/api/marketing/unsubscribe', '/api/admin/check-sends']
+const CSRF_EXEMPT_PREFIXES = ['/api/webhooks/', '/api/workers/', '/api/cron/', '/api/portal/', '/api/marketing/send', '/api/marketing/bounce-poll', '/api/marketing/reply-poll', '/api/marketing/track/', '/api/marketing/unsubscribe']
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
 
 function isCsrfExempt(pathname: string): boolean {
@@ -208,8 +208,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/api/marketing/unsubscribe') ||
     pathname.startsWith('/api/marketing/send') ||
     pathname.startsWith('/api/marketing/bounce-poll') ||
-    pathname.startsWith('/api/marketing/reply-poll') ||
-    pathname.startsWith('/api/admin/check-sends')
+    pathname.startsWith('/api/marketing/reply-poll')
 
   if (!user && !isPublic) {
     // API routes must return 401, not redirect — redirecting breaks REST clients
