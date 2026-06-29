@@ -9,7 +9,8 @@ Plataforma multi-tenant de gestão de eventos e comunicação automatizada com c
 | Framework | Next.js 16 (App Router) + React 19 |
 | Base de dados | Supabase (PostgreSQL + RLS) |
 | Autenticação | Supabase Auth (email/password) |
-| Email | Brevo (API REST) |
+| Email transacional | Brevo (API REST) |
+| Email marketing | Nodemailer SMTP + IMAP |
 | Ficheiros | Vercel Blob |
 | Queue | Upstash QStash (serverless) |
 | Cron | Vercel Cron |
@@ -37,7 +38,7 @@ Edita `.env.local` com as tuas credenciais (ver `.env.example` para descrição 
 | `NEXT_PUBLIC_SUPABASE_URL` | URL do projeto Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave pública anon do Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | Chave service role (apenas server-side) |
-| `CRON_SECRET` | Bearer token para o cron job (mín. 32 chars, `openssl rand -hex 32`) |
+| `CRON_SECRET` | Bearer token para os cron jobs (mín. 32 chars, `openssl rand -hex 32`) |
 | `NEXT_PUBLIC_APP_URL` | URL base da app (ex: `https://app.quic.pt`) |
 | `BLOB_READ_WRITE_TOKEN` | Token Vercel Blob |
 
@@ -68,13 +69,63 @@ Abre [http://localhost:3000](http://localhost:3000).
 
 ---
 
+## Funcionalidades
+
+### Gestão de eventos
+
+- Criação e edição de eventos com estado (draft, active, archived)
+- Checklist de tarefas por evento com atribuição a membros da equipa
+- Gestão de clientes por evento (VIP, contacto principal, audiência)
+- Portal público por evento (`/portal/[token]`) com acesso via token URL-safe
+- Upload e partilha de ficheiros por evento
+- Relatórios de evento visíveis no dashboard e no portal do cliente
+- Clipping de imprensa por evento
+- Sorteios
+- AI integrada: resumo automático, geração de tarefas, análise de risco, sugestão de responsável, atualização de cliente
+
+### Notificações
+
+Envio automatizado de email/SMS a clientes quando itens do checklist são marcados como concluídos. Suporta templates multilingue com variáveis, agendamento por delay, e filtro de audiência (all / vip / primary_contact).
+
+### Marketing (bulk email)
+
+Sistema completo de campanhas de email com:
+
+- **Listas e contactos**: importação via CSV, entrada manual, deduplicação automática
+- **Campanhas**: editor com variáveis de template (`{{nome}}`, `{{empresa}}`, `{{cargo}}`), subject e body
+- **Envio via QStash**: cada email passa por `/api/marketing/send` com fila serverless
+- **SMTP warmup**: limite de envios diários por remetente, aumenta automaticamente com o tempo (`marketing_sender_warmup`)
+- **Tracking**: open tracking (pixel), click tracking (redirect), registo em `marketing_sends`
+- **Retry automático**: cron diário reprocessa envios falhados das últimas 24h (`/api/cron/marketing-retry`)
+- **Follow-up**: reenvio automatizado para quem não abriu ao fim de N dias
+- **Bounce e reply**: polling IMAP para detetar bounces e respostas, bot filtering com multi-pixel forensics
+- **Heatmap de engajamento**: visualização horária de opens/clicks
+- **DNS check**: valida SPF/DKIM/DMARC antes de enviar
+- **Unsubscribe**: header `List-Unsubscribe` + landing page (`/api/marketing/unsubscribe`)
+- **AI insights**: análise de desempenho de campanha via Gemini (`/api/ai/marketing-insights`)
+- **Geração de email com AI**: sugestão de corpo de email via Gemini (`/api/ai/generate-marketing-email`)
+
+### Cards
+
+Cartões de membro públicos com URL própria (`/[slug]`) e QR code. OG tags para link previews. Geridos em `/dashboard/cards`.
+
+### Contactos
+
+Base de contactos global da organização com importação CSV e vista tabular.
+
+### Guia de cliente
+
+Página pública de boas-vindas para clientes (`/guia-cliente`).
+
+---
+
 ## Arquitetura
 
 ### Padrões principais
 
 - **Server Components por defeito** — páginas fazem queries diretas ao Supabase sem passar por API routes
 - **Server Actions** para mutações (criar/editar eventos, guardar drafts)
-- **API Routes** apenas para: webhooks externos, workers QStash, cron
+- **API Routes** apenas para: webhooks externos, workers QStash, cron, tracking
 - **Client Components** apenas onde há interatividade (forms, real-time, modais)
 
 ### Fluxo de notificações
@@ -110,22 +161,48 @@ Brevo → POST /api/webhooks/resend (delivery events)
     Regista evento em notification_log
 ```
 
+### Fluxo de marketing
+
+```
+Dashboard cria campanha + lista de contactos
+    │
+    ▼
+POST /api/marketing/send (QStash worker)
+    │  Verifica SMTP warmup limit
+    │  Renderiza template com variáveis do contacto
+    │  Injeta open pixel + click tracking links
+    │  Envia via Nodemailer SMTP
+    │  Regista em marketing_sends
+    │
+    ├─ Open pixel   → GET /api/marketing/track/open
+    ├─ Click link   → GET /api/marketing/track/click
+    └─ Unsubscribe  → GET /api/marketing/unsubscribe
+
+Crons diários:
+    marketing-maintenance (07:00 UTC)
+        Follow-up para quem não abriu
+        Polling IMAP de bounces + respostas
+    marketing-retry (09:00 UTC)
+        Reprocessa envios falhados das últimas 24h
+```
+
 ### Crons (Vercel Cron — ver `vercel.json`)
 
 Todos os crons são invocados por GET com `Authorization: Bearer ${CRON_SECRET}`, validado em tempo constante (`lib/cron-auth.ts`).
 
 | Path | Schedule | Função |
 |------|----------|--------|
-| `/api/cron/process-scheduled` | `0 6 * * *` (diário) | Envia notificações agendadas |
-| `/api/cron/marketing-maintenance` | `0 7 * * *` (diário) | Follow-ups de campanhas + polling IMAP de bounces |
+| `/api/cron/process-scheduled` | `0 6 * * *` | Envia notificações agendadas |
+| `/api/cron/marketing-maintenance` | `0 7 * * *` | Follow-ups + polling IMAP de bounces/replies |
+| `/api/cron/marketing-retry` | `0 9 * * *` | Reprocessa envios falhados das últimas 24h |
 
-> O plano **Vercel Hobby** limita a **2 cron jobs, só diários** — por isso o follow-up e o bounce-poll estão agrupados em `marketing-maintenance`. Em **Pro** podes separá-los e usar schedules sub-diários (ex.: `process-scheduled` de hora a hora). As rotas `/api/cron/marketing-followup` e `/api/marketing/bounce-poll` continuam a existir para invocação manual/QStash.
+> O plano **Vercel Hobby** limita a **2 cron jobs, só diários**. Em **Pro** podes adicionar mais schedules. As rotas `/api/cron/marketing-followup` e `/api/marketing/bounce-poll` continuam a existir para invocação manual.
 
-`process-scheduled` reclama os jobs `queued` (passado o `scheduled_at`) através da função SQL `claim_notification_jobs`, que usa `FOR UPDATE SKIP LOCKED` — garante que execuções concorrentes nunca processam o mesmo job (sem envios duplicados).
+`process-scheduled` reclama os jobs `queued` (passado o `scheduled_at`) através da função SQL `claim_notification_jobs`, que usa `FOR UPDATE SKIP LOCKED` — garante que execuções concorrentes nunca processam o mesmo job.
 
 ### Portal de cliente (`/portal/[token]`)
 
-Acesso público via token URL-safe (12 bytes aleatórios, **não** JWT) armazenado em `events.portal_token`. Mostra apenas itens `is_client_visible = true`. Revogação via `events.portal_token_expires_at`.
+Acesso público via token URL-safe (12 bytes aleatórios, não JWT) armazenado em `events.portal_token`. Mostra apenas itens `is_client_visible = true` e relatórios do evento. Revogação via `events.portal_token_expires_at`.
 
 ---
 
@@ -133,24 +210,50 @@ Acesso público via token URL-safe (12 bytes aleatórios, **não** JWT) armazena
 
 ```
 app/
-  api/               Route handlers (webhooks, workers, cron)
+  [slug]/            Card público de membro
+  guia-cliente/      Página de boas-vindas para clientes
+  api/
+    ai/              Endpoints Gemini (resumo, tarefas, risco, insights, geração email)
+    cron/            Cron handlers (process-scheduled, marketing-maintenance, marketing-retry)
+    events/          Checklist items, ficheiros
+    marketing/       Send worker, tracking, bounce-poll, reply-poll, unsubscribe, importação
+    portal/          Download de ficheiros do portal
+    webhooks/        Webhook Brevo
+    workers/         Worker QStash de notificações
   auth/              Login + OAuth callback
-  dashboard/         Área autenticada (eventos, clientes, templates)
+  dashboard/
+    cards/           Gestão de cartões de membro
+    contacts/        Base de contactos
+    events/          Lista, criação e detalhe de eventos
+      [eventId]/     Checklist, clientes, clipping, ficheiros, notificações, relatórios, sorteios, tarefas, equipa
+    files/           Ficheiros globais
+    marketing/       Campanhas, contactos, settings SMTP
+    settings/        Configurações da organização
+    team/            Membros da equipa
+    templates/       Templates de notificação
   portal/[token]/    Portal público do cliente
 components/
   events/            ChecklistBoard
   ui/                Componentes shadcn/ui
 lib/
+  ai/                Helpers Gemini + rate limiting
+  contacts/          Importação e gestão de contactos
+  marketing/         SMTP, IMAP, render/tracking, scoring, DNS check, crypto, maintenance
   notifications/     Dispatcher, template renderer, canais (email/sms)
-  marketing/         SMTP, IMAP, render/tracking, scoring, crypto
-  portal/            Geração de token aleatório + leitura de dados do portal
+  portal/            Geração de token + leitura de dados do portal
   qstash/            Verificação de assinatura
+  audit.ts           Registo de auditoria
   cron-auth.ts       Validação constant-time do CRON_SECRET
-  supabase/          Clientes browser / server / admin
+  csv-import.ts      Parser CSV para importação de contactos
+  env.ts             Validação de variáveis de ambiente
+  event-status.ts    Lógica de estado de evento
+  logger.ts          Logger estruturado
+  timeline.ts        Timeline de eventos
 schemas/             Validação Zod (eventos, checklist, ficheiros, etc.)
 types/               DTOs da app + tipos gerados pelo Supabase
 __tests__/           Testes unitários Vitest
 e2e/                 Testes end-to-end Playwright
+scripts/             Scripts utilitários (seed, etc.)
 ```
 
 ---
@@ -163,7 +266,7 @@ npm run test:coverage  # com relatório de cobertura
 npm run test:watch     # modo watch
 ```
 
-A cobertura é medida sobre `lib/`, `app/api/` e `schemas/` **e** sobre as Server Actions em `app/dashboard/**/actions.ts`, com thresholds mínimos definidos em `vitest.config.ts` (linhas 80%, funções 80%, branches 70%). O CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) corre lint, typecheck, testes com cobertura e `npm audit`.
+A cobertura é medida sobre `lib/`, `app/api/` e `schemas/` e sobre as Server Actions em `app/dashboard/**/actions.ts`, com thresholds mínimos definidos em `vitest.config.ts` (linhas 80%, funções 80%, branches 70%). O CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) corre lint, typecheck, testes com cobertura e `npm audit`.
 
 ---
 
@@ -175,3 +278,4 @@ A cobertura é medida sobre `lib/`, `app/api/` e `schemas/` **e** sobre as Serve
 - Assinaturas QStash verificadas com `@upstash/qstash` Receiver
 - Webhooks Brevo verificados com HMAC-SHA256
 - Authorization checks a nível de aplicação nas API routes (verificação de `organization_id`)
+- Isolamento de tenant verificado em testes e2e
