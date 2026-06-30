@@ -1,9 +1,9 @@
 // ONE-SHOT: create ActivoBank newsletter campaign (draft). Delete after use.
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getEnv } from '@/lib/env'
 
 const OWNER_USER_ID = '25503c38-17ed-44f5-8460-c8e5f9ec2f68'
+const ONE_SHOT_TOKEN = 'activobank-newsletter-2026'
 
 const CONTACTS = [
   { email: 'jo_ferreira8@hotmail.com', name: null },
@@ -24,8 +24,8 @@ const CONTACTS = [
 ]
 
 export async function GET(request: Request) {
-  const auth = request.headers.get('authorization')
-  if (auth !== `Bearer ${getEnv().CRON_SECRET}`) {
+  const { searchParams } = new URL(request.url)
+  if (searchParams.get('token') !== ONE_SHOT_TOKEN) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
