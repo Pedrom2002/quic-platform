@@ -33,7 +33,7 @@ export async function GET(request: Request) {
 
   // Get org for this user
   const { data: member } = await supabase
-    .from('organization_members')
+    .from('team_members')
     .select('organization_id')
     .eq('user_id', OWNER_USER_ID)
     .single()
