@@ -35,7 +35,7 @@ export async function GET(request: Request) {
   const { data: member } = await supabase
     .from('team_members')
     .select('organization_id')
-    .eq('user_id', OWNER_USER_ID)
+    .eq('auth_user_id', OWNER_USER_ID)
     .single()
 
   if (!member) return NextResponse.json({ error: 'org not found' }, { status: 404 })
