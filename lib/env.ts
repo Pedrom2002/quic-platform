@@ -22,7 +22,7 @@ const schema = z.object({
   QSTASH_CURRENT_SIGNING_KEY: z.string().min(1).optional(),
   QSTASH_NEXT_SIGNING_KEY: z.string().min(1).optional(),
   SMTP_ENCRYPTION_KEY: z.string().length(64, 'SMTP_ENCRYPTION_KEY must be 64 hex chars (32 bytes) — generate with: openssl rand -hex 32').optional(),
-  PORTUGAL_ADMIN_PASSWORD: z.string().min(8, 'PORTUGAL_ADMIN_PASSWORD must be at least 8 chars').optional(),
+  PORTUGAL_ADMIN_PASSWORD: z.string().min(8, 'PORTUGAL_ADMIN_PASSWORD must be at least 8 chars — set it in Vercel env vars'),
 })
 
 export type ServerEnv = z.infer<typeof schema>

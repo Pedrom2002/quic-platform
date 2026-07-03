@@ -34,13 +34,17 @@ export async function POST(request: Request) {
   const supabase = createAdminClient()
   const { NEXT_PUBLIC_APP_URL: appUrl } = getEnv()
 
-  // Anti-double-draw: check if any winners exist
-  const { count: existingCount } = await supabase
-    .from('portugal_winners')
-    .select('id', { count: 'exact', head: true })
+  // Atomic lock: INSERT fails with unique violation if draw already ran
+  const { error: lockError } = await supabase
+    .from('portugal_draw_config')
+    .insert({ id: true })
 
-  if ((existingCount ?? 0) > 0) {
-    return NextResponse.json({ error: 'Sorteio ja foi realizado.' }, { status: 409 })
+  if (lockError) {
+    // 23505 = unique_violation — draw already ran
+    if (lockError.code === '23505') {
+      return NextResponse.json({ error: 'Sorteio ja foi realizado.' }, { status: 409 })
+    }
+    return NextResponse.json({ error: 'Erro ao iniciar sorteio.' }, { status: 500 })
   }
 
   // Fetch all registrations, shuffle in JS (Fisher-Yates), pick first N

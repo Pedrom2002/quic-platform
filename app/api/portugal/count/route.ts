@@ -9,9 +9,13 @@ export async function GET(request: Request) {
   }
 
   const supabase = createAdminClient()
-  const { count } = await supabase
+  const { count, error } = await supabase
     .from('portugal_registrations')
     .select('id', { count: 'exact', head: true })
+
+  if (error) {
+    return NextResponse.json({ error: 'Erro ao contar registos.' }, { status: 500 })
+  }
 
   return NextResponse.json({ count: count ?? 0 })
 }

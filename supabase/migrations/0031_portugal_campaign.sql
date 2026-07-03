@@ -47,3 +47,15 @@ CREATE POLICY "block all on winners"
   ON portugal_winners FOR ALL
   USING (false)
   WITH CHECK (false);
+
+-- Controlo de sorteio: garante que so existe um sorteio (unicidade no nivel da BD)
+CREATE TABLE portugal_draw_config (
+  id         boolean PRIMARY KEY DEFAULT true CHECK (id = true),
+  drawn_at   timestamptz DEFAULT now()
+);
+
+ALTER TABLE portugal_draw_config ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "block all on draw_config"
+  ON portugal_draw_config FOR ALL
+  USING (false)
+  WITH CHECK (false);

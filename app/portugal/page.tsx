@@ -85,7 +85,7 @@ export default function PortugalPage() {
             required
             value={form.phone}
             onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-            placeholder="912 345 678"
+            placeholder="912345678"
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
           />
         </div>
