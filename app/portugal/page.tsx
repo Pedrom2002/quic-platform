@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export default function PortugalPage() {
   const router = useRouter()
   const [form, setForm] = useState({ name: '', email: '', phone: '' })
+  const [consent, setConsent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -38,13 +40,17 @@ export default function PortugalPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!consent) {
+      setError('Tens de aceitar o tratamento dos dados para continuar.')
+      return
+    }
     setError(null)
     setLoading(true)
 
     const res = await fetch('/api/portugal/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, consent }),
     })
 
     const data = await res.json() as { ok?: boolean; error?: string }
@@ -138,13 +144,33 @@ export default function PortugalPage() {
             />
           </div>
 
+          <label className="flex items-start gap-2 text-xs text-white/70 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={consent}
+              onChange={e => setConsent(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/30 accent-red-600"
+            />
+            <span>
+              Aceito que os meus dados sejam armazenados para participar no
+              sorteio e receber comunicações da QUiC. Ver{' '}
+              <Link
+                href="/portugal/privacidade"
+                className="text-white/90 underline hover:text-white"
+              >
+                Política de Privacidade
+              </Link>
+              .
+            </span>
+          </label>
+
           {error && (
             <p className="text-sm text-red-300 bg-red-900/40 border border-red-500/30 rounded-lg px-3 py-2">{error}</p>
           )}
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !consent}
             className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold rounded-lg py-2.5 transition-colors shadow-lg"
           >
             {loading ? 'A registar...' : 'Quero concorrer!'}

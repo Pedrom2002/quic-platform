@@ -13,6 +13,7 @@ const schema = z.object({
   name: z.string().min(2).max(100),
   email: z.email(),
   phone: z.string().regex(/^(\+351)?9\d{8}$/, 'Telemovel invalido (ex: 912345678)'),
+  consent: z.literal(true, { message: 'Consentimento RGPD obrigatorio.' }),
 })
 
 export async function POST(request: Request) {
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
 
   const { error } = await supabase
     .from('portugal_registrations')
-    .insert({ name, email, phone: normalizedPhone })
+    .insert({ name, email, phone: normalizedPhone, consent_at: new Date().toISOString() })
 
   if (error) {
     return NextResponse.json({ error: 'Erro ao guardar registo.' }, { status: 500 })
