@@ -90,8 +90,8 @@ export async function POST(request: Request) {
   )
 
   const results = smsResults.map((r, i) => {
-    const reg = selected[i]
     if (r.status === 'fulfilled') return r.value
+    const reg = selected.find(s => s.id === winners[i].registration_id)!
     return {
       name: reg.name,
       phone: reg.phone,
