@@ -90,6 +90,7 @@ export default function AdminPage() {
 
   if (!authed) {
     return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full space-y-4">
         <h1 className="text-xl font-bold text-center">Admin — Portugal</h1>
         {authError && (
@@ -112,10 +113,12 @@ export default function AdminPage() {
           </button>
         </form>
       </div>
+      </div>
     )
   }
 
   return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
     <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Admin — Sorteio Portugal</h1>
@@ -193,6 +196,7 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+    </div>
     </div>
   )
 }

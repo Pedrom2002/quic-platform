@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 
 export default function PortugalLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-red-700 flex flex-col items-center justify-center p-4">
+    <>
       {children}
       <Toaster richColors theme="light" />
-    </div>
+    </>
   )
 }

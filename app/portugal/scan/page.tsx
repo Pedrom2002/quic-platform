@@ -79,6 +79,7 @@ export default function ScanPage() {
 
   if (!authed) {
     return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full space-y-4">
         <h1 className="text-xl font-bold text-center">Scan QR — Staff</h1>
         <form onSubmit={handleLogin} className="space-y-3">
@@ -98,10 +99,12 @@ export default function ScanPage() {
           </button>
         </form>
       </div>
+      </div>
     )
   }
 
   return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
     <div className="w-full max-w-sm space-y-4">
       <div className="relative rounded-2xl overflow-hidden bg-black aspect-square">
         <video ref={videoRef} className="w-full h-full object-cover" />
@@ -132,6 +135,7 @@ export default function ScanPage() {
       <p className="text-center text-sm text-white/80">
         {ui === 'scanning' ? 'Aponta a camara para o QR' : 'A reiniciar...'}
       </p>
+    </div>
     </div>
   )
 }
