@@ -200,6 +200,8 @@ export async function proxy(request: NextRequest) {
   const isPublic =
     pathname.startsWith('/portal/') ||
     pathname.startsWith('/auth/') ||
+    pathname.startsWith('/portugal') ||
+    pathname.startsWith('/api/portugal/') ||
     pathname.startsWith('/api/portal/') ||
     pathname.startsWith('/api/cron/') ||
     pathname.startsWith('/api/workers/') ||
