@@ -20,12 +20,30 @@ CREATE TABLE portugal_winners (
 CREATE INDEX idx_portugal_winners_token ON portugal_winners(qr_token);
 CREATE INDEX idx_portugal_winners_registration ON portugal_winners(registration_id);
 
--- RLS: registos publicos so permitem INSERT anonimo
+-- RLS: portugal_registrations — INSERT publico, tudo o resto bloqueado explicitamente
 ALTER TABLE portugal_registrations ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "public insert registrations"
+
+CREATE POLICY "anon can insert registrations"
   ON portugal_registrations FOR INSERT
   TO anon
   WITH CHECK (true);
 
--- RLS: winners completamente fechado (so service role acede)
+CREATE POLICY "block select registrations"
+  ON portugal_registrations FOR SELECT
+  USING (false);
+
+CREATE POLICY "block update registrations"
+  ON portugal_registrations FOR UPDATE
+  USING (false);
+
+CREATE POLICY "block delete registrations"
+  ON portugal_registrations FOR DELETE
+  USING (false);
+
+-- RLS: portugal_winners — completamente bloqueado publicamente (apenas service role)
 ALTER TABLE portugal_winners ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "block all on winners"
+  ON portugal_winners FOR ALL
+  USING (false)
+  WITH CHECK (false);
