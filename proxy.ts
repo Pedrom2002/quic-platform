@@ -202,6 +202,8 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/auth/') ||
     pathname.startsWith('/portugal') ||
     pathname.startsWith('/api/portugal/') ||
+    pathname.startsWith('/goalfest') ||
+    pathname.startsWith('/api/goalfest/') ||
     pathname.startsWith('/api/portal/') ||
     pathname.startsWith('/api/cron/') ||
     pathname.startsWith('/api/workers/') ||
