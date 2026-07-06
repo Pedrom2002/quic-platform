@@ -192,7 +192,8 @@ export async function proxy(request: NextRequest) {
   if (
     pathname.startsWith('/api/portugal/draw') ||
     pathname.startsWith('/api/portugal/validate') ||
-    pathname.startsWith('/api/portugal/count')
+    pathname.startsWith('/api/portugal/count') ||
+    pathname.startsWith('/api/portugal/registrations')
   ) {
     if (await isPortugalRateLimited(ip)) {
       return NextResponse.json({ error: 'Too Many Requests' }, {

@@ -9,6 +9,13 @@ type Winner = {
   sms_error?: string
 }
 
+type Registration = {
+  name: string
+  email: string
+  phone: string
+  created_at: string
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [authed, setAuthed] = useState(false)
@@ -19,6 +26,8 @@ export default function AdminPage() {
   const [drawn, setDrawn] = useState(false)
   const [winners, setWinners] = useState<Winner[]>([])
   const [drawError, setDrawError] = useState<string | null>(null)
+  const [ptRegs, setPtRegs] = useState<Registration[]>([])
+  const [gfRegs, setGfRegs] = useState<Registration[]>([])
 
   useEffect(() => {
     const storedToken = sessionStorage.getItem('pt-admin')
@@ -41,13 +50,28 @@ export default function AdminPage() {
     }
   }, [])
 
+  const fetchRegistrations = useCallback(async (token: string) => {
+    const res = await fetch('/api/portugal/registrations', {
+      headers: { 'x-admin-token': token },
+    })
+    if (res.ok) {
+      const d = await res.json() as { portugal: Registration[]; goalfest: Registration[] }
+      setPtRegs(d.portugal)
+      setGfRegs(d.goalfest)
+    }
+  }, [])
+
   useEffect(() => {
     const token = sessionStorage.getItem('pt-admin')
     if (!authed || !token) return
     fetchCount(token)
-    const interval = setInterval(() => fetchCount(token), 30000)
+    fetchRegistrations(token)
+    const interval = setInterval(() => {
+      fetchCount(token)
+      fetchRegistrations(token)
+    }, 30000)
     return () => clearInterval(interval)
-  }, [authed, fetchCount])
+  }, [authed, fetchCount, fetchRegistrations])
 
   const [loggingIn, setLoggingIn] = useState(false)
 
@@ -215,7 +239,50 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      <RegistrationsTable title="Registos Portugal" rows={ptRegs} />
+      <RegistrationsTable title="Registos Goalfest" rows={gfRegs} />
     </div>
+    </div>
+  )
+}
+
+function RegistrationsTable({ title, rows }: { title: string; rows: Registration[] }) {
+  return (
+    <div className="space-y-3 border-t pt-6">
+      <h2 className="font-semibold text-gray-800">
+        {title} ({rows.length})
+      </h2>
+      {rows.length === 0 ? (
+        <p className="text-sm text-gray-400">Sem registos ainda.</p>
+      ) : (
+        <div className="overflow-x-auto max-h-80 overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead className="sticky top-0 bg-white">
+              <tr className="border-b text-left text-gray-500">
+                <th className="pb-2 pr-4">Nome</th>
+                <th className="pb-2 pr-4">Email</th>
+                <th className="pb-2 pr-4">Telemovel</th>
+                <th className="pb-2">Data</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={i} className="border-b last:border-0">
+                  <td className="py-2 pr-4 font-medium">{r.name}</td>
+                  <td className="py-2 pr-4 text-gray-600">{r.email}</td>
+                  <td className="py-2 pr-4 text-gray-600">{r.phone}</td>
+                  <td className="py-2 text-gray-400">
+                    {new Date(r.created_at).toLocaleString('pt-PT', {
+                      day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+                    })}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }
