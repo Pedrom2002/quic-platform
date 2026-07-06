@@ -71,8 +71,28 @@ export default function ScanPage() {
     }
   }
 
-  function handleLogin(e: React.FormEvent) {
+  const [loggingIn, setLoggingIn] = useState(false)
+  const [authError, setAuthError] = useState(false)
+
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
+    setLoggingIn(true)
+    setAuthError(false)
+
+    // Valida a password no servidor antes de abrir a camara.
+    // token dummy: 401 = password errada; 200 (not_found) = password ok.
+    const res = await fetch('/api/portugal/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': password },
+      body: JSON.stringify({ token: '0'.repeat(64) }),
+    })
+    setLoggingIn(false)
+
+    if (res.status === 401) {
+      setAuthError(true)
+      return
+    }
+
     sessionStorage.setItem('pt-scan', password)
     setAuthed(true)
   }
@@ -82,6 +102,9 @@ export default function ScanPage() {
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full space-y-4">
         <h1 className="text-xl font-bold text-center">Scan QR — Staff</h1>
+        {authError && (
+          <p className="text-sm text-red-600 text-center">Password incorreta.</p>
+        )}
         <form onSubmit={handleLogin} className="space-y-3">
           <input
             type="password"
@@ -93,9 +116,10 @@ export default function ScanPage() {
           />
           <button
             type="submit"
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg py-2.5"
+            disabled={loggingIn}
+            className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold rounded-lg py-2.5"
           >
-            Abrir Scanner
+            {loggingIn ? 'A validar...' : 'Abrir Scanner'}
           </button>
         </form>
       </div>

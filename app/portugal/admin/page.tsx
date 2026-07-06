@@ -49,11 +49,29 @@ export default function AdminPage() {
     return () => clearInterval(interval)
   }, [authed, fetchCount])
 
-  function handleLogin(e: React.FormEvent) {
+  const [loggingIn, setLoggingIn] = useState(false)
+
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
+    setLoggingIn(true)
+    setAuthError(false)
+
+    // Valida a password no servidor ANTES de mostrar o dashboard,
+    // para nao expor conteudo de admin num flash antes do 401.
+    const res = await fetch('/api/portugal/count', {
+      headers: { 'x-admin-token': password },
+    })
+    setLoggingIn(false)
+
+    if (!res.ok) {
+      setAuthError(true)
+      return
+    }
+
+    const d = await res.json() as { count: number }
+    setCount(d.count)
     sessionStorage.setItem('pt-admin', password)
     setAuthed(true)
-    setAuthError(false)
   }
 
   async function handleDraw() {
@@ -107,9 +125,10 @@ export default function AdminPage() {
           />
           <button
             type="submit"
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg py-2.5"
+            disabled={loggingIn}
+            className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold rounded-lg py-2.5"
           >
-            Entrar
+            {loggingIn ? 'A validar...' : 'Entrar'}
           </button>
         </form>
       </div>
