@@ -14,7 +14,7 @@ const PORTAL_RATE_LIMIT   = 60  // req per minute per IP
 const AUTH_RATE_LIMIT     = 10  // req per minute per IP
 // Portugal/Goalfest admin endpoints use a short numeric password — keep the
 // limit tight to blunt brute-force of the /portugal admin/scan token.
-const PORTUGAL_RATE_LIMIT = 30  // req per minute per IP
+const PORTUGAL_RATE_LIMIT = 15  // req per minute per IP
 const RATE_WINDOW_S       = 60
 const RATE_WINDOW_MS      = RATE_WINDOW_S * 1_000
 
