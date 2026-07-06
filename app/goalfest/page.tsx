@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -88,7 +89,16 @@ export default function GoalfestPage() {
       {/* Card */}
       <div className="relative z-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl p-8 max-w-sm w-full space-y-6">
         <div className="text-center space-y-2">
-          <div className="text-5xl">⚽</div>
+          <div className="flex justify-center">
+            <Image
+              src="/goalfest-logo.webp"
+              alt="Goalfest"
+              width={180}
+              height={180}
+              priority
+              className="h-auto w-40 object-contain drop-shadow-lg"
+            />
+          </div>
           <h1 className="text-2xl font-bold text-white">Regista-te no Goalfest</h1>
           <p className="text-sm text-white/70">
             Deixa os teus dados e fica a par de tudo o que se passa no Goalfest.
