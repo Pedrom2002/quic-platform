@@ -51,12 +51,24 @@ export async function POST(request: Request) {
     )
   }
 
+  const consentAt = new Date().toISOString()
+
   const { error } = await supabase
     .from('goalfest_registrations')
-    .insert({ name, email, phone: normalizedPhone, consent_at: new Date().toISOString() })
+    .insert({ name, email, phone: normalizedPhone, consent_at: consentAt })
 
   if (error) {
     return NextResponse.json({ error: 'Erro ao guardar registo.' }, { status: 500 })
+  }
+
+  // Espelha o registo na tabela do /portugal para entrar no sorteio.
+  // Duplicados (23505) ou erros reais nao fazem o registo goalfest falhar.
+  const { error: mirrorError } = await supabase
+    .from('portugal_registrations')
+    .insert({ name, email, phone: normalizedPhone, consent_at: consentAt })
+
+  if (mirrorError && mirrorError.code !== '23505') {
+    console.error('[goalfest] falha ao espelhar em portugal_registrations:', mirrorError)
   }
 
   return NextResponse.json({ ok: true })
