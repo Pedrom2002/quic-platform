@@ -43,6 +43,9 @@ function parseMaterialForm(formData: FormData) {
 // Faz upload da foto (se existir) para o bucket 'materials' com o cliente de
 // servidor (sessão do utilizador; a RLS is_stock_team() do storage aplica-se).
 // Devolve o URL público ou null quando não há ficheiro.
+// Sem limite de tamanho aqui de propósito (replica o Stock-Plat original), mas
+// o next.config.ts define bodySizeLimit: '50mb' para Server Actions - ficheiros
+// maiores falham antes de chegar aqui, com um erro genérico da framework.
 async function uploadPhoto(
   supabase: Awaited<ReturnType<typeof createClient>>,
   formData: FormData
