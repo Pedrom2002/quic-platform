@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 
 import type { StockCategory } from '@/lib/stock/types'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -55,10 +55,8 @@ export function CategoryRowActions({ category }: { category: StockCategory }) {
   return (
     <div className="flex justify-end gap-2">
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="sm">
-            Editar
-          </Button>
+        <DialogTrigger className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+          Editar
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
