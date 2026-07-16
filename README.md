@@ -117,6 +117,12 @@ Base de contactos global da organização com importação CSV e vista tabular.
 
 Página pública de boas-vindas para clientes (`/guia-cliente`).
 
+### Gestão de stock/inventário
+
+Catálogo de materiais (`/stock`, público) e área de gestão (`/dashboard/stock`, autenticada, `role IN ('admin','manager')`) para o inventário de equipamento de produção de eventos: categorias, materiais (com foto e disponibilidade), eventos (saídas/devoluções de material), ledger de movimentos, e pedidos de orçamento submetidos pelo catálogo público.
+
+Migrado de um repositório standalone anterior (Stock-Plat) em 3 sub-projetos: migração de auth/RLS, catálogo público, área admin. Todas as tabelas usam o prefixo `stock_` (ver secção "Base de dados partilhada" abaixo).
+
 ---
 
 ## Arquitetura
@@ -204,6 +210,14 @@ Todos os crons são invocados por GET com `Authorization: Bearer ${CRON_SECRET}`
 
 Acesso público via token URL-safe (12 bytes aleatórios, não JWT) armazenado em `events.portal_token`. Mostra apenas itens `is_client_visible = true` e relatórios do evento. Revogação via `events.portal_token_expires_at`.
 
+### Base de dados partilhada (stock)
+
+O projeto Supabase é **partilhado** com um segundo produto de stock/inventário. Todas as tabelas/views/RPC desse domínio usam o prefixo `stock_` (`stock_categories`, `stock_materials`, `stock_material_units`, `stock_events`, `stock_movements`, `stock_quote_requests`, `stock_quote_request_items`, `stock_profiles`, view `stock_material_availability`, RPC `stock_submit_quote`), mais o bucket de storage `materials`. RLS gate via `is_stock_team()` (checa `team_members`, `role IN ('admin','manager')`, `is_active = true`) — não usa claim JWT.
+
+`supabase db push` **não é utilizável** para este domínio (histórico de migrações partilhado entre dois repos originalmente separados). As migrações `0034`-`0037` em `supabase/migrations/` documentam o schema mas já foram aplicadas manualmente (SQL Editor / Management API) — não reaplicar.
+
+Código consumidor: `app/stock/*` (catálogo público), `app/dashboard/stock/*` (área admin), `lib/stock/*` (tipos, validação Zod, formatadores, mailto).
+
 ---
 
 ## Estrutura de pastas
@@ -212,6 +226,7 @@ Acesso público via token URL-safe (12 bytes aleatórios, não JWT) armazenado e
 app/
   [slug]/            Card público de membro
   guia-cliente/      Página de boas-vindas para clientes
+  stock/             Catálogo público de materiais + pedido de orçamento
   api/
     ai/              Endpoints Gemini (resumo, tarefas, risco, insights, geração email)
     cron/            Cron handlers (process-scheduled, marketing-maintenance, marketing-retry)
@@ -229,6 +244,7 @@ app/
     files/           Ficheiros globais
     marketing/       Campanhas, contactos, settings SMTP
     settings/        Configurações da organização
+    stock/           Área admin de stock: categorias, materiais, eventos, movimentos, pedidos
     team/            Membros da equipa
     templates/       Templates de notificação
   portal/[token]/    Portal público do cliente
@@ -242,6 +258,7 @@ lib/
   notifications/     Dispatcher, template renderer, canais (email/sms)
   portal/            Geração de token + leitura de dados do portal
   qstash/            Verificação de assinatura
+  stock/             Tipos, validação Zod, formatadores, mailto do domínio stock
   audit.ts           Registo de auditoria
   cron-auth.ts       Validação constant-time do CRON_SECRET
   csv-import.ts      Parser CSV para importação de contactos
