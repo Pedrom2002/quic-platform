@@ -123,6 +123,19 @@ Catálogo de materiais (`/stock`, público) e área de gestão (`/dashboard/stoc
 
 Migrado de um repositório standalone anterior (Stock-Plat) em 3 sub-projetos: migração de auth/RLS, catálogo público, área admin. Todas as tabelas usam o prefixo `stock_` (ver secção "Base de dados partilhada" abaixo).
 
+### Artistas agenciados
+
+Gestão de artistas agenciados (`/dashboard/artists`) com portal privado por artista (`/artista/[token]`, acesso por token URL-safe, mesmo padrão do portal de eventos). Substitui o envio manual de emails com agenda, imprensa e ficheiros.
+
+- **Agenda**: espetáculos, ensaios, entrevistas, viagens e gravações, com ligação opcional a um evento da plataforma e toggle de visibilidade no portal
+- **Clipping**: artigos publicados sobre o artista (título, fonte, link, screenshot)
+- **Conteúdos digitais**: fotos/artes por upload (Vercel Blob, validação de magic bytes) e vídeos grandes por link externo
+- **Documentos**: contratos, riders, press kits e faturas
+- **Notificação opcional**: email Brevo ao artista quando algo é publicado (checkbox por publicação, default configurável por artista)
+- **Gestão do link**: copiar, regenerar, revogar e reativar o token; artista inativo fica sem acesso
+
+Tabelas: `artists`, `artist_agenda_items`, `artist_clippings`, `artist_assets` (RLS por organização via `get_user_org_id()`; portal lê com service role após validar o token). Migração `0040_artists_init.sql`. Download de ficheiros do portal via `/api/artist-portal/download` com validação de token e ownership (anti open-proxy).
+
 ---
 
 ## Arquitetura
@@ -225,18 +238,21 @@ Código consumidor: `app/stock/*` (catálogo público), `app/dashboard/stock/*` 
 ```
 app/
   [slug]/            Card público de membro
+  artista/[token]/   Portal público do artista (acesso por token)
   guia-cliente/      Página de boas-vindas para clientes
   stock/             Catálogo público de materiais + pedido de orçamento
   api/
     ai/              Endpoints Gemini (resumo, tarefas, risco, insights, geração email)
     cron/            Cron handlers (process-scheduled, marketing-maintenance, marketing-retry)
     events/          Checklist items, ficheiros
+    artist-portal/   Download de ficheiros do portal do artista
     marketing/       Send worker, tracking, bounce-poll, reply-poll, unsubscribe, importação
     portal/          Download de ficheiros do portal
     webhooks/        Webhook Brevo
     workers/         Worker QStash de notificações
   auth/              Login + OAuth callback
   dashboard/
+    artists/         Gestão de artistas agenciados (perfil, agenda, clipping, conteúdos, documentos)
     cards/           Gestão de cartões de membro
     contacts/        Base de contactos
     events/          Lista, criação e detalhe de eventos
@@ -253,6 +269,7 @@ components/
   ui/                Componentes shadcn/ui
 lib/
   ai/                Helpers Gemini + rate limiting
+  artists/           Validação Zod, dados do portal, notificação e formatação do domínio de artistas
   contacts/          Importação e gestão de contactos
   marketing/         SMTP, IMAP, render/tracking, scoring, DNS check, crypto, maintenance
   notifications/     Dispatcher, template renderer, canais (email/sms)

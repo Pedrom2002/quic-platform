@@ -8,6 +8,7 @@ const defaults: Record<string, string> = {
   NEXT_PUBLIC_APP_URL: 'https://app.example.com',
   BLOB_READ_WRITE_TOKEN: 'vercel_blob_rw_test_token',
   GEMINI_API_KEY: 'test-gemini-api-key',
+  PORTUGAL_ADMIN_PASSWORD: 'test-portugal-admin-password',
 }
 
 for (const [key, value] of Object.entries(defaults)) {
