@@ -6,6 +6,11 @@ export type ChecklistItemStatus = 'pending' | 'in_progress' | 'completed' | 'ski
 export type TeamRole = 'admin' | 'manager' | 'member'
 export type ClientRole = 'primary_contact' | 'cc' | 'vip' | 'vendor'
 
+// Artistas agenciados
+export type ArtistAgendaType = 'show' | 'ensaio' | 'entrevista' | 'viagem' | 'gravacao' | 'outro'
+export type ArtistAssetSection = 'content' | 'document'
+export type ArtistAssetKind = 'foto' | 'video' | 'arte' | 'contrato' | 'rider' | 'epk' | 'fatura' | 'outro'
+
 export interface NotificationRule {
   trigger: 'on_complete' | 'on_start' | 'scheduled' | 'manual'
   delay_minutes: number
