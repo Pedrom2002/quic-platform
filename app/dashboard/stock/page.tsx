@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import type { Route } from 'next'
+import { ExternalLinkIcon } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/server'
+import { ButtonLink } from '@/components/ui/button'
 import {
   Card,
   CardDescription,
@@ -71,11 +73,22 @@ export default async function StockDashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Visão geral do inventário, pedidos e eventos.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
+            Visão geral do inventário, pedidos e eventos.
+          </p>
+        </div>
+        <ButtonLink
+          href="/stock"
+          variant="outline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <ExternalLinkIcon />
+          Ver catálogo público
+        </ButtonLink>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
