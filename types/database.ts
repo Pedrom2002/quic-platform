@@ -103,6 +103,234 @@ export type Database = {
         }
         Relationships: []
       }
+      artist_agenda_items: {
+        Row: {
+          artist_id: string
+          created_at: string
+          ends_at: string | null
+          event_id: string | null
+          id: string
+          is_visible: boolean
+          location: string | null
+          notes: string | null
+          organization_id: string
+          starts_at: string
+          title: string
+          type: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          ends_at?: string | null
+          event_id?: string | null
+          id?: string
+          is_visible?: boolean
+          location?: string | null
+          notes?: string | null
+          organization_id: string
+          starts_at: string
+          title: string
+          type: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          ends_at?: string | null
+          event_id?: string | null
+          id?: string
+          is_visible?: boolean
+          location?: string | null
+          notes?: string | null
+          organization_id?: string
+          starts_at?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_agenda_items_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artist_agenda_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artist_agenda_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artist_assets: {
+        Row: {
+          artist_id: string
+          blob_url: string | null
+          created_at: string
+          external_url: string | null
+          id: string
+          kind: string
+          notes: string | null
+          organization_id: string
+          section: string
+          thumbnail_url: string | null
+          title: string
+        }
+        Insert: {
+          artist_id: string
+          blob_url?: string | null
+          created_at?: string
+          external_url?: string | null
+          id?: string
+          kind: string
+          notes?: string | null
+          organization_id: string
+          section: string
+          thumbnail_url?: string | null
+          title: string
+        }
+        Update: {
+          artist_id?: string
+          blob_url?: string | null
+          created_at?: string
+          external_url?: string | null
+          id?: string
+          kind?: string
+          notes?: string | null
+          organization_id?: string
+          section?: string
+          thumbnail_url?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_assets_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artist_assets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artist_clippings: {
+        Row: {
+          artist_id: string
+          created_at: string
+          id: string
+          image_url: string | null
+          organization_id: string
+          published_at: string | null
+          source: string | null
+          title: string
+          url: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          organization_id: string
+          published_at?: string | null
+          source?: string | null
+          title: string
+          url: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          organization_id?: string
+          published_at?: string | null
+          source?: string | null
+          title?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_clippings_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artist_clippings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artists: {
+        Row: {
+          bio: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notify_on_publish: boolean
+          organization_id: string
+          phone: string | null
+          photo_url: string | null
+          portal_token: string | null
+          portal_token_expires_at: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notify_on_publish?: boolean
+          organization_id: string
+          phone?: string | null
+          photo_url?: string | null
+          portal_token?: string | null
+          portal_token_expires_at?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notify_on_publish?: boolean
+          organization_id?: string
+          phone?: string | null
+          photo_url?: string | null
+          portal_token?: string | null
+          portal_token_expires_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artists_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -2807,7 +3035,6 @@ export const Constants = {
     },
   },
 } as const
-
 export type ReportType = 'technical' | 'contract'
 export type EventReport = Database['public']['Tables']['event_reports']['Row']
 export type EventArticle = Database['public']['Tables']['event_articles']['Row']
@@ -2834,3 +3061,7 @@ export type ChecklistItemFileLinkRow = Database['public']['Tables']['checklist_i
 export type EventTaskRow = Database['public']['Tables']['event_tasks']['Row']
 export type EventTaskNoteRow = Database['public']['Tables']['event_task_notes']['Row']
 export type EventTaskFileRow = Database['public']['Tables']['event_task_files']['Row']
+export type Artist = Database['public']['Tables']['artists']['Row']
+export type ArtistAgendaItem = Database['public']['Tables']['artist_agenda_items']['Row']
+export type ArtistClipping = Database['public']['Tables']['artist_clippings']['Row']
+export type ArtistAsset = Database['public']['Tables']['artist_assets']['Row']

@@ -1,10 +1,12 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig, configDefaults } from 'vitest/config'
 import { resolve } from 'path'
 
 export default defineConfig({
   test: {
     environment: 'node',
     include: ['**/__tests__/**/*.test.{ts,tsx}', 'app/**/*.test.{ts,tsx}'],
+    // Cópias locais de git worktrees também têm __tests__/ — nunca as correr
+    exclude: [...configDefaults.exclude, '**/.worktrees/**', '**/.claude/**'],
     setupFiles: ['__tests__/setup.ts'],
     coverage: {
       provider: 'v8',
