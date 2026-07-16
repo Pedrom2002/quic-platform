@@ -40,6 +40,23 @@ function parseMaterialForm(formData: FormData) {
   })
 }
 
+// Formatos raster permitidos. Deliberadamente sem SVG: o bucket 'materials' é
+// público e um SVG servido inline pode conter <script> (XSS na origem do
+// storage). A extensão e o content-type são derivados do conteúdo real do
+// ficheiro (magic bytes), nunca do photo.type/photo.name enviados pelo cliente.
+const RASTER_SIGNATURES: { ext: string; mime: string; match: (b: Uint8Array) => boolean }[] = [
+  { ext: 'jpg', mime: 'image/jpeg', match: (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
+  { ext: 'png', mime: 'image/png', match: (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 },
+  { ext: 'gif', mime: 'image/gif', match: (b) => b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 },
+  {
+    ext: 'webp',
+    mime: 'image/webp',
+    match: (b) =>
+      b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
+      b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50,
+  },
+]
+
 // Faz upload da foto (se existir) para o bucket 'materials' com o cliente de
 // servidor (sessão do utilizador; a RLS is_stock_team() do storage aplica-se).
 // Devolve o URL público ou null quando não há ficheiro.
@@ -56,18 +73,22 @@ async function uploadPhoto(
     return { photoUrl: null }
   }
 
-  if (!photo.type.startsWith('image/')) {
-    return { photoUrl: null, error: 'A foto tem de ser uma imagem' }
+  // Sniff dos primeiros bytes: confirma que é mesmo um raster suportado e
+  // define ext + content-type a partir do conteúdo, não do que o cliente diz.
+  const header = new Uint8Array(await photo.slice(0, 16).arrayBuffer())
+  const format = RASTER_SIGNATURES.find((sig) => sig.match(header))
+  if (!format) {
+    return {
+      photoUrl: null,
+      error: 'A foto tem de ser uma imagem (JPEG, PNG, GIF ou WebP)',
+    }
   }
 
-  const ext = photo.name.includes('.')
-    ? photo.name.split('.').pop()!.toLowerCase()
-    : (photo.type.split('/')[1] ?? 'bin')
-  const path = `${crypto.randomUUID()}.${ext}`
+  const path = `${crypto.randomUUID()}.${format.ext}`
 
   const { error } = await supabase.storage
     .from('materials')
-    .upload(path, photo, { contentType: photo.type })
+    .upload(path, photo, { contentType: format.mime })
   if (error) {
     return { photoUrl: null, error: 'Erro ao carregar a foto' }
   }
