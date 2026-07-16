@@ -12,33 +12,97 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
+      accreditation_links: {
+        Row: {
+          archived_at: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          label: string | null
+          max_uses: number
+          uses_count: number
+        }
+        Insert: {
+          archived_at?: string | null
+          code: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          max_uses?: number
+          uses_count?: number
+        }
+        Update: {
+          archived_at?: string | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          max_uses?: number
+          uses_count?: number
+        }
+        Relationships: []
+      }
+      accreditations: {
+        Row: {
+          accreditation_link_id: string | null
+          created_at: string
+          email: string
+          id: string
+          media_company: string | null
+          name: string
+          phone: string | null
+          token: string
+        }
+        Insert: {
+          accreditation_link_id?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          media_company?: string | null
+          name: string
+          phone?: string | null
+          token?: string
+        }
+        Update: {
+          accreditation_link_id?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          media_company?: string | null
+          name?: string
+          phone?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accreditations_accreditation_link_id_fkey"
+            columns: ["accreditation_link_id"]
+            isOneToOne: false
+            referencedRelation: "accreditation_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admins: {
+        Row: {
+          user_id: string
+        }
+        Insert: {
+          user_id: string
+        }
+        Update: {
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string
@@ -1298,6 +1362,167 @@ export type Database = {
           },
         ]
       }
+      goalfest_registrations: {
+        Row: {
+          consent_at: string | null
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          consent_at?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          phone: string
+        }
+        Update: {
+          consent_at?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
+      guests: {
+        Row: {
+          checked_in_day1_at: string | null
+          checked_in_day2_at: string | null
+          companion_count: number
+          companion_emails: string[]
+          companion_names: string[]
+          created_at: string
+          email: string
+          email_attempts: number
+          email_last_error: string | null
+          email_sent_at: string | null
+          ics: string | null
+          id: string
+          invite_link_id: string | null
+          name: string
+          phone: string | null
+          token: string
+          vip: boolean
+        }
+        Insert: {
+          checked_in_day1_at?: string | null
+          checked_in_day2_at?: string | null
+          companion_count?: number
+          companion_emails?: string[]
+          companion_names?: string[]
+          created_at?: string
+          email: string
+          email_attempts?: number
+          email_last_error?: string | null
+          email_sent_at?: string | null
+          ics?: string | null
+          id?: string
+          invite_link_id?: string | null
+          name: string
+          phone?: string | null
+          token?: string
+          vip?: boolean
+        }
+        Update: {
+          checked_in_day1_at?: string | null
+          checked_in_day2_at?: string | null
+          companion_count?: number
+          companion_emails?: string[]
+          companion_names?: string[]
+          created_at?: string
+          email?: string
+          email_attempts?: number
+          email_last_error?: string | null
+          email_sent_at?: string | null
+          ics?: string | null
+          id?: string
+          invite_link_id?: string | null
+          name?: string
+          phone?: string | null
+          token?: string
+          vip?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guests_invite_link_id_fkey"
+            columns: ["invite_link_id"]
+            isOneToOne: false
+            referencedRelation: "invite_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      idempotency_keys: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          key: string
+          response: Json | null
+          scope: string
+          status_code: number | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          key: string
+          response?: Json | null
+          scope: string
+          status_code?: number | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          key?: string
+          response?: Json | null
+          scope?: string
+          status_code?: number | null
+        }
+        Relationships: []
+      }
+      invite_links: {
+        Row: {
+          archived_at: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          label: string | null
+          max_uses: number
+          uses_count: number
+        }
+        Insert: {
+          archived_at?: string | null
+          code: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          max_uses?: number
+          uses_count?: number
+        }
+        Update: {
+          archived_at?: string | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          max_uses?: number
+          uses_count?: number
+        }
+        Relationships: []
+      }
       marketing_campaigns: {
         Row: {
           ai_objective: string | null
@@ -1630,6 +1855,27 @@ export type Database = {
           },
         ]
       }
+      newsletter_subscribers: {
+        Row: {
+          email: string
+          id: string
+          subscribed_at: string
+          unsubscribed_at: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+        }
+        Relationships: []
+      }
       notification_jobs: {
         Row: {
           attempt_count: number | null
@@ -1797,6 +2043,405 @@ export type Database = {
         }
         Relationships: []
       }
+      portugal_draw_config: {
+        Row: {
+          drawn_at: string | null
+          id: boolean
+        }
+        Insert: {
+          drawn_at?: string | null
+          id?: boolean
+        }
+        Update: {
+          drawn_at?: string | null
+          id?: boolean
+        }
+        Relationships: []
+      }
+      portugal_registrations: {
+        Row: {
+          consent_at: string | null
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          consent_at?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          phone: string
+        }
+        Update: {
+          consent_at?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
+      portugal_winners: {
+        Row: {
+          drawn_at: string | null
+          id: string
+          qr_token: string
+          redeemed_at: string | null
+          registration_id: string
+          sms_sent_at: string | null
+        }
+        Insert: {
+          drawn_at?: string | null
+          id?: string
+          qr_token?: string
+          redeemed_at?: string | null
+          registration_id: string
+          sms_sent_at?: string | null
+        }
+        Update: {
+          drawn_at?: string | null
+          id?: string
+          qr_token?: string
+          redeemed_at?: string | null
+          registration_id?: string
+          sms_sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portugal_winners_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "portugal_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_categories: {
+        Row: {
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      stock_events: {
+        Row: {
+          client_name: string | null
+          created_at: string
+          ends_on: string | null
+          id: string
+          name: string
+          notes: string | null
+          starts_on: string | null
+          status: string
+        }
+        Insert: {
+          client_name?: string | null
+          created_at?: string
+          ends_on?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          starts_on?: string | null
+          status?: string
+        }
+        Update: {
+          client_name?: string | null
+          created_at?: string
+          ends_on?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          starts_on?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      stock_material_units: {
+        Row: {
+          codigo: string | null
+          condicao: string | null
+          created_at: string
+          id: string
+          localizacao: string | null
+          material_id: string
+          notes: string | null
+          serial_number: string | null
+          status: string
+        }
+        Insert: {
+          codigo?: string | null
+          condicao?: string | null
+          created_at?: string
+          id?: string
+          localizacao?: string | null
+          material_id: string
+          notes?: string | null
+          serial_number?: string | null
+          status?: string
+        }
+        Update: {
+          codigo?: string | null
+          condicao?: string | null
+          created_at?: string
+          id?: string
+          localizacao?: string | null
+          material_id?: string
+          notes?: string | null
+          serial_number?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_material_units_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "stock_catalog_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_material_units_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "stock_material_availability"
+            referencedColumns: ["material_id"]
+          },
+          {
+            foreignKeyName: "stock_material_units_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "stock_materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_materials: {
+        Row: {
+          active: boolean
+          category_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          name: string
+          photo_url: string | null
+          quantity_total: number
+          unit: string
+        }
+        Insert: {
+          active?: boolean
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name: string
+          photo_url?: string | null
+          quantity_total?: number
+          unit?: string
+        }
+        Update: {
+          active?: boolean
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name?: string
+          photo_url?: string | null
+          quantity_total?: number
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_materials_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "stock_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          event_id: string | null
+          id: string
+          material_id: string
+          notes: string | null
+          quantity: number
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          event_id?: string | null
+          id?: string
+          material_id: string
+          notes?: string | null
+          quantity: number
+          type: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          event_id?: string | null
+          id?: string
+          material_id?: string
+          notes?: string | null
+          quantity?: number
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "stock_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "stock_catalog_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "stock_material_availability"
+            referencedColumns: ["material_id"]
+          },
+          {
+            foreignKeyName: "stock_movements_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "stock_materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_profiles: {
+        Row: {
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          display_name?: string | null
+          email?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stock_quote_request_items: {
+        Row: {
+          id: string
+          material_id: string
+          quantity: number
+          request_id: string
+        }
+        Insert: {
+          id?: string
+          material_id: string
+          quantity: number
+          request_id: string
+        }
+        Update: {
+          id?: string
+          material_id?: string
+          quantity?: number
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_quote_request_items_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "stock_catalog_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_quote_request_items_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "stock_material_availability"
+            referencedColumns: ["material_id"]
+          },
+          {
+            foreignKeyName: "stock_quote_request_items_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "stock_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_quote_request_items_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "stock_quote_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_quote_requests: {
+        Row: {
+          created_at: string
+          email: string
+          event_date: string | null
+          id: string
+          message: string | null
+          name: string
+          phone: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          event_date?: string | null
+          id?: string
+          message?: string | null
+          name: string
+          phone?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          event_date?: string | null
+          id?: string
+          message?: string | null
+          name?: string
+          phone?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       team_members: {
         Row: {
           auth_user_id: string | null
@@ -1912,9 +2557,51 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      stock_catalog_materials: {
+        Row: {
+          available: boolean | null
+          category_id: string | null
+          description: string | null
+          id: string | null
+          name: string | null
+          photo_url: string | null
+          unit: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_materials_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "stock_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_material_availability: {
+        Row: {
+          disponivel: number | null
+          material_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      claim_accreditation_seat: {
+        Args: { p_code: string }
+        Returns: {
+          accreditation_link_id: string
+          ok: boolean
+          reason: string
+        }[]
+      }
+      claim_invite_seat: {
+        Args: { p_code: string }
+        Returns: {
+          invite_link_id: string
+          ok: boolean
+          reason: string
+        }[]
+      }
       claim_notification_jobs: {
         Args: { p_batch_size: number }
         Returns: {
@@ -1927,6 +2614,7 @@ export type Database = {
         }[]
       }
       get_user_org_id: { Args: never; Returns: string }
+      is_stock_team: { Args: never; Returns: boolean }
       marketing_check_warmup_limit: {
         Args: { p_user_id: string }
         Returns: Json
@@ -1936,6 +2624,21 @@ export type Database = {
         Returns: undefined
       }
       marketing_record_send: { Args: { p_user_id: string }; Returns: undefined }
+      release_invite_seat: {
+        Args: { p_invite_link_id: string }
+        Returns: undefined
+      }
+      stock_submit_quote: {
+        Args: {
+          p_email: string
+          p_event_date: string
+          p_items: Json
+          p_message: string
+          p_name: string
+          p_phone: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       marketing_campaign_status:
@@ -2080,9 +2783,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       marketing_campaign_status: [
