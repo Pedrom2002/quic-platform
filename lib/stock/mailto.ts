@@ -36,5 +36,5 @@ export function buildMailtoHref(
 
   const body = bodyLines.join('\r\n')
 
-  return `mailto:${request.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  return `mailto:${encodeURIComponent(request.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 }

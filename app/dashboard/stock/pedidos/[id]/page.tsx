@@ -85,7 +85,7 @@ export default async function PedidoDetalhePage({
               <dt className="text-muted-foreground">Email</dt>
               <dd className="font-medium">
                 <a
-                  href={`mailto:${request.email}`}
+                  href={`mailto:${encodeURIComponent(request.email)}`}
                   className="hover:underline"
                 >
                   {request.email}
