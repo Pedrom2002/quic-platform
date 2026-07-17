@@ -1,11 +1,11 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
-import SignupScreen from './signup'
+import SignupScreen from '../../app/signup'
 
 const mockSignUp = jest.fn()
 const mockReplace = jest.fn()
 
-jest.mock('../lib/supabase', () => ({
+jest.mock('../../lib/supabase', () => ({
   supabase: { auth: { signUp: (...args: unknown[]) => mockSignUp(...args) } },
 }))
 jest.mock('expo-router', () => ({

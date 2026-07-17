@@ -1,11 +1,11 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
-import LoginScreen from './login'
+import LoginScreen from '../../app/login'
 
 const mockSignInWithPassword = jest.fn()
 const mockReplace = jest.fn()
 
-jest.mock('../lib/supabase', () => ({
+jest.mock('../../lib/supabase', () => ({
   supabase: { auth: { signInWithPassword: (...args: unknown[]) => mockSignInWithPassword(...args) } },
 }))
 jest.mock('expo-router', () => ({

@@ -1,13 +1,13 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, waitFor } from '@testing-library/react-native'
-import PortalScreen from './portal'
+import PortalScreen from '../../../app/(tabs)/portal'
 
 const mockUseSession = jest.fn()
 const mockResolveUserRole = jest.fn()
 
-jest.mock('../../hooks/useSession', () => ({ useSession: () => mockUseSession() }))
-jest.mock('../../lib/role', () => ({ resolveUserRole: (...args: unknown[]) => mockResolveUserRole(...args) }))
-jest.mock('../../lib/supabase', () => ({ supabase: {} }))
+jest.mock('../../../hooks/useSession', () => ({ useSession: () => mockUseSession() }))
+jest.mock('../../../lib/role', () => ({ resolveUserRole: (...args: unknown[]) => mockResolveUserRole(...args) }))
+jest.mock('../../../lib/supabase', () => ({ supabase: {} }))
 
 beforeEach(() => {
   mockUseSession.mockReset()

@@ -49,11 +49,11 @@ function fd(obj: Record<string, string | File>) {
 
 const UUID = '5f0f0e6a-7f7a-4b1a-9a2a-1c2d3e4f5a6b'
 
-function authAs(supabase: unknown) {
+function authAs(supabase: unknown, role: string = 'member') {
   mockRequireOrgAuth.mockResolvedValue({
     supabase,
     user: { id: 'user-1' },
-    member: { organization_id: 'org-1', role: 'member' },
+    member: { organization_id: 'org-1', role },
   })
 }
 
@@ -209,9 +209,17 @@ describe('inviteArtistToApp', () => {
     expect(result.error).toBe('Sem permissões')
   })
 
+  it('rejects non-admin', async () => {
+    const { supabase } = makeSupabase()
+    authAs(supabase, 'member')
+    const { inviteArtistToApp } = await import('@/app/dashboard/artists/actions')
+    const result = await inviteArtistToApp(fd({ id: UUID }))
+    expect(result.error).toBe('Sem permissões')
+  })
+
   it('rejects invalid id', async () => {
     const { supabase } = makeSupabase()
-    authAs(supabase)
+    authAs(supabase, 'admin')
     const { inviteArtistToApp } = await import('@/app/dashboard/artists/actions')
     const result = await inviteArtistToApp(fd({ id: 'nope' }))
     expect(result.error).toBe('Artista inválido')
@@ -224,7 +232,7 @@ describe('inviteArtistToApp', () => {
         single: vi.fn().mockResolvedValue({ data: { id: UUID, email: null, auth_user_id: null }, error: null }),
       })),
     }))
-    authAs(supabase)
+    authAs(supabase, 'admin')
     const { inviteArtistToApp } = await import('@/app/dashboard/artists/actions')
     const result = await inviteArtistToApp(fd({ id: UUID }))
     expect(result.error).toBe('Artista sem email definido')
@@ -244,7 +252,7 @@ describe('inviteArtistToApp', () => {
       data: { user: { id: 'new-auth-user-id' } },
       error: null,
     })
-    authAs(supabase)
+    authAs(supabase, 'admin')
     const { inviteArtistToApp } = await import('@/app/dashboard/artists/actions')
     const result = await inviteArtistToApp(fd({ id: UUID }))
     expect(result.error).toBeUndefined()
@@ -263,7 +271,7 @@ describe('inviteArtistToApp', () => {
         }),
       })),
     }))
-    authAs(supabase)
+    authAs(supabase, 'admin')
     const { inviteArtistToApp } = await import('@/app/dashboard/artists/actions')
     const result = await inviteArtistToApp(fd({ id: UUID }))
     expect(result.error).toBe('Artista já convidado')

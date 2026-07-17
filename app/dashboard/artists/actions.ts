@@ -83,6 +83,7 @@ export async function updateArtist(formData: FormData): Promise<ActionResult> {
 export async function inviteArtistToApp(formData: FormData): Promise<ActionResult> {
   const auth = await getOrgClient()
   if (!auth) return { error: 'Sem permissões' }
+  if (auth.member.role !== 'admin') return { error: 'Sem permissões' }
 
   const id = z.uuid().safeParse(formData.get('id'))
   if (!id.success) return { error: 'Artista inválido' }

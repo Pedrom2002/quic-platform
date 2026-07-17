@@ -1,11 +1,11 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, waitFor } from '@testing-library/react-native'
-import RootLayout from './_layout'
+import RootLayout from '../../app/_layout'
 
 const mockUseSession = jest.fn()
 const mockReplace = jest.fn()
 
-jest.mock('../hooks/useSession', () => ({ useSession: () => mockUseSession() }))
+jest.mock('../../hooks/useSession', () => ({ useSession: () => mockUseSession() }))
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
   Slot: () => null,

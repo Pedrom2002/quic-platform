@@ -6,7 +6,7 @@ export default defineConfig({
     environment: 'node',
     include: ['**/__tests__/**/*.test.{ts,tsx}', 'app/**/*.test.{ts,tsx}'],
     // Cópias locais de git worktrees também têm __tests__/ — nunca as correr
-    exclude: [...configDefaults.exclude, '**/.worktrees/**', '**/.claude/**'],
+    exclude: [...configDefaults.exclude, '**/.worktrees/**', '**/.claude/**', 'mobile/**'],
     setupFiles: ['__tests__/setup.ts'],
     coverage: {
       provider: 'v8',
