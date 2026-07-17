@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { updateEventSchema, type UpdateEventInput } from '@/schemas/event.schema'
 import { createClient } from '@/lib/supabase/client'
-import { updateEventAction } from './actions'
+import { updateEventAction, updateEventCoverPhoto } from './actions'
 import { Button, ButtonLink } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -31,10 +31,29 @@ export default function EditEventPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
+  const [coverUrl, setCoverUrl] = useState<string | null>(null)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [isPublicListed, setIsPublicListed] = useState(false)
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<UpdateEventInput>({
     resolver: zodResolver(updateEventSchema),
   })
+
+  const [isPendingPhoto, startPhotoTransition] = useTransition()
+
+  function handlePhotoSubmit(formData: FormData) {
+    setUploadingPhoto(true)
+    startPhotoTransition(async () => {
+      const result = await updateEventCoverPhoto(formData)
+      setUploadingPhoto(false)
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+      toast.success('Capa atualizada')
+      router.refresh()
+    })
+  }
 
   useEffect(() => {
     const supabase = createClient()
@@ -49,6 +68,8 @@ export default function EditEventPage() {
           start_datetime: format(new Date(data.start_datetime), "yyyy-MM-dd'T'HH:mm"),
           end_datetime: format(new Date(data.end_datetime), "yyyy-MM-dd'T'HH:mm"),
         })
+        setCoverUrl(data.cover_image_url ?? null)
+        setIsPublicListed(data.is_public_listed ?? false)
       }
       setFetching(false)
     })
@@ -82,6 +103,33 @@ export default function EditEventPage() {
 
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6 mt-6">
         <h2 className="text-sm font-semibold text-slate-800 mb-5">Detalhes do evento</h2>
+
+        <div className="mb-6 space-y-1.5">
+          <Label className="text-slate-600">Foto de capa (app mobile)</Label>
+          <div className="flex flex-wrap items-center gap-4">
+            {coverUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={coverUrl} alt="Capa do evento" className="h-20 w-32 rounded-lg object-cover" />
+            ) : (
+              <div className="flex h-20 w-32 items-center justify-center rounded-lg bg-slate-100 text-xs text-slate-400">
+                Sem foto
+              </div>
+            )}
+            <form
+              action={(formData: FormData) => {
+                formData.set('id', params.eventId)
+                handlePhotoSubmit(formData)
+              }}
+              className="flex flex-1 flex-wrap items-center gap-2"
+            >
+              <Input type="file" name="photo" accept="image/jpeg,image/png,image/webp,image/gif" className="max-w-64 bg-white border-slate-200" />
+              <Button type="submit" disabled={isPendingPhoto} variant="secondary">
+                {isPendingPhoto ? 'A enviar...' : 'Guardar capa'}
+              </Button>
+            </form>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div className="space-y-1.5">
             <Label className="text-slate-600">Nome *</Label>
@@ -152,6 +200,25 @@ export default function EditEventPage() {
             <Label className="text-slate-600">Descrição</Label>
             <Textarea {...register('description')} rows={3} className="bg-white border-slate-200 resize-none" />
           </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="is_public_listed"
+              checked={isPublicListed}
+              onChange={e => {
+                setIsPublicListed(e.target.checked)
+                setValue('is_public_listed', e.target.checked, { shouldValidate: true })
+              }}
+              className="h-4 w-4 rounded border-slate-300"
+            />
+            <Label htmlFor="is_public_listed" className="text-slate-600 cursor-pointer">
+              Publicar no app mobile
+            </Label>
+          </div>
+          <p className="text-xs text-slate-400 -mt-3">
+            Só eventos publicados aparecem no feed público da app.
+          </p>
 
           <div className="flex gap-3 pt-2">
             <Button type="submit" disabled={loading} className="flex-1">
