@@ -1510,12 +1510,14 @@ export type Database = {
       }
       events: {
         Row: {
+          cover_image_url: string | null
           created_at: string | null
           created_by: string | null
           description: string | null
           end_datetime: string
           event_type_id: string
           id: string
+          is_public_listed: boolean
           name: string
           organization_id: string
           portal_token: string
@@ -1530,12 +1532,14 @@ export type Database = {
           venue_name: string | null
         }
         Insert: {
+          cover_image_url?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
           end_datetime: string
           event_type_id: string
           id?: string
+          is_public_listed?: boolean
           name: string
           organization_id: string
           portal_token?: string
@@ -1550,12 +1554,14 @@ export type Database = {
           venue_name?: string | null
         }
         Update: {
+          cover_image_url?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
           end_datetime?: string
           event_type_id?: string
           id?: string
+          is_public_listed?: boolean
           name?: string
           organization_id?: string
           portal_token?: string

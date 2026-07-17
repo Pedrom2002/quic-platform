@@ -62,6 +62,8 @@ function makeEvent(overrides: Partial<Event> = {}): Event {
     venue_name: null,
     venue_address: null,
     description: null,
+    cover_image_url: null,
+    is_public_listed: false,
     portal_token: 'portal-tok',
     portal_token_expires_at: null,
     portal_token_revoked_at: null,
