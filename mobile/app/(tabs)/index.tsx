@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { View, Text, FlatList, StyleSheet } from 'react-native'
+import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { fetchPublicEvents, type PublicEvent } from '../../lib/events'
@@ -29,9 +29,9 @@ export default function InicioScreen() {
       keyExtractor={item => item.id}
       contentContainerStyle={styles.list}
       renderItem={({ item }) => (
-        <View onTouchEnd={() => router.push(`/evento/${item.id}`)}>
+        <Pressable onPress={() => router.push(`/evento/${item.id}`)} accessibilityRole="button">
           <EventCard event={item} />
-        </View>
+        </Pressable>
       )}
     />
   )
