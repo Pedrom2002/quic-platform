@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
+import { SendUpdateDialog } from './send-update-dialog'
 
 const channelLabel: Record<string, string> = {
   email: 'Email',
@@ -41,12 +42,15 @@ export default async function NotificationsPage({
 
   return (
     <div className="p-8">
-      <div className="mb-6">
-        <Link href={`/dashboard/events/${eventId}`} className="flex items-center gap-2 text-slate-400 hover:text-slate-700 text-sm mb-4 transition-colors w-fit">
-          <ArrowLeft className="w-4 h-4" /> {event.name}
-        </Link>
-        <h1 className="text-2xl font-bold text-slate-900">Log de Notificações</h1>
-        <p className="text-slate-500 mt-1">{jobs?.length ?? 0} notificações registadas</p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <Link href={`/dashboard/events/${eventId}`} className="flex items-center gap-2 text-slate-400 hover:text-slate-700 text-sm mb-4 transition-colors w-fit">
+            <ArrowLeft className="w-4 h-4" /> {event.name}
+          </Link>
+          <h1 className="text-2xl font-bold text-slate-900">Log de Notificações</h1>
+          <p className="text-slate-500 mt-1">{jobs?.length ?? 0} notificações registadas</p>
+        </div>
+        <SendUpdateDialog eventId={eventId} />
       </div>
 
       {!jobs?.length ? (
