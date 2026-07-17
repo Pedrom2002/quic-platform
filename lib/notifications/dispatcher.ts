@@ -17,7 +17,7 @@ async function insertAndEnqueue(
   supabase: ReturnType<typeof createAdminClient>,
   jobDrafts: Array<{
     event_id: string
-    checklist_item_id: string
+    checklist_item_id: string | null
     client_id: string
     channel: 'email' | 'whatsapp' | 'sms' | 'portal'
     message_template_id: string
@@ -351,6 +351,116 @@ export async function dispatchStartNotificationForItem(ctx: StartDispatchContext
 
   const { NEXT_PUBLIC_APP_URL: appUrl } = getEnv()
   await insertAndEnqueue(supabase, jobDrafts, ctx.event.id, appUrl)
+}
+
+interface ClientUpdateContext {
+  event: Event
+  customMessage: string
+}
+
+export async function dispatchClientUpdate(ctx: ClientUpdateContext): Promise<{ sent: number }> {
+  const supabase = createAdminClient()
+
+  const { data: eventClients } = await supabase
+    .from('event_clients')
+    .select('*, client:clients(*)')
+    .eq('event_id', ctx.event.id)
+    .eq('opted_out', false)
+
+  if (!eventClients?.length) return { sent: 0 }
+
+  const portalBase = process.env.NEXT_PUBLIC_PORTAL_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const portalUrl = `${portalBase}/portal/${ctx.event.portal_token}`
+  const eventDate = format(new Date(ctx.event.start_datetime), "d 'de' MMMM 'de' yyyy", { locale: pt })
+
+  const templateKeys = new Set<string>()
+  const hardcodedChannels: NotificationChannel[] = ['email', 'sms', 'portal']
+  for (const ec of eventClients as unknown as (EventClient & { client: Client })[]) {
+    const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
+    const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
+    const lang = prefs?.language ?? 'pt'
+    for (const ch of hardcodedChannels) {
+      if (prefChannels.includes(ch)) templateKeys.add(`${ch}:${lang}`)
+    }
+  }
+
+  const templateCache = new Map<string, MessageTemplate>()
+  if (templateKeys.size > 0) {
+    const pairs = [...templateKeys].map(k => k.split(':'))
+    const channels = [...new Set(pairs.map(([ch]) => ch))]
+    const languages = [...new Set(pairs.map(([, lang]) => lang))]
+
+    const { data: templates } = await supabase
+      .from('message_templates')
+      .select('*')
+      .eq('organization_id', ctx.event.organization_id)
+      .eq('template_key', 'client_update')
+      .in('channel', channels)
+      .in('language', languages)
+      .eq('is_active', true)
+
+    for (const t of templates ?? []) {
+      templateCache.set(`${t.channel}:${t.language}`, t as MessageTemplate)
+    }
+  }
+
+  type UpdateJobDraft = {
+    event_id: string
+    checklist_item_id: string | null
+    client_id: string
+    channel: 'email' | 'whatsapp' | 'sms' | 'portal'
+    message_template_id: string
+    rendered_subject: string | null
+    rendered_body: string
+    status: 'queued'
+    scheduled_at: string
+    _client: Client
+  }
+
+  const jobDrafts: UpdateJobDraft[] = []
+
+  for (const ec of eventClients as unknown as (EventClient & { client: Client })[]) {
+    const client = ec.client
+    const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
+    const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
+    const lang = prefs?.language ?? 'pt'
+    const channels = hardcodedChannels.filter(ch => prefChannels.includes(ch))
+
+    for (const channel of channels) {
+      const msgTemplate = templateCache.get(`${channel}:${lang}`)
+      if (!msgTemplate) continue
+
+      const templateVars = {
+        client_name: client.full_name,
+        event_name: ctx.event.name,
+        event_date: eventDate,
+        custom_message: ctx.customMessage,
+        portal_url: portalUrl,
+      }
+
+      const renderedSubject = msgTemplate.subject
+        ? renderTemplate(msgTemplate.subject, templateVars)
+        : null
+      const renderedBody = renderTemplate(msgTemplate.body_template, templateVars)
+
+      jobDrafts.push({
+        event_id: ctx.event.id,
+        checklist_item_id: null,
+        client_id: client.id,
+        channel: channel as 'email' | 'whatsapp' | 'sms' | 'portal',
+        message_template_id: msgTemplate.id,
+        rendered_subject: renderedSubject,
+        rendered_body: renderedBody,
+        status: 'queued' as const,
+        scheduled_at: new Date().toISOString(),
+        _client: client as unknown as Client,
+      })
+    }
+  }
+
+  const { NEXT_PUBLIC_APP_URL: appUrl } = getEnv()
+  const inserted = await insertAndEnqueue(supabase, jobDrafts, ctx.event.id, appUrl)
+  return { sent: inserted }
 }
 
 // "specific_clients" targets primary contacts only — the audience rule means

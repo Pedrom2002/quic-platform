@@ -544,3 +544,144 @@ describe('dispatchStartNotificationForItem', () => {
     expect(mockSendEmail).not.toHaveBeenCalled()
   })
 })
+
+describe('dispatchClientUpdate', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    tableData = {}
+    delete process.env.QSTASH_TOKEN
+    process.env.NEXT_PUBLIC_PORTAL_URL = 'http://localhost:3000'
+    process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
+    vi.resetModules()
+    mockSendEmail.mockResolvedValue('brevo-msg-id-update')
+  })
+
+  const mockUpdateTemplate = {
+    id: 'tpl-update-1',
+    organization_id: 'org-1',
+    name: 'Comunicação ao cliente — email',
+    channel: 'email',
+    language: 'pt',
+    template_key: 'client_update',
+    subject: 'Comunicação sobre o seu evento — {{event_name}}',
+    body_template: 'Caro(a) {{client_name}}, {{custom_message}}',
+    is_active: true,
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+  }
+
+  const mockUpdateJob = {
+    id: 'job-update-1',
+    event_id: 'event-1',
+    checklist_item_id: null,
+    client_id: 'client-1',
+    channel: 'email',
+    rendered_subject: 'Comunicação sobre o seu evento — Concerto Teste',
+    rendered_body: 'Caro(a) Ana Silva, Desmontagens em curso.',
+    status: 'queued',
+    scheduled_at: new Date().toISOString(),
+    qstash_message_id: null,
+    message_template_id: 'tpl-update-1',
+    attempt_count: 0,
+    last_error: null,
+    sent_at: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+
+  function setupUpdateHappyPath() {
+    tableData = {
+      event_clients: { data: [mockEventClient], error: null },
+      message_templates: { data: [mockUpdateTemplate], error: null },
+      notification_jobs: { data: [mockUpdateJob], error: null },
+      notification_log: { data: null, error: null },
+    }
+  }
+
+  it('returns { sent: 0 } when there are no event clients', async () => {
+    tableData = { event_clients: { data: [], error: null } }
+    const { dispatchClientUpdate } = await import('@/lib/notifications/dispatcher')
+
+    const result = await dispatchClientUpdate({ event: makeEvent(), customMessage: 'Desmontagens em curso.' })
+
+    expect(result).toEqual({ sent: 0 })
+    expect(mockInsert).not.toHaveBeenCalled()
+  })
+
+  it('inserts one job per client channel with checklist_item_id null', async () => {
+    setupUpdateHappyPath()
+    const { dispatchClientUpdate } = await import('@/lib/notifications/dispatcher')
+
+    const result = await dispatchClientUpdate({ event: makeEvent(), customMessage: 'Desmontagens em curso.' })
+
+    expect(result).toEqual({ sent: 1 })
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ client_id: 'client-1', channel: 'email', checklist_item_id: null, status: 'queued' }),
+      ])
+    )
+  })
+
+  it('renders {{custom_message}} into the body', async () => {
+    setupUpdateHappyPath()
+    const { dispatchClientUpdate } = await import('@/lib/notifications/dispatcher')
+
+    await dispatchClientUpdate({ event: makeEvent(), customMessage: 'Faltam as paletes e as WCs.' })
+
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ rendered_body: 'Caro(a) Ana Silva, Faltam as paletes e as WCs.' }),
+      ])
+    )
+  })
+
+  it('skips opted_out clients (already excluded by query) and returns sent 0 when no template matches', async () => {
+    tableData = {
+      event_clients: { data: [mockEventClient], error: null },
+      message_templates: { data: [], error: null },
+      notification_jobs: { data: null, error: null },
+    }
+    const { dispatchClientUpdate } = await import('@/lib/notifications/dispatcher')
+
+    const result = await dispatchClientUpdate({ event: makeEvent(), customMessage: 'Desmontagens em curso.' })
+
+    expect(result).toEqual({ sent: 0 })
+    expect(mockInsert).not.toHaveBeenCalled()
+  })
+
+  it('respects client channel preferences — only sms when client prefers sms only', async () => {
+    tableData = {
+      event_clients: {
+        data: [{ ...mockEventClient, notification_prefs: { channels: ['sms'], language: 'pt' } }],
+        error: null,
+      },
+      message_templates: {
+        data: [{ ...mockUpdateTemplate, id: 'tpl-update-sms', channel: 'sms', subject: null }],
+        error: null,
+      },
+      notification_jobs: { data: [{ ...mockUpdateJob, channel: 'sms', message_template_id: 'tpl-update-sms' }], error: null },
+      notification_log: { data: null, error: null },
+    }
+    const { dispatchClientUpdate } = await import('@/lib/notifications/dispatcher')
+
+    const result = await dispatchClientUpdate({ event: makeEvent(), customMessage: 'Desmontagens em curso.' })
+
+    expect(result).toEqual({ sent: 1 })
+    const inserted = mockInsert.mock.calls[0][0] as Array<{ channel: string }>
+    expect(inserted.every(j => j.channel === 'sms')).toBe(true)
+  })
+
+  it('returns { sent: 0 } silently when DB insert fails', async () => {
+    tableData = {
+      event_clients: { data: [mockEventClient], error: null },
+      message_templates: { data: [mockUpdateTemplate], error: null },
+      notification_jobs: { data: null, error: { message: 'DB insert error' } },
+      notification_log: { data: null, error: null },
+    }
+    const { dispatchClientUpdate } = await import('@/lib/notifications/dispatcher')
+
+    const result = await dispatchClientUpdate({ event: makeEvent(), customMessage: 'Desmontagens em curso.' })
+
+    expect(result).toEqual({ sent: 0 })
+  })
+})
