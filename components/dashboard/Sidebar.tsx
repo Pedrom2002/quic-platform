@@ -4,7 +4,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { Calendar, Users, LayoutDashboard, FileText, Settings, LogOut, Users2, FolderOpen, Mail, CreditCard, Package, MicVocal } from 'lucide-react'
+import { Calendar, Users, LayoutDashboard, Settings, LogOut, Mail, CreditCard, Package, MicVocal } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 
@@ -13,9 +13,6 @@ const navItems = [
   { href: '/dashboard/events', label: 'Eventos', icon: Calendar },
   { href: '/dashboard/artists', label: 'Artistas', icon: MicVocal },
   { href: '/dashboard/contacts', label: 'Contactos', icon: Users },
-  { href: '/dashboard/team', label: 'Equipa', icon: Users2 },
-  { href: '/dashboard/templates', label: 'Templates', icon: FileText },
-  { href: '/dashboard/files', label: 'Ficheiros', icon: FolderOpen },
   { href: '/dashboard/marketing', label: 'Marketing', icon: Mail },
   { href: '/dashboard/cards', label: 'Cards', icon: CreditCard },
   { href: '/dashboard/stock', label: 'Stock', icon: Package },
