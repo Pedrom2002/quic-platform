@@ -14,6 +14,7 @@ import {
   revokePortalToken,
   reactivatePortalToken,
   toggleArtistActive,
+  inviteArtistToApp,
   type ActionResult,
 } from '../actions'
 
@@ -141,6 +142,16 @@ export function PortalLinkCard({
             }
           >
             {artist.is_active ? 'Desativar artista' : 'Ativar artista'}
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isPending || Boolean(artist.auth_user_id) || !artist.email}
+            onClick={() => run(inviteArtistToApp, 'Convite enviado')}
+          >
+            {artist.auth_user_id ? 'Já convidado' : 'Convidar para app'}
           </Button>
         </div>
       </CardContent>

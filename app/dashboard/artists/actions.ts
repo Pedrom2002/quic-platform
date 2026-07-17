@@ -9,6 +9,7 @@ import { artistSchema } from '@/lib/artists/validation'
 import { generatePortalToken } from '@/lib/portal/token'
 import { detectMimeFromMagic, safeBlobPathname } from '@/schemas/file.schema'
 import { getEnv } from '@/lib/env'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export type ActionResult = { error?: string }
 
@@ -75,6 +76,37 @@ export async function updateArtist(formData: FormData): Promise<ActionResult> {
   if (error) return { error: 'Erro ao atualizar artista' }
 
   revalidatePath('/dashboard/artists')
+  revalidatePath(`/dashboard/artists/${id.data}`)
+  return {}
+}
+
+export async function inviteArtistToApp(formData: FormData): Promise<ActionResult> {
+  const auth = await getOrgClient()
+  if (!auth) return { error: 'Sem permissões' }
+  if (auth.member.role !== 'admin') return { error: 'Sem permissões' }
+
+  const id = z.uuid().safeParse(formData.get('id'))
+  if (!id.success) return { error: 'Artista inválido' }
+
+  const { data: artist, error: fetchError } = await auth.supabase
+    .from('artists')
+    .select('id, email, auth_user_id')
+    .eq('id', id.data)
+    .single()
+  if (fetchError || !artist) return { error: 'Artista inválido' }
+  if (!artist.email) return { error: 'Artista sem email definido' }
+  if (artist.auth_user_id) return { error: 'Artista já convidado' }
+
+  const admin = createAdminClient()
+  const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(artist.email)
+  if (inviteError || !invited?.user) return { error: 'Erro ao enviar convite' }
+
+  const { error: updateError } = await auth.supabase
+    .from('artists')
+    .update({ auth_user_id: invited.user.id })
+    .eq('id', id.data)
+  if (updateError) return { error: 'Convite enviado mas falhou ao ligar a conta' }
+
   revalidatePath(`/dashboard/artists/${id.data}`)
   return {}
 }
