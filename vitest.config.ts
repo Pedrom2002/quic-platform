@@ -18,17 +18,15 @@ export default defineConfig({
       ],
       reporter: ['text', 'lcov', 'html'],
       // Per-area *ratchet* thresholds = current measured floor; raise as tests
-      // are added, never lower. lib/** and app/api/** sit below 80% because the
-      // merged deliverability suite (marketing warmup/replies/forensics/DNS)
-      // landed with limited unit tests — a tracked gap to backfill toward 80%.
-      // app/api re-baselined ao piso medido no CI em 2026-07 depois de as rotas
-      // portugal/goalfest entrarem sem testes (backfill pendente).
-      // schemas stay at the full bar; dashboard Server Actions are being filled in.
+      // are added, never lower. Backfill 2026-07: rotas portugal/goalfest/ai/
+      // marketing e Server Actions (stock, eventos, contactos, ficheiros,
+      // artistas) ganharam testes de entry point; pisos subidos em conformidade.
+      // schemas stay at the full bar.
       thresholds: {
-        'lib/**/*.ts': { lines: 78, functions: 76, branches: 64, statements: 78 },
-        'app/api/**/*.ts': { lines: 62, functions: 61, branches: 57, statements: 61 },
+        'lib/**/*.ts': { lines: 80, functions: 79, branches: 66, statements: 80 },
+        'app/api/**/*.ts': { lines: 68, functions: 71, branches: 59, statements: 66 },
         'schemas/**/*.ts': { lines: 80, functions: 80, branches: 70, statements: 80 },
-        'app/dashboard/**/actions.ts': { lines: 20, functions: 22, branches: 15, statements: 20 },
+        'app/dashboard/**/actions.ts': { lines: 55, functions: 58, branches: 39, statements: 51 },
       },
     },
   },
