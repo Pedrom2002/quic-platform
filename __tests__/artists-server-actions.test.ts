@@ -128,8 +128,44 @@ describe('tokens', () => {
   })
 })
 
+describe('toggleArtistActive / reactivatePortalToken', () => {
+  it('toggleArtistActive updates is_active from form value', async () => {
+    const { supabase, calls } = makeSupabase()
+    authAs(supabase)
+    const { toggleArtistActive } = await import('@/app/dashboard/artists/actions')
+    const result = await toggleArtistActive(fd({ id: UUID, is_active: 'false' }))
+    expect(result.error).toBeUndefined()
+    expect((calls.update[0] as Record<string, unknown>).is_active).toBe(false)
+  })
+
+  it('reactivatePortalToken clears expiry', async () => {
+    const { supabase, calls } = makeSupabase()
+    authAs(supabase)
+    const { reactivatePortalToken } = await import('@/app/dashboard/artists/actions')
+    const result = await reactivatePortalToken(fd({ id: UUID }))
+    expect(result.error).toBeUndefined()
+    expect((calls.update[0] as Record<string, unknown>).portal_token_expires_at).toBeNull()
+  })
+
+  it('toggleArtistActive rejects invalid id', async () => {
+    const { supabase } = makeSupabase()
+    authAs(supabase)
+    const { toggleArtistActive } = await import('@/app/dashboard/artists/actions')
+    const result = await toggleArtistActive(fd({ id: 'nope', is_active: 'true' }))
+    expect(result.error).toBe('Artista inválido')
+  })
+})
+
 describe('updateArtistPhoto', () => {
   const pngBytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00])
+
+  it('rejects missing file', async () => {
+    const { supabase } = makeSupabase()
+    authAs(supabase)
+    const { updateArtistPhoto } = await import('@/app/dashboard/artists/actions')
+    const result = await updateArtistPhoto(fd({ id: UUID }))
+    expect(result.error).toBe('Seleciona uma imagem')
+  })
 
   it('rejects non-image content (magic bytes)', async () => {
     const { supabase } = makeSupabase()

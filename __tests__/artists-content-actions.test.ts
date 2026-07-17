@@ -27,6 +27,8 @@ const ownedArtist = {
 
 function makeSupabase(artistRow: typeof ownedArtist | null) {
   const inserts: Record<string, unknown[]> = {}
+  const updates: Record<string, unknown[]> = {}
+  const deletes: Record<string, number> = {}
   const from = vi.fn((table: string) => {
     if (table === 'artists') {
       return {
@@ -43,9 +45,18 @@ function makeSupabase(artistRow: typeof ownedArtist | null) {
         inserts[table].push(payload)
         return Promise.resolve({ error: null })
       }),
+      update: vi.fn((payload: unknown) => {
+        updates[table] = updates[table] ?? []
+        updates[table].push(payload)
+        return { eq: vi.fn().mockResolvedValue({ error: null }) }
+      }),
+      delete: vi.fn(() => {
+        deletes[table] = (deletes[table] ?? 0) + 1
+        return { eq: vi.fn().mockResolvedValue({ error: null }) }
+      }),
     }
   })
-  return { supabase: { from }, inserts }
+  return { supabase: { from }, inserts, updates, deletes }
 }
 
 function authAs(supabase: unknown) {
@@ -121,6 +132,97 @@ describe('createAgendaItem', () => {
     const { createAgendaItem } = await import('@/app/dashboard/artists/content-actions')
     const result = await createAgendaItem(fd({ ...validForm, title: ' ' }))
     expect(result.error).toContain('Título obrigatório')
+  })
+})
+
+describe('agenda update/toggle/delete', () => {
+  const AGENDA_ID = '6a1b2c3d-4e5f-4a1b-8c2d-3e4f5a6b7c8d'
+
+  it('updateAgendaItem updates parsed fields by id', async () => {
+    const { supabase, updates } = makeSupabase(ownedArtist)
+    authAs(supabase)
+    const { updateAgendaItem } = await import('@/app/dashboard/artists/content-actions')
+    const result = await updateAgendaItem(
+      fd({
+        id: AGENDA_ID,
+        artist_id: ARTIST_ID,
+        type: 'ensaio',
+        title: 'Ensaio geral',
+        starts_at: '2026-08-01T10:00',
+        is_visible: 'on',
+      })
+    )
+    expect(result.error).toBeUndefined()
+    const updated = updates['artist_agenda_items'][0] as Record<string, unknown>
+    expect(updated.title).toBe('Ensaio geral')
+    expect(updated.type).toBe('ensaio')
+  })
+
+  it('toggleAgendaVisibility sets is_visible', async () => {
+    const { supabase, updates } = makeSupabase(ownedArtist)
+    authAs(supabase)
+    const { toggleAgendaVisibility } = await import('@/app/dashboard/artists/content-actions')
+    const result = await toggleAgendaVisibility(
+      fd({ id: AGENDA_ID, artist_id: ARTIST_ID, is_visible: 'false' })
+    )
+    expect(result.error).toBeUndefined()
+    expect((updates['artist_agenda_items'][0] as Record<string, unknown>).is_visible).toBe(false)
+  })
+
+  it('deleteAgendaItem deletes by id and rejects invalid id', async () => {
+    const { supabase, deletes } = makeSupabase(ownedArtist)
+    authAs(supabase)
+    const { deleteAgendaItem } = await import('@/app/dashboard/artists/content-actions')
+    const ok = await deleteAgendaItem(fd({ id: AGENDA_ID, artist_id: ARTIST_ID }))
+    expect(ok.error).toBeUndefined()
+    expect(deletes['artist_agenda_items']).toBe(1)
+
+    const bad = await deleteAgendaItem(fd({ id: 'nope' }))
+    expect(bad.error).toBe('Item inválido')
+  })
+})
+
+describe('clipping update/delete', () => {
+  const CLIPPING_ID = '7b2c3d4e-5f6a-4b2c-9d3e-4f5a6b7c8d9e'
+
+  it('updateClipping keeps existing image when no new upload', async () => {
+    const { supabase, updates } = makeSupabase(ownedArtist)
+    authAs(supabase)
+    const { updateClipping } = await import('@/app/dashboard/artists/content-actions')
+    const result = await updateClipping(
+      fd({
+        id: CLIPPING_ID,
+        artist_id: ARTIST_ID,
+        title: 'Artigo atualizado',
+        url: 'https://blitz.pt/novo',
+        existing_image_url: 'https://blob.vercel-storage.com/old.png',
+      })
+    )
+    expect(result.error).toBeUndefined()
+    const updated = updates['artist_clippings'][0] as Record<string, unknown>
+    expect(updated.image_url).toBe('https://blob.vercel-storage.com/old.png')
+  })
+
+  it('deleteClipping deletes by id', async () => {
+    const { supabase, deletes } = makeSupabase(ownedArtist)
+    authAs(supabase)
+    const { deleteClipping } = await import('@/app/dashboard/artists/content-actions')
+    const result = await deleteClipping(fd({ id: CLIPPING_ID, artist_id: ARTIST_ID }))
+    expect(result.error).toBeUndefined()
+    expect(deletes['artist_clippings']).toBe(1)
+  })
+})
+
+describe('deleteAsset', () => {
+  it('deletes by id', async () => {
+    const { supabase, deletes } = makeSupabase(ownedArtist)
+    authAs(supabase)
+    const { deleteAsset } = await import('@/app/dashboard/artists/content-actions')
+    const result = await deleteAsset(
+      fd({ id: '8c3d4e5f-6a7b-4c3d-8e4f-5a6b7c8d9e0f', artist_id: ARTIST_ID, section: 'document' })
+    )
+    expect(result.error).toBeUndefined()
+    expect(deletes['artist_assets']).toBe(1)
   })
 })
 

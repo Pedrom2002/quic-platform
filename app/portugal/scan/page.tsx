@@ -15,18 +15,6 @@ export default function ScanPage() {
   const controlsRef = useRef<IScannerControls | null>(null)
   const processingRef = useRef(false)
 
-  useEffect(() => {
-    const stored = sessionStorage.getItem('pt-scan')
-    if (stored) setAuthed(true)
-  }, [])
-
-  useEffect(() => {
-    if (!authed) return
-    startScanner()
-    return () => { controlsRef.current?.stop() }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authed])
-
   async function startScanner() {
     if (!videoRef.current) return
     const reader = new BrowserQRCodeReader()
@@ -70,6 +58,25 @@ export default function ScanPage() {
       setUi(data.reason)
     }
   }
+
+  useEffect(() => {
+    if (!sessionStorage.getItem('pt-scan')) return
+    // setState adiado: chamada síncrona no effect dispara a regra
+    // react-hooks/set-state-in-effect (cascading renders)
+    const t = setTimeout(() => setAuthed(true), 0)
+    return () => clearTimeout(t)
+  }, [])
+
+  useEffect(() => {
+    if (!authed) return
+    // arranque adiado pelo mesmo motivo do effect acima
+    const t = setTimeout(() => { startScanner() }, 0)
+    return () => {
+      clearTimeout(t)
+      controlsRef.current?.stop()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authed])
 
   const [loggingIn, setLoggingIn] = useState(false)
   const [authError, setAuthError] = useState(false)

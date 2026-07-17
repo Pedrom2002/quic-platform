@@ -30,8 +30,11 @@ export default function AdminPage() {
   const [gfRegs, setGfRegs] = useState<Registration[]>([])
 
   useEffect(() => {
-    const storedToken = sessionStorage.getItem('pt-admin')
-    if (storedToken) setAuthed(true)
+    if (!sessionStorage.getItem('pt-admin')) return
+    // setState adiado: chamada síncrona no effect dispara a regra
+    // react-hooks/set-state-in-effect (cascading renders)
+    const t = setTimeout(() => setAuthed(true), 0)
+    return () => clearTimeout(t)
   }, [])
 
   const fetchCount = useCallback(async (token: string) => {
@@ -64,13 +67,19 @@ export default function AdminPage() {
   useEffect(() => {
     const token = sessionStorage.getItem('pt-admin')
     if (!authed || !token) return
-    fetchCount(token)
-    fetchRegistrations(token)
+    // fetch inicial adiado pelo mesmo motivo do effect acima
+    const t = setTimeout(() => {
+      fetchCount(token)
+      fetchRegistrations(token)
+    }, 0)
     const interval = setInterval(() => {
       fetchCount(token)
       fetchRegistrations(token)
     }, 30000)
-    return () => clearInterval(interval)
+    return () => {
+      clearTimeout(t)
+      clearInterval(interval)
+    }
   }, [authed, fetchCount, fetchRegistrations])
 
   const [loggingIn, setLoggingIn] = useState(false)

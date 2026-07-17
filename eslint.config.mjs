@@ -23,7 +23,8 @@ const config = [
     },
   },
   {
-    ignores: ['.next/', 'node_modules/', 'coverage/'],
+    // .worktrees/.claude: cópias locais de worktrees (não existem no CI)
+    ignores: ['.next/', 'node_modules/', 'coverage/', '.worktrees/', '.claude/'],
   },
 ]
 
