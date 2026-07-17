@@ -280,6 +280,7 @@ export type Database = {
       }
       artists: {
         Row: {
+          auth_user_id: string | null
           bio: string | null
           created_at: string
           email: string | null
@@ -294,6 +295,7 @@ export type Database = {
           portal_token_expires_at: string | null
         }
         Insert: {
+          auth_user_id?: string | null
           bio?: string | null
           created_at?: string
           email?: string | null
@@ -308,6 +310,7 @@ export type Database = {
           portal_token_expires_at?: string | null
         }
         Update: {
+          auth_user_id?: string | null
           bio?: string | null
           created_at?: string
           email?: string | null
