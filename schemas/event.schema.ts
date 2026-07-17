@@ -23,6 +23,7 @@ export const createEventSchema = eventBaseSchema.refine(
 
 export const updateEventSchema = eventBaseSchema.partial().extend({
   status: z.enum(['planning', 'active', 'completed', 'cancelled']).optional(),
+  is_public_listed: z.boolean().optional(),
 })
 
 export type CreateEventInput = z.infer<typeof createEventSchema>
