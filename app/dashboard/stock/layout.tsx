@@ -29,7 +29,7 @@ export default async function StockLayout({
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="w-full max-w-6xl mx-auto p-8 flex flex-col gap-6">
       <StockNav />
       {children}
     </div>
