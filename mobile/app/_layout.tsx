@@ -1,12 +1,16 @@
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useEffect } from 'react'
+import { Slot, useRouter } from 'expo-router'
+import { useSession } from '../hooks/useSession'
 
 export default function RootLayout() {
-  return (
-    <SafeAreaProvider>
-      <Stack />
-      <StatusBar style="auto" />
-    </SafeAreaProvider>
-  );
+  const { session, loading } = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && !session) {
+      router.replace('/login')
+    }
+  }, [loading, session, router])
+
+  return <Slot />
 }
