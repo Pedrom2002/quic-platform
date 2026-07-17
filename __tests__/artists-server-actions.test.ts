@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockRequireOrgAuth, mockRevalidate, mockPut } = vi.hoisted(() => ({
+const { mockRequireOrgAuth, mockRevalidate, mockPut, mockInviteUserByEmail } = vi.hoisted(() => ({
   mockRequireOrgAuth: vi.fn(),
   mockRevalidate: vi.fn(),
   mockPut: vi.fn(),
+  mockInviteUserByEmail: vi.fn(),
 }))
 
 vi.mock('@/lib/supabase/actions', () => ({ requireOrgAuth: mockRequireOrgAuth }))
@@ -12,10 +13,17 @@ vi.mock('@vercel/blob', () => ({ put: mockPut }))
 vi.mock('@/lib/env', () => ({
   getEnv: () => ({ BLOB_READ_WRITE_TOKEN: 'blob-token', NEXT_PUBLIC_APP_URL: 'https://app.quic.pt' }),
 }))
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => ({ auth: { admin: { inviteUserByEmail: mockInviteUserByEmail } } }),
+}))
 
 function makeSupabase() {
   const calls: Record<string, unknown[]> = { insert: [], update: [], eq: [] }
-  const chain = {
+  const chain: {
+    insert: (payload: unknown) => Promise<{ error: null }>
+    update: (payload: unknown) => { eq: (col: string, val: unknown) => Promise<{ error: null }> }
+    select?: (...args: unknown[]) => unknown
+  } = {
     insert: vi.fn((payload: unknown) => {
       calls.insert.push(payload)
       return Promise.resolve({ error: null })
@@ -190,5 +198,74 @@ describe('updateArtistPhoto', () => {
     expect(mockPut).toHaveBeenCalledOnce()
     const updated = calls.update[0] as Record<string, unknown>
     expect(updated.photo_url).toBe('https://blob.vercel-storage.com/x.png')
+  })
+})
+
+describe('inviteArtistToApp', () => {
+  it('rejects unauthenticated', async () => {
+    mockRequireOrgAuth.mockRejectedValue(new Error('Não autenticado'))
+    const { inviteArtistToApp } = await import('@/app/dashboard/artists/actions')
+    const result = await inviteArtistToApp(fd({ id: UUID }))
+    expect(result.error).toBe('Sem permissões')
+  })
+
+  it('rejects invalid id', async () => {
+    const { supabase } = makeSupabase()
+    authAs(supabase)
+    const { inviteArtistToApp } = await import('@/app/dashboard/artists/actions')
+    const result = await inviteArtistToApp(fd({ id: 'nope' }))
+    expect(result.error).toBe('Artista inválido')
+  })
+
+  it('rejects artist without email', async () => {
+    const { supabase, chain } = makeSupabase()
+    chain.select = vi.fn(() => ({
+      eq: vi.fn(() => ({
+        single: vi.fn().mockResolvedValue({ data: { id: UUID, email: null, auth_user_id: null }, error: null }),
+      })),
+    }))
+    authAs(supabase)
+    const { inviteArtistToApp } = await import('@/app/dashboard/artists/actions')
+    const result = await inviteArtistToApp(fd({ id: UUID }))
+    expect(result.error).toBe('Artista sem email definido')
+  })
+
+  it('invites and links auth_user_id', async () => {
+    const { supabase, chain, calls } = makeSupabase()
+    chain.select = vi.fn(() => ({
+      eq: vi.fn(() => ({
+        single: vi.fn().mockResolvedValue({
+          data: { id: UUID, email: 'maria@example.com', auth_user_id: null },
+          error: null,
+        }),
+      })),
+    }))
+    mockInviteUserByEmail.mockResolvedValue({
+      data: { user: { id: 'new-auth-user-id' } },
+      error: null,
+    })
+    authAs(supabase)
+    const { inviteArtistToApp } = await import('@/app/dashboard/artists/actions')
+    const result = await inviteArtistToApp(fd({ id: UUID }))
+    expect(result.error).toBeUndefined()
+    expect(mockInviteUserByEmail).toHaveBeenCalledWith('maria@example.com')
+    const updated = calls.update[0] as Record<string, unknown>
+    expect(updated.auth_user_id).toBe('new-auth-user-id')
+  })
+
+  it('rejects already-invited artist', async () => {
+    const { supabase, chain } = makeSupabase()
+    chain.select = vi.fn(() => ({
+      eq: vi.fn(() => ({
+        single: vi.fn().mockResolvedValue({
+          data: { id: UUID, email: 'maria@example.com', auth_user_id: 'existing-id' },
+          error: null,
+        }),
+      })),
+    }))
+    authAs(supabase)
+    const { inviteArtistToApp } = await import('@/app/dashboard/artists/actions')
+    const result = await inviteArtistToApp(fd({ id: UUID }))
+    expect(result.error).toBe('Artista já convidado')
   })
 })
