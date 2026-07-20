@@ -52,7 +52,9 @@ select policyname from pg_policies where tablename in ('artist_agenda_items', 'a
 
 ```sql
 select tablename, policyname from pg_policies where tablename in ('artist_agenda_items', 'artist_clippings', 'artist_assets') order by tablename, policyname;
--- deve devolver 8 linhas no total (4 de equipa por tabela nas 2 primeiras, 4 em artist_assets: select/insert/update/delete + a nova select do artista = 5; confirma visualmente que nenhuma das policies "members_*" desapareceu)
+-- deve devolver 15 linhas no total (4 policies de equipa "members_*" por tabela x 3 tabelas = 12,
+-- mais a nova policy "artist_read_own_*" por tabela = 3; total 5 policies por tabela).
+-- Confirma visualmente que nenhuma das policies "members_*" desapareceu.
 ```
 
 - [ ] **Step 4: Commit**
