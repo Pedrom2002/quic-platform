@@ -25,6 +25,7 @@ describe('SignupScreen', () => {
 
     fireEvent.changeText(getByPlaceholderText('Email'), 'ja@example.com')
     fireEvent.changeText(getByPlaceholderText('Password'), 'somepass123')
+    fireEvent.changeText(getByPlaceholderText('Confirmar password'), 'somepass123')
     fireEvent.press(getByText('Criar conta'))
 
     await waitFor(() => {
@@ -38,10 +39,53 @@ describe('SignupScreen', () => {
 
     fireEvent.changeText(getByPlaceholderText('Email'), 'nova@example.com')
     fireEvent.changeText(getByPlaceholderText('Password'), 'somepass123')
+    fireEvent.changeText(getByPlaceholderText('Confirmar password'), 'somepass123')
     fireEvent.press(getByText('Criar conta'))
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/(tabs)')
     })
+  })
+
+  it('shows error for invalid email', async () => {
+    const { getByPlaceholderText, getByText } = render(<SignupScreen />)
+
+    fireEvent.changeText(getByPlaceholderText('Email'), 'not-an-email')
+    fireEvent.changeText(getByPlaceholderText('Password'), 'somepass123')
+    fireEvent.changeText(getByPlaceholderText('Confirmar password'), 'somepass123')
+    fireEvent.press(getByText('Criar conta'))
+
+    await waitFor(() => {
+      expect(getByText('Email inválido')).toBeTruthy()
+    })
+    expect(mockSignUp).not.toHaveBeenCalled()
+  })
+
+  it('shows error when password is too short', async () => {
+    const { getByPlaceholderText, getByText } = render(<SignupScreen />)
+
+    fireEvent.changeText(getByPlaceholderText('Email'), 'nova@example.com')
+    fireEvent.changeText(getByPlaceholderText('Password'), '123')
+    fireEvent.changeText(getByPlaceholderText('Confirmar password'), '123')
+    fireEvent.press(getByText('Criar conta'))
+
+    await waitFor(() => {
+      expect(getByText('A password precisa de pelo menos 6 caracteres')).toBeTruthy()
+    })
+    expect(mockSignUp).not.toHaveBeenCalled()
+  })
+
+  it('shows error when passwords do not match', async () => {
+    const { getByPlaceholderText, getByText } = render(<SignupScreen />)
+
+    fireEvent.changeText(getByPlaceholderText('Email'), 'nova@example.com')
+    fireEvent.changeText(getByPlaceholderText('Password'), 'somepass123')
+    fireEvent.changeText(getByPlaceholderText('Confirmar password'), 'different123')
+    fireEvent.press(getByText('Criar conta'))
+
+    await waitFor(() => {
+      expect(getByText('As passwords não coincidem')).toBeTruthy()
+    })
+    expect(mockSignUp).not.toHaveBeenCalled()
   })
 })

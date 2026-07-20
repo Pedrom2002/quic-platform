@@ -4,17 +4,34 @@ import { useRouter, Link } from 'expo-router'
 import { supabase } from '../lib/supabase'
 import { AuthTextInput } from '../components/AuthTextInput'
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export default function SignupScreen() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  function validate(): string | null {
+    if (!email.trim()) return 'Introduz o teu email'
+    if (!EMAIL_REGEX.test(email.trim())) return 'Email inválido'
+    if (password.length < 6) return 'A password precisa de pelo menos 6 caracteres'
+    if (password !== confirmPassword) return 'As passwords não coincidem'
+    return null
+  }
+
   async function handleSignup() {
+    const validationError = validate()
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+
     setError(null)
     setLoading(true)
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { error } = await supabase.auth.signUp({ email: email.trim(), password })
     setLoading(false)
     if (error) {
       setError(
@@ -35,6 +52,7 @@ export default function SignupScreen() {
       <View style={styles.form}>
         <AuthTextInput placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
         <AuthTextInput placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
+        <AuthTextInput placeholder="Confirmar password" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
 
         {error && <Text style={styles.error}>{error}</Text>}
 
