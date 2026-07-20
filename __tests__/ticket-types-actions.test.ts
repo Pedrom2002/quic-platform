@@ -17,7 +17,11 @@ function makeSupabase() {
     }),
     update: vi.fn((payload: unknown) => {
       calls.update.push(payload)
-      return { eq: vi.fn(() => Promise.resolve({ error: null })) }
+      return {
+        eq: vi.fn(() => ({
+          eq: vi.fn(() => Promise.resolve({ error: null })),
+        })),
+      }
     }),
   }
   return { supabase: { from: vi.fn(() => chain) }, calls }

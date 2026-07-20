@@ -62,6 +62,7 @@ export async function updateTicketType(eventId: string, formData: FormData): Pro
     .from('ticket_types')
     .update(parsed.data)
     .eq('id', id.data)
+    .eq('organization_id', auth.member.organization_id)
   if (error) return { error: 'Erro ao atualizar tipo de bilhete' }
 
   revalidatePath(`/dashboard/events/${eventId}/tickets`)
@@ -81,6 +82,7 @@ export async function toggleTicketTypeActive(eventId: string, formData: FormData
     .from('ticket_types')
     .update({ is_active: isActive })
     .eq('id', id.data)
+    .eq('organization_id', auth.member.organization_id)
   if (error) return { error: 'Erro ao atualizar o estado' }
 
   revalidatePath(`/dashboard/events/${eventId}/tickets`)
