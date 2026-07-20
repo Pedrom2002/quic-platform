@@ -2762,6 +2762,134 @@ export type Database = {
         }
         Relationships: []
       }
+      ticket_types: {
+        Row: {
+          created_at: string
+          currency: string
+          description: string | null
+          event_id: string
+          id: string
+          is_active: boolean
+          name: string
+          organization_id: string
+          price_cents: number
+          quantity_sold: number
+          quantity_total: number
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          event_id: string
+          id?: string
+          is_active?: boolean
+          name: string
+          organization_id: string
+          price_cents: number
+          quantity_sold?: number
+          quantity_total: number
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          event_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          organization_id?: string
+          price_cents?: number
+          quantity_sold?: number
+          quantity_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_types_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_types_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          buyer_auth_user_id: string
+          created_at: string
+          event_id: string
+          id: string
+          organization_id: string
+          qr_code: string
+          status: string
+          stripe_checkout_session_id: string | null
+          ticket_type_id: string
+          used_at: string | null
+          used_by_team_member_id: string | null
+        }
+        Insert: {
+          buyer_auth_user_id: string
+          created_at?: string
+          event_id: string
+          id?: string
+          organization_id: string
+          qr_code?: string
+          status?: string
+          stripe_checkout_session_id?: string | null
+          ticket_type_id: string
+          used_at?: string | null
+          used_by_team_member_id?: string | null
+        }
+        Update: {
+          buyer_auth_user_id?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          organization_id?: string
+          qr_code?: string
+          status?: string
+          stripe_checkout_session_id?: string | null
+          ticket_type_id?: string
+          used_at?: string | null
+          used_by_team_member_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_ticket_type_id_fkey"
+            columns: ["ticket_type_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_used_by_team_member_id_fkey"
+            columns: ["used_by_team_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_events: {
         Row: {
           created_at: string | null
@@ -3074,3 +3202,5 @@ export type Artist = Database['public']['Tables']['artists']['Row']
 export type ArtistAgendaItem = Database['public']['Tables']['artist_agenda_items']['Row']
 export type ArtistClipping = Database['public']['Tables']['artist_clippings']['Row']
 export type ArtistAsset = Database['public']['Tables']['artist_assets']['Row']
+export type TicketType = Database['public']['Tables']['ticket_types']['Row']
+export type Ticket = Database['public']['Tables']['tickets']['Row']
