@@ -20,6 +20,9 @@ export default function CatalogoScreen() {
 
   const categoryNames = new Map(categories.map(c => [c.id, c.name]))
 
+  // Sem sequenciamento de pedidos: uma pagina em curso pode resolver depois de
+  // um replace de pesquisa/categoria mais recente. Aceite como troca razoavel
+  // para uma navegacao so de leitura (janela curta do debounce, autocorrige).
   const loadPage = useCallback((pageToLoad: number, replace: boolean) => {
     const from = pageToLoad * PAGE_SIZE
     const to = from + PAGE_SIZE - 1
