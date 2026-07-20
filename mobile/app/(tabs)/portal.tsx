@@ -15,19 +15,38 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
+function AgendaItemCard({ item }: { item: ArtistAgendaItem }) {
+  return (
+    <View style={styles.card}>
+      <Text style={styles.cardMeta}>{formatDateTime(item.starts_at)}</Text>
+      <Text style={styles.cardTitle}>{item.title}</Text>
+      {item.location && <Text style={styles.cardSubtitle}>{item.location}</Text>}
+    </View>
+  )
+}
+
 function AgendaTab({ upcoming, past }: { upcoming: ArtistAgendaItem[]; past: ArtistAgendaItem[] }) {
+  const [showPast, setShowPast] = useState(false)
+
   if (upcoming.length === 0 && past.length === 0) {
     return <Text style={styles.emptyText}>Sem compromissos agendados.</Text>
   }
   return (
     <View style={styles.tabContent}>
-      {upcoming.map(item => (
-        <View key={item.id} style={styles.card}>
-          <Text style={styles.cardMeta}>{formatDateTime(item.starts_at)}</Text>
-          <Text style={styles.cardTitle}>{item.title}</Text>
-          {item.location && <Text style={styles.cardSubtitle}>{item.location}</Text>}
+      {upcoming.length === 0 ? (
+        <Text style={styles.emptyText}>Sem compromissos futuros.</Text>
+      ) : (
+        upcoming.map(item => <AgendaItemCard key={item.id} item={item} />)
+      )}
+
+      {past.length > 0 && (
+        <View>
+          <Pressable onPress={() => setShowPast(v => !v)} style={styles.pastToggle}>
+            <Text style={styles.pastToggleText}>Passados {showPast ? '−' : '+'}</Text>
+          </Pressable>
+          {showPast && past.map(item => <AgendaItemCard key={item.id} item={item} />)}
         </View>
-      ))}
+      )}
     </View>
   )
 }
@@ -169,6 +188,8 @@ const styles = StyleSheet.create({
   tabButtonTextActive: { color: '#111111' },
   body: { padding: 16 },
   tabContent: { gap: 12 },
+  pastToggle: { paddingVertical: 8 },
+  pastToggleText: { fontSize: 12, color: '#a8a29e', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1 },
   card: { backgroundColor: '#fafaf9', borderWidth: 1, borderColor: '#f5f5f4', borderRadius: 6, padding: 14 },
   cardMeta: { fontSize: 11, color: '#a8a29e', marginBottom: 4 },
   cardTitle: { fontSize: 14, fontWeight: '600', color: '#1c1917' },

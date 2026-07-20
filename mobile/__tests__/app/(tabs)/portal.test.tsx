@@ -1,5 +1,5 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
-import { render, waitFor } from '@testing-library/react-native'
+import { render, waitFor, fireEvent } from '@testing-library/react-native'
 import PortalScreen from '../../../app/(tabs)/portal'
 
 const mockUseSession = jest.fn()
@@ -51,6 +51,31 @@ describe('PortalScreen', () => {
       expect(getByText('Maria Silva')).toBeTruthy()
     })
     expect(getByText('Concerto X')).toBeTruthy()
+  })
+
+  it('shows past agenda items via toggle when there are no upcoming ones', async () => {
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({
+      role: 'artist',
+      artist: { id: 'a1', name: 'Maria Silva', photo_url: null, bio: null },
+    })
+    mockFetchArtistPortalData.mockResolvedValue({
+      upcoming: [],
+      past: [{ id: 'ag2', type: 'show', title: 'Concerto Antigo', starts_at: '2026-01-01T20:00:00Z', ends_at: null, location: null, notes: null }],
+      clippings: [],
+      contents: [],
+      documents: [],
+    })
+
+    const { getByText, queryByText } = render(<PortalScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Sem compromissos futuros.')).toBeTruthy()
+    })
+    expect(queryByText('Concerto Antigo')).toBeNull()
+
+    fireEvent.press(getByText('Passados +'))
+    expect(getByText('Concerto Antigo')).toBeTruthy()
   })
 
   it('hides tabs for sections with no data', async () => {
