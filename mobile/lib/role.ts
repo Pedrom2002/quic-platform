@@ -4,6 +4,7 @@ export type UserRole =
   | { role: 'guest' }
   | { role: 'client' }
   | { role: 'artist'; artist: { id: string; name: string; photo_url: string | null; bio: string | null } }
+  | { role: 'staff'; member: { id: string; full_name: string; role: string } }
 
 export async function resolveUserRole(
   supabase: SupabaseClient,
@@ -17,7 +18,17 @@ export async function resolveUserRole(
     .eq('auth_user_id', session.user.id)
     .single()
 
-  if (!data) return { role: 'client' }
+  if (data) return { role: 'artist', artist: data }
 
-  return { role: 'artist', artist: data }
+  const { data: staffData } = await supabase
+    .from('team_members')
+    .select('id, full_name, role')
+    .eq('auth_user_id', session.user.id)
+    .single()
+
+  if (staffData) {
+    return { role: 'staff', member: staffData }
+  }
+
+  return { role: 'client' }
 }
