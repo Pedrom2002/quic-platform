@@ -68,7 +68,7 @@ function MaisContent({ role, email }: { role: UserRole; email: string }) {
           </View>
         </View>
 
-        <Pressable style={styles.logoutButton} onPress={handleSignOut}>
+        <Pressable style={styles.logoutButton} onPress={handleSignOut} accessibilityRole="button">
           <Text style={styles.logoutText}>Terminar sessão</Text>
         </Pressable>
       </View>
