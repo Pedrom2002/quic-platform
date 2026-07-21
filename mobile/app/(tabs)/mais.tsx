@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { View, Text, ActivityIndicator, Pressable, Alert, StyleSheet } from 'react-native'
 import Constants from 'expo-constants'
+import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSession } from '../../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../../lib/role'
@@ -21,6 +22,7 @@ function displayName(role: UserRole, email: string): string {
 }
 
 function MaisContent({ role, email }: { role: UserRole; email: string }) {
+  const router = useRouter()
   const name = displayName(role, email)
   const label = roleLabel(role)
   const appVersion = Constants.expoConfig?.version ?? '—'
@@ -62,6 +64,16 @@ function MaisContent({ role, email }: { role: UserRole; email: string }) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Versão {appVersion}</Text>
         </View>
+
+        <Text style={styles.sectionLabel}>Bilhetes</Text>
+        <Pressable style={styles.card} onPress={() => router.push('/tickets')} accessibilityRole="button">
+          <Text style={styles.cardTitle}>Os meus bilhetes</Text>
+        </Pressable>
+        {role.role === 'staff' && (
+          <Pressable style={styles.card} onPress={() => router.push('/scanner')} accessibilityRole="button">
+            <Text style={styles.cardTitle}>Scanner de check-in</Text>
+          </Pressable>
+        )}
 
         <Text style={styles.sectionLabel}>Definições</Text>
         <View style={styles.card}>
