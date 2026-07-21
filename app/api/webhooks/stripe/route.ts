@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
   const { data: ticketType } = await supabase
     .from('ticket_types')
-    .select('event_id, organization_id, quantity_sold')
+    .select('event_id, organization_id')
     .eq('id', ticketTypeId)
     .single()
   if (!ticketType) {
@@ -64,14 +64,23 @@ export async function POST(request: Request) {
 
   const { error: insertError } = await supabase.from('tickets').insert(rows)
   if (insertError) {
+    // 23505 = unique_violation — outra entrega concorrente do mesmo webhook já
+    // inseriu os bilhetes primeiro (o pre-check SELECT acima é só fast-path;
+    // este constraint é o que garante mesmo a nao duplicacao).
+    if (insertError.code === '23505') {
+      return Response.json({ received: true, note: 'já processado' })
+    }
     log.error('erro ao criar bilhetes', { error: insertError.message })
     return Response.json({ error: 'Erro ao criar bilhetes' }, { status: 500 })
   }
 
-  await supabase
-    .from('ticket_types')
-    .update({ quantity_sold: ticketType.quantity_sold + quantity })
-    .eq('id', ticketTypeId)
+  const { error: rpcError } = await supabase.rpc('increment_ticket_type_sold', {
+    p_ticket_type_id: ticketTypeId,
+    p_delta: quantity,
+  })
+  if (rpcError) {
+    log.error('erro ao incrementar quantity_sold', { error: rpcError.message, ticketTypeId })
+  }
 
   return Response.json({ received: true })
 }
