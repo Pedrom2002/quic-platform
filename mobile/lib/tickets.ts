@@ -47,12 +47,16 @@ export async function createCheckoutSession(
   quantity: number,
   accessToken: string
 ): Promise<string | null> {
-  const response = await fetch(`${appBaseUrl}/api/tickets/checkout`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-    body: JSON.stringify({ ticketTypeId, quantity }),
-  })
-  if (!response.ok) return null
-  const body = await response.json()
-  return body.url ?? null
+  try {
+    const response = await fetch(`${appBaseUrl}/api/tickets/checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify({ ticketTypeId, quantity }),
+    })
+    if (!response.ok) return null
+    const body = await response.json()
+    return body.url ?? null
+  } catch {
+    return null
+  }
 }

@@ -1,5 +1,5 @@
-import { describe, it, expect, jest } from '@jest/globals'
-import { fetchTicketTypes, fetchMyTickets } from './tickets'
+import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals'
+import { fetchTicketTypes, fetchMyTickets, createCheckoutSession } from './tickets'
 
 describe('fetchTicketTypes', () => {
   it('queries active ticket types for an event', async () => {
@@ -54,5 +54,49 @@ describe('fetchMyTickets', () => {
 
     const result = await fetchMyTickets(supabase)
     expect(result).toEqual([])
+  })
+})
+
+describe('createCheckoutSession', () => {
+  const originalFetch = global.fetch
+
+  afterEach(() => {
+    global.fetch = originalFetch
+  })
+
+  it('returns the checkout url on a successful response', async () => {
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ url: 'https://checkout.example.com/session-123' }),
+    })
+    global.fetch = fetchMock as never
+
+    const result = await createCheckoutSession('https://app.example.com', 'tt1', 2, 'token-abc')
+
+    expect(fetchMock).toHaveBeenCalledWith('https://app.example.com/api/tickets/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer token-abc' },
+      body: JSON.stringify({ ticketTypeId: 'tt1', quantity: 2 }),
+    })
+    expect(result).toBe('https://checkout.example.com/session-123')
+  })
+
+  it('returns null when the response is not ok', async () => {
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: false,
+      json: () => Promise.resolve({}),
+    })
+    global.fetch = fetchMock as never
+
+    const result = await createCheckoutSession('https://app.example.com', 'tt1', 2, 'token-abc')
+    expect(result).toBeNull()
+  })
+
+  it('returns null when fetch throws', async () => {
+    const fetchMock = jest.fn().mockRejectedValue(new Error('network error'))
+    global.fetch = fetchMock as never
+
+    const result = await createCheckoutSession('https://app.example.com', 'tt1', 2, 'token-abc')
+    expect(result).toBeNull()
   })
 })
