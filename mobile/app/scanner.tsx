@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { useSession } from '../hooks/useSession'
@@ -11,6 +11,7 @@ export default function ScannerScreen() {
   const [role, setRole] = useState<UserRole | null>(null)
   const [permission, requestPermission] = useCameraPermissions()
   const [lastResult, setLastResult] = useState<string | null>(null)
+  const scanningRef = useRef(false)
 
   useEffect(() => {
     resolveUserRole(supabase, session).then(setRole)
@@ -31,8 +32,13 @@ export default function ScannerScreen() {
   }
 
   async function handleScan({ data }: { data: string }) {
+    if (scanningRef.current) return
+    scanningRef.current = true
     const result = await checkInTicket(supabase, data)
     setLastResult(result.success ? 'Bilhete validado' : (result.error ?? 'Erro'))
+    setTimeout(() => {
+      scanningRef.current = false
+    }, 1500)
   }
 
   return (
