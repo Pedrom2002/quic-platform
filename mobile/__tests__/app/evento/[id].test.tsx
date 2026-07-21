@@ -1,21 +1,40 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
-import { render, waitFor } from '@testing-library/react-native'
+import { render, waitFor, fireEvent } from '@testing-library/react-native'
+import { Linking } from 'react-native'
 import EventDetailScreen from '../../../app/evento/[id]'
 
 const mockFetchEventById = jest.fn()
 const mockUseLocalSearchParams = jest.fn()
+const mockFetchTicketTypes = jest.fn()
+const mockCreateCheckoutSession = jest.fn()
+const mockGetSession = jest.fn()
 
 jest.mock('../../../lib/events', () => ({
   fetchEventById: (...args: unknown[]) => mockFetchEventById(...args),
 }))
-jest.mock('../../../lib/supabase', () => ({ supabase: {} }))
+jest.mock('../../../lib/tickets', () => ({
+  fetchTicketTypes: (...args: unknown[]) => mockFetchTicketTypes(...args),
+  createCheckoutSession: (...args: unknown[]) => mockCreateCheckoutSession(...args),
+}))
+jest.mock('../../../lib/supabase', () => ({
+  supabase: { auth: { getSession: (...args: unknown[]) => mockGetSession(...args) } },
+}))
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockUseLocalSearchParams(),
 }))
 
+const mockOpenURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true as never)
+
 beforeEach(() => {
   mockFetchEventById.mockReset()
   mockUseLocalSearchParams.mockReturnValue({ id: 'e1' })
+  mockFetchTicketTypes.mockReset()
+  mockFetchTicketTypes.mockResolvedValue([])
+  mockCreateCheckoutSession.mockReset()
+  mockOpenURL.mockReset()
+  mockOpenURL.mockResolvedValue(true as never)
+  mockGetSession.mockReset()
+  mockGetSession.mockResolvedValue({ data: { session: { access_token: 'token-abc' } } })
 })
 
 describe('EventDetailScreen', () => {
@@ -45,6 +64,35 @@ describe('EventDetailScreen', () => {
 
     await waitFor(() => {
       expect(getByText('Evento não encontrado.')).toBeTruthy()
+    })
+  })
+
+  it('shows ticket types and opens checkout url on purchase press', async () => {
+    mockFetchEventById.mockResolvedValue({
+      id: 'event-1',
+      name: 'Show X',
+      description: null,
+      venue_name: null,
+      venue_address: null,
+      start_datetime: '2026-08-01T20:00:00.000Z',
+      end_datetime: '2026-08-01T23:00:00.000Z',
+      cover_image_url: null,
+    })
+    mockFetchTicketTypes.mockResolvedValue([
+      { id: 'tt-1', name: 'Normal', price_cents: 2000, quantity_total: 100, quantity_sold: 0 },
+    ])
+    mockCreateCheckoutSession.mockResolvedValue('https://checkout.stripe.com/session-abc')
+
+    const { getByText } = render(<EventDetailScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Normal')).toBeTruthy()
+    })
+
+    fireEvent.press(getByText('Normal'))
+
+    await waitFor(() => {
+      expect(mockOpenURL).toHaveBeenCalledWith('https://checkout.stripe.com/session-abc')
     })
   })
 })
