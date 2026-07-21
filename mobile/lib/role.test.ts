@@ -31,7 +31,7 @@ describe('resolveUserRole', () => {
 
   it('returns client role when no artists row found', async () => {
     const single = jest.fn().mockResolvedValue({ data: null, error: null })
-    const eq = jest.fn(() => ({ single }))
+    const eq = jest.fn(() => ({ single, eq }))
     const select = jest.fn(() => ({ eq }))
     const supabase = { from: jest.fn(() => ({ select })) } as never
 
@@ -50,7 +50,8 @@ describe('resolveUserRole', () => {
       data: { id: 'member-1', full_name: 'João Staff', role: 'manager' },
       error: null,
     })
-    const staffEq = jest.fn(() => ({ single: staffSingle }))
+    const staffEqActive = jest.fn(() => ({ single: staffSingle }))
+    const staffEq = jest.fn(() => ({ eq: staffEqActive }))
     const staffSelect = jest.fn(() => ({ eq: staffEq }))
 
     const supabase = {
@@ -66,6 +67,7 @@ describe('resolveUserRole', () => {
 
     expect(staffSelect).toHaveBeenCalledWith('id, full_name, role')
     expect(staffEq).toHaveBeenCalledWith('auth_user_id', 'auth-user-3')
+    expect(staffEqActive).toHaveBeenCalledWith('is_active', true)
     expect(result).toEqual({
       role: 'staff',
       member: { id: 'member-1', full_name: 'João Staff', role: 'manager' },

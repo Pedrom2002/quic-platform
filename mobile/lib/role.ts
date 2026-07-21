@@ -24,6 +24,7 @@ export async function resolveUserRole(
     .from('team_members')
     .select('id, full_name, role')
     .eq('auth_user_id', session.user.id)
+    .eq('is_active', true)
     .single()
 
   if (staffData) {
