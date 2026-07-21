@@ -11,7 +11,13 @@ const bodySchema = z.object({
 })
 
 export async function POST(request: Request) {
-  const json = await request.json()
+  let json: unknown
+  try {
+    json = await request.json()
+  } catch {
+    return Response.json({ error: 'Pedido inválido' }, { status: 400 })
+  }
+
   const parsed = bodySchema.safeParse(json)
   if (!parsed.success) {
     return Response.json({ error: 'Pedido inválido' }, { status: 400 })
@@ -23,12 +29,17 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Não autenticado' }, { status: 401 })
   }
 
-  const { data: ticketType } = await supabase
+  const { data: ticketType, error: ticketTypeError } = await supabase
     .from('ticket_types')
     .select('id, name, price_cents, currency')
     .eq('id', parsed.data.ticketTypeId)
     .eq('is_active', true)
     .single()
+
+  if (ticketTypeError && ticketTypeError.code !== 'PGRST116') {
+    console.error('[tickets checkout POST]', ticketTypeError.message)
+    return Response.json({ error: 'Erro ao procurar tipo de bilhete' }, { status: 500 })
+  }
 
   if (!ticketType) {
     return Response.json({ error: 'Tipo de bilhete não encontrado' }, { status: 404 })
@@ -57,6 +68,10 @@ export async function POST(request: Request) {
     success_url: `${NEXT_PUBLIC_APP_URL}/api/tickets/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: 'quicapp://tickets/cancel',
   })
+
+  if (!session.url) {
+    return Response.json({ error: 'Erro ao criar sessão de pagamento' }, { status: 502 })
+  }
 
   return Response.json({ url: session.url })
 }
