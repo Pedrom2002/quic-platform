@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import * as z from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getEnv } from '@/lib/env'
 
 const bodySchema = z.object({
@@ -23,10 +24,27 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Pedido inválido' }, { status: 400 })
   }
 
-  const supabase = await createClient()
-  const { data: userData } = await supabase.auth.getUser()
-  if (!userData.user) {
-    return Response.json({ error: 'Não autenticado' }, { status: 401 })
+  const authHeader = request.headers.get('authorization')
+  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : null
+
+  let userId: string
+  let supabase: Awaited<ReturnType<typeof createClient>> | ReturnType<typeof createAdminClient>
+
+  if (bearerToken) {
+    const adminClient = createAdminClient()
+    const { data: tokenUserData } = await adminClient.auth.getUser(bearerToken)
+    if (!tokenUserData.user) {
+      return Response.json({ error: 'Não autenticado' }, { status: 401 })
+    }
+    userId = tokenUserData.user.id
+    supabase = adminClient
+  } else {
+    supabase = await createClient()
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) {
+      return Response.json({ error: 'Não autenticado' }, { status: 401 })
+    }
+    userId = userData.user.id
   }
 
   const { data: ticketType, error: ticketTypeError } = await supabase
@@ -62,7 +80,7 @@ export async function POST(request: Request) {
     ],
     metadata: {
       ticket_type_id: ticketType.id,
-      buyer_auth_user_id: userData.user.id,
+      buyer_auth_user_id: userId,
       quantity: String(parsed.data.quantity),
     },
     success_url: `${NEXT_PUBLIC_APP_URL}/api/tickets/success?session_id={CHECKOUT_SESSION_ID}`,
