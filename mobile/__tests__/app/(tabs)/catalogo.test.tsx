@@ -1,3 +1,6 @@
+jest.mock('react-native-worklets', () => require('react-native-worklets/lib/module/mock'))
+jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'))
+
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, waitFor } from '@testing-library/react-native'
 import CatalogoScreen from '../../../app/(tabs)/catalogo'
@@ -18,6 +21,13 @@ beforeEach(() => {
 })
 
 describe('CatalogoScreen', () => {
+  it('shows 6 skeleton placeholders while materials are loading', () => {
+    mockFetchCatalogMaterials.mockReturnValue(new Promise(() => {}))
+    const { getAllByTestId } = render(<CatalogoScreen />)
+
+    expect(getAllByTestId('material-card-skeleton')).toHaveLength(6)
+  })
+
   it('shows empty state when there are no materials', async () => {
     mockFetchCatalogMaterials.mockResolvedValue([])
     const { getByText } = render(<CatalogoScreen />)

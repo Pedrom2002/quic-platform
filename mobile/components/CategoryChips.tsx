@@ -37,7 +37,7 @@ export function CategoryChips({
 
 const styles = StyleSheet.create({
   row: { gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 4, backgroundColor: '#fafaf9', borderWidth: 1, borderColor: '#e7e5e4' },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#fafaf9', borderWidth: 1, borderColor: '#e7e5e4' },
   chipActive: { backgroundColor: '#111111', borderColor: '#111111' },
   chipText: { fontSize: 12, color: '#78716c', fontWeight: '500' },
   chipTextActive: { color: '#ffffff' },

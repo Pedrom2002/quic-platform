@@ -4,8 +4,10 @@ import { supabase } from '../../lib/supabase'
 import { fetchCategories, fetchCatalogMaterials, type StockCategory, type CatalogMaterial } from '../../lib/catalog'
 import { CategoryChips } from '../../components/CategoryChips'
 import { MaterialCard } from '../../components/MaterialCard'
+import { MaterialCardSkeleton } from '../../components/MaterialCardSkeleton'
 
 const PAGE_SIZE = 20
+const SKELETON_COUNT = 6
 
 export default function CatalogoScreen() {
   const [categories, setCategories] = useState<StockCategory[]>([])
@@ -61,22 +63,31 @@ export default function CatalogoScreen() {
       />
       <CategoryChips categories={categories} selectedId={categoryId} onSelect={setCategoryId} />
 
-      {materials && materials.length === 0 ? (
+      {materials === null ? (
+        <View style={styles.grid}>
+          <View style={styles.skeletonRow}>
+            {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+              <MaterialCardSkeleton key={i} />
+            ))}
+          </View>
+        </View>
+      ) : materials.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyText}>Nenhum material encontrado.</Text>
         </View>
       ) : (
         <FlatList
-          data={materials ?? []}
+          data={materials}
           keyExtractor={item => item.id}
           numColumns={2}
           contentContainerStyle={styles.grid}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <MaterialCard
               material={item}
               categoryName={item.category_id ? (categoryNames.get(item.category_id) ?? 'Outros') : 'Outros'}
+              index={index}
             />
           )}
         />
@@ -89,6 +100,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   search: { margin: 16, marginBottom: 8, borderWidth: 1, borderColor: '#e7e5e4', borderRadius: 4, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: '#1c1917' },
   grid: { paddingHorizontal: 10, paddingBottom: 16 },
+  skeletonRow: { flexDirection: 'row', flexWrap: 'wrap' },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { color: '#78716c', fontSize: 14 },
 })
