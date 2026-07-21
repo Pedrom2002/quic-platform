@@ -14,6 +14,9 @@ jest.mock('../../../lib/supabase', () => ({
   supabase: { auth: { signOut: (...args: unknown[]) => mockSignOut(...args) } },
 }))
 jest.mock('expo-constants', () => ({ expoConfig: { version: '1.0.0' } }))
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}))
 
 beforeEach(() => {
   mockUseSession.mockReset()

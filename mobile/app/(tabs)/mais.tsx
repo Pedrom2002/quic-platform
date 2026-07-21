@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { View, Text, ActivityIndicator, Pressable, Alert, StyleSheet } from 'react-native'
 import Constants from 'expo-constants'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSession } from '../../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
@@ -41,9 +42,11 @@ function MaisContent({ role, email }: { role: UserRole; email: string }) {
     ])
   }
 
+  const insets = useSafeAreaInsets()
+
   return (
     <View style={styles.container}>
-      <View style={styles.hero}>
+      <View style={[styles.hero, { paddingTop: insets.top + 16 }]}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{name.slice(0, 2).toUpperCase()}</Text>
         </View>

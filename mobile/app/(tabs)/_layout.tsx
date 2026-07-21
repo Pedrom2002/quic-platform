@@ -1,7 +1,18 @@
+import { useEffect, useState } from 'react'
 import { Tabs } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
+import { useSession } from '../../hooks/useSession'
+import { resolveUserRole } from '../../lib/role'
+import { supabase } from '../../lib/supabase'
 
 export default function TabsLayout() {
+  const { session } = useSession()
+  const [isArtist, setIsArtist] = useState(false)
+
+  useEffect(() => {
+    resolveUserRole(supabase, session).then(role => setIsArtist(role.role === 'artist'))
+  }, [session])
+
   return (
     <Tabs
       screenOptions={{
@@ -29,6 +40,7 @@ export default function TabsLayout() {
         name="portal"
         options={{
           title: 'Portal',
+          href: isArtist ? undefined : null,
           tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
         }}
       />

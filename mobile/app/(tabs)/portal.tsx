@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { View, Text, ActivityIndicator, FlatList, Pressable, Linking, StyleSheet } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSession } from '../../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
@@ -92,6 +93,7 @@ function AssetListTab({ assets, emptyMessage }: { assets: ArtistAsset[]; emptyMe
 
 function ArtistPortalContent({ artist, data }: { artist: { name: string }; data: ArtistPortalData }) {
   const [activeTab, setActiveTab] = useState<TabKey>('agenda')
+  const insets = useSafeAreaInsets()
 
   const tabs: Array<{ key: TabKey; label: string }> = [
     { key: 'agenda', label: 'Agenda' },
@@ -102,7 +104,7 @@ function ArtistPortalContent({ artist, data }: { artist: { name: string }; data:
 
   return (
     <View style={styles.container}>
-      <View style={styles.hero}>
+      <View style={[styles.hero, { paddingTop: insets.top + 16 }]}>
         <Text style={styles.label}>PORTAL DO ARTISTA</Text>
         <Text style={styles.name}>{artist.name}</Text>
       </View>
@@ -183,8 +185,8 @@ const styles = StyleSheet.create({
   name: { color: '#ffffff', fontSize: 32, fontWeight: 'bold' },
   restricted: { color: '#57534e', fontSize: 14, textAlign: 'center' },
   tabBar: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#e7e5e4' },
-  tabButton: { paddingHorizontal: 16, paddingVertical: 12 },
-  tabButtonText: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 1, color: '#a8a29e', fontWeight: '600' },
+  tabButton: { flex: 1, paddingHorizontal: 8, paddingVertical: 12, alignItems: 'center' },
+  tabButtonText: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: '#a8a29e', fontWeight: '600', textAlign: 'center' },
   tabButtonTextActive: { color: '#111111' },
   body: { padding: 16 },
   tabContent: { gap: 12 },

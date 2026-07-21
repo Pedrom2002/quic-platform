@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Slot, useRouter } from 'expo-router'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useSession } from '../hooks/useSession'
 
 export default function RootLayout() {
@@ -12,5 +13,9 @@ export default function RootLayout() {
     }
   }, [loading, session, router])
 
-  return <Slot />
+  return (
+    <SafeAreaProvider>
+      <Slot />
+    </SafeAreaProvider>
+  )
 }
