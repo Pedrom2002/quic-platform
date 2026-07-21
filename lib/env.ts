@@ -24,6 +24,7 @@ const schema = z.object({
   SMTP_ENCRYPTION_KEY: z.string().length(64, 'SMTP_ENCRYPTION_KEY must be 64 hex chars (32 bytes) — generate with: openssl rand -hex 32').optional(),
   PORTUGAL_ADMIN_PASSWORD: z.string().min(4, 'PORTUGAL_ADMIN_PASSWORD must be at least 4 chars — set it in Vercel env vars'),
   STRIPE_SECRET_KEY: z.string().min(1, 'STRIPE_SECRET_KEY is required'),
+  STRIPE_WEBHOOK_SECRET: z.string().min(1, 'STRIPE_WEBHOOK_SECRET is required'),
 })
 
 export type ServerEnv = z.infer<typeof schema>

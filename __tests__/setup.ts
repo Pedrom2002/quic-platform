@@ -10,6 +10,7 @@ const defaults: Record<string, string> = {
   GEMINI_API_KEY: 'test-gemini-api-key',
   PORTUGAL_ADMIN_PASSWORD: 'test-portugal-admin-password',
   STRIPE_SECRET_KEY: 'sk_test_dummy_key_for_tests',
+  STRIPE_WEBHOOK_SECRET: 'whsec_test_dummy_secret_for_tests',
 }
 
 for (const [key, value] of Object.entries(defaults)) {
