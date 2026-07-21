@@ -1,3 +1,6 @@
+jest.mock('react-native-worklets', () => require('react-native-worklets/lib/module/mock'))
+jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'))
+
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import InicioScreen from '../../../app/(tabs)/index'

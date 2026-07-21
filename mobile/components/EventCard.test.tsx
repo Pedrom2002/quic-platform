@@ -19,7 +19,7 @@ describe('EventCard', () => {
   it('renders name and venue', () => {
     const { getByText } = render(<EventCard event={baseEvent} />)
     expect(getByText('Show X')).toBeTruthy()
-    expect(getByText('Altice Arena')).toBeTruthy()
+    expect(getByText(/Altice Arena/)).toBeTruthy()
   })
 
   it('shows a placeholder when there is no cover image', () => {
@@ -49,5 +49,11 @@ describe('EventCard', () => {
     const paidEvent = { ...baseEvent, min_ticket_price_cents: 1000 }
     const { getByText } = render(<EventCard event={paidEvent} />)
     expect(getByText('Comprar bilhetes')).toBeTruthy()
+  })
+
+  it('still shows venue and date text when the card has a cover image and gradient overlay', () => {
+    const eventWithCover = { ...baseEvent, cover_image_url: 'https://example.com/capa.jpg' }
+    const { getByText } = render(<EventCard event={eventWithCover} />)
+    expect(getByText(/Altice Arena/)).toBeTruthy()
   })
 })

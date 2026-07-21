@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
+import Animated, { FadeInDown } from 'react-native-reanimated'
 import { supabase } from '../../lib/supabase'
 import { fetchPublicEvents, type PublicEvent } from '../../lib/events'
 import { EventCard } from '../../components/EventCard'
@@ -28,10 +29,12 @@ export default function InicioScreen() {
       data={events}
       keyExtractor={item => item.id}
       contentContainerStyle={styles.list}
-      renderItem={({ item }) => (
-        <Pressable onPress={() => router.push(`/evento/${item.id}`)} accessibilityRole="button">
-          <EventCard event={item} />
-        </Pressable>
+      renderItem={({ item, index }) => (
+        <Animated.View entering={FadeInDown.delay(index * 80).duration(400)}>
+          <Pressable onPress={() => router.push(`/evento/${item.id}`)} accessibilityRole="button">
+            <EventCard event={item} />
+          </Pressable>
+        </Animated.View>
       )}
     />
   )
