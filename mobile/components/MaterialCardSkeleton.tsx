@@ -29,7 +29,7 @@ export function MaterialCardSkeleton() {
 const styles = StyleSheet.create({
   card: { flex: 1, backgroundColor: '#fafaf9', borderWidth: 1, borderColor: '#f5f5f4', borderRadius: 12, overflow: 'hidden', margin: 6 },
   image: { width: '100%', height: 120, backgroundColor: '#e7e5e4', overflow: 'hidden' },
-  shimmer: { width: 80, height: '100%', backgroundColor: 'rgba(255,255,255,0.4)' },
+  shimmer: { position: 'absolute', top: 0, left: 0, width: 80, height: '100%', backgroundColor: 'rgba(255,255,255,0.4)' },
   content: { padding: 12, gap: 8 },
   lineSmall: { height: 8, width: '40%', backgroundColor: '#e7e5e4', borderRadius: 4 },
   lineLarge: { height: 12, width: '70%', backgroundColor: '#e7e5e4', borderRadius: 4 },

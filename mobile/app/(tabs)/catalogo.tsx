@@ -64,13 +64,14 @@ export default function CatalogoScreen() {
       <CategoryChips categories={categories} selectedId={categoryId} onSelect={setCategoryId} />
 
       {materials === null ? (
-        <View style={styles.grid}>
-          <View style={styles.skeletonRow}>
-            {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
-              <MaterialCardSkeleton key={i} />
-            ))}
-          </View>
-        </View>
+        <FlatList
+          data={Array.from({ length: SKELETON_COUNT }, (_, i) => i)}
+          keyExtractor={i => `skeleton-${i}`}
+          numColumns={2}
+          scrollEnabled={false}
+          contentContainerStyle={styles.grid}
+          renderItem={() => <MaterialCardSkeleton />}
+        />
       ) : materials.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyText}>Nenhum material encontrado.</Text>
@@ -100,7 +101,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   search: { margin: 16, marginBottom: 8, borderWidth: 1, borderColor: '#e7e5e4', borderRadius: 4, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: '#1c1917' },
   grid: { paddingHorizontal: 10, paddingBottom: 16 },
-  skeletonRow: { flexDirection: 'row', flexWrap: 'wrap' },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { color: '#78716c', fontSize: 14 },
 })
