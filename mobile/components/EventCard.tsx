@@ -21,11 +21,11 @@ export function EventCard({ event }: { event: PublicEvent }) {
         style={styles.gradient}
       />
       <View style={styles.content}>
-        <Text style={styles.date}>
+        <Text style={styles.date} numberOfLines={1}>
           {formatEventDate(event.start_datetime)}
           {event.venue_name ? ` · ${event.venue_name}` : ''}
         </Text>
-        <Text style={styles.name}>{event.name}</Text>
+        <Text style={styles.name} numberOfLines={2}>{event.name}</Text>
         {event.min_ticket_price_cents !== null && (
           <View style={styles.ticketButton}>
             <Text style={styles.ticketButtonText}>
@@ -38,11 +38,13 @@ export function EventCard({ event }: { event: PublicEvent }) {
   )
 }
 
+const fill = { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 }
+
 const styles = StyleSheet.create({
   card: { borderRadius: 14, overflow: 'hidden', marginBottom: 16, height: 220 },
-  image: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
-  placeholder: { ...StyleSheet.absoluteFillObject, backgroundColor: '#111111' },
-  gradient: { ...StyleSheet.absoluteFillObject },
+  image: { ...fill, width: '100%', height: '100%' },
+  placeholder: { ...fill, backgroundColor: '#111111' },
+  gradient: { ...fill },
   content: { position: 'absolute', left: 16, right: 16, bottom: 16 },
   date: { fontSize: 11, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
   name: { fontSize: 20, fontWeight: '700', color: '#ffffff' },

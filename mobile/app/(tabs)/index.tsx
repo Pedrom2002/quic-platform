@@ -30,7 +30,7 @@ export default function InicioScreen() {
       keyExtractor={item => item.id}
       contentContainerStyle={styles.list}
       renderItem={({ item, index }) => (
-        <Animated.View entering={FadeInDown.delay(index * 80).duration(400)}>
+        <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 80).duration(400)}>
           <Pressable onPress={() => router.push(`/evento/${item.id}`)} accessibilityRole="button">
             <EventCard event={item} />
           </Pressable>
