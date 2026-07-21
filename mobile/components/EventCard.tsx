@@ -18,6 +18,13 @@ export function EventCard({ event }: { event: PublicEvent }) {
         <Text style={styles.date}>{formatEventDate(event.start_datetime)}</Text>
         <Text style={styles.name}>{event.name}</Text>
         {event.venue_name && <Text style={styles.venue}>{event.venue_name}</Text>}
+        {event.min_ticket_price_cents !== null && (
+          <View style={styles.ticketButton}>
+            <Text style={styles.ticketButtonText}>
+              {event.min_ticket_price_cents === 0 ? 'Gratuito' : 'Comprar bilhetes'}
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   )
@@ -31,4 +38,12 @@ const styles = StyleSheet.create({
   date: { fontSize: 11, color: '#a8a29e', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
   name: { fontSize: 18, fontWeight: '600', color: '#1c1917' },
   venue: { fontSize: 13, color: '#78716c', marginTop: 2 },
+  ticketButton: {
+    marginTop: 12,
+    backgroundColor: '#111111',
+    borderRadius: 4,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  ticketButtonText: { color: '#ffffff', fontSize: 13, fontWeight: '600' },
 })

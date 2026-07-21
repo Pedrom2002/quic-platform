@@ -12,6 +12,7 @@ const baseEvent: PublicEvent = {
   start_datetime: '2026-08-01T20:00:00.000Z',
   end_datetime: '2026-08-01T23:00:00.000Z',
   cover_image_url: null,
+  min_ticket_price_cents: null,
 }
 
 describe('EventCard', () => {
@@ -30,5 +31,23 @@ describe('EventCard', () => {
     const eventWithCover = { ...baseEvent, cover_image_url: 'https://example.com/capa.jpg' }
     const { queryByTestId } = render(<EventCard event={eventWithCover} />)
     expect(queryByTestId('event-card-image-placeholder')).toBeNull()
+  })
+
+  it('shows no ticket button when there are no ticket types', () => {
+    const { queryByText } = render(<EventCard event={baseEvent} />)
+    expect(queryByText('Gratuito')).toBeNull()
+    expect(queryByText('Comprar bilhetes')).toBeNull()
+  })
+
+  it('shows "Gratuito" when the cheapest ticket type is free', () => {
+    const freeEvent = { ...baseEvent, min_ticket_price_cents: 0 }
+    const { getByText } = render(<EventCard event={freeEvent} />)
+    expect(getByText('Gratuito')).toBeTruthy()
+  })
+
+  it('shows "Comprar bilhetes" when the cheapest ticket type is paid', () => {
+    const paidEvent = { ...baseEvent, min_ticket_price_cents: 1000 }
+    const { getByText } = render(<EventCard event={paidEvent} />)
+    expect(getByText('Comprar bilhetes')).toBeTruthy()
   })
 })
