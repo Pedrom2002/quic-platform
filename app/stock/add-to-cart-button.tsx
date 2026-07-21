@@ -20,7 +20,7 @@ export function AddToCartButton({
   return (
     <Button
       type="button"
-      className="w-full bg-red-600 text-white hover:bg-red-700"
+      className="w-full bg-black text-white hover:bg-black/90"
       onClick={() => {
         addItem({ materialId, name, unit, qty: 1 })
         toast.success('Adicionado ao pedido', { description: name })

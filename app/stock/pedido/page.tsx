@@ -204,7 +204,7 @@ export default function PedidoPage() {
                 <Button
                   type="submit"
                   disabled={isPending || !isReady}
-                  className="bg-red-600 text-white hover:bg-red-700"
+                  className="bg-black text-white hover:bg-black/90"
                 >
                   {isPending ? 'A enviar...' : 'Enviar pedido'}
                 </Button>

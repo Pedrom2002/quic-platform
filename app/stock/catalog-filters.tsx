@@ -97,7 +97,7 @@ function CategoryTab({
       className={cn(
         'shrink-0 border-b-2 pb-2.5 text-sm whitespace-nowrap transition-colors',
         active
-          ? 'border-red-600 font-semibold text-red-600'
+          ? 'border-black font-semibold text-black'
           : 'border-transparent text-muted-foreground hover:text-foreground'
       )}
     >

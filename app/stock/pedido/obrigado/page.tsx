@@ -18,7 +18,7 @@ export default function ObrigadoPage() {
         Obrigado! Recebemos o seu pedido de orçamento e entraremos em contacto
         brevemente.
       </p>
-      <ButtonLink href="/stock" className="mt-2 bg-red-600 text-white hover:bg-red-700">
+      <ButtonLink href="/stock" className="mt-2 bg-black text-white hover:bg-black/90">
         Voltar ao catálogo
       </ButtonLink>
     </div>
