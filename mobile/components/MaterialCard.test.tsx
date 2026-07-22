@@ -1,10 +1,14 @@
+// mobile/components/MaterialCard.test.tsx
 jest.mock('react-native-worklets', () => require('react-native-worklets/lib/module/mock'))
 jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'))
 
-import { describe, it, expect } from '@jest/globals'
-import { render } from '@testing-library/react-native'
+import { describe, it, expect, jest, beforeEach } from '@jest/globals'
+import { render, fireEvent } from '@testing-library/react-native'
 import { MaterialCard } from './MaterialCard'
 import type { CatalogMaterial } from '../lib/catalog'
+
+const mockAddItem = jest.fn()
+jest.mock('../hooks/useCart', () => ({ useCart: () => ({ addItem: mockAddItem }) }))
 
 const baseMaterial: CatalogMaterial = {
   id: 'm1',
@@ -15,6 +19,10 @@ const baseMaterial: CatalogMaterial = {
   photo_url: null,
   available: true,
 }
+
+beforeEach(() => {
+  mockAddItem.mockReset()
+})
 
 describe('MaterialCard', () => {
   it('renders name and availability badge', () => {
@@ -39,5 +47,11 @@ describe('MaterialCard', () => {
     const withPhoto = { ...baseMaterial, photo_url: 'https://example.com/coluna.jpg' }
     const { queryByTestId } = render(<MaterialCard material={withPhoto} categoryName="Som" />)
     expect(queryByTestId('material-card-image-placeholder')).toBeNull()
+  })
+
+  it('adds the material to the cart when the add button is pressed', () => {
+    const { getByTestId } = render(<MaterialCard material={baseMaterial} categoryName="Som" />)
+    fireEvent.press(getByTestId('material-card-add'))
+    expect(mockAddItem).toHaveBeenCalledWith({ materialId: 'm1', name: 'Coluna JBL', unit: 'un' })
   })
 })
