@@ -36,7 +36,7 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.video} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
-        <VideoView style={styles.video} player={player} nativeControls={false} contentFit="cover" />
+        <VideoView style={styles.video} player={player} nativeControls={false} contentFit="contain" />
       </View>
       <LinearGradient
         colors={['transparent', 'rgba(0,0,0,0.9)']}
@@ -80,7 +80,7 @@ const fill = { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom:
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#111111' },
-  video: { ...fill },
+  video: { ...fill, backgroundColor: '#000000' },
   gradient: { ...fill },
   keyboardWrapper: { ...fill },
   form: { position: 'absolute', left: 24, right: 24, gap: 12 },
