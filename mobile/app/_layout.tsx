@@ -1,7 +1,10 @@
 import { useEffect } from 'react'
+import { Appearance } from 'react-native'
 import { Slot, useRouter } from 'expo-router'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useSession } from '../hooks/useSession'
+
+Appearance.setColorScheme('light')
 
 export default function RootLayout() {
   const { session, loading } = useSession()
