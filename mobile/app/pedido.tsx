@@ -1,5 +1,5 @@
 // mobile/app/pedido.tsx
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { View, Text, TextInput, Pressable, ScrollView, Alert, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -19,29 +19,37 @@ export default function PedidoScreen() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const submittingRef = useRef(false)
 
   async function handleSubmit() {
+    if (submittingRef.current) return
+    submittingRef.current = true
     setError(null)
-    const form = { name, email, phone, eventDate, message }
-    const lines = items.map(i => ({ materialId: i.materialId, qty: i.qty }))
-    const validationError = validateQuote(form, lines)
-    if (validationError) {
-      setError(validationError)
-      return
+
+    try {
+      const form = { name, email, phone, eventDate, message }
+      const lines = items.map(i => ({ materialId: i.materialId, qty: i.qty }))
+      const validationError = validateQuote(form, lines)
+      if (validationError) {
+        setError(validationError)
+        return
+      }
+
+      setSubmitting(true)
+      const result = await submitQuote(supabase, form, lines)
+      setSubmitting(false)
+
+      if (!result.success) {
+        setError(result.error)
+        return
+      }
+
+      clear()
+      Alert.alert('Pedido enviado', 'Respondemos com um orçamento sem compromisso.')
+      router.replace('/(tabs)/catalogo')
+    } finally {
+      submittingRef.current = false
     }
-
-    setSubmitting(true)
-    const result = await submitQuote(supabase, form, lines)
-    setSubmitting(false)
-
-    if (!result.success) {
-      setError(result.error)
-      return
-    }
-
-    clear()
-    Alert.alert('Pedido enviado', 'Respondemos com um orçamento sem compromisso.')
-    router.replace('/(tabs)/catalogo')
   }
 
   if (isReady && items.length === 0) {

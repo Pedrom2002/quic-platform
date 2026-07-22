@@ -41,9 +41,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (isReady) {
+    if (!isReady) return
+    const timeout = setTimeout(() => {
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(items))
-    }
+    }, 300)
+    return () => clearTimeout(timeout)
   }, [items, isReady])
 
   function addItem(item: { materialId: string; name: string; unit: string }) {
