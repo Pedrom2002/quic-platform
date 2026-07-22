@@ -11,6 +11,14 @@ export default function RootLayout() {
   const router = useRouter()
 
   useEffect(() => {
+    Appearance.setColorScheme('light')
+    const subscription = Appearance.addChangeListener(() => {
+      Appearance.setColorScheme('light')
+    })
+    return () => subscription.remove()
+  }, [])
+
+  useEffect(() => {
     if (!loading && !session) {
       router.replace('/login')
     }
