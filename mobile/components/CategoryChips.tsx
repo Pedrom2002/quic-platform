@@ -36,9 +36,9 @@ export function CategoryChips({
 }
 
 const styles = StyleSheet.create({
-  row: { gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#fafaf9', borderWidth: 1, borderColor: '#e7e5e4' },
-  chipActive: { backgroundColor: '#111111', borderColor: '#111111' },
-  chipText: { fontSize: 12, color: '#78716c', fontWeight: '500' },
+  row: { gap: 8, paddingHorizontal: 16, paddingVertical: 10 },
+  chip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: '#f0efee' },
+  chipActive: { backgroundColor: '#111111' },
+  chipText: { fontSize: 13, color: '#44403c', fontWeight: '600' },
   chipTextActive: { color: '#ffffff' },
 })

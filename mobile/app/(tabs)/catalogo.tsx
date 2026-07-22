@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { View, Text, TextInput, FlatList, StyleSheet } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { supabase } from '../../lib/supabase'
 import { fetchCategories, fetchCatalogMaterials, type StockCategory, type CatalogMaterial } from '../../lib/catalog'
 import { CategoryChips } from '../../components/CategoryChips'
@@ -10,6 +12,7 @@ const PAGE_SIZE = 20
 const SKELETON_COUNT = 6
 
 export default function CatalogoScreen() {
+  const insets = useSafeAreaInsets()
   const [categories, setCategories] = useState<StockCategory[]>([])
   const [categoryId, setCategoryId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
@@ -54,13 +57,21 @@ export default function CatalogoScreen() {
 
   return (
     <View style={styles.container}>
-      <TextInput
-        placeholder="Pesquisar material..."
-        placeholderTextColor="#a8a29e"
-        value={search}
-        onChangeText={setSearch}
-        style={styles.search}
-      />
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <Text style={styles.title}>Catálogo</Text>
+        <Text style={styles.subtitle}>Material disponível para o teu evento</Text>
+      </View>
+
+      <View style={styles.searchWrapper}>
+        <Ionicons name="search-outline" size={18} color="#a8a29e" style={styles.searchIcon} />
+        <TextInput
+          placeholder="Pesquisar material..."
+          placeholderTextColor="#a8a29e"
+          value={search}
+          onChangeText={setSearch}
+          style={styles.search}
+        />
+      </View>
       <CategoryChips categories={categories} selectedId={categoryId} onSelect={setCategoryId} />
 
       {materials === null ? (
@@ -99,7 +110,20 @@ export default function CatalogoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
-  search: { margin: 16, marginBottom: 8, borderWidth: 1, borderColor: '#e7e5e4', borderRadius: 4, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: '#1c1917' },
+  header: { paddingHorizontal: 20, paddingBottom: 16 },
+  title: { fontSize: 26, fontWeight: '800', color: '#1c1917' },
+  subtitle: { fontSize: 13, color: '#78716c', marginTop: 2 },
+  searchWrapper: { marginHorizontal: 16, marginBottom: 8, position: 'relative', justifyContent: 'center' },
+  searchIcon: { position: 'absolute', left: 14, zIndex: 1 },
+  search: {
+    backgroundColor: '#f5f5f4',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingLeft: 40,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: '#1c1917',
+  },
   grid: { paddingHorizontal: 10, paddingBottom: 16 },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { color: '#78716c', fontSize: 14 },
