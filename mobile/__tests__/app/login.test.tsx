@@ -1,5 +1,15 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
+jest.mock('expo-video', () => ({
+  useVideoPlayer: () => ({ loop: false, muted: false, play: jest.fn() }),
+  VideoView: () => null,
+}))
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}))
+jest.mock('expo-linear-gradient', () => ({
+  LinearGradient: ({ children }: { children?: React.ReactNode }) => children ?? null,
+}))
 import LoginScreen from '../../app/login'
 
 const mockSignInWithPassword = jest.fn()
