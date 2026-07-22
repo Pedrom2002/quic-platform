@@ -1,18 +1,23 @@
 import { useCallback, useEffect, useState } from 'react'
-import { View, Text, TextInput, FlatList, StyleSheet } from 'react-native'
+import { View, Text, TextInput, FlatList, StyleSheet, Pressable } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { fetchCategories, fetchCatalogMaterials, type StockCategory, type CatalogMaterial } from '../../lib/catalog'
 import { CategoryChips } from '../../components/CategoryChips'
 import { MaterialCard } from '../../components/MaterialCard'
 import { MaterialCardSkeleton } from '../../components/MaterialCardSkeleton'
+import { useCart } from '../../hooks/useCart'
 
 const PAGE_SIZE = 20
 const SKELETON_COUNT = 6
 
 export default function CatalogoScreen() {
   const insets = useSafeAreaInsets()
+  const router = useRouter()
+  const { items } = useCart()
+  const totalQty = items.reduce((sum, item) => sum + item.qty, 0)
   const [categories, setCategories] = useState<StockCategory[]>([])
   const [categoryId, setCategoryId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
@@ -104,6 +109,16 @@ export default function CatalogoScreen() {
           )}
         />
       )}
+
+      {totalQty > 0 && (
+        <Pressable
+          style={styles.fab}
+          onPress={() => router.push('/pedido')}
+          accessibilityRole="button"
+        >
+          <Text style={styles.fabText}>Pedir orçamento ({totalQty})</Text>
+        </Pressable>
+      )}
     </View>
   )
 }
@@ -127,4 +142,15 @@ const styles = StyleSheet.create({
   grid: { paddingHorizontal: 10, paddingBottom: 16 },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { color: '#78716c', fontSize: 14 },
+  fab: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 16,
+    backgroundColor: '#111111',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  fabText: { color: '#ffffff', fontSize: 15, fontWeight: '700' },
 })

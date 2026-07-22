@@ -16,7 +16,7 @@ jest.mock('../../../lib/catalog', () => ({
   fetchCatalogMaterials: (...args: unknown[]) => mockFetchCatalogMaterials(...args),
 }))
 jest.mock('../../../lib/supabase', () => ({ supabase: {} }))
-jest.mock('../../../hooks/useCart', () => ({ useCart: () => ({ addItem: jest.fn() }) }))
+jest.mock('../../../hooks/useCart', () => ({ useCart: () => ({ addItem: jest.fn(), items: [] }) }))
 
 beforeEach(() => {
   mockFetchCategories.mockReset()
