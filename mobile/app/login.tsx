@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { View, Text, Pressable, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native'
 import { useRouter, Link } from 'expo-router'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -35,27 +35,43 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <VideoView style={styles.video} player={player} nativeControls={false} contentFit="cover" />
+      <View style={styles.video} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
+        <VideoView style={styles.video} player={player} nativeControls={false} contentFit="cover" />
+      </View>
       <LinearGradient
         colors={['transparent', 'rgba(0,0,0,0.9)']}
         locations={[0, 0.7]}
         style={styles.gradient}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        pointerEvents="none"
       />
 
-      <View style={[styles.form, { bottom: insets.bottom + 24 }]}>
-        <AuthTextInput placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
-        <AuthTextInput placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.keyboardWrapper}
+      >
+        <View style={[styles.form, { bottom: insets.bottom + 24 }]}>
+          <AuthTextInput placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
+          <AuthTextInput placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
 
-        {error && <Text style={styles.error}>{error}</Text>}
+          {error && <Text style={styles.error}>{error}</Text>}
 
-        <Pressable style={styles.button} onPress={handleLogin} disabled={loading}>
-          <Text style={styles.buttonText}>{loading ? 'A entrar...' : 'Entrar'}</Text>
-        </Pressable>
+          <Pressable
+            style={styles.button}
+            onPress={handleLogin}
+            disabled={loading}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: loading, busy: loading }}
+          >
+            <Text style={styles.buttonText}>{loading ? 'A entrar...' : 'Entrar'}</Text>
+          </Pressable>
 
-        <Link href="/signup" style={styles.link}>
-          <Text style={styles.linkText}>Ainda não tens conta? Criar conta</Text>
-        </Link>
-      </View>
+          <Link href="/signup" style={styles.link} accessibilityRole="link">
+            <Text style={styles.linkText}>Ainda não tens conta? Criar conta</Text>
+          </Link>
+        </View>
+      </KeyboardAvoidingView>
     </View>
   )
 }
@@ -66,6 +82,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#111111' },
   video: { ...fill },
   gradient: { ...fill },
+  keyboardWrapper: { ...fill },
   form: { position: 'absolute', left: 24, right: 24, gap: 12 },
   error: { color: '#f87171', fontSize: 13 },
   button: { backgroundColor: '#ffffff', borderRadius: 4, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
