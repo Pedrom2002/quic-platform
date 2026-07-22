@@ -10,6 +10,13 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
   Slot: () => null,
 }))
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  __esModule: true,
+  default: {
+    getItem: jest.fn(async () => null),
+    setItem: jest.fn(async () => undefined),
+  },
+}))
 
 beforeEach(() => {
   mockUseSession.mockReset()
