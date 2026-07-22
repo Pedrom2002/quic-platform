@@ -80,8 +80,8 @@ const fill = { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom:
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#111111' },
-  videoWrapper: { ...fill, overflow: 'hidden' },
-  video: { position: 'absolute', top: 0, bottom: 0, left: '-65%', right: '-65%' },
+  videoWrapper: { position: 'absolute', top: 0, left: 0, right: 0, height: '60%', overflow: 'hidden' },
+  video: { position: 'absolute', top: 0, bottom: 0, left: '-15%', right: '-15%' },
   gradient: { ...fill },
   keyboardWrapper: { ...fill },
   form: { position: 'absolute', left: 24, right: 24, gap: 12 },
