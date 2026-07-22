@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, Pressable, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Dimensions } from 'react-native'
 import { useRouter, Link } from 'expo-router'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -35,8 +35,8 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.video} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
-        <VideoView style={styles.video} player={player} nativeControls={false} contentFit="contain" />
+      <View style={styles.videoWrapper} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
+        <VideoView style={styles.video} player={player} nativeControls={false} contentFit="cover" />
       </View>
       <LinearGradient
         colors={['transparent', 'rgba(0,0,0,0.9)']}
@@ -78,9 +78,14 @@ export default function LoginScreen() {
 
 const fill = { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 }
 
+const VIDEO_ASPECT_RATIO = 16 / 9
+const screenWidth = Dimensions.get('window').width
+const videoHeight = screenWidth / VIDEO_ASPECT_RATIO
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#111111' },
-  video: { ...fill, backgroundColor: '#000000' },
+  container: { flex: 1, backgroundColor: '#111111', justifyContent: 'center' },
+  videoWrapper: { width: screenWidth, height: videoHeight, backgroundColor: '#000000' },
+  video: { width: '100%', height: '100%' },
   gradient: { ...fill },
   keyboardWrapper: { ...fill },
   form: { position: 'absolute', left: 24, right: 24, gap: 12 },
