@@ -64,15 +64,8 @@ export default function SignupScreen() {
         importantForAccessibility="no-hide-descendants"
         pointerEvents="none"
       />
-      <LinearGradient
-        colors={['rgba(147,51,234,0.35)', 'transparent']}
-        style={styles.glow}
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-        pointerEvents="none"
-      />
-      <View style={styles.video} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
-        <VideoView style={styles.video} player={player} nativeControls={false} contentFit="cover" />
+      <View style={styles.videoWrapper} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
+        <VideoView style={styles.videoZoomOut} player={player} nativeControls={false} contentFit="cover" />
       </View>
 
       <KeyboardAvoidingView
@@ -109,9 +102,9 @@ const fill = { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom:
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0A0A0F' },
-  video: { ...fill },
+  videoWrapper: { ...fill, overflow: 'hidden' },
+  videoZoomOut: { position: 'absolute', top: 0, bottom: 0, left: '-7.5%', right: '-7.5%' },
   gradient: { ...fill },
-  glow: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '55%' },
   keyboardWrapper: { ...fill },
   form: { position: 'absolute', left: 24, right: 24, gap: 14 },
   error: { color: '#FCA5A5', fontSize: 13 },
