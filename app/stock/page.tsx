@@ -1,38 +1,31 @@
-import Image from 'next/image'
 import { PackageIcon } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/server'
 import type { StockCatalogMaterial, StockCategory } from '@/lib/stock/types'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
 
-import { AddToCartButton } from './add-to-cart-button'
 import { CatalogFilters } from './catalog-filters'
-import { CatalogPagination } from './catalog-pagination'
+import { CatalogInfinite } from './catalog-infinite'
 
 const PAGE_SIZE = 12
 
 export default async function CatalogoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; categoria?: string; page?: string }>
+  searchParams: Promise<{ q?: string; categoria?: string }>
 }) {
   const params = await searchParams
   const search = params.q?.trim() ?? ''
   const categoryId = params.categoria ?? ''
-  const requestedPage = Number.parseInt(params.page ?? '1', 10)
-  const page = Number.isNaN(requestedPage) || requestedPage < 1 ? 1 : requestedPage
 
   const supabase = await createClient()
 
-  const from = (page - 1) * PAGE_SIZE
-  const to = from + PAGE_SIZE - 1
-
+  // Infinite scroll starts at page 1; further pages load client-side via
+  // /api/stock/catalog. The server only renders the first PAGE_SIZE items.
   let materialsQuery = supabase
     .from('stock_catalog_materials')
     .select('*', { count: 'exact' })
     .order('name')
-    .range(from, to)
+    .range(0, PAGE_SIZE - 1)
   if (search) {
     materialsQuery = materialsQuery.ilike('name', `%${search}%`)
   }
@@ -48,14 +41,16 @@ export default async function CatalogoPage({
 
   const materials = (materialsData ?? []) as StockCatalogMaterial[]
   const categories = (categoriesData ?? []) as StockCategory[]
-  const categoryNames = new Map(
-    categories.map((category) => [category.id, category.name])
-  )
-  const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE))
-  const paginationParams = {
+  const hasMore = PAGE_SIZE < (count ?? 0)
+  const filterParams = {
     ...(search ? { q: search } : {}),
     ...(categoryId ? { categoria: categoryId } : {}),
   }
+  const categoryNames = Object.fromEntries(
+    categories.map((category) => [category.id, category.name])
+  )
+  // Re-mount the infinite list whenever filters change so it re-seeds cleanly.
+  const listKey = `${search}|${categoryId}`
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-10 md:px-6">
@@ -79,55 +74,14 @@ export default async function CatalogoPage({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {materials.map((material) => (
-            <Card key={material.id}>
-              {material.photo_url && (
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-xl">
-                  <Image
-                    src={material.photo_url}
-                    alt={material.name}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <CardContent className="flex flex-1 flex-col gap-1.5">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {material.category_id
-                      ? (categoryNames.get(material.category_id) ?? 'Outros')
-                      : 'Outros'}
-                  </p>
-                  <Badge
-                    variant={material.available ? 'subtle' : 'outline'}
-                    className="shrink-0"
-                  >
-                    {material.available ? 'Disponível' : 'Sob consulta'}
-                  </Badge>
-                </div>
-                <h2 className="font-heading leading-snug font-semibold">
-                  {material.name}
-                </h2>
-              </CardContent>
-              <CardFooter className="border-0 bg-transparent pt-0">
-                <AddToCartButton
-                  materialId={material.id}
-                  name={material.name}
-                  unit={material.unit}
-                />
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+        <CatalogInfinite
+          key={listKey}
+          initialMaterials={materials}
+          initialHasMore={hasMore}
+          params={filterParams}
+          categoryNames={categoryNames}
+        />
       )}
-
-      <CatalogPagination
-        params={paginationParams}
-        page={page}
-        totalPages={totalPages}
-      />
     </div>
   )
 }
