@@ -12,6 +12,16 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
   Link: ({ children }: { children: React.ReactNode }) => children,
 }))
+jest.mock('expo-video', () => ({
+  useVideoPlayer: () => ({ loop: false, muted: false, play: jest.fn() }),
+  VideoView: () => null,
+}))
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}))
+jest.mock('expo-linear-gradient', () => ({
+  LinearGradient: ({ children }: { children?: React.ReactNode }) => children ?? null,
+}))
 
 beforeEach(() => {
   mockSignUp.mockReset()

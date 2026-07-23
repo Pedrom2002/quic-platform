@@ -35,17 +35,17 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.videoWrapper} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
-        <VideoView style={styles.video} player={player} nativeControls={false} contentFit="cover" />
-      </View>
       <LinearGradient
-        colors={['transparent', 'rgba(20,10,35,0.55)', 'rgba(10,6,20,0.92)', '#0A0A0F']}
+        colors={['transparent', 'rgba(20,10,35,0.4)', 'rgba(10,6,20,0.78)', '#0A0A0F']}
         locations={[0, 0.55, 0.78, 1]}
         style={styles.gradient}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
         pointerEvents="none"
       />
+      <View style={styles.videoWrapper} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
+        <VideoView style={styles.video} player={player} nativeControls={false} contentFit="cover" />
+      </View>
       <LinearGradient
         colors={['rgba(139,47,201,0.35)', 'transparent']}
         style={styles.glow}
