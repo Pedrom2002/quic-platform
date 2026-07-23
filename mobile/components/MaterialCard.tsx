@@ -28,10 +28,8 @@ export function MaterialCard({
 
   return (
     <Animated.View entering={FadeIn.delay(Math.min(index, 12) * 40).duration(300)} style={styles.card}>
-      {material.photo_url ? (
-        <Image source={{ uri: material.photo_url }} style={styles.image} resizeMode="contain" />
-      ) : (
-        <View testID="material-card-image-placeholder" style={styles.placeholder} />
+      {material.photo_url && (
+        <Image testID="material-card-image" source={{ uri: material.photo_url }} style={styles.image} resizeMode="contain" />
       )}
       <Pressable
         testID="material-card-add"
@@ -58,7 +56,6 @@ export function MaterialCard({
 const styles = StyleSheet.create({
   card: { flex: 1, backgroundColor: '#fafaf9', borderWidth: 1, borderColor: '#f5f5f4', borderRadius: 12, overflow: 'hidden', margin: 6 },
   image: { width: '100%', height: 120, backgroundColor: '#ffffff' },
-  placeholder: { width: '100%', height: 120, backgroundColor: '#e7e5e4' },
   addButton: {
     position: 'absolute',
     top: 8,

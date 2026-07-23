@@ -38,15 +38,15 @@ describe('MaterialCard', () => {
     expect(getByText('Sob consulta')).toBeTruthy()
   })
 
-  it('shows a placeholder when there is no photo', () => {
-    const { getByTestId } = render(<MaterialCard material={baseMaterial} categoryName="Som" />)
-    expect(getByTestId('material-card-image-placeholder')).toBeTruthy()
+  it('shows no image area when there is no photo', () => {
+    const { queryByTestId } = render(<MaterialCard material={baseMaterial} categoryName="Som" />)
+    expect(queryByTestId('material-card-image')).toBeNull()
   })
 
   it('renders the photo when present', () => {
     const withPhoto = { ...baseMaterial, photo_url: 'https://example.com/coluna.jpg' }
-    const { queryByTestId } = render(<MaterialCard material={withPhoto} categoryName="Som" />)
-    expect(queryByTestId('material-card-image-placeholder')).toBeNull()
+    const { getByTestId } = render(<MaterialCard material={withPhoto} categoryName="Som" />)
+    expect(getByTestId('material-card-image')).toBeTruthy()
   })
 
   it('adds the material to the cart when the add button is pressed', () => {
