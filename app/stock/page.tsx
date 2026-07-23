@@ -24,6 +24,7 @@ export default async function CatalogoPage({
   let materialsQuery = supabase
     .from('stock_catalog_materials')
     .select('*', { count: 'exact' })
+    .order('photo_url', { ascending: false, nullsFirst: false })
     .order('name')
     .range(0, PAGE_SIZE - 1)
   if (search) {

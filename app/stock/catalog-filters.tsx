@@ -60,7 +60,7 @@ export function CatalogFilters({
       </form>
       <nav
         aria-label="Filtrar por categoria"
-        className="flex items-center gap-5 overflow-x-auto border-b pb-px"
+        className="flex flex-wrap items-center gap-x-5 gap-y-2 border-b pb-2"
       >
         <CategoryTab
           label="Todos"

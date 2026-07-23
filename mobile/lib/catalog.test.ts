@@ -31,16 +31,17 @@ describe('fetchCategories', () => {
 describe('fetchCatalogMaterials', () => {
   function makeChain(resolved: { data: unknown; error: unknown }) {
     const range = jest.fn().mockResolvedValue(resolved)
-    const order = jest.fn(() => ({ range }))
+    const orderName = jest.fn(() => ({ range }))
+    const order = jest.fn(() => ({ order: orderName }))
     const eq = jest.fn(() => ({ order, eq: jest.fn(() => ({ order })) }))
     const ilike = jest.fn(() => ({ order, eq }))
     const select = jest.fn(() => ({ order, eq, ilike }))
     const from = jest.fn(() => ({ select }))
-    return { from, select, order, eq, ilike, range }
+    return { from, select, order, orderName, eq, ilike, range }
   }
 
   it('queries with no filters', async () => {
-    const { from, select, order, range } = makeChain({
+    const { from, select, order, orderName, range } = makeChain({
       data: [{ id: 'm1', name: 'Coluna JBL', description: null, category_id: null, unit: 'un', photo_url: null, available: true }],
       error: null,
     })
@@ -50,7 +51,8 @@ describe('fetchCatalogMaterials', () => {
 
     expect(from).toHaveBeenCalledWith('stock_catalog_materials')
     expect(select).toHaveBeenCalledWith('*')
-    expect(order).toHaveBeenCalledWith('name')
+    expect(order).toHaveBeenCalledWith('photo_url', { ascending: false, nullsFirst: false })
+    expect(orderName).toHaveBeenCalledWith('name')
     expect(range).toHaveBeenCalledWith(0, 19)
     expect(result).toHaveLength(1)
   })

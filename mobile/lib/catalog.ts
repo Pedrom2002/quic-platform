@@ -46,7 +46,10 @@ export async function fetchCatalogMaterials(
     query = query.eq('category_id', params.categoryId)
   }
 
-  const { data, error } = await query.order('name').range(params.from, params.to)
+  const { data, error } = await query
+    .order('photo_url', { ascending: false, nullsFirst: false })
+    .order('name')
+    .range(params.from, params.to)
 
   if (error || !data) return []
   return data as unknown as CatalogMaterial[]

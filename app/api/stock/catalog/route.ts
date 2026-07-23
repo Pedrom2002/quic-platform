@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
   let query = supabase
     .from('stock_catalog_materials')
     .select('*', { count: 'exact' })
+    .order('photo_url', { ascending: false, nullsFirst: false })
     .order('name')
     .range(from, to)
   if (search) {
