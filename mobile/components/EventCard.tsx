@@ -56,5 +56,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     alignSelf: 'flex-start',
   },
-  ticketButtonText: { color: '#8B2FC9', fontSize: 12, fontWeight: '700' },
+  ticketButtonText: { color: '#9333EA', fontSize: 12, fontWeight: '700' },
 })

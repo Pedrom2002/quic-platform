@@ -44,7 +44,7 @@ export default function LoginScreen() {
         pointerEvents="none"
       />
       <LinearGradient
-        colors={['rgba(139,47,201,0.35)', 'transparent']}
+        colors={['rgba(147,51,234,0.35)', 'transparent']}
         style={styles.glow}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 10,
-    shadowColor: '#8B2FC9',
+    shadowColor: '#9333EA',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
     shadowRadius: 16,

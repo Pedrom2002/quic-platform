@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   inputFocused: {
-    borderColor: 'rgba(139,47,201,0.65)',
+    borderColor: 'rgba(147,51,234,0.65)',
     backgroundColor: 'rgba(30,18,48,0.6)',
   },
 })
