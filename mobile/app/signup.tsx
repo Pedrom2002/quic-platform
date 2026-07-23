@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   form: { position: 'absolute', left: 24, right: 24, gap: 14 },
   error: { color: '#FCA5A5', fontSize: 13 },
   button: {
-    backgroundColor: '#F5F3FA',
+    backgroundColor: '#9333EA',
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 8,
   },
-  buttonText: { color: '#14081F', fontWeight: '700', fontSize: 15, letterSpacing: 0.3 },
+  buttonText: { color: '#ffffff', fontWeight: '700', fontSize: 15, letterSpacing: 0.3 },
   link: { marginTop: 22, alignItems: 'center' },
   linkText: { color: 'rgba(245,243,250,0.55)', fontSize: 13 },
 })
