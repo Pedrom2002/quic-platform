@@ -71,7 +71,7 @@ export default function SignupScreen() {
         importantForAccessibility="no-hide-descendants"
         pointerEvents="none"
       />
-      <View style={styles.videoWrapper} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
+      <View style={styles.video} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
         <VideoView style={styles.video} player={player} nativeControls={false} contentFit="cover" />
       </View>
 
@@ -109,8 +109,7 @@ const fill = { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom:
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0A0A0F' },
-  videoWrapper: { position: 'absolute', top: 0, left: 0, right: 0, height: '70%', overflow: 'hidden' },
-  video: { position: 'absolute', top: 0, bottom: 0, left: '-25%', right: '-25%' },
+  video: { ...fill },
   gradient: { ...fill },
   glow: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '55%' },
   keyboardWrapper: { ...fill },
