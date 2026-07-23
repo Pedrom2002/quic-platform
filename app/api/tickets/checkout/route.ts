@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Tipo de bilhete não encontrado' }, { status: 404 })
   }
 
-  const { STRIPE_SECRET_KEY, NEXT_PUBLIC_APP_URL } = getEnv()
+  const { STRIPE_SECRET_KEY } = getEnv()
   const stripe = new Stripe(STRIPE_SECRET_KEY)
 
   const session = await stripe.checkout.sessions.create({
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       buyer_auth_user_id: userId,
       quantity: String(parsed.data.quantity),
     },
-    success_url: `${NEXT_PUBLIC_APP_URL}/api/tickets/success?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: 'quicapp://tickets/success?session_id={CHECKOUT_SESSION_ID}',
     cancel_url: 'quicapp://tickets/cancel',
   })
 
