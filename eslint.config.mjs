@@ -24,7 +24,10 @@ const config = [
   },
   {
     // .worktrees/.claude: cópias locais de worktrees (não existem no CI)
-    ignores: ['.next/', 'node_modules/', 'coverage/', '.worktrees/', '.claude/'],
+    // mobile/: subprojeto Expo/React Native com toolchain e lint próprios;
+    // as regras do React Compiler (web) dão falsos positivos em código RN
+    // (ex.: mutar shared values do reanimated, alt-text em <Image> nativa).
+    ignores: ['.next/', 'node_modules/', 'coverage/', '.worktrees/', '.claude/', 'mobile/'],
   },
 ]
 
