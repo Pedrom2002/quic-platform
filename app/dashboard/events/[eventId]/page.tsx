@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Users, Bell, ExternalLink, MapPin, Pencil, UserCog, Paperclip, ListTree, Newspaper, Dices, FileText } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Users, Bell, ExternalLink, MapPin, Pencil, UserCog, Paperclip, ListTree, Newspaper, Dices, FileText, Ticket } from 'lucide-react'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { EVENT_STATUS_LABEL, EVENT_STATUS_COLOR, calcProgress } from '@/lib/event-status'
@@ -40,6 +40,7 @@ export default async function EventDetailPage({
     { data: eventNotes },
     { count: raffleCount },
     { count: reportCount },
+    { count: ticketTypeCount },
   ] = await Promise.all([
     supabase.from('events').select('*, event_types(name, color, icon)').eq('id', eventId).single(),
     supabase.from('event_checklist_items').select('status').eq('event_id', eventId),
@@ -54,6 +55,7 @@ export default async function EventDetailPage({
     supabase.from('event_notes').select('*, author:team_members!author_id(id, full_name, avatar_url)').eq('event_id', eventId).order('created_at', { ascending: false }).limit(50).returns<EventNoteWithAuthor[]>(),
     supabase.from('event_raffles').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
     supabase.from('event_reports').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
+    supabase.from('ticket_types').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
   ])
 
   if (!eventRaw) notFound()
@@ -297,6 +299,19 @@ export default async function EventDetailPage({
           <div>
             <p className="text-slate-800 font-medium">Sorteios</p>
             <p className="text-slate-400 text-xs">{raffleCount ?? 0} sorteios</p>
+          </div>
+        </Link>
+
+        <Link
+          href={`/dashboard/events/${eventId}/tickets` as never}
+          className="flex items-center gap-3 p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 hover:shadow transition-all"
+        >
+          <div className="p-2 bg-pink-50 rounded-lg">
+            <Ticket className="w-5 h-5 text-pink-600" />
+          </div>
+          <div>
+            <p className="text-slate-800 font-medium">Bilhetes</p>
+            <p className="text-slate-400 text-xs">{ticketTypeCount ?? 0} tipos de bilhete</p>
           </div>
         </Link>
       </div>
