@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { fetchCategories, fetchCatalogMaterials, type StockCategory, type CatalogMaterial } from '../../lib/catalog'
-import { CategoryChips } from '../../components/CategoryChips'
+import { CategoryPicker } from '../../components/CategoryPicker'
 import { MaterialCard } from '../../components/MaterialCard'
 import { MaterialCardSkeleton } from '../../components/MaterialCardSkeleton'
 import { useCart } from '../../hooks/useCart'
@@ -77,7 +77,7 @@ export default function CatalogoScreen() {
           style={styles.search}
         />
       </View>
-      <CategoryChips categories={categories} selectedId={categoryId} onSelect={setCategoryId} />
+      <CategoryPicker categories={categories} selectedId={categoryId} onSelect={setCategoryId} />
 
       {materials === null ? (
         <FlatList
