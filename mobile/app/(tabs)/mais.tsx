@@ -102,7 +102,7 @@ export default function MaisScreen() {
   if (!role || !session) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color="#111111" />
+        <ActivityIndicator color="#8B2FC9" />
       </View>
     )
   }
@@ -113,7 +113,7 @@ export default function MaisScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   center: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
-  hero: { backgroundColor: '#111111', paddingHorizontal: 24, paddingVertical: 32 },
+  hero: { backgroundColor: '#8B2FC9', paddingHorizontal: 24, paddingVertical: 32 },
   avatar: {
     width: 56,
     height: 56,

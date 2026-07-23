@@ -62,6 +62,6 @@ const styles = StyleSheet.create({
   camera: { flex: 1 },
   center: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
   restricted: { color: '#57534e', fontSize: 14, textAlign: 'center' },
-  resultBanner: { position: 'absolute', bottom: 40, left: 24, right: 24, backgroundColor: '#111111', padding: 16, borderRadius: 6 },
+  resultBanner: { position: 'absolute', bottom: 40, left: 24, right: 24, backgroundColor: '#8B2FC9', padding: 16, borderRadius: 6 },
   resultText: { color: '#ffffff', textAlign: 'center', fontWeight: '600' },
 })

@@ -154,7 +154,7 @@ export default function PortalScreen() {
   if (!role) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color="#111111" />
+        <ActivityIndicator color="#8B2FC9" />
       </View>
     )
   }
@@ -163,7 +163,7 @@ export default function PortalScreen() {
     if (!data) {
       return (
         <View style={styles.center}>
-          <ActivityIndicator color="#111111" />
+          <ActivityIndicator color="#8B2FC9" />
         </View>
       )
     }
@@ -180,14 +180,14 @@ export default function PortalScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   center: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
-  hero: { backgroundColor: '#111111', paddingHorizontal: 24, paddingVertical: 32 },
+  hero: { backgroundColor: '#8B2FC9', paddingHorizontal: 24, paddingVertical: 32 },
   label: { color: 'rgba(255,255,255,0.4)', fontSize: 11, letterSpacing: 3, marginBottom: 12 },
   name: { color: '#ffffff', fontSize: 32, fontWeight: 'bold' },
   restricted: { color: '#57534e', fontSize: 14, textAlign: 'center' },
   tabBar: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#e7e5e4' },
   tabButton: { flex: 1, paddingHorizontal: 8, paddingVertical: 12, alignItems: 'center' },
   tabButtonText: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: '#a8a29e', fontWeight: '600', textAlign: 'center' },
-  tabButtonTextActive: { color: '#111111' },
+  tabButtonTextActive: { color: '#8B2FC9' },
   body: { padding: 16 },
   tabContent: { gap: 12 },
   pastToggle: { paddingVertical: 8 },
