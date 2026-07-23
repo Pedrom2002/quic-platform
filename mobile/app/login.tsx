@@ -43,9 +43,6 @@ export default function LoginScreen() {
         importantForAccessibility="no-hide-descendants"
         pointerEvents="none"
       />
-      <View style={styles.videoWrapper} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
-        <VideoView style={styles.video} player={player} nativeControls={false} contentFit="cover" />
-      </View>
       <LinearGradient
         colors={['rgba(139,47,201,0.35)', 'transparent']}
         style={styles.glow}
@@ -53,6 +50,9 @@ export default function LoginScreen() {
         importantForAccessibility="no-hide-descendants"
         pointerEvents="none"
       />
+      <View style={styles.videoWrapper} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
+        <VideoView style={styles.video} player={player} nativeControls={false} contentFit="cover" />
+      </View>
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
