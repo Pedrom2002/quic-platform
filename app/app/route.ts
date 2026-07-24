@@ -50,13 +50,13 @@ const html = `<!doctype html>
   .hero-sub { font-size: 15px; color: var(--stone-500); max-width: 48ch; line-height: 1.65; margin: 0; }
 
   .hero-meta {
-    display: flex; gap: 40px; flex-wrap: wrap; padding: 22px 24px;
-    border-top: 1px solid var(--ink); border-bottom: 1px solid var(--stone-100);
+    display: flex; gap: 40px; flex-wrap: wrap; padding: 26px 24px;
+    border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink);
     max-width: 880px; margin: 0 auto; box-sizing: border-box;
   }
   .hero-meta div { display: flex; flex-direction: column; gap: 5px; }
-  .hero-meta .k { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--stone-400); }
-  .hero-meta .v { font-size: 13.5px; color: var(--ink); font-weight: 600; }
+  .hero-meta .k { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--purple); }
+  .hero-meta .v { font-size: 15px; color: var(--ink); font-weight: 800; }
 
   /* ── Page ── */
   .page { max-width: 880px; margin: 0 auto; padding: 0 24px 100px; }
@@ -89,7 +89,7 @@ const html = `<!doctype html>
     font-family: var(--display); font-weight: 800; font-size: 14px;
     letter-spacing: 0.03em; text-transform: uppercase; margin: 0; color: var(--purple);
   }
-  .section-head .idx { font-family: var(--serif); font-size: 15px; color: var(--purple); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .section-head .idx { font-family: var(--display); font-size: 28px; color: var(--purple); font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
 
   .section-lede {
     font-family: var(--serif); font-size: 22px; font-weight: 400; line-height: 1.4;
