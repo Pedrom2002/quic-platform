@@ -358,11 +358,6 @@ const html = `<!doctype html>
       <li>Mesmo separador Portal já usado pelos artistas, adaptado ao papel de cada conta</li>
     </ul>
   </div>
-  <div class="feature">
-    <h3>Uma app, três relações distintas</h3>
-    <p>O mesmo cliente pode comprar um bilhete para um espectáculo, pedir material técnico para outro projecto, e acompanhar o seu próprio evento QUIC, três coisas completamente diferentes entre si, sem nunca sair da mesma app nem trocar de conta.</p>
-  </div>
-
   <div class="note">
     <p><strong>Nota.</strong> Menos perguntas de estado por telefone ou WhatsApp, mais confiança de que tudo está a ser tratado, visível a qualquer momento.</p>
   </div>
