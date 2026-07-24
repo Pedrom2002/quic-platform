@@ -5,6 +5,7 @@ import { useSession } from '../../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
 import { fetchArtistPortalData, type ArtistPortalData, type ArtistAgendaItem, type ArtistClipping, type ArtistAsset } from '../../lib/artistPortal'
+import { fetchPortalData, type PortalData, type PortalItem } from '../../lib/portal'
 
 type TabKey = 'agenda' | 'clipping' | 'contents' | 'documents'
 
@@ -136,6 +137,87 @@ function ArtistPortalContent({ artist, data }: { artist: { name: string }; data:
   )
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  completed: 'Concluído',
+  in_progress: 'Em curso',
+  pending: 'Pendente',
+}
+
+function formatEventDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })
+}
+
+function ChecklistItemRow({ item }: { item: PortalItem }) {
+  const label = item.client_label ?? item.title
+  return (
+    <View style={styles.itemRow}>
+      <Text style={[styles.itemTitle, item.status === 'completed' && styles.itemTitleDone]}>{label}</Text>
+      <Text style={styles.itemStatus}>{STATUS_LABELS[item.status] ?? item.status}</Text>
+    </View>
+  )
+}
+
+function MeuEventoContent({ data }: { data: PortalData }) {
+  const insets = useSafeAreaInsets()
+  const { event, items, progress } = data
+
+  return (
+    <FlatList
+      data={items}
+      keyExtractor={i => i.id}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+      ListHeaderComponent={
+        <View style={styles.clientHero}>
+          <Text style={styles.clientLabel}>O MEU EVENTO</Text>
+          <Text style={styles.eventName}>{event.name}</Text>
+          <Text style={styles.eventMeta}>{formatEventDate(event.start_datetime)}</Text>
+          {event.venue_name && <Text style={styles.eventMeta}>{event.venue_name}</Text>}
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${progress.percent}%` }]} />
+          </View>
+          <Text style={styles.progressLabel}>{progress.completed} de {progress.total} concluídas</Text>
+        </View>
+      }
+      renderItem={({ item }) => <ChecklistItemRow item={item} />}
+      ListEmptyComponent={<Text style={styles.clientEmptyText}>Sem etapas disponíveis.</Text>}
+    />
+  )
+}
+
+type FetchState =
+  | { status: 'loading' }
+  | { status: 'loaded'; data: PortalData }
+  | { status: 'error' }
+
+function ClientPortalContent({ portalToken }: { portalToken: string }) {
+  const [fetchState, setFetchState] = useState<FetchState>({ status: 'loading' })
+
+  useEffect(() => {
+    setFetchState({ status: 'loading' })
+    fetchPortalData(process.env.EXPO_PUBLIC_APP_URL!, portalToken).then(result => {
+      setFetchState(result ? { status: 'loaded', data: result } : { status: 'error' })
+    })
+  }, [portalToken])
+
+  if (fetchState.status === 'error') {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.restricted}>Não foi possível carregar o teu evento. Tenta novamente mais tarde.</Text>
+      </View>
+    )
+  }
+
+  if (fetchState.status === 'loading') {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator color="#9333EA" />
+      </View>
+    )
+  }
+
+  return <MeuEventoContent data={fetchState.data} />
+}
+
 export default function PortalScreen() {
   const { session } = useSession()
   const [role, setRole] = useState<UserRole | null>(null)
@@ -170,6 +252,17 @@ export default function PortalScreen() {
     return <ArtistPortalContent artist={role.artist} data={data} />
   }
 
+  if (role.role === 'client') {
+    if (!role.portalToken) {
+      return (
+        <View style={styles.center}>
+          <Text style={styles.restricted}>Sem evento associado à tua conta.</Text>
+        </View>
+      )
+    }
+    return <ClientPortalContent portalToken={role.portalToken} />
+  }
+
   return (
     <View style={styles.center}>
       <Text style={styles.restricted}>Portal reservado a artistas agenciados</Text>
@@ -197,4 +290,16 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 14, fontWeight: '600', color: '#1c1917' },
   cardSubtitle: { fontSize: 12, color: '#78716c', marginTop: 2 },
   emptyText: { color: '#78716c', fontSize: 14, padding: 16 },
+  clientHero: { backgroundColor: '#9333EA', paddingHorizontal: 24, paddingTop: 60, paddingBottom: 28 },
+  clientLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, letterSpacing: 3, marginBottom: 12 },
+  eventName: { color: '#ffffff', fontSize: 26, fontWeight: 'bold', marginBottom: 6 },
+  eventMeta: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },
+  progressTrack: { height: 6, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 3, marginTop: 18, overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: '#ffffff', borderRadius: 3 },
+  progressLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 8 },
+  itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f5f5f4' },
+  itemTitle: { fontSize: 14, color: '#1c1917', flex: 1, marginRight: 12 },
+  itemTitleDone: { color: '#a8a29e', textDecorationLine: 'line-through' },
+  itemStatus: { fontSize: 11, color: '#78716c', textTransform: 'uppercase', letterSpacing: 0.5 },
+  clientEmptyText: { color: '#78716c', fontSize: 14, textAlign: 'center', padding: 24 },
 })

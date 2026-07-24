@@ -5,11 +5,15 @@ import PortalScreen from '../../../app/(tabs)/portal'
 const mockUseSession = jest.fn()
 const mockResolveUserRole = jest.fn()
 const mockFetchArtistPortalData = jest.fn()
+const mockFetchPortalData = jest.fn()
 
 jest.mock('../../../hooks/useSession', () => ({ useSession: () => mockUseSession() }))
 jest.mock('../../../lib/role', () => ({ resolveUserRole: (...args: unknown[]) => mockResolveUserRole(...args) }))
 jest.mock('../../../lib/artistPortal', () => ({
   fetchArtistPortalData: (...args: unknown[]) => mockFetchArtistPortalData(...args),
+}))
+jest.mock('../../../lib/portal', () => ({
+  fetchPortalData: (...args: unknown[]) => mockFetchPortalData(...args),
 }))
 jest.mock('../../../lib/supabase', () => ({ supabase: {} }))
 jest.mock('react-native-safe-area-context', () => ({
@@ -20,12 +24,13 @@ beforeEach(() => {
   mockUseSession.mockReset()
   mockResolveUserRole.mockReset()
   mockFetchArtistPortalData.mockReset()
+  mockFetchPortalData.mockReset()
 })
 
 describe('PortalScreen', () => {
-  it('shows restricted message for client role', async () => {
+  it('shows restricted message for staff role', async () => {
     mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
-    mockResolveUserRole.mockResolvedValue({ role: 'client' })
+    mockResolveUserRole.mockResolvedValue({ role: 'staff', member: { id: 's1', full_name: 'Staffer', role: 'admin' } })
 
     const { getByText } = render(<PortalScreen />)
 
@@ -101,6 +106,52 @@ describe('PortalScreen', () => {
       expect(queryByText('Imprensa')).toBeNull()
       expect(queryByText('Conteúdos')).toBeNull()
       expect(queryByText('Documentos')).toBeNull()
+    })
+  })
+
+  it('shows the event name, progress and checklist items for a client with a portal token', async () => {
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: 'token-abc' })
+    mockFetchPortalData.mockResolvedValue({
+      event: { id: 'event-1', name: 'Casamento Silva', venue_name: 'Quinta X', start_datetime: '2026-09-01T18:00:00.000Z', status: 'active' },
+      items: [
+        { id: 'item-1', client_label: null, title: 'Contrato assinado', status: 'completed', completed_at: '2026-08-01T10:00:00.000Z', completion_note: null, position: 0, due_at: null, category: 'Geral', files: [] },
+        { id: 'item-2', client_label: null, title: 'Menu confirmado', status: 'pending', completed_at: null, completion_note: null, position: 1, due_at: null, category: 'Geral', files: [] },
+      ],
+      progress: { total: 2, completed: 1, percent: 50 },
+    })
+
+    const { getByText } = render(<PortalScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Casamento Silva')).toBeTruthy()
+      expect(getByText('Contrato assinado')).toBeTruthy()
+      expect(getByText('Menu confirmado')).toBeTruthy()
+      expect(getByText('1 de 2 concluídas')).toBeTruthy()
+    })
+  })
+
+  it('shows an empty message when a client has no portal token', async () => {
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: null })
+
+    const { getByText } = render(<PortalScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Sem evento associado à tua conta.')).toBeTruthy()
+    })
+    expect(mockFetchPortalData).not.toHaveBeenCalled()
+  })
+
+  it('shows an error message instead of an infinite spinner when a client fetch fails', async () => {
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: 'token-abc' })
+    mockFetchPortalData.mockResolvedValue(null)
+
+    const { getByText } = render(<PortalScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Não foi possível carregar o teu evento. Tenta novamente mais tarde.')).toBeTruthy()
     })
   })
 })
