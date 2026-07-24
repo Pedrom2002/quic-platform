@@ -167,7 +167,7 @@ function MeuEventoContent({ data }: { data: PortalData }) {
       keyExtractor={i => i.id}
       contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
       ListHeaderComponent={
-        <View style={styles.clientHero}>
+        <View style={[styles.clientHero, { paddingTop: insets.top + 16 }]}>
           <Text style={styles.clientLabel}>O MEU EVENTO</Text>
           <Text style={styles.eventName}>{event.name}</Text>
           <Text style={styles.eventMeta}>{formatEventDate(event.start_datetime)}</Text>
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 14, fontWeight: '600', color: '#1c1917' },
   cardSubtitle: { fontSize: 12, color: '#78716c', marginTop: 2 },
   emptyText: { color: '#78716c', fontSize: 14, padding: 16 },
-  clientHero: { backgroundColor: '#9333EA', paddingHorizontal: 24, paddingTop: 60, paddingBottom: 28 },
+  clientHero: { backgroundColor: '#9333EA', paddingHorizontal: 24, paddingBottom: 28 },
   clientLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, letterSpacing: 3, marginBottom: 12 },
   eventName: { color: '#ffffff', fontSize: 26, fontWeight: 'bold', marginBottom: 6 },
   eventMeta: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },
