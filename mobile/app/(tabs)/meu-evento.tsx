@@ -53,10 +53,15 @@ function MeuEventoContent({ data }: { data: PortalData }) {
   )
 }
 
+type FetchState =
+  | { status: 'loading' }
+  | { status: 'loaded'; data: PortalData }
+  | { status: 'error' }
+
 export default function MeuEventoScreen() {
   const { session } = useSession()
   const [portalToken, setPortalToken] = useState<string | null | undefined>(undefined)
-  const [data, setData] = useState<PortalData | null>(null)
+  const [fetchState, setFetchState] = useState<FetchState>({ status: 'loading' })
 
   useEffect(() => {
     resolveUserRole(supabase, session).then(role => {
@@ -66,7 +71,10 @@ export default function MeuEventoScreen() {
 
   useEffect(() => {
     if (portalToken) {
-      fetchPortalData(process.env.EXPO_PUBLIC_APP_URL!, portalToken).then(setData)
+      setFetchState({ status: 'loading' })
+      fetchPortalData(process.env.EXPO_PUBLIC_APP_URL!, portalToken).then(result => {
+        setFetchState(result ? { status: 'loaded', data: result } : { status: 'error' })
+      })
     }
   }, [portalToken])
 
@@ -86,7 +94,15 @@ export default function MeuEventoScreen() {
     )
   }
 
-  if (!data) {
+  if (fetchState.status === 'error') {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.restricted}>Não foi possível carregar o teu evento. Tenta novamente mais tarde.</Text>
+      </View>
+    )
+  }
+
+  if (fetchState.status === 'loading') {
     return (
       <View style={styles.center}>
         <ActivityIndicator color="#9333EA" />
@@ -94,7 +110,7 @@ export default function MeuEventoScreen() {
     )
   }
 
-  return <MeuEventoContent data={data} />
+  return <MeuEventoContent data={fetchState.data} />
 }
 
 const styles = StyleSheet.create({

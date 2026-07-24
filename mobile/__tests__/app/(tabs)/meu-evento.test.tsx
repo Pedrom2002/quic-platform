@@ -56,4 +56,15 @@ describe('MeuEventoScreen', () => {
     })
     expect(mockFetchPortalData).not.toHaveBeenCalled()
   })
+
+  it('shows an error message instead of an infinite spinner when the fetch fails', async () => {
+    mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: 'token-abc' })
+    mockFetchPortalData.mockResolvedValue(null)
+
+    const { getByText } = render(<MeuEventoScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Não foi possível carregar o teu evento. Tenta novamente mais tarde.')).toBeTruthy()
+    })
+  })
 })
