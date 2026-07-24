@@ -145,10 +145,44 @@ const html = `<!doctype html>
   .note p strong { color: var(--ink); font-weight: 600; }
 
   @media (max-width: 640px) {
-    .hero-body { padding: 44px 0 36px; }
-    .hero-meta { gap: 24px; }
-    .flow-row { flex-direction: column; gap: 3px; }
+    .hero-inner { padding: 0 18px; }
+    .hero-body { padding: 40px 0 32px; }
+    .hero-sub { font-size: 14px; }
+    .hero-meta { gap: 20px; padding: 22px 18px; }
+    .hero-meta .v { font-size: 14px; }
+
+    .page { padding: 0 18px 80px; }
+    .intro { padding: 44px 0 4px; }
+    .intro p { font-size: 15px; }
+
+    .toc { margin: 36px 0 0; }
+    .toc a { margin-right: 20px; font-size: 11.5px; }
+
+    .section-head { margin: 64px 0 0; flex-wrap: wrap; gap: 8px 16px; }
+    .section-head .idx { font-size: 22px; }
+    .section-lede { font-size: 19px; padding-left: 14px; margin: 22px 0 20px; }
+
+    .screenshot { max-width: 220px; margin: 0 auto 36px; }
+    .login-shot { padding: 32px 18px 4px; }
+    .login-shot .screenshot { max-width: 180px; }
+
+    .flow-row { flex-direction: column; gap: 3px; padding: 13px 0; }
     .flow-row .ft { width: auto; }
+
+    .feature { padding: 22px 0; }
+    .feature p, .feature li { max-width: none; }
+
+    .colophon { margin-top: 72px; }
+  }
+
+  @media (max-width: 380px) {
+    .hero-inner { padding: 0 14px; }
+    .hero-meta { padding: 20px 14px; gap: 16px; }
+    .page { padding: 0 14px 64px; }
+    .screenshot { max-width: 190px; }
+    .login-shot { padding: 28px 14px 4px; }
+    .login-shot .screenshot { max-width: 160px; }
+    .section-lede { font-size: 17px; }
   }
 
   .colophon {
@@ -325,8 +359,8 @@ const html = `<!doctype html>
     </ul>
   </div>
   <div class="feature">
-    <h3>Um único sítio</h3>
-    <p>Junto dos outros três pilares, o cliente tem num único sítio tudo o que a QUIC lhe oferece: bilhetes, pedidos de material, e o acompanhamento do seu próprio evento.</p>
+    <h3>Uma app, três relações distintas</h3>
+    <p>O mesmo cliente pode comprar um bilhete para um espectáculo, pedir material técnico para outro projecto, e acompanhar o seu próprio evento QUIC, três coisas completamente diferentes entre si, sem nunca sair da mesma app nem trocar de conta.</p>
   </div>
 
   <div class="note">
