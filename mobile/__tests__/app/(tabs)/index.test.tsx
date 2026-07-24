@@ -31,6 +31,15 @@ describe('InicioScreen', () => {
     })
   })
 
+  it('shows the header title', async () => {
+    mockFetchPublicEvents.mockResolvedValue([])
+    const { getByText } = render(<InicioScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Próximos eventos da QUIC:')).toBeTruthy()
+    })
+  })
+
   it('renders a list of events', async () => {
     mockFetchPublicEvents.mockResolvedValue([
       {
