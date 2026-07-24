@@ -1,5 +1,8 @@
 jest.mock('react-native-worklets', () => require('react-native-worklets/lib/module/mock'))
 jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'))
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}))
 
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
@@ -36,7 +39,7 @@ describe('InicioScreen', () => {
     const { getByText } = render(<InicioScreen />)
 
     await waitFor(() => {
-      expect(getByText('Próximos eventos da QUIC:')).toBeTruthy()
+      expect(getByText('Próximos eventos')).toBeTruthy()
     })
   })
 

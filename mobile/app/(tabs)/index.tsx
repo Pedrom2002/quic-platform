@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'
-import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native'
+import { View, Text, FlatList, Pressable, StyleSheet, Platform } from 'react-native'
 import { useRouter } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { supabase } from '../../lib/supabase'
 import { fetchPublicEvents, type PublicEvent } from '../../lib/events'
 import { EventCard } from '../../components/EventCard'
 
 function Header() {
+  const insets = useSafeAreaInsets()
   return (
-    <View style={styles.header}>
-      <Text style={styles.headerTitle}>Próximos eventos da QUIC:</Text>
+    <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+      <Text style={styles.title}>Próximos eventos</Text>
     </View>
   )
 }
@@ -52,8 +54,14 @@ export default function InicioScreen() {
 
 const styles = StyleSheet.create({
   list: { padding: 16 },
-  header: { paddingBottom: 12 },
-  headerTitle: { fontSize: 20, fontWeight: '800', color: '#9333EA' },
+  header: { paddingHorizontal: 4, paddingBottom: 16 },
+  title: {
+    fontSize: 27,
+    fontWeight: '700',
+    color: '#1c1917',
+    textAlign: 'center',
+    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia' }),
+  },
   empty: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
   emptyText: { color: '#78716c', fontSize: 14 },
 })
