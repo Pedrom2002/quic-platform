@@ -286,18 +286,18 @@ const html = `<!doctype html>
   <p class="section-lede">O evento do cliente, sempre visível, sem precisar de perguntar.</p>
 
   <div class="flow">
-    <div class="flow-row"><span class="fi">01</span><span class="ft">Recebe o link</span><span class="fd">Assim que o evento é criado</span></div>
+    <div class="flow-row"><span class="fi">01</span><span class="ft">Entra na app com a sua conta</span><span class="fd">A app reconhece automaticamente o evento associado ao seu email</span></div>
     <div class="flow-row"><span class="fi">02</span><span class="ft">Acompanha a checklist</span><span class="fd">Vê só as etapas marcadas como visíveis, actualizadas ao vivo</span></div>
     <div class="flow-row"><span class="fi">03</span><span class="ft">Recebe notificações</span><span class="fd">Aviso automático sempre que a equipa conclui uma etapa relevante</span></div>
     <div class="flow-row"><span class="fi">04</span><span class="ft">Chega ao dia do evento</span><span class="fd">Checklist completa serve como confirmação de que tudo foi tratado</span></div>
   </div>
 
   <div class="feature">
-    <h3>Acesso pessoal</h3>
-    <p>Um link pessoal e intransmissível, sem conta nem passwords, abre o espaço de acompanhamento do cliente: progresso do evento em tempo real, ficheiros partilhados pela equipa, e imprensa relacionada.</p>
+    <h3>Acesso pela conta da app</h3>
+    <p>Não é preciso link nem código à parte: o cliente entra na app QUIC com a sua conta normal, e assim que o seu email corresponde a um evento QUIC, o separador Portal mostra automaticamente o progresso desse evento em tempo real.</p>
     <ul>
       <li>Notificações automáticas sempre que há novidades, com confirmação de entrega registada</li>
-      <li>Acesso protegido por token único</li>
+      <li>Mesmo separador Portal já usado pelos artistas, adaptado ao papel de cada conta</li>
     </ul>
   </div>
   <div class="feature">
