@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { View, Text, Image, ScrollView, StyleSheet, Pressable, Linking } from 'react-native'
+import { View, Text, Image, ScrollView, StyleSheet, Pressable, Linking, Alert } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { fetchEventById, type PublicEvent } from '../../lib/events'
@@ -28,7 +28,15 @@ export default function EventDetailScreen() {
     const accessToken = sessionData.session?.access_token
     if (!accessToken) return
     const url = await createCheckoutSession(process.env.EXPO_PUBLIC_APP_URL!, ticketTypeId, 1, accessToken)
-    if (url) Linking.openURL(url)
+    if (!url) {
+      Alert.alert('Erro', 'Não foi possível iniciar o pagamento. Tenta novamente.')
+      return
+    }
+    try {
+      await Linking.openURL(url)
+    } catch {
+      Alert.alert('Erro', 'Não foi possível abrir a página de pagamento.')
+    }
   }
 
   if (event === undefined) return null

@@ -310,8 +310,8 @@ export default async function EventDetailPage({
             <Ticket className="w-5 h-5 text-pink-600" />
           </div>
           <div>
-            <p className="text-slate-800 font-medium">Bilhetes</p>
-            <p className="text-slate-400 text-xs">{ticketTypeCount ?? 0} tipos de bilhete</p>
+            <p className="text-slate-800 font-medium">Tipos de bilhete</p>
+            <p className="text-slate-400 text-xs">{ticketTypeCount ?? 0} tipos configurados</p>
           </div>
         </Link>
       </div>

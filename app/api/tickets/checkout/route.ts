@@ -66,6 +66,11 @@ export async function POST(request: Request) {
   const { STRIPE_SECRET_KEY } = getEnv()
   const stripe = new Stripe(STRIPE_SECRET_KEY)
 
+  // Só a app mobile compra bilhetes hoje (ver spec), por isso o redirect é
+  // sempre o deep link. Se um caller web (sessão por cookie) alguma vez
+  // comprar por aqui, precisa de um destino web dedicado — não construído
+  // agora porque não há consumidor real, evita apontar para uma rota que
+  // não existe.
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     line_items: [

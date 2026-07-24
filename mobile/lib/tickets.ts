@@ -41,6 +41,30 @@ export async function fetchMyTickets(supabase: SupabaseClient): Promise<MyTicket
   return data as unknown as MyTicket[]
 }
 
+export interface SessionTicketsResult {
+  tickets: MyTicket[]
+  // true quando a consulta falhou de verdade (auth/rede/RLS) — distinto de
+  // "ainda sem bilhetes" (tickets: [], error: false), para quem chama poder
+  // parar de tentar em vez de confundir falha com pagamento por processar.
+  error: boolean
+}
+
+export async function fetchTicketsBySession(
+  supabase: SupabaseClient,
+  sessionId: string
+): Promise<SessionTicketsResult> {
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+  if (userError || !userData.user) return { tickets: [], error: true }
+
+  const { data, error } = await supabase
+    .from('tickets')
+    .select('id, qr_code, status, event_id')
+    .eq('stripe_checkout_session_id', sessionId)
+
+  if (error) return { tickets: [], error: true }
+  return { tickets: (data ?? []) as unknown as MyTicket[], error: false }
+}
+
 export async function createCheckoutSession(
   appBaseUrl: string,
   ticketTypeId: string,
