@@ -190,7 +190,7 @@ const html = `<!doctype html>
   <p class="section-lede">Da descoberta do evento à entrada validada à porta, sem sair da app.</p>
 
   <div class="flow">
-    <div class="flow-row"><span class="fi">01</span><span class="ft">Descobre o evento</span><span class="fd">Lista de próximos eventos, sem precisar de conta para ver</span></div>
+    <div class="flow-row"><span class="fi">01</span><span class="ft">Descobre o evento</span><span class="fd">Lista de próximos eventos, sempre à vista</span></div>
     <div class="flow-row"><span class="fi">02</span><span class="ft">Escolhe o bilhete</span><span class="fd">Tipos e preços à vista na própria página do evento</span></div>
     <div class="flow-row"><span class="fi">03</span><span class="ft">Paga com Stripe</span><span class="fd">Pagamento seguro, sem digitar dados de cartão na app QUIC</span></div>
     <div class="flow-row"><span class="fi">04</span><span class="ft">Bilhete fica guardado</span><span class="fd">Confirmação automática, código QR sempre disponível</span></div>
@@ -199,7 +199,7 @@ const html = `<!doctype html>
 
   <div class="feature">
     <h3>Descoberta e venda</h3>
-    <p>Qualquer pessoa abre a app e vê de imediato os próximos eventos QUIC, sem precisar de conta. Ao entrar num evento, encontra o que precisa para decidir: capa, data, local, descrição, e os bilhetes disponíveis com o preço já calculado. A compra fecha-se ali mesmo, num pagamento Stripe.</p>
+    <p>Qualquer pessoa abre a app e vê de imediato os próximos eventos QUIC. Ao entrar num evento, encontra o que precisa para decidir: capa, data, local, descrição, e os bilhetes disponíveis com o preço já calculado. A compra fecha-se ali mesmo, num pagamento Stripe.</p>
     <ul>
       <li>Nunca são digitados dados de cartão dentro da app QUIC</li>
       <li>Depois de pagar, a pessoa regressa à app sozinha, já com o bilhete confirmado</li>
@@ -286,7 +286,7 @@ const html = `<!doctype html>
   <p class="section-lede">O evento do cliente, sempre visível, sem precisar de perguntar.</p>
 
   <div class="flow">
-    <div class="flow-row"><span class="fi">01</span><span class="ft">Recebe o link</span><span class="fd">Assim que o evento é criado, sem precisar de conta</span></div>
+    <div class="flow-row"><span class="fi">01</span><span class="ft">Recebe o link</span><span class="fd">Assim que o evento é criado</span></div>
     <div class="flow-row"><span class="fi">02</span><span class="ft">Acompanha a checklist</span><span class="fd">Vê só as etapas marcadas como visíveis, actualizadas ao vivo</span></div>
     <div class="flow-row"><span class="fi">03</span><span class="ft">Recebe notificações</span><span class="fd">Aviso automático sempre que a equipa conclui uma etapa relevante</span></div>
     <div class="flow-row"><span class="fi">04</span><span class="ft">Chega ao dia do evento</span><span class="fd">Checklist completa serve como confirmação de que tudo foi tratado</span></div>
