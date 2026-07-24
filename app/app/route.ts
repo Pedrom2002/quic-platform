@@ -172,7 +172,6 @@ const html = `<!doctype html>
 <div class="hero-meta">
   <div><span class="k">Plataformas</span><span class="v">iOS e Android</span></div>
   <div><span class="k">Pilares</span><span class="v">Bilhetes · Catálogo · Artistas · Clientes</span></div>
-  <div><span class="k">Estado</span><span class="v">Em produção</span></div>
 </div>
 
 <div class="page">
