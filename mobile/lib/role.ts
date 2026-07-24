@@ -25,13 +25,17 @@ async function resolveClientPortalToken(
   supabase: SupabaseClient,
   email: string
 ): Promise<string | null> {
-  const { data: clientData } = await supabase
+  // clients.email has no UNIQUE constraint in the schema, so .maybeSingle()
+  // can hit its "multiple rows" case and return an error instead of throwing.
+  // Treat any query error the same as "no client found" rather than leaving
+  // it unchecked (which would otherwise silently swallow a real failure).
+  const { data: clientData, error: clientError } = await supabase
     .from('clients')
     .select('id')
     .eq('email', email)
     .maybeSingle()
 
-  if (!clientData) return null
+  if (clientError || !clientData) return null
 
   const { data: eventClientsData } = await supabase
     .from('event_clients')
@@ -39,6 +43,7 @@ async function resolveClientPortalToken(
     .eq('client_id', clientData.id)
     .not('events.portal_token', 'is', null)
     .order('events(start_datetime)', { ascending: false })
+    .limit(20)
 
   const rows = (eventClientsData ?? []) as unknown as EventPortalRow[]
   const usable = rows.find(isPortalTokenUsable)
