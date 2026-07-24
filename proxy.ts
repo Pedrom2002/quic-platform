@@ -227,6 +227,7 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const isPublic =
+    pathname === '/app' ||
     pathname.startsWith('/portal/') ||
     pathname.startsWith('/auth/') ||
     pathname.startsWith('/portugal') ||
