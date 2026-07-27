@@ -75,7 +75,7 @@ export default function PedidoPage() {
           <p className="text-sm text-muted-foreground">
             Adicione materiais a partir do catálogo para pedir um orçamento.
           </p>
-          <ButtonLink href="/stock" className="mt-2 bg-red-600 text-white hover:bg-red-700">
+          <ButtonLink href="/stock" className="mt-2 bg-[#9333EA] text-white hover:bg-[#7e22ce]">
             Ver catálogo
           </ButtonLink>
         </div>
@@ -204,7 +204,7 @@ export default function PedidoPage() {
                 <Button
                   type="submit"
                   disabled={isPending || !isReady}
-                  className="bg-black text-white hover:bg-black/90"
+                  className="bg-[#9333EA] text-white hover:bg-[#7e22ce]"
                 >
                   {isPending ? 'A enviar...' : 'Enviar pedido'}
                 </Button>

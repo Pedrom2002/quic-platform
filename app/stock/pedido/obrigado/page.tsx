@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function ObrigadoPage() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-4 px-4 py-24 text-center">
-      <CircleCheckIcon aria-hidden="true" className="size-12 text-red-600" />
+      <CircleCheckIcon aria-hidden="true" className="size-12 text-[#9333EA]" />
       <h1 className="font-heading text-3xl font-semibold tracking-tight">
         Pedido enviado
       </h1>
@@ -18,7 +18,7 @@ export default function ObrigadoPage() {
         Obrigado! Recebemos o seu pedido de orçamento e entraremos em contacto
         brevemente.
       </p>
-      <ButtonLink href="/stock" className="mt-2 bg-black text-white hover:bg-black/90">
+      <ButtonLink href="/stock" className="mt-2 bg-[#9333EA] text-white hover:bg-[#7e22ce]">
         Voltar ao catálogo
       </ButtonLink>
     </div>

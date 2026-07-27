@@ -27,7 +27,7 @@ export function PublicHeader() {
             <ShoppingCartIcon className="size-4" />
             <span className="hidden sm:inline">Pedido</span>
             {isReady && totalItems > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-xs font-semibold tabular-nums text-white">
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#9333EA] px-1 text-xs font-semibold tabular-nums text-white">
                 {totalItems}
               </span>
             )}
