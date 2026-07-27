@@ -44,7 +44,7 @@ export function CatalogInfinite({
       if (params.categoria) search.set('categoria', params.categoria)
       search.set('page', String(nextPage))
 
-      const res = await fetch(`/api/stock/catalog?${search.toString()}`)
+      const res = await fetch(`/api/rentals/catalog?${search.toString()}`)
       if (!res.ok) return
       const json = (await res.json()) as {
         materials: StockCatalogMaterial[]

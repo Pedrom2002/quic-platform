@@ -30,7 +30,7 @@ export function CatalogFilters({
       params.set('categoria', categoryId)
     }
     const query = params.toString()
-    router.replace(query ? `/stock?${query}` : '/stock')
+    router.replace(query ? `/rentals?${query}` : '/rentals')
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {

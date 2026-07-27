@@ -119,7 +119,7 @@ Página pública de boas-vindas para clientes (`/guia-cliente`).
 
 ### Gestão de stock/inventário
 
-Catálogo de materiais (`/stock`, público) e área de gestão (`/dashboard/stock`, autenticada, `role IN ('admin','manager')`) para o inventário de equipamento de produção de eventos: categorias, materiais (com foto e disponibilidade), eventos (saídas/devoluções de material), ledger de movimentos, e pedidos de orçamento submetidos pelo catálogo público.
+Catálogo de materiais (`/rentals`, público) e área de gestão (`/dashboard/stock`, autenticada, `role IN ('admin','manager')`) para o inventário de equipamento de produção de eventos: categorias, materiais (com foto e disponibilidade), eventos (saídas/devoluções de material), ledger de movimentos, e pedidos de orçamento submetidos pelo catálogo público.
 
 Migrado de um repositório standalone anterior (Stock-Plat) em 3 sub-projetos: migração de auth/RLS, catálogo público, área admin. Todas as tabelas usam o prefixo `stock_` (ver secção "Base de dados partilhada" abaixo).
 
@@ -229,7 +229,7 @@ O projeto Supabase é **partilhado** com um segundo produto de stock/inventário
 
 `supabase db push` **não é utilizável** para este domínio (histórico de migrações partilhado entre dois repos originalmente separados). As migrações `0034`-`0037` em `supabase/migrations/` documentam o schema mas já foram aplicadas manualmente (SQL Editor / Management API) — não reaplicar.
 
-Código consumidor: `app/stock/*` (catálogo público), `app/dashboard/stock/*` (área admin), `lib/stock/*` (tipos, validação Zod, formatadores, mailto).
+Código consumidor: `app/rentals/*` (catálogo público), `app/dashboard/stock/*` (área admin), `lib/stock/*` (tipos, validação Zod, formatadores, mailto).
 
 ---
 

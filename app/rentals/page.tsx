@@ -20,7 +20,7 @@ export default async function CatalogoPage({
   const supabase = await createClient()
 
   // Infinite scroll starts at page 1; further pages load client-side via
-  // /api/stock/catalog. The server only renders the first PAGE_SIZE items.
+  // /api/rentals/catalog. The server only renders the first PAGE_SIZE items.
   let materialsQuery = supabase
     .from('stock_catalog_materials')
     .select('*', { count: 'exact' })

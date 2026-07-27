@@ -81,7 +81,7 @@ export default async function StockDashboardPage() {
           </p>
         </div>
         <ButtonLink
-          href="/stock"
+          href="/rentals"
           variant="outline"
           target="_blank"
           rel="noopener noreferrer"

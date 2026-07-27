@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ShoppingCartIcon } from 'lucide-react'
 
-import { useCart } from '@/components/stock-cart-provider'
+import { useCart } from '@/components/rentals-cart-provider'
 import { ButtonLink } from '@/components/ui/button'
 
 export function PublicHeader() {
@@ -13,17 +13,17 @@ export function PublicHeader() {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4 md:px-6">
-        <Link href="/stock" className="flex items-center gap-2">
+        <Link href="/rentals" className="flex items-center gap-2">
           <Image src="/logo-preto.png" alt="Quic" width={90} height={32} priority />
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">
           <Link
-            href="/stock"
+            href="/rentals"
             className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             Catálogo
           </Link>
-          <ButtonLink href="/stock/pedido" variant="outline" size="sm">
+          <ButtonLink href="/rentals/pedido" variant="outline" size="sm">
             <ShoppingCartIcon className="size-4" />
             <span className="hidden sm:inline">Pedido</span>
             {isReady && totalItems > 0 && (

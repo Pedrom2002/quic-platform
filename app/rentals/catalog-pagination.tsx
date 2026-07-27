@@ -22,7 +22,7 @@ function buildHref(
 }
 
 export function CatalogPagination({
-  basePath = '/stock',
+  basePath = '/rentals',
   params,
   page,
   totalPages,
