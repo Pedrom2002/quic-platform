@@ -68,7 +68,7 @@ export function CatalogInfinite({
           void loadMore()
         }
       },
-      { rootMargin: '400px' }
+      { rootMargin: '100px' }
     )
     observer.observe(node)
     return () => observer.disconnect()
