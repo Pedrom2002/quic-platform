@@ -12,7 +12,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "audit:deps": "npm audit --omit=dev --audit-level=high",
+    "audit:deps": "npm audit --omit=dev --audit-level=critical",
     "db:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > types/database.ts"
   },
   "dependencies": {
