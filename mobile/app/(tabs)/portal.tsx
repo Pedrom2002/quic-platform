@@ -5,7 +5,7 @@ import { useSession } from '../../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
 import { fetchArtistPortalData, type ArtistPortalData, type ArtistAgendaItem, type ArtistClipping, type ArtistAsset } from '../../lib/artistPortal'
-import { fetchPortalData, type PortalData, type PortalItem } from '../../lib/portal'
+import { fetchPortalData, type PortalData, type PortalItem, type PortalReport, type PortalItemFile } from '../../lib/portal'
 
 type TabKey = 'agenda' | 'clipping' | 'contents' | 'documents'
 
@@ -53,7 +53,14 @@ function AgendaTab({ upcoming, past }: { upcoming: ArtistAgendaItem[]; past: Art
   )
 }
 
-function ClippingTab({ clippings }: { clippings: ArtistClipping[] }) {
+interface ClippingLike {
+  id: string
+  title: string
+  url: string
+  source: string | null
+}
+
+function ClippingTab({ clippings }: { clippings: ClippingLike[] }) {
   if (clippings.length === 0) {
     return <Text style={styles.emptyText}>Sem imprensa.</Text>
   }
@@ -157,30 +164,89 @@ function ChecklistItemRow({ item }: { item: PortalItem }) {
   )
 }
 
+type ClientTabKey = 'checklist' | 'press' | 'documents'
+
+function DocumentsAndReportsTab({ reports, eventFiles }: { reports: PortalReport[]; eventFiles: PortalItemFile[] }) {
+  if (reports.length === 0 && eventFiles.length === 0) {
+    return <Text style={styles.emptyText}>Sem documentos.</Text>
+  }
+  return (
+    <View style={styles.tabContent}>
+      {reports.map(report => (
+        <Pressable key={report.id} style={styles.card} onPress={() => Linking.openURL(report.blob_url)}>
+          <Text style={styles.cardTitle}>{report.title}</Text>
+          <Text style={styles.cardSubtitle}>{formatDate(report.created_at)}</Text>
+        </Pressable>
+      ))}
+      {eventFiles.map(file => (
+        <Pressable key={file.id} style={styles.card} onPress={() => Linking.openURL(file.blob_url)}>
+          <Text style={styles.cardTitle}>{file.file_name}</Text>
+        </Pressable>
+      ))}
+    </View>
+  )
+}
+
+function ChecklistTab({ data }: { data: PortalData }) {
+  const { items, progress } = data
+  return (
+    <View style={styles.tabContent}>
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, { width: `${progress.percent}%` }]} />
+      </View>
+      <Text style={styles.progressLabel}>{progress.completed} de {progress.total} concluídas</Text>
+      {items.length === 0 ? (
+        <Text style={styles.emptyText}>Sem etapas disponíveis.</Text>
+      ) : (
+        items.map(item => <ChecklistItemRow key={item.id} item={item} />)
+      )}
+    </View>
+  )
+}
+
 function MeuEventoContent({ data }: { data: PortalData }) {
   const insets = useSafeAreaInsets()
-  const { event, items, progress } = data
+  const { event, articles, reports, eventFiles } = data
+  const [activeTab, setActiveTab] = useState<ClientTabKey>('checklist')
+
+  const tabs: Array<{ key: ClientTabKey; label: string }> = [
+    { key: 'checklist', label: 'Checklist' },
+    ...(articles.length > 0 ? [{ key: 'press' as const, label: 'Imprensa' }] : []),
+    ...(reports.length > 0 || eventFiles.length > 0 ? [{ key: 'documents' as const, label: 'Documentos' }] : []),
+  ]
 
   return (
-    <FlatList
-      data={items}
-      keyExtractor={i => i.id}
-      contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
-      ListHeaderComponent={
-        <View style={[styles.clientHero, { paddingTop: insets.top + 16 }]}>
-          <Text style={styles.clientLabel}>O MEU EVENTO</Text>
-          <Text style={styles.eventName}>{event.name}</Text>
-          <Text style={styles.eventMeta}>{formatEventDate(event.start_datetime)}</Text>
-          {event.venue_name && <Text style={styles.eventMeta}>{event.venue_name}</Text>}
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${progress.percent}%` }]} />
-          </View>
-          <Text style={styles.progressLabel}>{progress.completed} de {progress.total} concluídas</Text>
+    <View style={styles.container}>
+      <View style={[styles.clientHero, { paddingTop: insets.top + 16 }]}>
+        <Text style={styles.clientLabel}>O MEU EVENTO</Text>
+        <Text style={styles.eventName}>{event.name}</Text>
+        <Text style={styles.eventMeta}>{formatEventDate(event.start_datetime)}</Text>
+        {event.venue_name && <Text style={styles.eventMeta}>{event.venue_name}</Text>}
+      </View>
+
+      {tabs.length > 1 && (
+        <View style={styles.tabBar}>
+          {tabs.map(tab => (
+            <Pressable key={tab.key} onPress={() => setActiveTab(tab.key)} style={styles.tabButton}>
+              <Text style={[styles.tabButtonText, activeTab === tab.key && styles.tabButtonTextActive]}>
+                {tab.label}
+              </Text>
+            </Pressable>
+          ))}
         </View>
-      }
-      renderItem={({ item }) => <ChecklistItemRow item={item} />}
-      ListEmptyComponent={<Text style={styles.clientEmptyText}>Sem etapas disponíveis.</Text>}
-    />
+      )}
+
+      <FlatList
+        data={[activeTab]}
+        keyExtractor={item => item}
+        contentContainerStyle={[styles.body, { paddingBottom: insets.bottom + 16 }]}
+        renderItem={() => {
+          if (activeTab === 'press') return <ClippingTab clippings={articles} />
+          if (activeTab === 'documents') return <DocumentsAndReportsTab reports={reports} eventFiles={eventFiles} />
+          return <ChecklistTab data={data} />
+        }}
+      />
+    </View>
   )
 }
 
@@ -290,7 +356,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 14, fontWeight: '600', color: '#1c1917' },
   cardSubtitle: { fontSize: 12, color: '#78716c', marginTop: 2 },
   emptyText: { color: '#78716c', fontSize: 14, padding: 16 },
-  clientHero: { backgroundColor: '#9333EA', paddingHorizontal: 24, paddingBottom: 28 },
+  clientHero: { backgroundColor: '#9333EA', paddingHorizontal: 24, paddingBottom: 20 },
   clientLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, letterSpacing: 3, marginBottom: 12 },
   eventName: { color: '#ffffff', fontSize: 26, fontWeight: 'bold', marginBottom: 6 },
   eventMeta: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },

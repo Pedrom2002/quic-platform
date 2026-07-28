@@ -119,6 +119,9 @@ describe('PortalScreen', () => {
         { id: 'item-2', client_label: null, title: 'Menu confirmado', status: 'pending', completed_at: null, completion_note: null, position: 1, due_at: null, category: 'Geral', files: [] },
       ],
       progress: { total: 2, completed: 1, percent: 50 },
+      articles: [],
+      reports: [],
+      eventFiles: [],
     })
 
     const { getByText } = render(<PortalScreen />)
@@ -129,6 +132,81 @@ describe('PortalScreen', () => {
       expect(getByText('Menu confirmado')).toBeTruthy()
       expect(getByText('1 de 2 concluídas')).toBeTruthy()
     })
+  })
+
+  it('shows an internal tab bar with Imprensa when the client has articles', async () => {
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: 'token-abc' })
+    mockFetchPortalData.mockResolvedValue({
+      event: { id: 'event-1', name: 'Casamento Silva', venue_name: 'Quinta X', start_datetime: '2026-09-01T18:00:00.000Z', status: 'active' },
+      items: [],
+      progress: { total: 0, completed: 0, percent: 0 },
+      articles: [
+        { id: 'art-1', title: 'Casamento é destaque na imprensa', url: 'https://noticia.pt/1', source: 'Jornal X', created_at: '2026-08-02T10:00:00.000Z' },
+      ],
+      reports: [],
+      eventFiles: [],
+    })
+
+    const { getByText, queryByText } = render(<PortalScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Casamento Silva')).toBeTruthy()
+    })
+    expect(queryByText('Imprensa')).toBeTruthy()
+
+    fireEvent.press(getByText('Imprensa'))
+    expect(getByText('Casamento é destaque na imprensa')).toBeTruthy()
+    expect(getByText('Jornal X')).toBeTruthy()
+  })
+
+  it('shows a Documentos tab combining reports and event files', async () => {
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: 'token-abc' })
+    mockFetchPortalData.mockResolvedValue({
+      event: { id: 'event-1', name: 'Casamento Silva', venue_name: 'Quinta X', start_datetime: '2026-09-01T18:00:00.000Z', status: 'active' },
+      items: [],
+      progress: { total: 0, completed: 0, percent: 0 },
+      articles: [],
+      reports: [
+        { id: 'rep-1', title: 'Relatório técnico', type: 'technical', file_name: 'relatorio.pdf', file_size: 2048, mime_type: 'application/pdf', blob_url: 'https://x/relatorio.pdf', created_at: '2026-08-03T10:00:00.000Z' },
+      ],
+      eventFiles: [
+        { id: 'ef-1', file_name: 'planta.pdf', file_size: 1024, mime_type: 'application/pdf', blob_url: 'https://x/planta.pdf' },
+      ],
+    })
+
+    const { getByText } = render(<PortalScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Casamento Silva')).toBeTruthy()
+    })
+    expect(getByText('Documentos')).toBeTruthy()
+
+    fireEvent.press(getByText('Documentos'))
+    expect(getByText('Relatório técnico')).toBeTruthy()
+    expect(getByText('planta.pdf')).toBeTruthy()
+  })
+
+  it('does not show a tab bar when the client has no articles, reports or files', async () => {
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: 'token-abc' })
+    mockFetchPortalData.mockResolvedValue({
+      event: { id: 'event-1', name: 'Casamento Silva', venue_name: 'Quinta X', start_datetime: '2026-09-01T18:00:00.000Z', status: 'active' },
+      items: [],
+      progress: { total: 0, completed: 0, percent: 0 },
+      articles: [],
+      reports: [],
+      eventFiles: [],
+    })
+
+    const { getByText, queryByText } = render(<PortalScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Casamento Silva')).toBeTruthy()
+    })
+    expect(queryByText('Imprensa')).toBeNull()
+    expect(queryByText('Documentos')).toBeNull()
   })
 
   it('shows an empty message when a client has no portal token', async () => {
