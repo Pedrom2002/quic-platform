@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ShoppingCartIcon } from 'lucide-react'
 
-import { useCart } from '@/components/rentals-cart-provider'
+import { useCart } from '@/components/stock-cart-provider'
 import { ButtonLink } from '@/components/ui/button'
 
 export function PublicHeader() {

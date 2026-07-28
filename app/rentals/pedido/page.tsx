@@ -52,7 +52,7 @@ export default function PedidoPage() {
       }
 
       clear()
-      router.push('/stock/pedido/obrigado')
+      router.push('/rentals/pedido/obrigado')
     })
   }
 

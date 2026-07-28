@@ -13,7 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-import { CatalogPagination } from '@/app/stock/catalog-pagination'
+import { CatalogPagination } from '@/app/rentals/catalog-pagination'
 import { getInitials } from './get-initials'
 import { MaterialsFilters } from './materials-filters'
 
