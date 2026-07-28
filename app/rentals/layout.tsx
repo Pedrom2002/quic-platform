@@ -1,7 +1,17 @@
+import './quic-brand.css'
+
+import { Poppins } from 'next/font/google'
+
 import { CartProvider } from '@/components/stock-cart-provider'
 import { Toaster } from '@/components/ui/sonner'
 
 import { PublicHeader } from './public-header'
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  variable: '--font-rentals-sans',
+})
 
 export default function StockLayout({
   children,
@@ -10,7 +20,7 @@ export default function StockLayout({
 }>) {
   return (
     <CartProvider>
-      <div className="flex min-h-screen flex-col">
+      <div className={`${poppins.variable} flex min-h-screen flex-col font-sans`} style={{ fontFamily: 'var(--font-rentals-sans)' }}>
         <PublicHeader />
         <main className="flex flex-1 flex-col">{children}</main>
         <footer className="border-t">
