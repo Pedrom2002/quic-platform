@@ -367,5 +367,4 @@ const styles = StyleSheet.create({
   itemTitle: { fontSize: 14, color: '#1c1917', flex: 1, marginRight: 12 },
   itemTitleDone: { color: '#a8a29e', textDecorationLine: 'line-through' },
   itemStatus: { fontSize: 11, color: '#78716c', textTransform: 'uppercase', letterSpacing: 0.5 },
-  clientEmptyText: { color: '#78716c', fontSize: 14, textAlign: 'center', padding: 24 },
 })
