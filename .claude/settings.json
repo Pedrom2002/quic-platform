@@ -22,7 +22,6 @@
       "PowerShell(Get-Content \"$env:USERPROFILE\\\\.config\\\\vercel\\\\auth.json\" -ErrorAction SilentlyContinue; Get-Content \"$env:USERPROFILE\\\\.vercel\\\\auth.json\" -ErrorAction SilentlyContinue)",
       "Bash(xargs -I{} basename {})",
       "Bash(node scripts/upload-videos-to-blob.mjs)",
-      "Bash(curl -s \"https://blob.vercel-storage.com/api/v1/list\" -H \"Authorization: Bearer vercel_blob_rw_0q7KycaoTkbUtqSJ_oVK4zHUIZOvFwZ9nWNYeapvsMmjZWo\")",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\P02\\\\Downloads\\\\quic-plat\" -Filter \"__tests__\" -Directory)",
       "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --msg-filter 'sed \"/^Co-Authored-By: Claude/d\"' 08ebca4cbb2a715eb215e4b3727eb552c1d724c3..HEAD)",
       "Bash(xargs -I{} git update-ref -d {})"

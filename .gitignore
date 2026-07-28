@@ -56,3 +56,12 @@ docs/superpowers/
 /supabase/.temp/
 /supabase/.branches/
 .worktrees/
+.claude/settings.local.json
+.claude/hookify.*.local.md
+
+# scratch/dump files at repo root (not app assets, keep out of context/tracking)
+/*.mp4
+/*.mov
+/*.pdf
+/*_screenshot.*
+UsersP02*/
