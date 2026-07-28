@@ -1,6 +1,7 @@
 import { View, Text, Image, StyleSheet } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import type { PublicEvent } from '../lib/events'
+import { QUIC_MAGENTA } from '../lib/theme'
 
 function formatEventDate(iso: string): string {
   const date = new Date(iso)
@@ -56,5 +57,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     alignSelf: 'flex-start',
   },
-  ticketButtonText: { color: '#9333EA', fontSize: 12, fontWeight: '700' },
+  ticketButtonText: { color: QUIC_MAGENTA, fontSize: 12, fontWeight: '700' },
 })

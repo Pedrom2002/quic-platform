@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { useSession } from '../../hooks/useSession'
 import { resolveUserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
+import { QUIC_MAGENTA } from '../../lib/theme'
 
 export default function TabsLayout() {
   const { session } = useSession()
@@ -21,7 +22,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#9333EA',
+        tabBarActiveTintColor: QUIC_MAGENTA,
         tabBarInactiveTintColor: '#a8a29e',
         tabBarLabelStyle: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 },
       }}

@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons'
 import Animated, { FadeIn } from 'react-native-reanimated'
 import type { CatalogMaterial } from '../lib/catalog'
 import { useCart } from '../hooks/useCart'
+import { QUIC_MAGENTA } from '../lib/theme'
 
 export function MaterialCard({
   material,
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#9333EA',
+    backgroundColor: QUIC_MAGENTA,
     justifyContent: 'center',
     alignItems: 'center',
   },

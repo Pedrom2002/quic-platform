@@ -6,6 +6,7 @@ import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
 import { fetchArtistPortalData, type ArtistPortalData, type ArtistAgendaItem, type ArtistClipping, type ArtistAsset } from '../../lib/artistPortal'
 import { fetchPortalData, type PortalData, type PortalItem, type PortalReport, type PortalItemFile } from '../../lib/portal'
+import { QUIC_MAGENTA } from '../../lib/theme'
 
 type TabKey = 'agenda' | 'clipping' | 'contents' | 'documents'
 
@@ -276,7 +277,7 @@ function ClientPortalContent({ portalToken }: { portalToken: string }) {
   if (fetchState.status === 'loading') {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color="#9333EA" />
+        <ActivityIndicator color={QUIC_MAGENTA} />
       </View>
     )
   }
@@ -302,7 +303,7 @@ export default function PortalScreen() {
   if (!role) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color="#9333EA" />
+        <ActivityIndicator color={QUIC_MAGENTA} />
       </View>
     )
   }
@@ -311,7 +312,7 @@ export default function PortalScreen() {
     if (!data) {
       return (
         <View style={styles.center}>
-          <ActivityIndicator color="#9333EA" />
+          <ActivityIndicator color={QUIC_MAGENTA} />
         </View>
       )
     }
@@ -339,14 +340,14 @@ export default function PortalScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   center: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
-  hero: { backgroundColor: '#9333EA', paddingHorizontal: 24, paddingVertical: 32 },
+  hero: { backgroundColor: QUIC_MAGENTA, paddingHorizontal: 24, paddingVertical: 32 },
   label: { color: 'rgba(255,255,255,0.4)', fontSize: 11, letterSpacing: 3, marginBottom: 12 },
   name: { color: '#ffffff', fontSize: 32, fontWeight: 'bold' },
   restricted: { color: '#57534e', fontSize: 14, textAlign: 'center' },
   tabBar: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#e7e5e4' },
   tabButton: { flex: 1, paddingHorizontal: 8, paddingVertical: 12, alignItems: 'center' },
   tabButtonText: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: '#a8a29e', fontWeight: '600', textAlign: 'center' },
-  tabButtonTextActive: { color: '#9333EA' },
+  tabButtonTextActive: { color: QUIC_MAGENTA },
   body: { padding: 16 },
   tabContent: { gap: 12 },
   pastToggle: { paddingVertical: 8 },
@@ -356,7 +357,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 14, fontWeight: '600', color: '#1c1917' },
   cardSubtitle: { fontSize: 12, color: '#78716c', marginTop: 2 },
   emptyText: { color: '#78716c', fontSize: 14, padding: 16 },
-  clientHero: { backgroundColor: '#9333EA', paddingHorizontal: 24, paddingBottom: 20 },
+  clientHero: { backgroundColor: QUIC_MAGENTA, paddingHorizontal: 24, paddingBottom: 20 },
   clientLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, letterSpacing: 3, marginBottom: 12 },
   eventName: { color: '#ffffff', fontSize: 26, fontWeight: 'bold', marginBottom: 6 },
   eventMeta: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },

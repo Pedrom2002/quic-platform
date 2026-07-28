@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { supabase } from '../lib/supabase'
 import { AuthTextInput } from '../components/AuthTextInput'
+import { QUIC_MAGENTA } from '../lib/theme'
 
 export default function LoginScreen() {
   const router = useRouter()
@@ -87,12 +88,12 @@ const styles = StyleSheet.create({
   form: { position: 'absolute', left: 24, right: 24, gap: 14 },
   error: { color: '#FCA5A5', fontSize: 13 },
   button: {
-    backgroundColor: '#9333EA',
+    backgroundColor: QUIC_MAGENTA,
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 10,
-    shadowColor: '#9333EA',
+    shadowColor: QUIC_MAGENTA,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
     shadowRadius: 16,

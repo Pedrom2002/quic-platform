@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '../../lib/supabase'
 import { fetchTicketsBySession } from '../../lib/tickets'
+import { QUIC_MAGENTA } from '../../lib/theme'
 
 // O webhook do Stripe cria o bilhete de forma assincrona ao confirmar o
 // pagamento, o que pode chegar depois deste ecra abrir. Tenta algumas vezes
@@ -109,7 +110,7 @@ export default function TicketPurchaseSuccessScreen() {
 
       {state === 'loading' && (
         <>
-          <ActivityIndicator size="large" color="#9333EA" />
+          <ActivityIndicator size="large" color={QUIC_MAGENTA} />
           <Text style={styles.subtitle}>A confirmar o teu pagamento...</Text>
         </>
       )}
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#9333EA',
+    backgroundColor: QUIC_MAGENTA,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
@@ -132,6 +133,6 @@ const styles = StyleSheet.create({
   iconCircleError: { backgroundColor: '#b91c1c' },
   title: { fontSize: 20, fontWeight: '700', color: '#1c1917' },
   subtitle: { fontSize: 14, color: '#78716c', textAlign: 'center' },
-  button: { marginTop: 16, backgroundColor: '#9333EA', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14 },
+  button: { marginTop: 16, backgroundColor: QUIC_MAGENTA, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14 },
   buttonText: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
 })

@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSession } from '../../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
+import { QUIC_MAGENTA } from '../../lib/theme'
 
 function roleLabel(role: UserRole): string {
   if (role.role === 'artist') return 'Artista'
@@ -102,7 +103,7 @@ export default function MaisScreen() {
   if (!role || !session) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color="#9333EA" />
+        <ActivityIndicator color={QUIC_MAGENTA} />
       </View>
     )
   }
@@ -113,7 +114,7 @@ export default function MaisScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   center: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
-  hero: { backgroundColor: '#9333EA', paddingHorizontal: 24, paddingVertical: 32 },
+  hero: { backgroundColor: QUIC_MAGENTA, paddingHorizontal: 24, paddingVertical: 32 },
   avatar: {
     width: 56,
     height: 56,

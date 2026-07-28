@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useCart } from '../hooks/useCart'
 import { supabase } from '../lib/supabase'
 import { validateQuote, submitQuote } from '../lib/quote'
+import { QUIC_MAGENTA } from '../lib/theme'
 
 export default function PedidoScreen() {
   const router = useRouter()
@@ -135,11 +136,11 @@ const styles = StyleSheet.create({
   input: { marginHorizontal: 20, marginBottom: 10, backgroundColor: '#f5f5f4', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: '#1c1917' },
   messageInput: { minHeight: 100, textAlignVertical: 'top' },
   error: { color: '#b91c1c', fontSize: 13, paddingHorizontal: 20, marginBottom: 8 },
-  submitButton: { marginHorizontal: 20, marginTop: 8, backgroundColor: '#9333EA', borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
+  submitButton: { marginHorizontal: 20, marginTop: 8, backgroundColor: QUIC_MAGENTA, borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
   submitButtonText: { color: '#ffffff', fontSize: 15, fontWeight: '700' },
   emptyContainer: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24, gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: '700', color: '#1c1917' },
   emptyText: { fontSize: 14, color: '#78716c', textAlign: 'center' },
-  emptyButton: { marginTop: 12, backgroundColor: '#9333EA', borderRadius: 12, paddingHorizontal: 20, paddingVertical: 12 },
+  emptyButton: { marginTop: 12, backgroundColor: QUIC_MAGENTA, borderRadius: 12, paddingHorizontal: 20, paddingVertical: 12 },
   emptyButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '600' },
 })

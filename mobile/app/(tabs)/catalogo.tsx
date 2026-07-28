@@ -9,6 +9,7 @@ import { CategoryPicker } from '../../components/CategoryPicker'
 import { MaterialCard } from '../../components/MaterialCard'
 import { MaterialCardSkeleton } from '../../components/MaterialCardSkeleton'
 import { useCart } from '../../hooks/useCart'
+import { QUIC_MAGENTA } from '../../lib/theme'
 
 const PAGE_SIZE = 20
 const SKELETON_COUNT = 6
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     bottom: 16,
-    backgroundColor: '#9333EA',
+    backgroundColor: QUIC_MAGENTA,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

@@ -3,6 +3,7 @@ import { Modal, Pressable, Text, View, FlatList, StyleSheet } from 'react-native
 import { Ionicons } from '@expo/vector-icons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { StockCategory } from '../lib/catalog'
+import { QUIC_MAGENTA } from '../lib/theme'
 
 type PickerItem = { id: string | null; name: string }
 
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0efee',
     paddingHorizontal: 8,
   },
-  gridItemActive: { backgroundColor: '#9333EA' },
+  gridItemActive: { backgroundColor: QUIC_MAGENTA },
   gridItemText: { fontSize: 13, color: '#44403c', fontWeight: '600' },
   gridItemTextActive: { color: '#ffffff' },
 })
