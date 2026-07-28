@@ -8,13 +8,22 @@ describe('fetchPortalData', () => {
     global.fetch = originalFetch
   })
 
-  it('returns portal data on a successful response', async () => {
+  it('returns portal data including articles, reports and eventFiles on a successful response', async () => {
     const payload = {
       event: { id: 'event-1', name: 'Casamento Silva', venue_name: 'Quinta X', start_datetime: '2026-09-01T18:00:00.000Z', status: 'active' },
       items: [
         { id: 'item-1', client_label: null, title: 'Contrato assinado', status: 'completed', completed_at: '2026-08-01T10:00:00.000Z', completion_note: null, position: 0, due_at: null, category: 'Geral', files: [] },
       ],
       progress: { total: 4, completed: 1, percent: 25 },
+      articles: [
+        { id: 'article-1', title: 'Casamento Silva sai na revista X', url: 'https://example.com/artigo', source: 'Revista X', created_at: '2026-08-05T10:00:00.000Z' },
+      ],
+      reports: [
+        { id: 'report-1', title: 'Relatório técnico', type: 'technical', file_name: 'relatorio.pdf', file_size: 102400, mime_type: 'application/pdf', blob_url: 'https://blob.example.com/relatorio.pdf', created_at: '2026-08-06T10:00:00.000Z' },
+      ],
+      eventFiles: [
+        { id: 'file-1', file_name: 'planta.pdf', file_size: 51200, mime_type: 'application/pdf', blob_url: 'https://blob.example.com/planta.pdf' },
+      ],
     }
     const fetchMock = jest.fn().mockResolvedValue({
       ok: true,
