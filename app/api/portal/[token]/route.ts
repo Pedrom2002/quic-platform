@@ -16,5 +16,8 @@ export async function GET(
     event: data.event,
     items: data.items,
     progress: data.progress,
+    articles: data.articles,
+    reports: data.reports,
+    eventFiles: data.eventFiles,
   })
 }

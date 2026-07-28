@@ -20,7 +20,15 @@ const mockPortalData = {
   eventDateStr: '1 de janeiro de 2026',
   heroVideo: null,
   contentVideo: null,
-  eventFiles: [],
+  eventFiles: [
+    { id: 'ef-1', file_name: 'planta.pdf', file_size: 1024, mime_type: 'application/pdf', blob_url: 'https://x/planta.pdf' },
+  ],
+  articles: [
+    { id: 'art-1', title: 'Festival é destaque na imprensa', url: 'https://noticia.pt/1', source: 'Jornal X', created_at: '2026-01-05T10:00:00Z' },
+  ],
+  reports: [
+    { id: 'rep-1', title: 'Relatório técnico', type: 'technical' as const, file_name: 'relatorio.pdf', file_size: 2048, mime_type: 'application/pdf', blob_url: 'https://x/relatorio.pdf', created_at: '2026-01-06T10:00:00Z' },
+  ],
 }
 
 describe('GET /api/portal/[token]', () => {
@@ -50,5 +58,21 @@ describe('GET /api/portal/[token]', () => {
     const req = new Request('http://localhost/api/portal/my-token-123')
     await GET(req, { params: Promise.resolve({ token: 'my-token-123' }) })
     expect(getPortalData).toHaveBeenCalledWith('my-token-123')
+  })
+
+  it('returns articles, reports and eventFiles alongside the existing fields', async () => {
+    vi.mocked(getPortalData).mockResolvedValue(mockPortalData as never)
+    const req = new Request('http://localhost/api/portal/good')
+    const res = await GET(req, { params: Promise.resolve({ token: 'good' }) })
+    const body = (res as unknown as {
+      body: {
+        articles: Array<{ id: string; title: string }>
+        reports: Array<{ id: string; title: string }>
+        eventFiles: Array<{ id: string; file_name: string }>
+      }
+    }).body
+    expect(body.articles).toEqual(mockPortalData.articles)
+    expect(body.reports).toEqual(mockPortalData.reports)
+    expect(body.eventFiles).toEqual(mockPortalData.eventFiles)
   })
 })
