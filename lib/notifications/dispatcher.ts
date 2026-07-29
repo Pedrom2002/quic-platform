@@ -265,7 +265,7 @@ export async function dispatchStartNotificationForItem(ctx: StartDispatchContext
 
   // Collect (channel, language) pairs needed for template lookup
   const templateKeys = new Set<string>()
-  const hardcodedChannels: NotificationChannel[] = ['email', 'portal', 'sms']
+  const hardcodedChannels: NotificationChannel[] = ['email', 'portal', 'sms', 'push']
   for (const ec of eventClients as unknown as (EventClient & { client: Client })[]) {
     const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
     const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
@@ -374,7 +374,7 @@ export async function dispatchClientUpdate(ctx: ClientUpdateContext): Promise<{ 
   const eventDate = format(new Date(ctx.event.start_datetime), "d 'de' MMMM 'de' yyyy", { locale: pt })
 
   const templateKeys = new Set<string>()
-  const hardcodedChannels: NotificationChannel[] = ['email', 'sms', 'portal']
+  const hardcodedChannels: NotificationChannel[] = ['email', 'sms', 'portal', 'push']
   for (const ec of eventClients as unknown as (EventClient & { client: Client })[]) {
     const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
     const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
