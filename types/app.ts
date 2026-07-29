@@ -1,6 +1,6 @@
 // Application DTOs, enums, and join shapes for Supabase query results
 
-export type NotificationChannel = 'email' | 'whatsapp' | 'sms' | 'portal'
+export type NotificationChannel = 'email' | 'whatsapp' | 'sms' | 'portal' | 'push'
 export type EventStatus = 'planning' | 'active' | 'completed' | 'cancelled'
 export type ChecklistItemStatus = 'pending' | 'in_progress' | 'completed' | 'skipped'
 export type TeamRole = 'admin' | 'manager' | 'member'

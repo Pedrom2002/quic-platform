@@ -594,6 +594,35 @@ export type Database = {
           },
         ]
       }
+      client_push_tokens: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          id: string
+          token: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          id?: string
+          token: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_push_tokens_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           company: string | null
@@ -3186,6 +3215,7 @@ export type MessageTemplate = Database['public']['Tables']['message_templates'][
 export type Event = Database['public']['Tables']['events']['Row']
 export type EventTeamAssignment = Database['public']['Tables']['event_team_assignments']['Row']
 export type Client = Database['public']['Tables']['clients']['Row']
+export type ClientPushToken = Database['public']['Tables']['client_push_tokens']['Row']
 export type EventClient = Database['public']['Tables']['event_clients']['Row']
 export type EventChecklistItem = Database['public']['Tables']['event_checklist_items']['Row']
 export type NotificationJob = Database['public']['Tables']['notification_jobs']['Row']
