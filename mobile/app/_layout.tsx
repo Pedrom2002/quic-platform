@@ -4,6 +4,7 @@ import { Slot, useRouter } from 'expo-router'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useSession } from '../hooks/useSession'
 import { CartProvider } from '../hooks/useCart'
+import { registerPushNotificationTapHandler } from '../lib/pushNavigation'
 
 if (Platform.OS !== 'web') {
   Appearance.setColorScheme('light')
@@ -27,6 +28,11 @@ export default function RootLayout() {
       router.replace('/login')
     }
   }, [loading, session, router])
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return
+    return registerPushNotificationTapHandler(router)
+  }, [router])
 
   return (
     <SafeAreaProvider>
