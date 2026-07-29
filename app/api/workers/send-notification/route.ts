@@ -4,12 +4,13 @@ import { verifyQStashSignature } from '@/lib/qstash/verify'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail, buildEmailHtml } from '@/lib/notifications/channels/email'
 import { sendSms } from '@/lib/notifications/channels/sms'
+import { sendPushNotifications } from '@/lib/notifications/channels/push'
 
 const payloadSchema = z.object({
   job_id: z.string().min(1),
   event_id: z.string().min(1),
   client_id: z.string().min(1),
-  channel: z.enum(['email', 'whatsapp', 'sms', 'portal']),
+  channel: z.enum(['email', 'whatsapp', 'sms', 'portal', 'push']),
   rendered_subject: z.string().nullable(),
   rendered_body: z.string(),
   client_email: z.string().nullable(),
@@ -57,6 +58,25 @@ export async function POST(request: Request) {
         to: payload.client_phone,
         message: payload.rendered_body,
       })
+    } else if (payload.channel === 'push') {
+      const { data: tokens } = await supabase
+        .from('client_push_tokens')
+        .select('token')
+        .eq('client_id', payload.client_id)
+
+      if (tokens?.length) {
+        const { data: event } = await supabase
+          .from('events')
+          .select('name')
+          .eq('id', payload.event_id)
+          .single()
+
+        providerId = await sendPushNotifications({
+          tokens: tokens.map(t => t.token),
+          title: event?.name ?? 'Atualização do seu evento',
+          body: payload.rendered_body,
+        })
+      }
     }
 
     await supabase
@@ -68,7 +88,7 @@ export async function POST(request: Request) {
       notification_job_id: payload.job_id,
       event_type: 'sent',
       channel: payload.channel,
-      provider: payload.channel === 'email' || payload.channel === 'sms' ? 'brevo' : 'twilio',
+      provider: payload.channel === 'email' || payload.channel === 'sms' ? 'brevo' : payload.channel === 'push' ? 'expo' : 'twilio',
       provider_message_id: providerId,
     })
 
