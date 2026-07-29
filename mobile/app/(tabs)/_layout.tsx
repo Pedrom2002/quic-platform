@@ -5,6 +5,7 @@ import { useSession } from '../../hooks/useSession'
 import { resolveUserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
 import { QUIC_MAGENTA } from '../../lib/theme'
+import { registerForPushNotifications } from '../../lib/pushNotifications'
 
 export default function TabsLayout() {
   const { session } = useSession()
@@ -15,6 +16,10 @@ export default function TabsLayout() {
     resolveUserRole(supabase, session).then(role => {
       setIsArtist(role.role === 'artist')
       setClientPortalToken(role.role === 'client' ? role.portalToken : null)
+
+      if (role.role === 'client' && session?.access_token) {
+        registerForPushNotifications(process.env.EXPO_PUBLIC_APP_URL!, session.access_token)
+      }
     })
   }, [session])
 
