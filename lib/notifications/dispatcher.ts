@@ -19,7 +19,7 @@ async function insertAndEnqueue(
     event_id: string
     checklist_item_id: string | null
     client_id: string
-    channel: 'email' | 'whatsapp' | 'sms' | 'portal'
+    channel: 'email' | 'whatsapp' | 'sms' | 'portal' | 'push'
     message_template_id: string
     rendered_subject: string | null
     rendered_body: string
@@ -48,7 +48,7 @@ async function insertAndEnqueue(
   const workerUrl = `${appUrl}/api/workers/send-notification`
   const draftByKey = new Map<string, (typeof jobDrafts)[number]>()
   for (const draft of jobDrafts) {
-    draftByKey.set(`${draft.client_id}:${draft.channel}:${draft.checklist_item_id}`, draft)
+    draftByKey.set(`${draft.client_id}:${draft.channel}:${draft.checklist_item_id ?? ''}`, draft)
   }
 
   let qstash: import('@upstash/qstash').Client | null = null
@@ -225,7 +225,7 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
           event_id: ctx.event.id,
           checklist_item_id: ctx.item.id,
           client_id: client.id,
-          channel: channel as 'email' | 'whatsapp' | 'sms' | 'portal',
+          channel: channel as 'email' | 'whatsapp' | 'sms' | 'portal' | 'push',
           message_template_id: msgTemplate.id,
           rendered_subject: msgTemplate.subject ? renderTemplate(msgTemplate.subject, templateVars) : null,
           rendered_body: renderTemplate(msgTemplate.body_template, templateVars),
@@ -299,7 +299,7 @@ export async function dispatchStartNotificationForItem(ctx: StartDispatchContext
     event_id: string
     checklist_item_id: string
     client_id: string
-    channel: 'email' | 'whatsapp' | 'sms' | 'portal'
+    channel: 'email' | 'whatsapp' | 'sms' | 'portal' | 'push'
     message_template_id: string
     rendered_subject: string | null
     rendered_body: string
@@ -338,7 +338,7 @@ export async function dispatchStartNotificationForItem(ctx: StartDispatchContext
         event_id: ctx.event.id,
         checklist_item_id: ctx.item.id,
         client_id: client.id,
-        channel: channel as 'email' | 'whatsapp' | 'sms' | 'portal',
+        channel: channel as 'email' | 'whatsapp' | 'sms' | 'portal' | 'push',
         message_template_id: msgTemplate.id,
         rendered_subject: renderedSubject,
         rendered_body: renderedBody,
@@ -408,7 +408,7 @@ export async function dispatchClientUpdate(ctx: ClientUpdateContext): Promise<{ 
     event_id: string
     checklist_item_id: string | null
     client_id: string
-    channel: 'email' | 'whatsapp' | 'sms' | 'portal'
+    channel: 'email' | 'whatsapp' | 'sms' | 'portal' | 'push'
     message_template_id: string
     rendered_subject: string | null
     rendered_body: string
@@ -447,7 +447,7 @@ export async function dispatchClientUpdate(ctx: ClientUpdateContext): Promise<{ 
         event_id: ctx.event.id,
         checklist_item_id: null,
         client_id: client.id,
-        channel: channel as 'email' | 'whatsapp' | 'sms' | 'portal',
+        channel: channel as 'email' | 'whatsapp' | 'sms' | 'portal' | 'push',
         message_template_id: msgTemplate.id,
         rendered_subject: renderedSubject,
         rendered_body: renderedBody,
