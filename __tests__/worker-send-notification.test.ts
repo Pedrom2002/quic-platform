@@ -5,6 +5,7 @@ const mockSendPush = vi.fn()
 const mockUpdate = vi.fn()
 const mockInsertLog = vi.fn()
 const mockSelectTokens = vi.fn()
+const mockDeleteTokens = vi.fn()
 
 vi.mock('@/lib/qstash/verify', () => ({ verifyQStashSignature: () => mockVerify() }))
 vi.mock('@/lib/notifications/channels/push', () => ({
@@ -19,7 +20,10 @@ vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
     from: (table: string) => {
       if (table === 'client_push_tokens') {
-        return { select: () => ({ eq: mockSelectTokens }) }
+        return {
+          select: () => ({ eq: mockSelectTokens }),
+          delete: () => ({ eq: () => ({ in: mockDeleteTokens }) }),
+        }
       }
       if (table === 'events') {
         return { select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { name: 'Casamento Silva' } }) }) }) }
@@ -63,10 +67,11 @@ function makeRequest(payload: unknown) {
 describe('POST /api/workers/send-notification — canal push', () => {
   beforeEach(() => {
     mockVerify.mockReset().mockResolvedValue(true)
-    mockSendPush.mockReset().mockResolvedValue('receipt-1')
+    mockSendPush.mockReset().mockResolvedValue({ id: 'receipt-1', invalidTokens: [] })
     mockUpdate.mockReset().mockResolvedValue({ error: null })
     mockInsertLog.mockReset().mockResolvedValue({ error: null })
     mockSelectTokens.mockReset()
+    mockDeleteTokens.mockReset().mockResolvedValue({ error: null })
   })
 
   it('envia push para todos os tokens do cliente', async () => {
@@ -89,5 +94,25 @@ describe('POST /api/workers/send-notification — canal push', () => {
 
     expect(response.status).toBe(200)
     expect(mockSendPush).not.toHaveBeenCalled()
+  })
+
+  it('apaga tokens invalidos reportados pela Expo Push API', async () => {
+    mockSelectTokens.mockResolvedValue({ data: [{ token: 'ExponentPushToken[a]' }, { token: 'ExponentPushToken[dead]' }] })
+    mockSendPush.mockResolvedValue({ id: 'receipt-1', invalidTokens: ['ExponentPushToken[dead]'] })
+
+    const response = await POST(makeRequest(makePayload()))
+
+    expect(response.status).toBe(200)
+    expect(mockDeleteTokens).toHaveBeenCalledWith('token', ['ExponentPushToken[dead]'])
+  })
+
+  it('não tenta apagar nada quando não há tokens invalidos', async () => {
+    mockSelectTokens.mockResolvedValue({ data: [{ token: 'ExponentPushToken[a]' }] })
+    mockSendPush.mockResolvedValue({ id: 'receipt-1', invalidTokens: [] })
+
+    const response = await POST(makeRequest(makePayload()))
+
+    expect(response.status).toBe(200)
+    expect(mockDeleteTokens).not.toHaveBeenCalled()
   })
 })

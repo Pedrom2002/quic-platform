@@ -71,11 +71,20 @@ export async function POST(request: Request) {
           .eq('id', payload.event_id)
           .single()
 
-        providerId = await sendPushNotifications({
+        const result = await sendPushNotifications({
           tokens: tokens.map(t => t.token),
           title: event?.name ?? 'Atualização do seu evento',
           body: payload.rendered_body,
         })
+        providerId = result.id
+
+        if (result.invalidTokens.length > 0) {
+          await supabase
+            .from('client_push_tokens')
+            .delete()
+            .eq('client_id', payload.client_id)
+            .in('token', result.invalidTokens)
+        }
       }
     }
 
