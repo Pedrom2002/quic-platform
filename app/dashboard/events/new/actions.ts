@@ -30,7 +30,7 @@ export async function saveChecklistDraftsAction(
     .single()
   if (!event) throw new Error('Evento não encontrado')
 
-  const DEFAULT_RULES = [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'sms', 'portal'] }]
+  const DEFAULT_RULES = [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'sms', 'portal', 'push'] }]
 
   const rows = items.map((item, index) => ({
     id: item.id,
@@ -109,7 +109,7 @@ export async function createEventAction(data: CreateEventInput): Promise<{ event
       description: item.description,
       position: item.position,
       is_client_visible: item.is_client_visible,
-      notification_rules: [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'sms', 'portal'] }],
+      notification_rules: [{ trigger: 'on_complete', delay_minutes: 0, audience: 'all_clients', channels: ['email', 'sms', 'portal', 'push'] }],
     }))
     await supabase.from('event_checklist_items').insert(items)
   }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { useParams } from 'next/navigation'
-import { Plus, Mail, Phone, Trash2, UserCircle, Globe, Upload, MessageSquare } from 'lucide-react'
+import { Plus, Mail, Phone, Trash2, UserCircle, Globe, Upload, MessageSquare, Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -253,6 +253,7 @@ export default function EventClientsPage() {
                       { key: 'email', icon: <Mail className="w-3 h-3" />, label: 'Email', on: 'border-blue-200 bg-blue-50 text-blue-600', off: 'border-slate-200 bg-white text-slate-400' },
                       { key: 'sms', icon: <MessageSquare className="w-3 h-3" />, label: 'SMS', on: 'border-green-200 bg-green-50 text-green-600', off: 'border-slate-200 bg-white text-slate-400', disabled: !c.phone },
                       { key: 'portal', icon: <Globe className="w-3 h-3" />, label: 'Portal', on: 'border-violet-200 bg-violet-50 text-violet-600', off: 'border-slate-200 bg-white text-slate-400' },
+                      { key: 'push', icon: <Bell className="w-3 h-3" />, label: 'Push', on: 'border-amber-200 bg-amber-50 text-amber-600', off: 'border-slate-200 bg-white text-slate-400' },
                     ].map(({ key, icon, label, on, off, disabled }) => {
                       const channels: string[] = prefs.channels ?? ['email', 'portal']
                       const active = channels.includes(key)
