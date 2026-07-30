@@ -40,6 +40,8 @@ export async function assignTeamMemberAction(
 ): Promise<void> {
   const { supabase, user, member } = await requireOrgAuth()
 
+  if (member.role !== 'admin' && member.role !== 'manager') throw new Error('Sem permissão')
+
   const owned = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owned) throw new Error('Evento não encontrado')
 
@@ -75,6 +77,8 @@ export async function removeTeamMemberAction(
   assignmentId: string
 ): Promise<void> {
   const { supabase, member } = await requireOrgAuth()
+
+  if (member.role !== 'admin' && member.role !== 'manager') throw new Error('Sem permissão')
 
   const owned = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owned) throw new Error('Evento não encontrado')
