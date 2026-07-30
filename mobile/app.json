@@ -33,7 +33,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Precisamos de acesso à câmara para ler o código QR dos bilhetes."
+          "cameraPermission": "Precisamos de acesso à câmara para ler o código QR dos bilhetes.",
+          "microphonePermission": "Esta app não grava áudio. A permissão é pedida pela biblioteca de câmara mas nunca é usada."
         }
       ]
     ]
