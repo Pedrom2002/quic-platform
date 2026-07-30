@@ -1,7 +1,14 @@
 import { redirect } from 'next/navigation'
+import { Poppins } from 'next/font/google'
 import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import { Toaster } from '@/components/ui/sonner'
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-dashboard-sans',
+})
 
 type MemberWithOrg = {
   full_name: string
@@ -22,7 +29,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .single()
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className={`${poppins.variable} flex h-screen bg-slate-50 font-sans`} style={{ fontFamily: 'var(--font-dashboard-sans)' }}>
       <a href="#main-content" className="skip-link">
         Saltar para o conteúdo
       </a>
