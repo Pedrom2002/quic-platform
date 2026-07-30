@@ -54,12 +54,15 @@ export async function submitQuoteRequest(
   // RPC atómica (security definer): insere pedido + itens numa transação,
   // aplica rate-limit e validação. anon tem execute; sem sessão. Qualquer
   // raise dentro da função faz rollback (sem pedidos órfãos).
+  // p_phone/p_event_date/p_message aceitam NULL em runtime (colunas
+  // nullable na função Postgres), mas o gerador de tipos do Supabase
+  // nao marca parametros RPC como nullable — cast justificado.
   const { error } = await supabase.rpc('stock_submit_quote', {
     p_name: parsed.data.name,
     p_email: parsed.data.email,
-    p_phone: parsed.data.phone ?? null,
-    p_event_date: parsed.data.event_date ?? null,
-    p_message: parsed.data.message ?? null,
+    p_phone: (parsed.data.phone ?? null) as string,
+    p_event_date: (parsed.data.event_date ?? null) as string,
+    p_message: (parsed.data.message ?? null) as string,
     p_items: parsed.data.items,
   })
 

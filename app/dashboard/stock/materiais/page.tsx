@@ -69,12 +69,11 @@ export default async function MateriaisPage({
     : { data: [] }
 
   const availability = new Map<string, number>(
-    (availabilityData ?? []).map(
-      (row: { material_id: string; disponivel: number }) => [
-        row.material_id,
-        row.disponivel,
-      ]
-    )
+    (availabilityData ?? [])
+      .filter((row): row is { material_id: string; disponivel: number } =>
+        row.material_id !== null && row.disponivel !== null
+      )
+      .map(row => [row.material_id, row.disponivel])
   )
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE))
   const paginationParams = {

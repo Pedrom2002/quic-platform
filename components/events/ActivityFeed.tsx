@@ -40,7 +40,8 @@ function eventLabel(event: TimelineEvent): string {
     return `Notificação via ${CHANNEL_PT[event.channel] ?? event.channel} para ${event.client_name} — ${STATUS_PT[event.status] ?? event.status}`
   }
   const action = event.action === 'added' ? 'adicionado' : 'removido'
-  return `${event.client_name} ${action} como ${ROLE_PT[event.role] ?? event.role}`
+  const roleLabel = event.role ? (ROLE_PT[event.role] ?? event.role) : 'membro'
+  return `${event.client_name} ${action} como ${roleLabel}`
 }
 
 function EventIcon({ type }: { type: TimelineEvent['type'] }) {
@@ -130,9 +131,11 @@ export function ActivityFeed({ eventId, initialEvents }: ActivityFeedProps) {
             <EventIcon type={event.type} />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-slate-700">{eventLabel(event)}</p>
-              <p className="text-xs text-slate-400 mt-0.5">
-                {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true, locale: pt })}
-              </p>
+              {event.timestamp && (
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true, locale: pt })}
+                </p>
+              )}
             </div>
           </li>
         ))}

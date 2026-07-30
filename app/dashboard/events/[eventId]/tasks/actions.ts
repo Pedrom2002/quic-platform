@@ -4,6 +4,7 @@ import { getOrgAuth, assertEventOwnership } from '@/lib/supabase/actions'
 import { put } from '@vercel/blob'
 import { MAX_FILE_SIZE } from '@/schemas/file.schema'
 import type { ChecklistItemStatus, EventTask, EventTaskNote, EventTaskFileLink, EventFileWithUploader } from '@/types/app'
+import type { TablesUpdate } from '@/types/database'
 
 export async function loadEventTasksAction(eventId: string): Promise<EventTask[]> {
   const auth = await getOrgAuth()
@@ -90,12 +91,7 @@ export async function updateTaskAction(
   if (fields.title !== undefined && (fields.title.trim().length === 0 || fields.title.length > 300)) return null
   if (fields.description !== undefined && fields.description !== null && fields.description.length > 2000) return null
 
-  const updateData: Record<string, unknown> = { ...fields }
-  if (fields.status === 'completed') {
-    updateData.completed_at = new Date().toISOString()
-  } else if (fields.status !== undefined) {
-    updateData.completed_at = null
-  }
+  const updateData: TablesUpdate<'event_tasks'> = { ...fields }
 
   const { data } = await supabase
     .from('event_tasks')
@@ -153,11 +149,13 @@ export async function reorderTasksAction(
 
   if (!rows.length) return true
 
-  const { error } = await supabase
-    .from('event_tasks')
-    .upsert(rows, { onConflict: 'id' })
+  // update por linha em vez de upsert: os ids ja foram validados acima
+  // como pertencentes a este evento, isto nunca insere, so reordena.
+  const results = await Promise.all(
+    rows.map(row => supabase.from('event_tasks').update({ position: row.position }).eq('id', row.id))
+  )
 
-  return !error
+  return results.every(r => !r.error)
 }
 
 export async function addTaskNoteAction(
@@ -375,11 +373,13 @@ export async function loadChecklistItemsForLinkingAction(eventId: string) {
   if (!auth) return []
   const { supabase, member } = auth
 
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) return []
+
   const { data } = await supabase
     .from('event_checklist_items')
     .select('id, title, client_label, status')
     .eq('event_id', eventId)
-    .eq('organization_id', member.organization_id)
     .order('position', { ascending: true })
 
   return data ?? []

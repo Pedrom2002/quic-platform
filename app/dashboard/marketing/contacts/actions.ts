@@ -8,9 +8,17 @@ export async function createList(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado')
 
+  const { data: member } = await supabase
+    .from('team_members')
+    .select('organization_id')
+    .eq('auth_user_id', user.id)
+    .single()
+  if (!member) throw new Error('Não autenticado')
+
   await supabase.from('marketing_lists').insert({
     name: formData.get('name') as string,
     created_by: user.id,
+    organization_id: member.organization_id,
   })
 
   revalidatePath('/dashboard/marketing/contacts')
@@ -24,6 +32,13 @@ export async function addContact(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, message: 'Não autenticado' }
 
+  const { data: member } = await supabase
+    .from('team_members')
+    .select('organization_id')
+    .eq('auth_user_id', user.id)
+    .single()
+  if (!member) return { ok: false, message: 'Não autenticado' }
+
   const list_id = formData.get('list_id') as string
   const email = (formData.get('email') as string)?.trim().toLowerCase()
   const name = (formData.get('name') as string)?.trim() || null
@@ -36,6 +51,7 @@ export async function addContact(
 
   const { error } = await supabase.from('marketing_contacts').insert({
     list_id, email, name, company, role,
+    organization_id: member.organization_id,
   })
 
   if (error) {

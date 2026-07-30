@@ -21,7 +21,7 @@ export async function createCampaign(formData: FormData) {
   // do utilizador antes de criar/disparar a campanha.
   const { data: list } = await supabase
     .from('marketing_lists')
-    .select('id')
+    .select('id, organization_id')
     .eq('id', listId)
     .single()
   if (!list) throw new Error('Lista não encontrada')
@@ -29,6 +29,7 @@ export async function createCampaign(formData: FormData) {
   const { data: campaign, error } = await supabase.from('marketing_campaigns').insert({
     name: formData.get('name') as string,
     list_id: listId,
+    organization_id: list.organization_id,
     created_by: user.id,
     subject_template: formData.get('subject_template') as string,
     body_template: formData.get('body_template') as string,
@@ -58,7 +59,7 @@ async function dispatchCampaignSends(campaignId: string, senderUserId: string) {
 
   const { data: campaign } = await adminSupabase
     .from('marketing_campaigns')
-    .select('list_id')
+    .select('list_id, organization_id')
     .eq('id', campaignId)
     .single()
 
@@ -75,6 +76,7 @@ async function dispatchCampaignSends(campaignId: string, senderUserId: string) {
   const sendRows = contacts.map(c => ({
     campaign_id: campaignId,
     contact_id: c.id,
+    organization_id: campaign.organization_id,
     status: 'pending' as const,
   }))
 

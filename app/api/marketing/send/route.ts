@@ -43,9 +43,10 @@ export async function POST(request: Request) {
     }
 
     // Warmup check: rate limit per sender based on account age
-    const { data: warmup } = await supabase.rpc('marketing_check_warmup_limit', {
+    const { data: warmupRaw } = await supabase.rpc('marketing_check_warmup_limit', {
       p_user_id: sender_user_id,
     })
+    const warmup = warmupRaw as { allowed: boolean; daily_limit: number } | null
     if (warmup && !warmup.allowed) {
       throw new Error(`Limite diário atingido (${warmup.daily_limit}/dia durante warmup). Tente amanhã.`)
     }

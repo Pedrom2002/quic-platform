@@ -6,6 +6,7 @@ import { put } from '@vercel/blob'
 import { MAX_FILE_SIZE } from '@/schemas/file.schema'
 import { dispatchNotificationsForItem, dispatchStartNotificationForItem } from '@/lib/notifications/dispatcher'
 import type { ChecklistItemStatus, ChecklistItemNote, ChecklistItemFileLink, EventFileWithUploader } from '@/types/app'
+import type { TablesUpdate } from '@/types/database'
 
 export async function bulkUpdateChecklistStatusAction(
   eventId: string,
@@ -20,7 +21,7 @@ export async function bulkUpdateChecklistStatusAction(
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) throw new Error('Evento não encontrado')
 
-  const updateData: Record<string, unknown> = { status }
+  const updateData: TablesUpdate<'event_checklist_items'> = { status }
   if (status === 'completed') {
     updateData.completed_at = new Date().toISOString()
     updateData.completed_by = member.id
@@ -119,9 +120,13 @@ export async function reorderChecklistItemsAction(
     .map((id, index) => ({ id, position: (index + 1) * 10 }))
 
   if (rows.length) {
-    await supabase
-      .from('event_checklist_items')
-      .upsert(rows, { onConflict: 'id' })
+    // update por linha em vez de upsert: os ids ja foram validados acima
+    // como pertencentes a este evento, isto nunca insere, so reordena.
+    await Promise.all(
+      rows.map(row =>
+        supabase.from('event_checklist_items').update({ position: row.position }).eq('id', row.id)
+      )
+    )
   }
 }
 
@@ -144,7 +149,7 @@ export async function updateChecklistItemAction(
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
 
-  const updateData: Record<string, unknown> = { ...fields }
+  const updateData: TablesUpdate<'event_checklist_items'> = { ...fields }
   if (fields.status === 'completed') {
     updateData.completed_at = new Date().toISOString()
   } else if (fields.status !== undefined) {

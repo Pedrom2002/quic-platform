@@ -92,9 +92,11 @@ export default async function NotificationsPage({
                   <span className="inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
                     {channelLabel[job.channel] ?? job.channel}
                   </span>
-                  <p className="text-slate-400 text-xs">
-                    {format(new Date(job.created_at), "d MMM · HH'h'mm", { locale: pt })}
-                  </p>
+                  {job.created_at && (
+                    <p className="text-slate-400 text-xs">
+                      {format(new Date(job.created_at), "d MMM · HH'h'mm", { locale: pt })}
+                    </p>
+                  )}
                 </div>
               </div>
             )

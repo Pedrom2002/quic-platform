@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner'
 import { CsvImportDialog } from '@/components/events/CsvImportDialog'
 import type { Client } from '@/types/database'
-import type { EventClientWithDetails, NotificationChannel } from '@/types/app'
+import type { EventClientWithDetails, NotificationChannel, NotificationPrefs } from '@/types/app'
 import {
   loadEventClientsAction,
   addExistingClientAction,
@@ -223,7 +223,7 @@ export default function EventClientsPage() {
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm divide-y divide-slate-100">
           {eventClients.map(ec => {
             const c = ec.client
-            const prefs = ec.notification_prefs ?? {}
+            const prefs: Partial<NotificationPrefs> = ec.notification_prefs ?? {}
             return (
               <div key={ec.id} className="flex items-center gap-4 px-5 py-4">
                 <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center shrink-0">

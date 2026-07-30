@@ -2,6 +2,7 @@
 
 import { requireOrgAuth } from '@/lib/supabase/actions'
 import { assertEventOwnership } from '@/lib/supabase/actions'
+import type { EventClientWithDetails } from '@/types/app'
 
 export async function loadEventClientsAction(eventId: string) {
   const { supabase, member } = await requireOrgAuth()
@@ -13,7 +14,8 @@ export async function loadEventClientsAction(eventId: string) {
     supabase
       .from('event_clients')
       .select('*, client:clients(*)')
-      .eq('event_id', eventId),
+      .eq('event_id', eventId)
+      .returns<EventClientWithDetails[]>(),
     supabase
       .from('clients')
       .select('*')

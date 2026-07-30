@@ -46,7 +46,7 @@ export async function POST(
         fileName?: string; fileSize?: number; mimeType?: string
       }
       const { blobUrl, blobPathname, fileName, fileSize, mimeType } = body
-      if (!blobPathname) {
+      if (!blobPathname || !blobUrl) {
         return NextResponse.json({ error: 'Dados de blob inválidos' }, { status: 400 })
       }
 

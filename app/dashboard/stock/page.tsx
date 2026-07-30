@@ -67,7 +67,7 @@ export default async function StockDashboardPage() {
       .from('stock_material_availability')
       .select('material_id, disponivel')
     shortageCount = (data ?? []).filter(
-      (row: { disponivel: number }) => row.disponivel <= 0
+      row => (row.disponivel ?? 0) <= 0
     ).length
   }
 

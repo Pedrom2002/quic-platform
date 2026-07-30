@@ -1,5 +1,6 @@
 import { after } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import type { Json } from '@/types/database'
 
 export type AuditAction =
   | 'portal.link.sent'
@@ -33,7 +34,7 @@ export function audit(args: {
   after(async () => {
     try {
       const supabase = createAdminClient()
-      await supabase.from('audit_log').insert({ action: args.action, payload: entry })
+      await supabase.from('audit_log').insert({ action: args.action, payload: entry as unknown as Json })
     } catch {
       // Non-critical — never break the request
     }

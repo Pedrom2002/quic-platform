@@ -78,7 +78,7 @@ describe('reorderChecklistItemsAction', () => {
     await expect(reorderChecklistItemsAction('e1', ['i1'])).rejects.toThrow('Evento não encontrado')
   })
 
-  it('calls upsert with correct positions for each id', async () => {
+  it('calls update with correct positions for each id', async () => {
     requireOrgAuth.mockResolvedValue({ supabase: supabaseMock, user: mockUser, member: mockMember })
     const helpers = await import('@/lib/supabase/actions')
     ;(helpers.assertEventOwnership as ReturnType<typeof vi.fn>).mockResolvedValue(true)
@@ -86,11 +86,9 @@ describe('reorderChecklistItemsAction', () => {
     fromResults = [
       { data: [{ id: 'id1' }, { id: 'id2' }], error: null },
     ]
-    mockUpsert.mockReset()
+    mockUpdate.mockReset()
     await reorderChecklistItemsAction('e1', ['id1', 'id2'])
-    expect(mockUpsert).toHaveBeenCalledWith(
-      [{ id: 'id1', position: 10 }, { id: 'id2', position: 20 }],
-      { onConflict: 'id' }
-    )
+    expect(mockUpdate).toHaveBeenCalledWith({ position: 10 })
+    expect(mockUpdate).toHaveBeenCalledWith({ position: 20 })
   })
 })

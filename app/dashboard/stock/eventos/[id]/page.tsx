@@ -65,12 +65,11 @@ export default async function EventoDetalhePage({
   const movements = (movementsData ?? []) as MovementRow[]
 
   const availability = new Map<string, number>(
-    (availabilityData ?? []).map(
-      (row: { material_id: string; disponivel: number }) => [
-        row.material_id,
-        row.disponivel,
-      ]
-    )
+    (availabilityData ?? [])
+      .filter((row): row is { material_id: string; disponivel: number } =>
+        row.material_id !== null && row.disponivel !== null
+      )
+      .map(row => [row.material_id, row.disponivel])
   )
 
   const materials: MaterialOption[] = (

@@ -74,7 +74,9 @@ export async function POST(req: Request) {
       .map(e => e.email)
   )
 
-  const toInsert = normalized.filter(c => !blockedEmails.has(c.email))
+  const toInsert = normalized
+    .filter(c => !blockedEmails.has(c.email))
+    .map(c => ({ ...c, organization_id: member.organization_id }))
 
   const { error } = await supabase.from('marketing_contacts')
     .upsert(toInsert, { onConflict: 'list_id,email', ignoreDuplicates: true })

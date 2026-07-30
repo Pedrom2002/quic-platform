@@ -64,7 +64,7 @@ export default function EditEventPage() {
           description: data.description ?? '',
           venue_name: data.venue_name ?? '',
           venue_address: data.venue_address ?? '',
-          status: data.status,
+          status: data.status as 'active' | 'completed' | 'planning' | 'cancelled',
           start_datetime: format(new Date(data.start_datetime), "yyyy-MM-dd'T'HH:mm"),
           end_datetime: format(new Date(data.end_datetime), "yyyy-MM-dd'T'HH:mm"),
         })

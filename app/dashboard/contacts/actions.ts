@@ -3,21 +3,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireOrgAuth } from '@/lib/supabase/actions'
 import { isContactVisibleToMember } from '@/lib/contacts/visibility'
+import type { Tables } from '@/types/database'
 
 export { isContactVisibleToMember }
 
 // ---- Types ----
 
-export type ContactGroup = {
-  id: string
-  organization_id: string
-  name: string
-  description: string | null
-  color: string | null
-  icon: string | null
-  admin_only: boolean
-  created_at: string
-}
+export type ContactGroup = Tables<'contact_groups'>
 
 export type ContactWithGroups = {
   id: string

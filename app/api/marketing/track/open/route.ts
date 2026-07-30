@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { SCORE_DELTA } from '@/lib/marketing/scoring'
+import type { TablesUpdate } from '@/types/database'
 
 const PIXEL = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64')
 const PIXEL_HEADERS = {
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
   if (!send) return new NextResponse(PIXEL, { headers: PIXEL_HEADERS })
 
   const now = new Date()
-  const update: Record<string, unknown> = {}
+  const update: TablesUpdate<'marketing_sends'> = {}
   if (pos === 'top' && !send.pixel_top_at) update.pixel_top_at = now.toISOString()
   if (pos === 'bottom' && !send.pixel_bottom_at) update.pixel_bottom_at = now.toISOString()
   if (!pos && !send.pixel_top_at) update.pixel_top_at = now.toISOString()

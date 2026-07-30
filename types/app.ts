@@ -128,9 +128,9 @@ export interface ChecklistItemWithMember {
 export interface EventClientWithDetails {
   id: string
   event_id: string
-  role: ClientRole
-  notification_prefs: NotificationPrefs
-  opted_out: boolean
+  role: ClientRole | null
+  notification_prefs: NotificationPrefs | null
+  opted_out: boolean | null
   client: {
     id: string
     full_name: string

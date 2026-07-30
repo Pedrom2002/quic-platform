@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { assertEventOwnership, resolveOrgMemberFull } from '@/lib/supabase/actions'
 import { updateChecklistItemSchema } from '@/schemas/checklist.schema'
 import { dispatchNotificationsForItem, dispatchStartNotificationForItem } from '@/lib/notifications/dispatcher'
+import type { TablesUpdate } from '@/types/database'
 
 export async function PATCH(
   request: Request,
@@ -27,7 +28,7 @@ export async function PATCH(
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
   }
 
-  const updates: Record<string, unknown> = { ...parsed.data }
+  const updates: TablesUpdate<'event_checklist_items'> = { ...parsed.data }
   const isCompleting = parsed.data.status === 'completed'
 
   if (isCompleting) {

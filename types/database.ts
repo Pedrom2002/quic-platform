@@ -3008,6 +3008,13 @@ export type Database = {
         }[]
       }
       get_user_org_id: { Args: never; Returns: string }
+      // Adicionada manualmente: existe em producao desde a migration 0045
+      // mas o types/database.ts nao foi regenerado desde entao (migracoes
+      // sao aplicadas manualmente, nao via `supabase db push`).
+      increment_ticket_type_sold: {
+        Args: { p_ticket_type_id: string; p_delta: number }
+        Returns: undefined
+      }
       is_stock_team: { Args: never; Returns: boolean }
       marketing_check_warmup_limit: {
         Args: { p_user_id: string }
