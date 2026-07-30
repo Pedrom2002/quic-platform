@@ -9,7 +9,7 @@ const bodySchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  return withAiAuth(req, bodySchema, async (_ctx, body) => {
+  return withAiAuth(req, bodySchema, async (ctx, body) => {
     const env = getEnv()
     if (!env.GEMINI_API_KEY) return new Response('AI não disponível', { status: 503 })
 
@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
       .from('marketing_sends')
       .select('status, opened_at, contact_id, marketing_contacts(name, company, engagement_score)')
       .eq('campaign_id', body.campaign_id)
+      .eq('organization_id', ctx.organizationId)
 
     if (!sends?.length) return Response.json({ insights: [] })
 

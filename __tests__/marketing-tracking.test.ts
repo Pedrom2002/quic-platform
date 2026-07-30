@@ -60,16 +60,36 @@ function makeUpdateChain() {
   }
 }
 
-function makeUpsertChain(error: unknown = null) {
-  return {
-    // dedup pre-query: .select('email,status,list_id').in('email', emails)
-    select: vi.fn().mockReturnValue({ in: vi.fn().mockResolvedValue({ data: [] }) }),
-    upsert: vi.fn().mockResolvedValue({ error }),
-  }
-}
-
 // Valid RFC4122 UUIDs (version 4, variant 8)
 const UUID_LIST = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+
+function makeUpsertChain(error: unknown = null) {
+  return (table: string) => {
+    if (table === 'team_members') {
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: { organization_id: 'org-1' } }),
+          }),
+        }),
+      }
+    }
+    if (table === 'marketing_lists') {
+      return {
+        select: vi.fn().mockReturnValue({
+          in: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ data: [{ id: UUID_LIST }] }),
+          }),
+        }),
+      }
+    }
+    return {
+      // dedup pre-query: .select('email,status,list_id').in('email', emails)
+      select: vi.fn().mockReturnValue({ in: vi.fn().mockResolvedValue({ data: [] }) }),
+      upsert: vi.fn().mockResolvedValue({ error }),
+    }
+  }
+}
 
 // ─── GET /api/marketing/track/click ──────────────────────────────────────────
 
@@ -271,7 +291,7 @@ describe('POST /api/marketing/contacts/import', () => {
   })
 
   it('returns 500 when upsert fails', async () => {
-    mockServerFrom.mockReturnValue(makeUpsertChain({ message: 'DB error' }))
+    mockServerFrom.mockImplementation(makeUpsertChain({ message: 'DB error' }))
     const { POST } = await import('@/app/api/marketing/contacts/import/route')
     const req = new Request('http://localhost/api/marketing/contacts/import', {
       method: 'POST',
@@ -284,7 +304,7 @@ describe('POST /api/marketing/contacts/import', () => {
   })
 
   it('returns 200 with imported count on success', async () => {
-    mockServerFrom.mockReturnValue(makeUpsertChain(null))
+    mockServerFrom.mockImplementation(makeUpsertChain(null))
     const { POST } = await import('@/app/api/marketing/contacts/import/route')
     const req = new Request('http://localhost/api/marketing/contacts/import', {
       method: 'POST',

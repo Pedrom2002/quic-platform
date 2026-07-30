@@ -72,7 +72,7 @@ export async function updateArtist(formData: FormData): Promise<ActionResult> {
   const parsed = parseArtistForm(formData)
   if (!parsed.success) return { error: issuesToMessage(parsed.error) }
 
-  const { error } = await auth.supabase.from('artists').update(parsed.data).eq('id', id.data)
+  const { error } = await auth.supabase.from('artists').update(parsed.data).eq('id', id.data).eq('organization_id', auth.member.organization_id)
   if (error) return { error: 'Erro ao atualizar artista' }
 
   revalidatePath('/dashboard/artists')
@@ -92,6 +92,7 @@ export async function inviteArtistToApp(formData: FormData): Promise<ActionResul
     .from('artists')
     .select('id, email, auth_user_id')
     .eq('id', id.data)
+    .eq('organization_id', auth.member.organization_id)
     .single()
   if (fetchError || !artist) return { error: 'Artista inválido' }
   if (!artist.email) return { error: 'Artista sem email definido' }
@@ -105,6 +106,7 @@ export async function inviteArtistToApp(formData: FormData): Promise<ActionResul
     .from('artists')
     .update({ auth_user_id: invited.user.id })
     .eq('id', id.data)
+    .eq('organization_id', auth.member.organization_id)
   if (updateError) return { error: 'Convite enviado mas falhou ao ligar a conta' }
 
   revalidatePath(`/dashboard/artists/${id.data}`)
@@ -141,6 +143,7 @@ export async function updateArtistPhoto(formData: FormData): Promise<ActionResul
     .from('artists')
     .update({ photo_url: blob.url })
     .eq('id', id.data)
+    .eq('organization_id', auth.member.organization_id)
   if (error) return { error: 'Erro ao guardar a foto' }
 
   revalidatePath('/dashboard/artists')
@@ -161,6 +164,7 @@ export async function toggleArtistActive(formData: FormData): Promise<ActionResu
     .from('artists')
     .update({ is_active: isActive })
     .eq('id', id.data)
+    .eq('organization_id', auth.member.organization_id)
   if (error) return { error: 'Erro ao atualizar o estado' }
 
   revalidatePath('/dashboard/artists')
@@ -179,6 +183,7 @@ export async function regeneratePortalToken(formData: FormData): Promise<ActionR
     .from('artists')
     .update({ portal_token: generatePortalToken(), portal_token_expires_at: null })
     .eq('id', id.data)
+    .eq('organization_id', auth.member.organization_id)
   if (error) return { error: 'Erro ao regenerar o link' }
 
   revalidatePath(`/dashboard/artists/${id.data}`)
@@ -196,6 +201,7 @@ export async function revokePortalToken(formData: FormData): Promise<ActionResul
     .from('artists')
     .update({ portal_token_expires_at: new Date().toISOString() })
     .eq('id', id.data)
+    .eq('organization_id', auth.member.organization_id)
   if (error) return { error: 'Erro ao revogar o link' }
 
   revalidatePath(`/dashboard/artists/${id.data}`)
@@ -213,6 +219,7 @@ export async function reactivatePortalToken(formData: FormData): Promise<ActionR
     .from('artists')
     .update({ portal_token_expires_at: null })
     .eq('id', id.data)
+    .eq('organization_id', auth.member.organization_id)
   if (error) return { error: 'Erro ao reativar o link' }
 
   revalidatePath(`/dashboard/artists/${id.data}`)

@@ -20,6 +20,24 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json())
   if (!parsed.success) return NextResponse.json({ error: 'Inválido' }, { status: 400 })
 
+  const { data: member } = await supabase
+    .from('team_members')
+    .select('organization_id')
+    .eq('auth_user_id', user.id)
+    .single()
+  if (!member) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+
+  const listIds = [...new Set(parsed.data.contacts.map(c => c.list_id))]
+  const { data: ownedLists } = await supabase
+    .from('marketing_lists')
+    .select('id')
+    .in('id', listIds)
+    .eq('organization_id', member.organization_id)
+  const ownedListIds = new Set((ownedLists ?? []).map(l => l.id))
+  if (listIds.some(id => !ownedListIds.has(id))) {
+    return NextResponse.json({ error: 'Lista não encontrada' }, { status: 404 })
+  }
+
   // Normalize and dedupe within the batch itself
   const seen = new Set<string>()
   const normalized = parsed.data.contacts

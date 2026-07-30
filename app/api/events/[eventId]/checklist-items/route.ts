@@ -65,6 +65,14 @@ export async function GET(
     .single()
   if (!member) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
+  const { data: event } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('organization_id', member.organization_id)
+    .single()
+  if (!event) return NextResponse.json({ error: 'Evento não encontrado' }, { status: 404 })
+
   const { data: items, error } = await supabase
     .from('event_checklist_items')
     .select('*, assigned_member:team_members!assigned_to(id, full_name, avatar_url)')

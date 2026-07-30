@@ -19,9 +19,17 @@ vi.mock('@/lib/supabase/admin', () => ({
 
 function makeSupabase() {
   const calls: Record<string, unknown[]> = { insert: [], update: [], eq: [] }
+  function eqChain(): { eq: (col: string, val: unknown) => unknown } & Promise<{ error: null }> {
+    const promise = Promise.resolve({ error: null }) as { eq: (col: string, val: unknown) => unknown } & Promise<{ error: null }>
+    promise.eq = vi.fn((col: string, val: unknown) => {
+      calls.eq.push([col, val])
+      return eqChain()
+    })
+    return promise
+  }
   const chain: {
     insert: (payload: unknown) => Promise<{ error: null }>
-    update: (payload: unknown) => { eq: (col: string, val: unknown) => Promise<{ error: null }> }
+    update: (payload: unknown) => { eq: (col: string, val: unknown) => unknown }
     select?: (...args: unknown[]) => unknown
   } = {
     insert: vi.fn((payload: unknown) => {
@@ -33,7 +41,7 @@ function makeSupabase() {
       return {
         eq: vi.fn((col: string, val: unknown) => {
           calls.eq.push([col, val])
-          return Promise.resolve({ error: null })
+          return eqChain()
         }),
       }
     }),
@@ -229,7 +237,9 @@ describe('inviteArtistToApp', () => {
     const { supabase, chain } = makeSupabase()
     chain.select = vi.fn(() => ({
       eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({ data: { id: UUID, email: null, auth_user_id: null }, error: null }),
+        eq: vi.fn(() => ({
+          single: vi.fn().mockResolvedValue({ data: { id: UUID, email: null, auth_user_id: null }, error: null }),
+        })),
       })),
     }))
     authAs(supabase, 'admin')
@@ -242,10 +252,12 @@ describe('inviteArtistToApp', () => {
     const { supabase, chain, calls } = makeSupabase()
     chain.select = vi.fn(() => ({
       eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({
-          data: { id: UUID, email: 'maria@example.com', auth_user_id: null },
-          error: null,
-        }),
+        eq: vi.fn(() => ({
+          single: vi.fn().mockResolvedValue({
+            data: { id: UUID, email: 'maria@example.com', auth_user_id: null },
+            error: null,
+          }),
+        })),
       })),
     }))
     mockInviteUserByEmail.mockResolvedValue({
@@ -265,10 +277,12 @@ describe('inviteArtistToApp', () => {
     const { supabase, chain } = makeSupabase()
     chain.select = vi.fn(() => ({
       eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({
-          data: { id: UUID, email: 'maria@example.com', auth_user_id: 'existing-id' },
-          error: null,
-        }),
+        eq: vi.fn(() => ({
+          single: vi.fn().mockResolvedValue({
+            data: { id: UUID, email: 'maria@example.com', auth_user_id: 'existing-id' },
+            error: null,
+          }),
+        })),
       })),
     }))
     authAs(supabase, 'admin')

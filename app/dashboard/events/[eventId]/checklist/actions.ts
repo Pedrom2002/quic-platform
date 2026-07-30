@@ -225,6 +225,9 @@ export async function deleteItemNoteAction(
   if (!auth) return false
   const { supabase, member } = auth
 
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) return false
+
   const { error, count } = await supabase
     .from('checklist_item_notes')
     .delete({ count: 'exact' })
@@ -300,6 +303,9 @@ export async function linkFileToItemAction(
   if (!auth) return null
   const { supabase, user, member } = auth
 
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) return null
+
   const { data: linkedByRow } = await supabase
     .from('team_members')
     .select('id')
@@ -329,6 +335,9 @@ export async function unlinkFileFromItemAction(
   const auth = await getOrgAuth()
   if (!auth) return false
   const { supabase, member } = auth
+
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) return false
 
   const { error, count } = await supabase
     .from('checklist_item_files')

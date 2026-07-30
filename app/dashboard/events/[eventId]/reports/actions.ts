@@ -46,7 +46,7 @@ export async function createReportAction(
 
   const { data: member } = await supabase
     .from('team_members')
-    .select('id')
+    .select('id, organization_id')
     .eq('auth_user_id', user.id)
     .single()
   if (!member) return { ok: false, error: 'Membro nao encontrado' }
@@ -55,6 +55,7 @@ export async function createReportAction(
     .from('events')
     .select('organization_id')
     .eq('id', eventId)
+    .eq('organization_id', member.organization_id)
     .single()
   if (!event) return { ok: false, error: 'Evento nao encontrado' }
 
@@ -96,11 +97,19 @@ export async function deleteReportAction(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Nao autenticado' }
 
+  const { data: member } = await supabase
+    .from('team_members')
+    .select('organization_id')
+    .eq('auth_user_id', user.id)
+    .single()
+  if (!member) return { ok: false, error: 'Membro nao encontrado' }
+
   const { error } = await supabase
     .from('event_reports')
     .delete()
     .eq('id', reportId)
     .eq('event_id', eventId)
+    .eq('organization_id', member.organization_id)
 
   if (error) return { ok: false, error: 'Falha ao apagar' }
 

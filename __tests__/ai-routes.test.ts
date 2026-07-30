@@ -152,7 +152,9 @@ describe('POST /api/ai/marketing-insights', () => {
   function sendsChain(rows: unknown[] | null) {
     return {
       select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({ data: rows }),
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: rows }),
+        }),
       }),
     }
   }

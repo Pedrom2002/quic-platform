@@ -42,14 +42,16 @@ export async function createArticleAction(eventId: string, formData: FormData): 
 
   const { data: member } = await supabase
     .from('team_members')
-    .select('id')
+    .select('id, organization_id')
     .eq('auth_user_id', user.id)
     .single()
+  if (!member) return { ok: false, error: 'Nao autenticado' }
 
   const { data: event } = await supabase
     .from('events')
     .select('*')
     .eq('id', eventId)
+    .eq('organization_id', member.organization_id)
     .single<Event>()
   if (!event) return { ok: false, error: 'Evento nao encontrado' }
 
@@ -94,7 +96,19 @@ export async function deleteArticleAction(eventId: string, articleId: string): P
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Nao autenticado' }
 
-  const { error } = await supabase.from('event_articles').delete().eq('id', articleId).eq('event_id', eventId)
+  const { data: member } = await supabase
+    .from('team_members')
+    .select('organization_id')
+    .eq('auth_user_id', user.id)
+    .single()
+  if (!member) return { ok: false, error: 'Nao autenticado' }
+
+  const { error } = await supabase
+    .from('event_articles')
+    .delete()
+    .eq('id', articleId)
+    .eq('event_id', eventId)
+    .eq('organization_id', member.organization_id)
   if (error) return { ok: false, error: 'Falha ao apagar' }
 
   revalidatePath(`/dashboard/events/${eventId}/cliping`)
