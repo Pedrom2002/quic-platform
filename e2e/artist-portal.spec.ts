@@ -1,29 +1,37 @@
 // Playwright e2e for the artist portal.
-// SKIPPED by default like the rest of the e2e suite: run with a live stack
-// (E2E_BASE_URL + seeded data) and remove the skip wrapper.
+// Runs against an isolated [E2E TEST] org/artist seeded in production (see
+// .env.e2e.local, gitignored). Skips only when the token isn't configured.
 
 import { test, expect } from '@playwright/test'
 
 const PORTAL_TOKEN = process.env.E2E_ARTIST_PORTAL_TOKEN
 
-test.skip(!process.env.E2E_BASE_URL || !PORTAL_TOKEN, 'E2E_BASE_URL / E2E_ARTIST_PORTAL_TOKEN not set')
+test.skip(!PORTAL_TOKEN, 'E2E_ARTIST_PORTAL_TOKEN not set — see .env.e2e.local.example')
 
-test('portal with a valid token shows the four sections', async ({ page }) => {
+test('portal with a valid token shows the four tabs and their content', async ({ page }) => {
   await page.goto(`/artista/${PORTAL_TOKEN}`)
-  await expect(page.getByRole('heading', { name: 'Agenda' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Imprensa' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Conteúdos' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Documentos' })).toBeVisible()
+
+  // Tabs are buttons, only rendered when the section has data — the seeded
+  // [E2E TEST] artist has one item in each of agenda/clipping/content/document.
+  await expect(page.getByRole('button', { name: 'Agenda' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Imprensa' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Conteúdos' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Documentos' })).toBeVisible()
+
+  // Agenda tab is active by default and shows the seeded upcoming item.
+  await expect(page.getByText('[E2E TEST] Concerto').first()).toBeVisible()
+
+  await page.getByRole('button', { name: 'Imprensa' }).click()
+  await expect(page.getByText('[E2E TEST] Artigo').first()).toBeVisible()
+
+  await page.getByRole('button', { name: 'Conteúdos' }).click()
+  await expect(page.getByText('[E2E TEST] Foto').first()).toBeVisible()
+
+  await page.getByRole('button', { name: 'Documentos' }).click()
+  await expect(page.getByText('[E2E TEST] Rider Técnico').first()).toBeVisible()
 })
 
 test('invalid token shows the neutral expired page', async ({ page }) => {
   await page.goto('/artista/token-invalido-xyz')
   await expect(page.getByRole('heading', { name: 'Acesso expirado' })).toBeVisible()
-})
-
-test('tenant isolation: dashboard artists list only shows own organization', async () => {
-  // 1. Sign in as org A member, create artist
-  // 2. Sign in as org B member - assert artist from org A not visible in /dashboard/artists
-  // 3. Direct navigation to org A artist detail URL returns 404
-  test.skip(true, 'Requires two seeded organizations with auth fixtures')
 })

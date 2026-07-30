@@ -1,8 +1,10 @@
 import { defineConfig, devices } from '@playwright/test'
+import { existsSync } from 'node:fs'
 
-// E2E config. The current spec (e2e/event-cliping.spec.ts) is a scaffold with
-// test.skip() — running it passes trivially. When real specs are added, set
-// the auth fixtures and uncomment `webServer` to auto-start the app.
+// Local-only credentials for an isolated [E2E TEST] org/user/event/artist —
+// see .env.e2e.local (gitignored). CI supplies the same vars as secrets.
+if (existsSync('.env.e2e.local')) process.loadEnvFile('.env.e2e.local')
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -14,9 +16,12 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
+  webServer: process.env.CI
+    ? undefined
+    : {
+        command: 'npm run dev',
+        url: process.env.E2E_BASE_URL ?? 'http://localhost:3000',
+        reuseExistingServer: true,
+        timeout: 60_000,
+      },
 })

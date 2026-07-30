@@ -91,8 +91,12 @@ jobs:
 
       - run: npm audit --omit=dev --audit-level=high
 
-  # E2E runs on master pushes and manual dispatch only — it is not a PR gate
-  # (the current spec is a skip-scaffold; needs live app + secrets for real runs).
+  # E2E runs on master pushes and manual dispatch only — it is not a PR gate.
+  # e2e/artist-portal.spec.ts is a real (non-skip) test against an isolated
+  # [E2E TEST] org/artist seeded in production (no staging DB exists yet).
+  # Needs E2E_ARTIST_PORTAL_TOKEN as a repo secret to run for real here —
+  # without it the spec self-skips. event-cliping.spec.ts still skips
+  # unconditionally (needs a dashboard-login auth fixture, see its header).
   e2e:
     name: E2E (Playwright)
     runs-on: ubuntu-latest
