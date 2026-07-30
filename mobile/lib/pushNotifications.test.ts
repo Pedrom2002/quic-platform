@@ -3,15 +3,22 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 const mockGetPermissionsAsync = jest.fn()
 const mockRequestPermissionsAsync = jest.fn()
 const mockGetExpoPushTokenAsync = jest.fn()
+const mockSetNotificationChannelAsync = jest.fn()
 const mockIsDevice = { value: true }
+const mockPlatformOS = { value: 'ios' as 'ios' | 'android' }
 
 jest.mock('expo-notifications', () => ({
   getPermissionsAsync: (...args: unknown[]) => mockGetPermissionsAsync(...args),
   requestPermissionsAsync: (...args: unknown[]) => mockRequestPermissionsAsync(...args),
   getExpoPushTokenAsync: (...args: unknown[]) => mockGetExpoPushTokenAsync(...args),
+  setNotificationChannelAsync: (...args: unknown[]) => mockSetNotificationChannelAsync(...args),
+  AndroidImportance: { HIGH: 4 },
 }))
 jest.mock('expo-device', () => ({
   get isDevice() { return mockIsDevice.value },
+}))
+jest.mock('react-native', () => ({
+  get Platform() { return { get OS() { return mockPlatformOS.value } } },
 }))
 
 import { registerForPushNotifications } from './pushNotifications'
@@ -23,8 +30,10 @@ beforeEach(() => {
   mockGetPermissionsAsync.mockReset()
   mockRequestPermissionsAsync.mockReset()
   mockGetExpoPushTokenAsync.mockReset()
+  mockSetNotificationChannelAsync.mockReset()
   mockFetch.mockReset()
   mockIsDevice.value = true
+  mockPlatformOS.value = 'ios'
 })
 
 describe('registerForPushNotifications', () => {
@@ -76,5 +85,34 @@ describe('registerForPushNotifications', () => {
     mockFetch.mockRejectedValue(new Error('network error'))
 
     await expect(registerForPushNotifications('https://app.example.com', 'access-token-abc')).resolves.not.toThrow()
+  })
+
+  it('cria canal de notificações no Android antes de pedir permissão', async () => {
+    mockPlatformOS.value = 'android'
+    mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' })
+    mockGetExpoPushTokenAsync.mockResolvedValue({ data: 'ExponentPushToken[abc]' })
+    mockFetch.mockResolvedValue({ ok: true })
+
+    await registerForPushNotifications('https://app.example.com', 'access-token-abc')
+
+    expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith('default', { name: 'Default', importance: 4 })
+  })
+
+  it('não cria canal de notificações no iOS', async () => {
+    mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' })
+    mockGetExpoPushTokenAsync.mockResolvedValue({ data: 'ExponentPushToken[abc]' })
+    mockFetch.mockResolvedValue({ ok: true })
+
+    await registerForPushNotifications('https://app.example.com', 'access-token-abc')
+
+    expect(mockSetNotificationChannelAsync).not.toHaveBeenCalled()
+  })
+
+  it('não rebenta quando obter o token falha (ex: Play Services indisponível)', async () => {
+    mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' })
+    mockGetExpoPushTokenAsync.mockRejectedValue(new Error('Play Services unavailable'))
+
+    await expect(registerForPushNotifications('https://app.example.com', 'access-token-abc')).resolves.not.toThrow()
+    expect(mockFetch).not.toHaveBeenCalled()
   })
 })

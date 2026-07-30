@@ -20,6 +20,9 @@ export default function TabsLayout() {
       if (role.role === 'client' && session?.access_token) {
         registerForPushNotifications(process.env.EXPO_PUBLIC_APP_URL!, session.access_token)
       }
+    }).catch(() => {
+      // Falha a resolver o papel do utilizador não deve rebentar a app —
+      // fica sem tabs de artista/cliente até à próxima mudança de sessão.
     })
   }, [session])
 
