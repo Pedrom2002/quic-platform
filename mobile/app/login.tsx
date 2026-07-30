@@ -25,13 +25,18 @@ export default function LoginScreen() {
   async function handleLogin() {
     setError(null)
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    setLoading(false)
-    if (error) {
-      setError('Credenciais inválidas')
-      return
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setError('Credenciais inválidas')
+        return
+      }
+      router.replace('/(tabs)')
+    } catch {
+      setError('Erro de ligação. Tenta novamente.')
+    } finally {
+      setLoading(false)
     }
-    router.replace('/(tabs)')
   }
 
   return (

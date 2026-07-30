@@ -42,17 +42,22 @@ export default function SignupScreen() {
 
     setError(null)
     setLoading(true)
-    const { error } = await supabase.auth.signUp({ email: email.trim(), password })
-    setLoading(false)
-    if (error) {
-      setError(
-        error.message === 'User already registered'
-          ? 'Este email já está registado'
-          : 'Erro ao criar conta'
-      )
-      return
+    try {
+      const { error } = await supabase.auth.signUp({ email: email.trim(), password })
+      if (error) {
+        setError(
+          error.message === 'User already registered'
+            ? 'Este email já está registado'
+            : 'Erro ao criar conta'
+        )
+        return
+      }
+      router.replace('/(tabs)')
+    } catch {
+      setError('Erro de ligação. Tenta novamente.')
+    } finally {
+      setLoading(false)
     }
-    router.replace('/(tabs)')
   }
 
   return (

@@ -15,7 +15,10 @@ export default function ScannerScreen() {
   const scanningRef = useRef(false)
 
   useEffect(() => {
-    resolveUserRole(supabase, session).then(setRole)
+    resolveUserRole(supabase, session).then(setRole).catch(() => {
+      // Falha a resolver o papel do utilizador não deve rebentar a app —
+      // ecrã fica em loading (role null) até à próxima mudança de sessão.
+    })
   }, [session])
 
   useEffect(() => {
