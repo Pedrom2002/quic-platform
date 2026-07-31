@@ -39,6 +39,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Início',
+          tabBarAccessibilityLabel: 'Início',
           tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
         }}
       />
@@ -46,6 +47,7 @@ export default function TabsLayout() {
         name="catalogo"
         options={{
           title: 'Catálogo',
+          tabBarAccessibilityLabel: 'Catálogo',
           tabBarIcon: ({ color, size }) => <Ionicons name="grid-outline" size={size} color={color} />,
         }}
       />
@@ -54,6 +56,7 @@ export default function TabsLayout() {
         options={{
           title: 'Portal',
           href: (isArtist || clientPortalToken) ? undefined : null,
+          tabBarAccessibilityLabel: 'Portal',
           tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
         }}
       />
@@ -61,6 +64,7 @@ export default function TabsLayout() {
         name="mais"
         options={{
           title: 'Mais',
+          tabBarAccessibilityLabel: 'Mais opções',
           tabBarIcon: ({ color, size }) => <Ionicons name="ellipsis-horizontal-outline" size={size} color={color} />,
         }}
       />

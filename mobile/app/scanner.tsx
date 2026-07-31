@@ -51,9 +51,15 @@ export default function ScannerScreen() {
         style={styles.camera}
         barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
         onBarcodeScanned={handleScan}
+        accessibilityLabel="Câmara para ler código QR do bilhete"
       />
       {lastResult && (
-        <View style={styles.resultBanner}>
+        <View
+          style={styles.resultBanner}
+          accessible
+          accessibilityLiveRegion="polite"
+          accessibilityLabel={lastResult}
+        >
           <Text style={styles.resultText}>{lastResult}</Text>
         </View>
       )}
