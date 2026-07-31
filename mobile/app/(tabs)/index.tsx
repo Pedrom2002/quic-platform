@@ -48,7 +48,7 @@ export default function InicioScreen() {
 }
 
 const styles = StyleSheet.create({
-  list: { padding: 16 },
+  list: { paddingBottom: 16 },
   empty: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
   emptyText: { color: '#78716c', fontSize: 14 },
 })

@@ -42,7 +42,7 @@ export function EventCard({ event }: { event: PublicEvent }) {
 const fill = { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 14, overflow: 'hidden', marginBottom: 16, height: 220 },
+  card: { borderRadius: 14, overflow: 'hidden', marginHorizontal: 16, marginBottom: 16, height: 220 },
   image: { ...fill, width: '100%', height: '100%' },
   placeholder: { ...fill, backgroundColor: '#111111' },
   gradient: { ...fill },
