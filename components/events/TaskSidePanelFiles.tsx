@@ -114,10 +114,12 @@ export default function TaskSidePanelFiles({ eventId, taskId, fileLinks, setFile
                   <p className="text-[10px] text-slate-400">{link.file.file_size ? formatBytes(link.file.file_size) : ''}</p>
                 </div>
                 <a href={link.file.blob_url} download={link.file.file_name}
+                  aria-label={`Descarregar ${link.file.file_name}`}
                   className="shrink-0 text-slate-300 hover:text-slate-600 transition-colors">
                   <Download className="w-3.5 h-3.5" />
                 </a>
                 <button onClick={() => handleUnlink(link.id)} disabled={unlinkingId === link.id}
+                  aria-label={`Desligar ${link.file.file_name}`}
                   className="shrink-0 text-slate-300 hover:text-red-400 transition-colors disabled:opacity-40">
                   {unlinkingId === link.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                 </button>
@@ -133,7 +135,7 @@ export default function TaskSidePanelFiles({ eventId, taskId, fileLinks, setFile
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[60vh] flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
               <span className="text-sm font-semibold text-slate-800">Ligar ficheiro existente</span>
-              <button onClick={() => setShowFilePicker(false)} className="text-slate-400 hover:text-slate-700"><X className="w-4 h-4" /></button>
+              <button onClick={() => setShowFilePicker(false)} aria-label="Fechar" className="text-slate-400 hover:text-slate-700"><X className="w-4 h-4" /></button>
             </div>
             <div className="px-4 py-2 border-b border-slate-100">
               <div className="relative">

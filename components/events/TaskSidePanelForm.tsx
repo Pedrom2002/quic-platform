@@ -68,8 +68,8 @@ export default function TaskSidePanelForm({
       {/* Status + Assignee */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[10px] font-medium text-slate-400 uppercase tracking-wide block mb-1">Estado</label>
-          <select value={status} onChange={e => { const s = e.target.value as ChecklistItemStatus; setStatus(s); saveField({ status: s }) }}
+          <label htmlFor="task-status" className="text-[10px] font-medium text-slate-400 uppercase tracking-wide block mb-1">Estado</label>
+          <select id="task-status" value={status} onChange={e => { const s = e.target.value as ChecklistItemStatus; setStatus(s); saveField({ status: s }) }}
             className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white">
             {(Object.keys(STATUS_LABELS) as ChecklistItemStatus[]).map(s => (
               <option key={s} value={s}>{STATUS_LABELS[s]}</option>
@@ -77,8 +77,8 @@ export default function TaskSidePanelForm({
           </select>
         </div>
         <div>
-          <label className="text-[10px] font-medium text-slate-400 uppercase tracking-wide block mb-1">Responsável</label>
-          <select value={assignedTo} onChange={e => { setAssignedTo(e.target.value); saveField({ assigned_to: e.target.value || null }) }}
+          <label htmlFor="task-assignee" className="text-[10px] font-medium text-slate-400 uppercase tracking-wide block mb-1">Responsável</label>
+          <select id="task-assignee" value={assignedTo} onChange={e => { setAssignedTo(e.target.value); saveField({ assigned_to: e.target.value || null }) }}
             className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white">
             <option value="">Sem atribuição</option>
             {orgMembers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
@@ -146,18 +146,18 @@ export default function TaskSidePanelForm({
 
       {/* Due date */}
       <div>
-        <label className="text-[10px] font-medium text-slate-400 uppercase tracking-wide block mb-1">
+        <label htmlFor="task-due-at" className="text-[10px] font-medium text-slate-400 uppercase tracking-wide block mb-1">
           Data limite {dueAt && <OverdueIndicator dueAt={new Date(dueAt).toISOString()} status={status} />}
         </label>
-        <input type="datetime-local" value={dueAt}
+        <input id="task-due-at" type="datetime-local" value={dueAt}
           onChange={e => { setDueAt(e.target.value); saveField({ due_at: e.target.value ? new Date(e.target.value).toISOString() : null }) }}
           className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-slate-300" />
       </div>
 
       {/* Checklist link */}
       <div>
-        <label className="text-[10px] font-medium text-slate-400 uppercase tracking-wide block mb-1">Ligar a checklist (opcional)</label>
-        <select value={checklistItemId}
+        <label htmlFor="task-checklist-link" className="text-[10px] font-medium text-slate-400 uppercase tracking-wide block mb-1">Ligar a checklist (opcional)</label>
+        <select id="task-checklist-link" value={checklistItemId}
           onChange={e => { setChecklistItemId(e.target.value); saveField({ checklist_item_id: e.target.value || null }) }}
           className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white">
           <option value="">Sem ligação</option>
@@ -169,8 +169,8 @@ export default function TaskSidePanelForm({
 
       {/* Description */}
       <div>
-        <label className="text-[10px] font-medium text-slate-400 uppercase tracking-wide block mb-1">Descrição</label>
-        <textarea value={description} onChange={e => setDescription(e.target.value)}
+        <label htmlFor="task-description" className="text-[10px] font-medium text-slate-400 uppercase tracking-wide block mb-1">Descrição</label>
+        <textarea id="task-description" value={description} onChange={e => setDescription(e.target.value)}
           onBlur={() => saveField({ description: description || null })}
           rows={3} placeholder="Adicionar descrição..."
           className="w-full text-sm text-slate-700 placeholder-slate-300 border border-slate-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-slate-300" />

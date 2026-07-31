@@ -93,6 +93,7 @@ export default function TaskSidePanelNotes({
                 </div>
                 {canDelete && !isOptimistic && (
                   <button onClick={() => handleDeleteNote(note.id)} disabled={deletingNoteId === note.id}
+                    aria-label="Eliminar nota"
                     className="shrink-0 text-slate-300 hover:text-red-400 transition-colors disabled:opacity-40">
                     <Trash2 className="w-3 h-3" />
                   </button>
