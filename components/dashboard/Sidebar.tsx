@@ -43,7 +43,7 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
   }
 
   return (
-    <aside className="w-60 min-h-screen bg-[#0d0c0d] border-r border-white/8 flex flex-col">
+    <aside className="w-60 min-h-screen bg-sidebar border-r border-white/8 flex flex-col">
       {/* Logo / Org */}
       <div className="flex items-center px-4 py-4 border-b border-white/8 shrink-0">
         <Image src="/logo-branco.png" alt="Quic" width={130} height={52} className="shrink-0" />
@@ -63,11 +63,11 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
               className={cn(
                 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                 active
-                  ? 'bg-[#951b81]/15 text-white border-l-2 border-[#951b81] -ml-0.5 pl-[calc(0.75rem-2px)]'
+                  ? 'bg-sidebar-primary/15 text-white border-l-2 border-sidebar-primary -ml-0.5 pl-[calc(0.75rem-2px)]'
                   : 'text-zinc-400 hover:text-white hover:bg-white/5'
               )}
             >
-              <item.icon className={cn('w-4 h-4 shrink-0', active && 'text-[#c2489f]')} aria-hidden="true" />
+              <item.icon className={cn('w-4 h-4 shrink-0', active && 'text-sidebar-primary-light')} aria-hidden="true" />
               {item.label}
             </Link>
           )
@@ -77,8 +77,8 @@ export function Sidebar({ userName, userEmail, orgName }: SidebarProps) {
       {/* User / Bottom */}
       <div className="p-3 border-t border-white/8 space-y-1">
         <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
-          <div className="w-7 h-7 rounded-full bg-[#951b81]/25 flex items-center justify-center shrink-0" aria-hidden="true">
-            <span className="text-xs font-semibold text-[#e5a9d9]">{initials}</span>
+          <div className="w-7 h-7 rounded-full bg-sidebar-primary/25 flex items-center justify-center shrink-0" aria-hidden="true">
+            <span className="text-xs font-semibold text-sidebar-primary-lighter">{initials}</span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-white truncate leading-tight">{userName}</p>
