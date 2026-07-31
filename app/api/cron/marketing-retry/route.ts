@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server'
 import { getEnv } from '@/lib/env'
+import { isValidCronAuth } from '@/lib/cron-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 const MAX_RETRY_AGE_HOURS = 24
 const QSTASH_RETRY_DELAY = 5 * 60 // 5 minutes
 
 export async function POST(request: Request) {
-  const auth = request.headers.get('authorization')
-  const cronSecret = getEnv().CRON_SECRET
-  if (auth !== `Bearer ${cronSecret}`) {
+  if (!isValidCronAuth(request.headers.get('authorization'), getEnv().CRON_SECRET)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

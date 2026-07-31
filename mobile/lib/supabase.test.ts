@@ -4,9 +4,11 @@ jest.mock('@supabase/supabase-js', () => ({
   createClient: jest.fn((url: string, key: string, opts: unknown) => ({ url, key, opts })),
 }))
 
-jest.mock('@react-native-async-storage/async-storage', () => ({
+jest.mock('expo-secure-store', () => ({
   __esModule: true,
-  default: {},
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
 }))
 
 describe('supabase client', () => {
