@@ -235,6 +235,78 @@ describe('reports actions', () => {
     expect(result.ok).toBe(false)
     expect(mockDel).toHaveBeenCalledWith('https://blob.vercel-storage.com/rel.pdf')
   })
+
+  it('rejects event from another org (insert scoped to member org)', async () => {
+    const { supabase, from } = makeSeqSupabase()
+    authAll(supabase)
+    from.mockReturnValueOnce(chain({ data: null })) // event lookup scoped by org fails
+    const { createReportAction } = await import(
+      '@/app/dashboard/events/[eventId]/reports/actions'
+    )
+    const result = await createReportAction(EVENT, form())
+    expect(result).toEqual({ ok: false, error: 'Evento nao encontrado' })
+  })
+
+  it('rejects invalid report payload (missing blob_url)', async () => {
+    const { supabase } = makeSeqSupabase()
+    authAll(supabase)
+    const { createReportAction } = await import(
+      '@/app/dashboard/events/[eventId]/reports/actions'
+    )
+    const fd = form()
+    fd.set('blob_url', 'not-a-url')
+    const result = await createReportAction(EVENT, fd)
+    expect(result.ok).toBe(false)
+  })
+
+  it('creates report scoped to member organization_id', async () => {
+    const inserts: unknown[] = []
+    const { supabase, from } = makeSeqSupabase()
+    authAll(supabase)
+    from
+      .mockReturnValueOnce(chain({ data: { organization_id: 'org-1' } })) // event
+      .mockReturnValueOnce(chain({ data: { id: 'rep-1' }, error: null }, { inserts })) // insert
+    const { createReportAction } = await import(
+      '@/app/dashboard/events/[eventId]/reports/actions'
+    )
+    await createReportAction(EVENT, form())
+    const inserted = inserts[0] as Record<string, unknown>
+    expect(inserted.organization_id).toBe('org-1')
+    expect(inserted.uploaded_by).toBe(MEMBER.id)
+  })
+
+  it('deleteReportAction rejects unauthenticated', async () => {
+    mockGetOrgAuthFull.mockResolvedValue(null)
+    const { deleteReportAction } = await import(
+      '@/app/dashboard/events/[eventId]/reports/actions'
+    )
+    const result = await deleteReportAction(EVENT, 'rep-1', 'https://blob.vercel-storage.com/rel.pdf')
+    expect(result).toEqual({ ok: false, error: 'Nao autenticado' })
+  })
+
+  it('deleteReportAction deletes row scoped to org and removes blob', async () => {
+    const { supabase, from } = makeSeqSupabase()
+    authAll(supabase)
+    from.mockReturnValueOnce(chain({ error: null }))
+    const { deleteReportAction } = await import(
+      '@/app/dashboard/events/[eventId]/reports/actions'
+    )
+    const result = await deleteReportAction(EVENT, 'rep-1', 'https://blob.vercel-storage.com/rel.pdf')
+    expect(result).toEqual({ ok: true })
+    expect(mockDel).toHaveBeenCalledWith('https://blob.vercel-storage.com/rel.pdf')
+  })
+
+  it('deleteReportAction returns error when delete fails, without deleting blob', async () => {
+    const { supabase, from } = makeSeqSupabase()
+    authAll(supabase)
+    from.mockReturnValueOnce(chain({ error: { message: 'db error' } }))
+    const { deleteReportAction } = await import(
+      '@/app/dashboard/events/[eventId]/reports/actions'
+    )
+    const result = await deleteReportAction(EVENT, 'rep-1', 'https://blob.vercel-storage.com/rel.pdf')
+    expect(result).toEqual({ ok: false, error: 'Falha ao apagar' })
+    expect(mockDel).not.toHaveBeenCalled()
+  })
 })
 
 describe('cliping actions', () => {
@@ -271,6 +343,87 @@ describe('cliping actions', () => {
     const result = await createArticleAction(EVENT, form())
     expect(result).toEqual({ ok: true, articleId: 'art-1', notifiedClients: 3 })
     expect(mockAfter).toHaveBeenCalledOnce()
+  })
+
+  it('createArticleAction rejects unauthenticated', async () => {
+    mockGetOrgAuthFull.mockResolvedValue(null)
+    const { createArticleAction } = await import(
+      '@/app/dashboard/events/[eventId]/cliping/actions'
+    )
+    const result = await createArticleAction(EVENT, form())
+    expect(result).toEqual({ ok: false, error: 'Nao autenticado' })
+  })
+
+  it('createArticleAction rejects event from another org', async () => {
+    const { supabase, from } = makeSeqSupabase()
+    authAll(supabase)
+    from.mockReturnValueOnce(chain({ data: null })) // event lookup scoped by org fails
+    const { createArticleAction } = await import(
+      '@/app/dashboard/events/[eventId]/cliping/actions'
+    )
+    const result = await createArticleAction(EVENT, form())
+    expect(result).toEqual({ ok: false, error: 'Evento nao encontrado' })
+  })
+
+  it('createArticleAction rejects missing title', async () => {
+    const { supabase } = makeSeqSupabase()
+    authAll(supabase)
+    const { createArticleAction } = await import(
+      '@/app/dashboard/events/[eventId]/cliping/actions'
+    )
+    const fd = form()
+    fd.set('title', '')
+    const result = await createArticleAction(EVENT, fd)
+    expect(result.ok).toBe(false)
+  })
+
+  it('inserts article scoped to the event organization_id', async () => {
+    const inserts: unknown[] = []
+    const { supabase, from } = makeSeqSupabase()
+    authAll(supabase)
+    from
+      .mockReturnValueOnce(chain({ data: { id: EVENT, organization_id: 'org-1' } })) // event
+      .mockReturnValueOnce(chain({ data: { id: 'art-1' }, error: null }, { inserts })) // insert
+    mockAdminFrom.mockReturnValueOnce(chain({ count: 0 }))
+    const { createArticleAction } = await import(
+      '@/app/dashboard/events/[eventId]/cliping/actions'
+    )
+    await createArticleAction(EVENT, form())
+    const inserted = inserts[0] as Record<string, unknown>
+    expect(inserted.organization_id).toBe('org-1')
+    expect(inserted.event_id).toBe(EVENT)
+    expect(inserted.created_by).toBe(MEMBER.id)
+  })
+
+  it('deleteArticleAction rejects unauthenticated', async () => {
+    mockGetOrgAuthFull.mockResolvedValue(null)
+    const { deleteArticleAction } = await import(
+      '@/app/dashboard/events/[eventId]/cliping/actions'
+    )
+    const result = await deleteArticleAction(EVENT, 'art-1')
+    expect(result).toEqual({ ok: false, error: 'Nao autenticado' })
+  })
+
+  it('deleteArticleAction deletes row scoped to event and org', async () => {
+    const { supabase, from } = makeSeqSupabase()
+    authAll(supabase)
+    from.mockReturnValueOnce(chain({ error: null }))
+    const { deleteArticleAction } = await import(
+      '@/app/dashboard/events/[eventId]/cliping/actions'
+    )
+    const result = await deleteArticleAction(EVENT, 'art-1')
+    expect(result).toEqual({ ok: true })
+  })
+
+  it('deleteArticleAction returns error when delete fails', async () => {
+    const { supabase, from } = makeSeqSupabase()
+    authAll(supabase)
+    from.mockReturnValueOnce(chain({ error: { message: 'db error' } }))
+    const { deleteArticleAction } = await import(
+      '@/app/dashboard/events/[eventId]/cliping/actions'
+    )
+    const result = await deleteArticleAction(EVENT, 'art-1')
+    expect(result).toEqual({ ok: false, error: 'Falha ao apagar' })
   })
 })
 

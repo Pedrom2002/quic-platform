@@ -1,8 +1,8 @@
 /**
  * Tests for marketing Server Actions:
- *   - app/dashboard/marketing/contacts/actions.ts   (createList)
+ *   - app/dashboard/marketing/contacts/actions.ts   (createList, addContact, deleteContact)
  *   - app/dashboard/marketing/settings/actions.ts   (saveSmtpCredentials, testSmtpCredentials)
- *   - app/dashboard/marketing/campaigns/new/actions.ts (createCampaign — incl. list ownership)
+ *   - app/dashboard/marketing/campaigns/new/actions.ts (createCampaign — incl. list ownership, dispatchCampaignSends)
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
@@ -70,6 +70,91 @@ describe('createList', () => {
     const { createList } = await import('@/app/dashboard/marketing/contacts/actions')
     await createList(fd({ name: 'Lista A' }))
     expect(insert).toHaveBeenCalledWith({ name: 'Lista A', created_by: 'user-1', organization_id: 'org-1' })
+    expect(mockRevalidate).toHaveBeenCalled()
+  })
+})
+
+// ─── addContact / deleteContact ─────────────────────────────────────────────
+
+describe('addContact', () => {
+  it('returns not-authenticated message when getOrgAuth fails', async () => {
+    mockGetOrgAuth.mockResolvedValueOnce(null)
+    const { addContact } = await import('@/app/dashboard/marketing/contacts/actions')
+    const result = await addContact(null, fd({ list_id: 'list-1', email: 'a@b.com' }))
+    expect(result).toEqual({ ok: false, message: 'Não autenticado' })
+  })
+
+  it('rejects invalid email without hitting the DB', async () => {
+    const from = vi.fn()
+    authAll({ from })
+    const { addContact } = await import('@/app/dashboard/marketing/contacts/actions')
+    const result = await addContact(null, fd({ list_id: 'list-1', email: 'not-an-email' }))
+    expect(result).toEqual({ ok: false, message: 'Email inválido' })
+    expect(from).not.toHaveBeenCalled()
+  })
+
+  it('rejects missing email without hitting the DB', async () => {
+    const from = vi.fn()
+    authAll({ from })
+    const { addContact } = await import('@/app/dashboard/marketing/contacts/actions')
+    const result = await addContact(null, fd({ list_id: 'list-1' }))
+    expect(result).toEqual({ ok: false, message: 'Email inválido' })
+    expect(from).not.toHaveBeenCalled()
+  })
+
+  it('inserts contact scoped to the member organization_id, trimmed/lowercased', async () => {
+    const insert = vi.fn().mockResolvedValue({ error: null })
+    authAll({ from: vi.fn().mockReturnValue({ insert }) })
+    const { addContact } = await import('@/app/dashboard/marketing/contacts/actions')
+    const result = await addContact(
+      null,
+      fd({ list_id: 'list-1', email: '  Foo@Bar.com  ', name: ' Ana ', company: ' Acme ', role: ' CEO ' })
+    )
+    expect(insert).toHaveBeenCalledWith({
+      list_id: 'list-1',
+      email: 'foo@bar.com',
+      name: 'Ana',
+      company: 'Acme',
+      role: 'CEO',
+      organization_id: 'org-1',
+    })
+    expect(result).toEqual({ ok: true, message: 'foo@bar.com adicionado' })
+    expect(mockRevalidate).toHaveBeenCalled()
+  })
+
+  it('maps duplicate-email db error (23505) to friendly message', async () => {
+    const insert = vi.fn().mockResolvedValue({ error: { code: '23505', message: 'duplicate key' } })
+    authAll({ from: vi.fn().mockReturnValue({ insert }) })
+    const { addContact } = await import('@/app/dashboard/marketing/contacts/actions')
+    const result = await addContact(null, fd({ list_id: 'list-1', email: 'foo@bar.com' }))
+    expect(result).toEqual({ ok: false, message: 'Email já existe nesta lista' })
+  })
+
+  it('surfaces generic db error message', async () => {
+    const insert = vi.fn().mockResolvedValue({ error: { code: '500', message: 'db down' } })
+    authAll({ from: vi.fn().mockReturnValue({ insert }) })
+    const { addContact } = await import('@/app/dashboard/marketing/contacts/actions')
+    const result = await addContact(null, fd({ list_id: 'list-1', email: 'foo@bar.com' }))
+    expect(result).toEqual({ ok: false, message: 'db down' })
+  })
+})
+
+describe('deleteContact', () => {
+  it('returns ok:false when getOrgAuth fails (unauthenticated)', async () => {
+    mockGetOrgAuth.mockResolvedValueOnce(null)
+    const { deleteContact } = await import('@/app/dashboard/marketing/contacts/actions')
+    const result = await deleteContact('contact-1')
+    expect(result).toEqual({ ok: false })
+  })
+
+  it('deletes contact by id and revalidates', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null })
+    const del = vi.fn().mockReturnValue({ eq })
+    authAll({ from: vi.fn().mockReturnValue({ delete: del }) })
+    const { deleteContact } = await import('@/app/dashboard/marketing/contacts/actions')
+    const result = await deleteContact('contact-1')
+    expect(eq).toHaveBeenCalledWith('id', 'contact-1')
+    expect(result).toEqual({ ok: true })
     expect(mockRevalidate).toHaveBeenCalled()
   })
 })
@@ -198,5 +283,131 @@ describe('createCampaign', () => {
     }))
     expect(mockRedirect).toHaveBeenCalledWith('/dashboard/marketing/campaigns/camp-1')
     expect(mockPublishJSON).not.toHaveBeenCalled()
+  })
+
+  it('scopes the campaign insert to the list organization_id, not the caller-supplied one', async () => {
+    let insertedPayload: Record<string, unknown> | undefined
+    const from = vi.fn().mockImplementation((table: string) => {
+      if (table === 'marketing_lists') {
+        return {
+          select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: { id: LIST_ID, organization_id: 'org-owner-of-list' } }),
+        }
+      }
+      return {
+        insert: vi.fn().mockImplementation((payload: Record<string, unknown>) => {
+          insertedPayload = payload
+          return { select: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: { id: 'camp-1' }, error: null }) }) }
+        }),
+      }
+    })
+    authAll({ from })
+    const { createCampaign } = await import('@/app/dashboard/marketing/campaigns/new/actions')
+    await createCampaign(fd({
+      list_id: LIST_ID, name: 'Campanha', subject_template: 'S', body_template: 'B',
+      schedule_now: 'false',
+    }))
+    expect(insertedPayload?.organization_id).toBe('org-owner-of-list')
+    expect(insertedPayload?.created_by).toBe('user-1')
+  })
+
+  it('throws when campaign insert fails', async () => {
+    const from = vi.fn().mockImplementation((table: string) => {
+      if (table === 'marketing_lists') {
+        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { id: LIST_ID, organization_id: 'org-1' } }) }
+      }
+      return {
+        insert: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: null, error: { message: 'db down' } }) }),
+        }),
+      }
+    })
+    authAll({ from })
+    const { createCampaign } = await import('@/app/dashboard/marketing/campaigns/new/actions')
+    await expect(
+      createCampaign(fd({ list_id: LIST_ID, name: 'Campanha', subject_template: 'S', body_template: 'B', schedule_now: 'false' }))
+    ).rejects.toThrow('Erro ao criar campanha')
+    expect(mockRedirect).not.toHaveBeenCalled()
+  })
+
+  it('dispatches sends immediately when schedule_now=true (admin client, QSTASH_TOKEN set)', async () => {
+    process.env.QSTASH_TOKEN = 'qstash-test-token'
+    const from = vi.fn().mockImplementation((table: string) => {
+      if (table === 'marketing_lists') {
+        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { id: LIST_ID, organization_id: 'org-1' } }) }
+      }
+      return {
+        insert: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: { id: 'camp-1' }, error: null }) }),
+        }),
+      }
+    })
+    authAll({ from })
+
+    const contactsSelect = { eq: vi.fn() }
+    contactsSelect.eq.mockReturnValueOnce(contactsSelect) // .eq('list_id', ...)
+    contactsSelect.eq.mockResolvedValueOnce({ data: [{ id: 'contact-1' }, { id: 'contact-2' }] }) // .eq('status', 'active')
+
+    const sendsInsertSelect = vi.fn().mockResolvedValue({
+      data: [{ id: 'send-1', contact_id: 'contact-1' }, { id: 'send-2', contact_id: 'contact-2' }],
+    })
+    const updateEq = vi.fn().mockResolvedValue({ error: null })
+
+    mockAdminFrom.mockImplementation((table: string) => {
+      if (table === 'marketing_campaigns') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: { list_id: LIST_ID, organization_id: 'org-1' } }),
+          update: vi.fn().mockReturnValue({ eq: updateEq }),
+        }
+      }
+      if (table === 'marketing_contacts') {
+        return { select: vi.fn().mockReturnValue(contactsSelect) }
+      }
+      if (table === 'marketing_sends') {
+        return { insert: vi.fn().mockReturnValue({ select: sendsInsertSelect }) }
+      }
+      throw new Error(`unexpected admin table ${table}`)
+    })
+
+    const { createCampaign } = await import('@/app/dashboard/marketing/campaigns/new/actions')
+    await createCampaign(fd({
+      list_id: LIST_ID, name: 'Campanha', subject_template: 'S', body_template: 'B',
+      schedule_now: 'true',
+    }))
+
+    expect(mockPublishJSON).toHaveBeenCalledTimes(2)
+    expect(mockPublishJSON).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({ send_id: 'send-1', campaign_id: 'camp-1', contact_id: 'contact-1', sender_user_id: 'user-1' }),
+      })
+    )
+    expect(updateEq).toHaveBeenCalledWith('id', 'camp-1')
+    expect(mockRedirect).toHaveBeenCalledWith('/dashboard/marketing/campaigns/camp-1')
+    delete process.env.QSTASH_TOKEN
+  })
+
+  it('skips dispatch entirely when QSTASH_TOKEN is not configured', async () => {
+    delete process.env.QSTASH_TOKEN
+    const from = vi.fn().mockImplementation((table: string) => {
+      if (table === 'marketing_lists') {
+        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { id: LIST_ID, organization_id: 'org-1' } }) }
+      }
+      return {
+        insert: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: { id: 'camp-1' }, error: null }) }),
+        }),
+      }
+    })
+    authAll({ from })
+    const { createCampaign } = await import('@/app/dashboard/marketing/campaigns/new/actions')
+    await createCampaign(fd({
+      list_id: LIST_ID, name: 'Campanha', subject_template: 'S', body_template: 'B',
+      schedule_now: 'true',
+    }))
+    expect(mockAdminFrom).not.toHaveBeenCalled()
+    expect(mockPublishJSON).not.toHaveBeenCalled()
+    expect(mockRedirect).toHaveBeenCalledWith('/dashboard/marketing/campaigns/camp-1')
   })
 })
