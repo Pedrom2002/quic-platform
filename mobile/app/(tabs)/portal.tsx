@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { View, Text, ActivityIndicator, FlatList, Pressable, Linking, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { BannerHeader } from '../../components/BannerHeader'
 import { useSession } from '../../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
@@ -102,7 +103,6 @@ function AssetListTab({ assets, emptyMessage }: { assets: ArtistAsset[]; emptyMe
 
 function ArtistPortalContent({ artist, data }: { artist: { name: string }; data: ArtistPortalData }) {
   const [activeTab, setActiveTab] = useState<TabKey>('agenda')
-  const insets = useSafeAreaInsets()
 
   const tabs: Array<{ key: TabKey; label: string }> = [
     { key: 'agenda', label: 'Agenda' },
@@ -113,8 +113,8 @@ function ArtistPortalContent({ artist, data }: { artist: { name: string }; data:
 
   return (
     <View style={styles.container}>
-      <View style={[styles.hero, { paddingTop: insets.top + 16 }]}>
-        <Text style={styles.label}>PORTAL DO ARTISTA</Text>
+      <BannerHeader source={require('../../assets/banners/artists.png')} />
+      <View style={styles.nameBlock}>
         <Text style={styles.name}>{artist.name}</Text>
       </View>
 
@@ -218,8 +218,8 @@ function MeuEventoContent({ data }: { data: PortalData }) {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.clientHero, { paddingTop: insets.top + 16 }]}>
-        <Text style={styles.clientLabel}>O MEU EVENTO</Text>
+      <BannerHeader source={require('../../assets/banners/events.png')} />
+      <View style={styles.nameBlock}>
         <Text style={styles.eventName}>{event.name}</Text>
         <Text style={styles.eventMeta}>{formatEventDate(event.start_datetime)}</Text>
         {event.venue_name && <Text style={styles.eventMeta}>{event.venue_name}</Text>}
@@ -340,9 +340,8 @@ export default function PortalScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   center: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
-  hero: { backgroundColor: QUIC_MAGENTA, paddingHorizontal: 24, paddingVertical: 32 },
-  label: { color: 'rgba(255,255,255,0.4)', fontSize: 11, letterSpacing: 3, marginBottom: 12 },
-  name: { color: '#ffffff', fontSize: 32, fontWeight: 'bold' },
+  nameBlock: { paddingHorizontal: 24, paddingVertical: 20 },
+  name: { color: '#1c1917', fontSize: 26, fontWeight: 'bold' },
   restricted: { color: colors.gray600, fontSize: 14, textAlign: 'center' },
   tabBar: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#e7e5e4' },
   tabButton: { flex: 1, paddingHorizontal: 8, paddingVertical: 12, alignItems: 'center' },
@@ -357,10 +356,8 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
   cardSubtitle: { fontSize: 12, color: colors.gray500, marginTop: 2 },
   emptyText: { color: colors.gray500, fontSize: 14, padding: 16 },
-  clientHero: { backgroundColor: QUIC_MAGENTA, paddingHorizontal: 24, paddingBottom: 20 },
-  clientLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, letterSpacing: 3, marginBottom: 12 },
-  eventName: { color: '#ffffff', fontSize: 26, fontWeight: 'bold', marginBottom: 6 },
-  eventMeta: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },
+  eventName: { color: '#1c1917', fontSize: 26, fontWeight: 'bold', marginBottom: 6 },
+  eventMeta: { color: '#78716c', fontSize: 13 },
   progressTrack: { height: 6, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 3, marginTop: 18, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: '#ffffff', borderRadius: 3 },
   progressLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 8 },
