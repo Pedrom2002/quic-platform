@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react'
 import { View, Text, ActivityIndicator, Pressable, Alert, StyleSheet } from 'react-native'
 import Constants from 'expo-constants'
 import { useRouter } from 'expo-router'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSession } from '../../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
 import { QUIC_MAGENTA, colors } from '../../lib/theme'
+import { BannerHeader } from '../../components/BannerHeader'
 
 function roleLabel(role: UserRole): string {
   if (role.role === 'artist') return 'Artista'
@@ -45,11 +45,10 @@ function MaisContent({ role, email }: { role: UserRole; email: string }) {
     ])
   }
 
-  const insets = useSafeAreaInsets()
-
   return (
     <View style={styles.container}>
-      <View style={[styles.hero, { paddingTop: insets.top + 16 }]}>
+      <BannerHeader source={require('../../assets/banners/mais.png')} />
+      <View style={styles.nameBlock}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{name.slice(0, 2).toUpperCase()}</Text>
         </View>
@@ -114,19 +113,19 @@ export default function MaisScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   center: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
-  hero: { backgroundColor: QUIC_MAGENTA, paddingHorizontal: 24, paddingVertical: 32 },
+  nameBlock: { paddingHorizontal: 24, paddingVertical: 20 },
   avatar: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: colors.gray100,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
   },
-  avatarText: { color: '#ffffff', fontSize: 18, fontWeight: '700' },
-  name: { color: '#ffffff', fontSize: 20, fontWeight: 'bold' },
-  subtitle: { color: 'rgba(255,255,255,0.5)', fontSize: 12, marginTop: 2 },
+  avatarText: { color: QUIC_MAGENTA, fontSize: 18, fontWeight: '700' },
+  name: { color: colors.gray900, fontSize: 20, fontWeight: 'bold' },
+  subtitle: { color: colors.gray400, fontSize: 12, marginTop: 2 },
   body: { padding: 16 },
   sectionLabel: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, color: colors.gray400, marginTop: 16, marginBottom: 6 },
   card: { backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 6, padding: 14, marginBottom: 4 },
