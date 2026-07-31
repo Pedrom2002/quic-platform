@@ -38,33 +38,33 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Início',
-          tabBarAccessibilityLabel: 'Início',
+          title: 'Tickets',
+          tabBarAccessibilityLabel: 'Tickets',
           tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="catalogo"
         options={{
-          title: 'Catálogo',
-          tabBarAccessibilityLabel: 'Catálogo',
+          title: 'Rental',
+          tabBarAccessibilityLabel: 'Rental',
           tabBarIcon: ({ color, size }) => <Ionicons name="grid-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="portal"
         options={{
-          title: 'Portal',
+          title: isArtist ? 'Artists' : 'Events',
           href: (isArtist || clientPortalToken) ? undefined : null,
-          tabBarAccessibilityLabel: 'Portal',
+          tabBarAccessibilityLabel: isArtist ? 'Artists' : 'Events',
           tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="mais"
         options={{
-          title: 'Mais',
-          tabBarAccessibilityLabel: 'Mais opções',
+          title: 'Perfil',
+          tabBarAccessibilityLabel: 'Perfil',
           tabBarIcon: ({ color, size }) => <Ionicons name="ellipsis-horizontal-outline" size={size} color={color} />,
         }}
       />
