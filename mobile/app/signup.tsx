@@ -6,7 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { supabase } from '../lib/supabase'
 import { AuthTextInput } from '../components/AuthTextInput'
-import { QUIC_MAGENTA } from '../lib/theme'
+import { QUIC_MAGENTA, colors } from '../lib/theme'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -63,7 +63,7 @@ export default function SignupScreen() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['transparent', 'rgba(20,10,35,0.4)', 'rgba(10,6,20,0.78)', '#0A0A0F']}
+        colors={['transparent', colors.authScreen.overlayNear, colors.authScreen.overlayFar, colors.authScreen.background]}
         locations={[0, 0.55, 0.78, 1]}
         style={styles.gradient}
         accessibilityElementsHidden
@@ -107,13 +107,13 @@ export default function SignupScreen() {
 const fill = { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A0A0F' },
+  container: { flex: 1, backgroundColor: colors.authScreen.background },
   videoWrapper: { ...fill, overflow: 'hidden' },
   videoZoomOut: { position: 'absolute', top: 0, bottom: 0, left: '-7.5%', right: '-7.5%' },
   gradient: { ...fill },
   keyboardWrapper: { ...fill },
   form: { position: 'absolute', left: 24, right: 24, gap: 14 },
-  error: { color: '#FCA5A5', fontSize: 13 },
+  error: { color: colors.dangerOnDark, fontSize: 13 },
   button: {
     backgroundColor: QUIC_MAGENTA,
     borderRadius: 12,
@@ -128,5 +128,5 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: '#ffffff', fontWeight: '700', fontSize: 15, letterSpacing: 0.3 },
   link: { marginTop: 22, alignItems: 'center' },
-  linkText: { color: 'rgba(245,243,250,0.55)', fontSize: 13 },
+  linkText: { color: colors.authScreen.linkText, fontSize: 13 },
 })

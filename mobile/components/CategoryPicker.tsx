@@ -3,7 +3,7 @@ import { Modal, Pressable, Text, View, FlatList, StyleSheet } from 'react-native
 import { Ionicons } from '@expo/vector-icons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { StockCategory } from '../lib/catalog'
-import { QUIC_MAGENTA } from '../lib/theme'
+import { QUIC_MAGENTA, colors } from '../lib/theme'
 
 type PickerItem = { id: string | null; name: string }
 
@@ -36,7 +36,7 @@ export function CategoryPicker({
         accessibilityRole="button"
         accessibilityLabel="Escolher categoria"
       >
-        <Ionicons name="options-outline" size={16} color="#44403c" />
+        <Ionicons name="options-outline" size={16} color={colors.gray700} />
         <Text style={styles.triggerText}>{selectedName}</Text>
       </Pressable>
 
@@ -50,7 +50,7 @@ export function CategoryPicker({
                 accessibilityRole="button"
                 accessibilityLabel="Fechar"
               >
-                <Ionicons name="close" size={24} color="#1c1917" />
+                <Ionicons name="close" size={24} color={colors.gray900} />
               </Pressable>
             </View>
             <FlatList
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#f0efee',
   },
-  triggerText: { fontSize: 13, color: '#44403c', fontWeight: '600' },
+  triggerText: { fontSize: 13, color: colors.gray700, fontWeight: '600' },
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: '#ffffff',
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 12,
   },
-  headerTitle: { fontSize: 17, fontWeight: '700', color: '#1c1917' },
+  headerTitle: { fontSize: 17, fontWeight: '700', color: colors.gray900 },
   grid: { paddingHorizontal: 16, gap: 10, paddingBottom: 8 },
   gridItem: {
     flex: 1,
@@ -122,6 +122,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   gridItemActive: { backgroundColor: QUIC_MAGENTA },
-  gridItemText: { fontSize: 13, color: '#44403c', fontWeight: '600' },
+  gridItemText: { fontSize: 13, color: colors.gray700, fontWeight: '600' },
   gridItemTextActive: { color: '#ffffff' },
 })

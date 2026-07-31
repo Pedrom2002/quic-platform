@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons'
 import Animated, { FadeIn } from 'react-native-reanimated'
 import type { CatalogMaterial } from '../lib/catalog'
 import { useCart } from '../hooks/useCart'
-import { QUIC_MAGENTA } from '../lib/theme'
+import { QUIC_MAGENTA, colors } from '../lib/theme'
 
 export function MaterialCard({
   material,
@@ -55,7 +55,7 @@ export function MaterialCard({
 }
 
 const styles = StyleSheet.create({
-  card: { flex: 1, backgroundColor: '#fafaf9', borderWidth: 1, borderColor: '#f5f5f4', borderRadius: 12, overflow: 'hidden', margin: 6 },
+  card: { flex: 1, backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 12, overflow: 'hidden', margin: 6 },
   image: { width: '100%', height: 120, backgroundColor: '#ffffff' },
   addButton: {
     position: 'absolute',
@@ -69,12 +69,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: { padding: 12, gap: 4 },
-  category: { fontSize: 10, color: '#a8a29e', textTransform: 'uppercase', letterSpacing: 1 },
-  name: { fontSize: 14, fontWeight: '600', color: '#1c1917' },
+  category: { fontSize: 10, color: colors.gray400, textTransform: 'uppercase', letterSpacing: 1 },
+  name: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
   badge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, marginTop: 4 },
   badgeAvailable: { backgroundColor: '#dcfce7' },
   badgeUnavailable: { backgroundColor: '#e7e5e4' },
   badgeText: { fontSize: 10, fontWeight: '600' },
   badgeTextAvailable: { color: '#166534' },
-  badgeTextUnavailable: { color: '#78716c' },
+  badgeTextUnavailable: { color: colors.gray500 },
 })

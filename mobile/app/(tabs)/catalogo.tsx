@@ -8,8 +8,9 @@ import { fetchCategories, fetchCatalogMaterials, type StockCategory, type Catalo
 import { CategoryPicker } from '../../components/CategoryPicker'
 import { MaterialCard } from '../../components/MaterialCard'
 import { MaterialCardSkeleton } from '../../components/MaterialCardSkeleton'
+import { BannerHeader } from '../../components/BannerHeader'
 import { useCart } from '../../hooks/useCart'
-import { QUIC_MAGENTA } from '../../lib/theme'
+import { QUIC_MAGENTA, colors } from '../../lib/theme'
 
 const PAGE_SIZE = 20
 const SKELETON_COUNT = 6
@@ -63,16 +64,13 @@ export default function CatalogoScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <Text style={styles.title}>Catálogo</Text>
-        <Text style={styles.subtitle}>Material disponível para o teu evento</Text>
-      </View>
+      <BannerHeader source={require('../../assets/banners/rental.png')} />
 
       <View style={styles.searchWrapper}>
-        <Ionicons name="search-outline" size={18} color="#a8a29e" style={styles.searchIcon} />
+        <Ionicons name="search-outline" size={18} color={colors.gray400} style={styles.searchIcon} />
         <TextInput
           placeholder="Pesquisar material..."
-          placeholderTextColor="#a8a29e"
+          placeholderTextColor={colors.gray400}
           value={search}
           onChangeText={setSearch}
           style={styles.search}
@@ -126,23 +124,20 @@ export default function CatalogoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
-  header: { paddingHorizontal: 20, paddingBottom: 16 },
-  title: { fontSize: 26, fontWeight: '800', color: '#1c1917' },
-  subtitle: { fontSize: 13, color: '#78716c', marginTop: 2 },
   searchWrapper: { marginHorizontal: 16, marginBottom: 8, position: 'relative', justifyContent: 'center' },
   searchIcon: { position: 'absolute', left: 14, zIndex: 1 },
   search: {
-    backgroundColor: '#f5f5f4',
+    backgroundColor: colors.gray100,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingLeft: 40,
     paddingVertical: 12,
     fontSize: 14,
-    color: '#1c1917',
+    color: colors.gray900,
   },
   grid: { paddingHorizontal: 10, paddingBottom: 16 },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { color: '#78716c', fontSize: 14 },
+  emptyText: { color: colors.gray500, fontSize: 14 },
   fab: {
     position: 'absolute',
     left: 16,

@@ -4,7 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '../../lib/supabase'
 import { fetchTicketsBySession } from '../../lib/tickets'
-import { QUIC_MAGENTA } from '../../lib/theme'
+import { QUIC_MAGENTA, colors } from '../../lib/theme'
 
 // O webhook do Stripe cria o bilhete de forma assincrona ao confirmar o
 // pagamento, o que pode chegar depois deste ecra abrir. Tenta algumas vezes
@@ -130,9 +130,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   iconCirclePending: { backgroundColor: '#d97706' },
-  iconCircleError: { backgroundColor: '#b91c1c' },
-  title: { fontSize: 20, fontWeight: '700', color: '#1c1917' },
-  subtitle: { fontSize: 14, color: '#78716c', textAlign: 'center' },
+  iconCircleError: { backgroundColor: colors.danger },
+  title: { fontSize: 20, fontWeight: '700', color: colors.gray900 },
+  subtitle: { fontSize: 14, color: colors.gray500, textAlign: 'center' },
   button: { marginTop: 16, backgroundColor: QUIC_MAGENTA, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14 },
   buttonText: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
 })

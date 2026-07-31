@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSession } from '../../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
-import { QUIC_MAGENTA } from '../../lib/theme'
+import { QUIC_MAGENTA, colors } from '../../lib/theme'
 
 function roleLabel(role: UserRole): string {
   if (role.role === 'artist') return 'Artista'
@@ -128,11 +128,11 @@ const styles = StyleSheet.create({
   name: { color: '#ffffff', fontSize: 20, fontWeight: 'bold' },
   subtitle: { color: 'rgba(255,255,255,0.5)', fontSize: 12, marginTop: 2 },
   body: { padding: 16 },
-  sectionLabel: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, color: '#a8a29e', marginTop: 16, marginBottom: 6 },
-  card: { backgroundColor: '#fafaf9', borderWidth: 1, borderColor: '#f5f5f4', borderRadius: 6, padding: 14, marginBottom: 4 },
-  cardTitle: { fontSize: 14, color: '#1c1917' },
+  sectionLabel: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, color: colors.gray400, marginTop: 16, marginBottom: 6 },
+  card: { backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 6, padding: 14, marginBottom: 4 },
+  cardTitle: { fontSize: 14, color: colors.gray900 },
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  comingSoon: { fontSize: 12, color: '#a8a29e' },
+  comingSoon: { fontSize: 12, color: colors.gray400 },
   logoutButton: {
     marginTop: 20,
     backgroundColor: '#fef2f2',
@@ -142,5 +142,5 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: 'center',
   },
-  logoutText: { color: '#b91c1c', fontSize: 14, fontWeight: '600' },
+  logoutText: { color: colors.danger, fontSize: 14, fontWeight: '600' },
 })

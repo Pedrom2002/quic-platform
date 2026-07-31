@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useCart } from '../hooks/useCart'
 import { supabase } from '../lib/supabase'
 import { validateQuote, submitQuote } from '../lib/quote'
-import { QUIC_MAGENTA } from '../lib/theme'
+import { QUIC_MAGENTA, colors } from '../lib/theme'
 
 export default function PedidoScreen() {
   const router = useRouter()
@@ -105,11 +105,11 @@ export default function PedidoScreen() {
       ))}
 
       <Text style={styles.sectionLabel}>Os teus dados</Text>
-      <TextInput style={styles.input} placeholder="Nome *" placeholderTextColor="#a8a29e" value={name} onChangeText={setName} />
-      <TextInput style={styles.input} placeholder="Email *" placeholderTextColor="#a8a29e" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-      <TextInput style={styles.input} placeholder="Telefone (opcional)" placeholderTextColor="#a8a29e" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-      <TextInput style={styles.input} placeholder="Data do evento (AAAA-MM-DD, opcional)" placeholderTextColor="#a8a29e" value={eventDate} onChangeText={setEventDate} />
-      <TextInput style={[styles.input, styles.messageInput]} placeholder="Mensagem (opcional)" placeholderTextColor="#a8a29e" value={message} onChangeText={setMessage} multiline />
+      <TextInput style={styles.input} placeholder="Nome *" placeholderTextColor={colors.gray400} value={name} onChangeText={setName} />
+      <TextInput style={styles.input} placeholder="Email *" placeholderTextColor={colors.gray400} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+      <TextInput style={styles.input} placeholder="Telefone (opcional)" placeholderTextColor={colors.gray400} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+      <TextInput style={styles.input} placeholder="Data do evento (AAAA-MM-DD, opcional)" placeholderTextColor={colors.gray400} value={eventDate} onChangeText={setEventDate} />
+      <TextInput style={[styles.input, styles.messageInput]} placeholder="Mensagem (opcional)" placeholderTextColor={colors.gray400} value={message} onChangeText={setMessage} multiline />
 
       {error && <Text style={styles.error}>{error}</Text>}
 
@@ -122,25 +122,25 @@ export default function PedidoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
-  heading: { fontSize: 24, fontWeight: '800', color: '#1c1917', paddingHorizontal: 20, paddingTop: 20 },
-  sectionLabel: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, color: '#a8a29e', paddingHorizontal: 20, marginTop: 20, marginBottom: 8 },
+  heading: { fontSize: 24, fontWeight: '800', color: colors.gray900, paddingHorizontal: 20, paddingTop: 20 },
+  sectionLabel: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, color: colors.gray400, paddingHorizontal: 20, marginTop: 20, marginBottom: 8 },
   itemRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 8 },
   itemInfo: { flex: 1 },
-  itemName: { fontSize: 14, fontWeight: '600', color: '#1c1917' },
-  itemUnit: { fontSize: 12, color: '#78716c' },
+  itemName: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
+  itemUnit: { fontSize: 12, color: colors.gray500 },
   qtyButton: { width: 32, height: 32, borderRadius: 8, backgroundColor: '#f0efee', justifyContent: 'center', alignItems: 'center' },
-  qtyButtonText: { fontSize: 18, color: '#1c1917', fontWeight: '600' },
-  qtyValue: { minWidth: 24, textAlign: 'center', fontSize: 14, color: '#1c1917' },
+  qtyButtonText: { fontSize: 18, color: colors.gray900, fontWeight: '600' },
+  qtyValue: { minWidth: 24, textAlign: 'center', fontSize: 14, color: colors.gray900 },
   removeButton: { paddingHorizontal: 8, paddingVertical: 4 },
-  removeButtonText: { fontSize: 12, color: '#b91c1c', fontWeight: '600' },
-  input: { marginHorizontal: 20, marginBottom: 10, backgroundColor: '#f5f5f4', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: '#1c1917' },
+  removeButtonText: { fontSize: 12, color: colors.danger, fontWeight: '600' },
+  input: { marginHorizontal: 20, marginBottom: 10, backgroundColor: colors.gray100, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: colors.gray900 },
   messageInput: { minHeight: 100, textAlignVertical: 'top' },
-  error: { color: '#b91c1c', fontSize: 13, paddingHorizontal: 20, marginBottom: 8 },
+  error: { color: colors.danger, fontSize: 13, paddingHorizontal: 20, marginBottom: 8 },
   submitButton: { marginHorizontal: 20, marginTop: 8, backgroundColor: QUIC_MAGENTA, borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
   submitButtonText: { color: '#ffffff', fontSize: 15, fontWeight: '700' },
   emptyContainer: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24, gap: 8 },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: '#1c1917' },
-  emptyText: { fontSize: 14, color: '#78716c', textAlign: 'center' },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: colors.gray900 },
+  emptyText: { fontSize: 14, color: colors.gray500, textAlign: 'center' },
   emptyButton: { marginTop: 12, backgroundColor: QUIC_MAGENTA, borderRadius: 12, paddingHorizontal: 20, paddingVertical: 12 },
   emptyButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '600' },
 })

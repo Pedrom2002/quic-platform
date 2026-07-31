@@ -4,6 +4,7 @@ import { useLocalSearchParams } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { fetchEventById, type PublicEvent } from '../../lib/events'
 import { fetchTicketTypes, createCheckoutSession, type TicketType } from '../../lib/tickets'
+import { colors } from '../../lib/theme'
 
 function formatEventDateTime(iso: string): string {
   const date = new Date(iso)
@@ -83,16 +84,16 @@ const styles = StyleSheet.create({
   hero: { width: '100%', height: 260 },
   heroFallback: { width: '100%', height: 260, backgroundColor: '#111111' },
   body: { padding: 20 },
-  name: { fontSize: 28, fontWeight: '700', color: '#1c1917', marginBottom: 8 },
-  date: { fontSize: 14, color: '#78716c', marginBottom: 4 },
-  venue: { fontSize: 14, color: '#1c1917', fontWeight: '500' },
-  address: { fontSize: 13, color: '#a8a29e', marginTop: 2 },
-  description: { fontSize: 14, color: '#44403c', marginTop: 16, lineHeight: 20 },
+  name: { fontSize: 28, fontWeight: '700', color: colors.gray900, marginBottom: 8 },
+  date: { fontSize: 14, color: colors.gray500, marginBottom: 4 },
+  venue: { fontSize: 14, color: colors.gray900, fontWeight: '500' },
+  address: { fontSize: 13, color: colors.gray400, marginTop: 2 },
+  description: { fontSize: 14, color: colors.gray700, marginTop: 16, lineHeight: 20 },
   notFound: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
-  notFoundText: { color: '#78716c', fontSize: 14 },
+  notFoundText: { color: colors.gray500, fontSize: 14 },
   ticketsSection: { marginTop: 24, gap: 8 },
-  ticketsTitle: { fontSize: 16, fontWeight: '700', color: '#1c1917', marginBottom: 4 },
-  ticketRow: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#fafaf9', borderWidth: 1, borderColor: '#f5f5f4', borderRadius: 6, padding: 14 },
-  ticketName: { fontSize: 14, fontWeight: '600', color: '#1c1917' },
-  ticketPrice: { fontSize: 14, color: '#78716c' },
+  ticketsTitle: { fontSize: 16, fontWeight: '700', color: colors.gray900, marginBottom: 4 },
+  ticketRow: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 6, padding: 14 },
+  ticketName: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
+  ticketPrice: { fontSize: 14, color: colors.gray500 },
 })

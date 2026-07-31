@@ -6,7 +6,7 @@ import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
 import { fetchArtistPortalData, type ArtistPortalData, type ArtistAgendaItem, type ArtistClipping, type ArtistAsset } from '../../lib/artistPortal'
 import { fetchPortalData, type PortalData, type PortalItem, type PortalReport, type PortalItemFile } from '../../lib/portal'
-import { QUIC_MAGENTA } from '../../lib/theme'
+import { QUIC_MAGENTA, colors } from '../../lib/theme'
 
 type TabKey = 'agenda' | 'clipping' | 'contents' | 'documents'
 
@@ -343,20 +343,20 @@ const styles = StyleSheet.create({
   hero: { backgroundColor: QUIC_MAGENTA, paddingHorizontal: 24, paddingVertical: 32 },
   label: { color: 'rgba(255,255,255,0.4)', fontSize: 11, letterSpacing: 3, marginBottom: 12 },
   name: { color: '#ffffff', fontSize: 32, fontWeight: 'bold' },
-  restricted: { color: '#57534e', fontSize: 14, textAlign: 'center' },
+  restricted: { color: colors.gray600, fontSize: 14, textAlign: 'center' },
   tabBar: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#e7e5e4' },
   tabButton: { flex: 1, paddingHorizontal: 8, paddingVertical: 12, alignItems: 'center' },
-  tabButtonText: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: '#a8a29e', fontWeight: '600', textAlign: 'center' },
+  tabButtonText: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: colors.gray400, fontWeight: '600', textAlign: 'center' },
   tabButtonTextActive: { color: QUIC_MAGENTA },
   body: { padding: 16 },
   tabContent: { gap: 12 },
   pastToggle: { paddingVertical: 8 },
-  pastToggleText: { fontSize: 12, color: '#a8a29e', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1 },
-  card: { backgroundColor: '#fafaf9', borderWidth: 1, borderColor: '#f5f5f4', borderRadius: 6, padding: 14 },
-  cardMeta: { fontSize: 11, color: '#a8a29e', marginBottom: 4 },
-  cardTitle: { fontSize: 14, fontWeight: '600', color: '#1c1917' },
-  cardSubtitle: { fontSize: 12, color: '#78716c', marginTop: 2 },
-  emptyText: { color: '#78716c', fontSize: 14, padding: 16 },
+  pastToggleText: { fontSize: 12, color: colors.gray400, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1 },
+  card: { backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 6, padding: 14 },
+  cardMeta: { fontSize: 11, color: colors.gray400, marginBottom: 4 },
+  cardTitle: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
+  cardSubtitle: { fontSize: 12, color: colors.gray500, marginTop: 2 },
+  emptyText: { color: colors.gray500, fontSize: 14, padding: 16 },
   clientHero: { backgroundColor: QUIC_MAGENTA, paddingHorizontal: 24, paddingBottom: 20 },
   clientLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, letterSpacing: 3, marginBottom: 12 },
   eventName: { color: '#ffffff', fontSize: 26, fontWeight: 'bold', marginBottom: 6 },
@@ -364,8 +364,8 @@ const styles = StyleSheet.create({
   progressTrack: { height: 6, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 3, marginTop: 18, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: '#ffffff', borderRadius: 3 },
   progressLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 8 },
-  itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f5f5f4' },
-  itemTitle: { fontSize: 14, color: '#1c1917', flex: 1, marginRight: 12 },
-  itemTitleDone: { color: '#a8a29e', textDecorationLine: 'line-through' },
-  itemStatus: { fontSize: 11, color: '#78716c', textTransform: 'uppercase', letterSpacing: 0.5 },
+  itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.gray100 },
+  itemTitle: { fontSize: 14, color: colors.gray900, flex: 1, marginRight: 12 },
+  itemTitleDone: { color: colors.gray400, textDecorationLine: 'line-through' },
+  itemStatus: { fontSize: 11, color: colors.gray500, textTransform: 'uppercase', letterSpacing: 0.5 },
 })
