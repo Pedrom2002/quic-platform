@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import { withSentryConfig } from '@sentry/nextjs'
 
 const securityHeaders = [
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
@@ -49,4 +50,19 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+// withSentryConfig so ativa upload de source maps quando SENTRY_AUTH_TOKEN,
+// SENTRY_ORG e SENTRY_PROJECT estao definidos (ex: no build da CI). Sem eles,
+// o plugin fica em no-op e o build/dev continuam normalmente.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Silencia logs do upload de source maps fora de CI.
+  silent: !process.env.CI,
+
+  // Evita que o build falhe se o Sentry nao estiver configurado.
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
+})

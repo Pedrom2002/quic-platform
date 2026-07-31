@@ -25,6 +25,14 @@ const schema = z.object({
   PORTUGAL_ADMIN_PASSWORD: z.string().min(4, 'PORTUGAL_ADMIN_PASSWORD must be at least 4 chars — set it in Vercel env vars'),
   STRIPE_SECRET_KEY: z.string().min(1, 'STRIPE_SECRET_KEY is required'),
   STRIPE_WEBHOOK_SECRET: z.string().min(1, 'STRIPE_WEBHOOK_SECRET is required'),
+  // Sentry — todos opcionais. Sem SENTRY_DSN, o SDK fica em no-op (ver
+  // instrumentation.ts / instrumentation-client.ts). AUTH_TOKEN/ORG/PROJECT
+  // so sao usados para upload de source maps no build (ver next.config.ts).
+  SENTRY_DSN: z.string().url().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+  SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
+  SENTRY_ORG: z.string().min(1).optional(),
+  SENTRY_PROJECT: z.string().min(1).optional(),
 })
 
 export type ServerEnv = z.infer<typeof schema>
