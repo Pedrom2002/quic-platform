@@ -6,6 +6,7 @@ const mockGetExpoPushTokenAsync = jest.fn()
 const mockSetNotificationChannelAsync = jest.fn()
 const mockIsDevice = { value: true }
 const mockPlatformOS = { value: 'ios' as 'ios' | 'android' }
+const mockAppOwnership = { value: null as string | null }
 
 jest.mock('expo-notifications', () => ({
   getPermissionsAsync: (...args: unknown[]) => mockGetPermissionsAsync(...args),
@@ -16,6 +17,9 @@ jest.mock('expo-notifications', () => ({
 }))
 jest.mock('expo-device', () => ({
   get isDevice() { return mockIsDevice.value },
+}))
+jest.mock('expo-constants', () => ({
+  get appOwnership() { return mockAppOwnership.value },
 }))
 jest.mock('react-native', () => ({
   get Platform() { return { get OS() { return mockPlatformOS.value } } },
@@ -34,9 +38,16 @@ beforeEach(() => {
   mockFetch.mockReset()
   mockIsDevice.value = true
   mockPlatformOS.value = 'ios'
+  mockAppOwnership.value = null
 })
 
 describe('registerForPushNotifications', () => {
+  it('não faz nada quando corre no Expo Go (expo-notifications indisponível no SDK 53+)', async () => {
+    mockAppOwnership.value = 'expo'
+    await registerForPushNotifications('https://app.example.com', 'access-token-abc')
+    expect(mockGetPermissionsAsync).not.toHaveBeenCalled()
+  })
+
   it('não faz nada quando não corre num dispositivo físico', async () => {
     mockIsDevice.value = false
     await registerForPushNotifications('https://app.example.com', 'access-token-abc')
