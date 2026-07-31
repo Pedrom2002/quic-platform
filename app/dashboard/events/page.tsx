@@ -46,7 +46,7 @@ export default async function EventsPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Eventos</h1>
+          <h1 className="text-2xl font-semibold text-slate-900">Eventos</h1>
           <p className="text-slate-400 text-sm mt-1">{events.length} eventos no total</p>
         </div>
         <ButtonLink href="/dashboard/events/new">

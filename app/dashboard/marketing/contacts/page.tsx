@@ -42,7 +42,7 @@ export default async function MarketingContactsPage() {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold">Listas de Contactos</h1>
+        <h1 className="text-2xl font-semibold">Listas de Contactos</h1>
         <form action={createList} className="flex gap-2">
           <input name="name" placeholder="Nome da lista" required
             className="border rounded px-3 py-2 text-sm" />

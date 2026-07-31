@@ -86,10 +86,7 @@ export default async function DashboardPage() {
             <p className="text-[10px] font-medium tracking-[0.35em] uppercase text-white/40 mb-3">
               {greeting}
             </p>
-            <h1
-              className="text-4xl sm:text-5xl font-bold tracking-tight text-white leading-[1.0] mb-2"
-              style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
-            >
+            <h1 className="text-2xl font-semibold text-white mb-2">
               {firstName}
             </h1>
             <p className="text-sm text-white/40">
