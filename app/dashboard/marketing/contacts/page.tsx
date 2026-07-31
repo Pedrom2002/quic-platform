@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createList } from './actions'
 import { CsvUpload } from '@/components/marketing/CsvUpload'
 import { ListContacts } from '@/components/marketing/ListContacts'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 export default async function MarketingContactsPage() {
   const supabase = await createClient()
@@ -44,12 +46,10 @@ export default async function MarketingContactsPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Listas de Contactos</h1>
         <form action={createList} className="flex gap-2">
-          <input name="name" placeholder="Nome da lista" required
-            className="border rounded px-3 py-2 text-sm" />
-          <button type="submit"
-            className="bg-zinc-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-zinc-700">
+          <Input name="name" placeholder="Nome da lista" required className="w-auto" />
+          <Button type="submit">
             Nova Lista
-          </button>
+          </Button>
         </form>
       </div>
       <div className="space-y-6">

@@ -3,6 +3,15 @@ import { notFound } from 'next/navigation'
 import { CampaignMetrics } from '@/components/marketing/CampaignMetrics'
 import { InsightsCard } from '@/components/marketing/InsightsCard'
 import { OpenHeatmap } from '@/components/marketing/OpenHeatmap'
+import { Badge } from '@/components/ui/badge'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 export default async function CampaignDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -42,15 +51,22 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
     bounced: 'Bounce', unsubscribed: 'Cancelado', failed: 'Erro',
   }
 
-  const STATUS_COLORS: Record<string, string> = {
-    pending: 'bg-zinc-100 text-zinc-600',
-    sent: 'bg-blue-100 text-blue-700',
+  const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline' | 'subtle'> = {
+    pending: 'secondary',
+    sent: 'outline',
+    opened: 'default',
+    clicked: 'default',
+    replied: 'subtle',
+    bounced: 'destructive',
+    unsubscribed: 'secondary',
+    failed: 'destructive',
+  }
+
+  // opened/clicked partilham a variante "default" mas mantêm cores distintas
+  // do design original (funil de progressão), sem variante shadcn dedicada.
+  const STATUS_CLASSNAMES: Record<string, string> = {
     opened: 'bg-purple-100 text-purple-700',
     clicked: 'bg-indigo-100 text-indigo-700',
-    replied: 'bg-emerald-100 text-emerald-700',
-    bounced: 'bg-red-100 text-red-700',
-    unsubscribed: 'bg-zinc-200 text-zinc-700',
-    failed: 'bg-red-200 text-red-800',
   }
 
   return (
@@ -98,42 +114,43 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
 
       <InsightsCard campaignId={id} />
 
-      <div className="border rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-zinc-50 border-b">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium">Contacto</th>
-              <th className="text-left px-4 py-3 font-medium">Empresa</th>
-              <th className="text-left px-4 py-3 font-medium">Estado</th>
-              <th className="text-left px-4 py-3 font-medium">Score</th>
-              <th className="text-left px-4 py-3 font-medium">Enviado</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {sends?.map(s => {
-              const contact = s.marketing_contacts as { name?: string; company?: string; email?: string; engagement_score?: number } | null
-              return (
-                <tr key={s.id}>
-                  <td className="px-4 py-3">{contact?.name ?? contact?.email}</td>
-                  <td className="px-4 py-3 text-zinc-500">{contact?.company ?? '—'}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded ${STATUS_COLORS[s.status] ?? 'bg-zinc-100'}`}>
-                      {STATUS_LABELS[s.status] ?? s.status}
-                    </span>
-                    {s.bot_suspected && (
-                      <span className="ml-1 text-[10px] text-zinc-400 uppercase tracking-wide" title="Open detetado via proxy (Apple/Gmail)">proxy</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">{contact?.engagement_score ?? 0}</td>
-                  <td className="px-4 py-3 text-zinc-500">
-                    {s.sent_at ? new Date(s.sent_at).toLocaleDateString('pt-PT') : '—'}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Contacto</TableHead>
+            <TableHead>Empresa</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead>Score</TableHead>
+            <TableHead>Enviado</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sends?.map(s => {
+            const contact = s.marketing_contacts as { name?: string; company?: string; email?: string; engagement_score?: number } | null
+            return (
+              <TableRow key={s.id}>
+                <TableCell>{contact?.name ?? contact?.email}</TableCell>
+                <TableCell className="text-muted-foreground">{contact?.company ?? '—'}</TableCell>
+                <TableCell>
+                  <Badge
+                    variant={STATUS_VARIANTS[s.status] ?? 'secondary'}
+                    className={STATUS_CLASSNAMES[s.status]}
+                  >
+                    {STATUS_LABELS[s.status] ?? s.status}
+                  </Badge>
+                  {s.bot_suspected && (
+                    <span className="ml-1 text-[10px] text-zinc-400 uppercase tracking-wide" title="Open detetado via proxy (Apple/Gmail)">proxy</span>
+                  )}
+                </TableCell>
+                <TableCell>{contact?.engagement_score ?? 0}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {s.sent_at ? new Date(s.sent_at).toLocaleDateString('pt-PT') : '—'}
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
     </div>
   )
 }
