@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+
+const REGISTER_LIMIT = 5
+const REGISTER_WINDOW_MS = 10 * 60 * 1_000
 
 function normalizePhone(raw: string): string {
   const digits = raw.replace(/\s/g, '')
@@ -17,6 +21,11 @@ const schema = z.object({
 })
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request)
+  if (await isRateLimited(`portugal-register:${ip}`, REGISTER_LIMIT, REGISTER_WINDOW_MS)) {
+    return NextResponse.json({ error: 'Demasiadas tentativas. Tenta novamente mais tarde.' }, { status: 429 })
+  }
+
   let body: unknown
   try {
     body = await request.json()
