@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { View, Text, TextInput, FlatList, StyleSheet, Pressable } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { fetchCategories, fetchCatalogMaterials, type StockCategory, type CatalogMaterial } from '../../lib/catalog'
@@ -16,7 +15,6 @@ const PAGE_SIZE = 20
 const SKELETON_COUNT = 6
 
 export default function CatalogoScreen() {
-  const insets = useSafeAreaInsets()
   const router = useRouter()
   const { items } = useCart()
   const totalQty = items.reduce((sum, item) => sum + item.qty, 0)
