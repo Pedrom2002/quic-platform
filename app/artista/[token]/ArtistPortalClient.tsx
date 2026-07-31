@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 
 import type { ArtistPortalData } from '@/lib/artists/portal-data'
-import { agendaTypeLabels, assetKindLabels, formatDate, formatDateTime } from '@/lib/artists/format'
+import { agendaTypeLabels, assetKindLabels, displayArtistName, formatDate, formatDateTime } from '@/lib/artists/format'
 import type { ArtistAgendaType, ArtistAssetKind } from '@/types/app'
 import type { ArtistAgendaItem, ArtistAsset, ArtistClipping } from '@/types/database'
 
@@ -299,7 +299,7 @@ export function ArtistPortalClient({ data, token }: Props) {
             className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-8 break-words hyphens-auto anim-fade-up"
             style={{ animationDelay: '600ms', fontFamily: 'var(--font-playfair), Georgia, serif' }}
           >
-            {artist.name}
+            {displayArtistName(artist.name)}
           </h1>
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-white/50 text-sm anim-fade-up" style={{ animationDelay: '850ms' }}>

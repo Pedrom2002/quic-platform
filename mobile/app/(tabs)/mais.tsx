@@ -4,6 +4,7 @@ import { View, Text, ActivityIndicator, Pressable, Alert, StyleSheet } from 'rea
 import Constants from 'expo-constants'
 import { useRouter } from 'expo-router'
 import { useSession } from '../../hooks/useSession'
+import { displayArtistName } from '../../lib/artistName'
 import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
 import { QUIC_MAGENTA, colors } from '../../lib/theme'
@@ -17,7 +18,7 @@ function roleLabel(role: UserRole): string {
 }
 
 function displayName(role: UserRole, email: string): string {
-  if (role.role === 'artist') return role.artist.name
+  if (role.role === 'artist') return displayArtistName(role.artist.name)
   if (role.role === 'staff') return role.member.full_name
   return email
 }

@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator, FlatList, Pressable, Linking, StyleSheet
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BannerHeader } from '../../components/BannerHeader'
 import { useSession } from '../../hooks/useSession'
+import { displayArtistName } from '../../lib/artistName'
 import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
 import { fetchArtistPortalData, type ArtistPortalData, type ArtistAgendaItem, type ArtistClipping, type ArtistAsset } from '../../lib/artistPortal'
@@ -115,7 +116,7 @@ function ArtistPortalContent({ artist, data }: { artist: { name: string }; data:
     <View style={styles.container}>
       <BannerHeader source={require('../../assets/banners/artists.png')} />
       <View style={styles.nameBlock}>
-        <Text style={styles.name}>{artist.name}</Text>
+        <Text style={styles.name}>{displayArtistName(artist.name)}</Text>
       </View>
 
       {tabs.length > 1 && (

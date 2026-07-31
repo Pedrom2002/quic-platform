@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { displayArtistName } from '@/lib/artists/format'
 import { getArtistPortalData } from '@/lib/artists/portal-data'
 
 import { ArtistPortalClient } from './ArtistPortalClient'
@@ -16,7 +17,7 @@ export async function generateMetadata({
   const data = await getArtistPortalData(token)
   if (!data) return { title: 'Portal' }
   return {
-    title: `${data.artist.name} · Portal`,
+    title: `${displayArtistName(data.artist.name)} · Portal`,
     robots: { index: false, follow: false },
   }
 }
