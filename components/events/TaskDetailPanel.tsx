@@ -4,11 +4,9 @@ import { useState, useEffect, useTransition, useRef } from 'react'
 import { format, differenceInCalendarDays, isToday } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { X } from 'lucide-react'
-import {
-  updateChecklistItemAction,
-  loadItemNotesAction,
-  loadItemFilesAction,
-} from '@/app/dashboard/events/[eventId]/checklist/actions'
+import { updateChecklistItemAction } from '@/app/dashboard/events/[eventId]/checklist/actions'
+import { loadItemNotesAction } from '@/app/dashboard/events/[eventId]/checklist/actions-notes'
+import { loadItemFilesAction } from '@/app/dashboard/events/[eventId]/checklist/actions-files'
 import ItemNotesSection from './ItemNotesSection'
 import ItemFilesSection from './ItemFilesSection'
 import type { ItemWithMemberAndCounts, ChecklistItemNote, ChecklistItemFileLink, ChecklistItemStatus } from '@/types/app'

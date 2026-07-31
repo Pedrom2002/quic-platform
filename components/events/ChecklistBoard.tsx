@@ -9,9 +9,9 @@ import type { ItemWithMemberAndCounts, ChecklistItemStatus } from '@/types/app'
 import {
   updateChecklistItemAction,
   loadOrgTeamMembersAction,
-  reorderChecklistItemsAction,
   bulkUpdateChecklistStatusAction,
 } from '@/app/dashboard/events/[eventId]/checklist/actions'
+import { reorderChecklistItemsAction } from '@/app/dashboard/events/[eventId]/checklist/actions-reorder'
 import TaskDetailPanel from './TaskDetailPanel'
 import {
   DndContext,
@@ -32,7 +32,7 @@ import { EditRow, NewItemRow } from './checklist/ChecklistItemForms'
 import { KanbanCard } from './checklist/KanbanCard'
 import { SortableChecklistItem } from './checklist/ChecklistItemRow'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { seedChecklistTasksAction, syncCategoriesToTemplateAction } from '@/app/dashboard/events/[eventId]/checklist/actions'
+import { seedChecklistTasksAction, syncCategoriesToTemplateAction } from '@/app/dashboard/events/[eventId]/checklist/actions-templates'
 import { Download } from 'lucide-react'
 
 interface ChecklistBoardProps {

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { pt } from 'date-fns/locale'
-import { addItemNoteAction, deleteItemNoteAction } from '@/app/dashboard/events/[eventId]/checklist/actions'
+import { addItemNoteAction, deleteItemNoteAction } from '@/app/dashboard/events/[eventId]/checklist/actions-notes'
 import type { ChecklistItemNote } from '@/types/app'
 import { Trash2, FileText } from 'lucide-react'
 

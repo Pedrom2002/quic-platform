@@ -214,7 +214,7 @@ export default function TaskSidePanel({
 
   async function openFilePicker() {
     const linkedIds = new Set((fileLinks ?? []).map(f => f.event_file_id))
-    const { loadEventFilesForLinkingAction } = await import('@/app/dashboard/events/[eventId]/checklist/actions')
+    const { loadEventFilesForLinkingAction } = await import('@/app/dashboard/events/[eventId]/checklist/actions-files')
     const eventFiles = await loadEventFilesForLinkingAction(eventId)
     setPickerFiles(eventFiles.filter(f => !linkedIds.has(f.id)))
     setPickerSearch('')

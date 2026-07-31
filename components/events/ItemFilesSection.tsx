@@ -8,7 +8,7 @@ import {
   unlinkFileFromItemAction,
   linkFileToItemAction,
   loadEventFilesForLinkingAction,
-} from '@/app/dashboard/events/[eventId]/checklist/actions'
+} from '@/app/dashboard/events/[eventId]/checklist/actions-files'
 import type { ChecklistItemFileLink, EventFileWithUploader } from '@/types/app'
 import { Upload, Trash2, Download, FileText, ImageIcon, FileSpreadsheet, File, Loader2, Link2, X, Search } from 'lucide-react'
 

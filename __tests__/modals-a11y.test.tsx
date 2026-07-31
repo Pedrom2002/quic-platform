@@ -21,13 +21,6 @@ vi.mock('@/app/dashboard/events/[eventId]/actions', () => ({
   sendClientUpdateAction: vi.fn(),
 }))
 
-vi.mock('@/app/dashboard/events/[eventId]/checklist/actions', () => ({
-  createTaskAction: vi.fn(),
-  updateChecklistItemAction: vi.fn(),
-  loadItemNotesAction: vi.fn().mockResolvedValue([]),
-  loadItemFilesAction: vi.fn().mockResolvedValue([]),
-}))
-
 vi.mock('@/app/dashboard/events/[eventId]/tasks/actions', () => ({
   createTaskAction: vi.fn(),
 }))

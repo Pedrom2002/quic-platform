@@ -41,7 +41,7 @@ describe('reorderChecklistItemsAction', () => {
     mockUpdate.mockReset()
     supabaseMock.from.mockClear()
 
-    const mod = await import('@/app/dashboard/events/[eventId]/checklist/actions')
+    const mod = await import('@/app/dashboard/events/[eventId]/checklist/actions-reorder')
     reorderChecklistItemsAction = mod.reorderChecklistItemsAction
 
     const helpers = await import('@/lib/supabase/actions')
