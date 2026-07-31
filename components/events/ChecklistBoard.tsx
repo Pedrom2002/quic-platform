@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { calcProgress } from '@/lib/event-status'
-import { CheckCircle2, SkipForward, Plus, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Plus, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import type { ItemWithMemberAndCounts, ChecklistItemStatus } from '@/types/app'
 import {
@@ -28,12 +27,13 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable'
-import { EditRow, NewItemRow } from './checklist/ChecklistItemForms'
-import { KanbanCard } from './checklist/KanbanCard'
-import { SortableChecklistItem } from './checklist/ChecklistItemRow'
+import { NewItemRow } from './checklist/ChecklistItemForms'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { seedChecklistTasksAction, syncCategoriesToTemplateAction } from '@/app/dashboard/events/[eventId]/checklist/actions-templates'
-import { Download } from 'lucide-react'
+import { ChecklistProgressHeader } from './checklist/ChecklistProgressHeader'
+import { ChecklistBulkBar } from './checklist/ChecklistBulkBar'
+import { ChecklistItemList } from './checklist/ChecklistItemList'
+import { ChecklistBoardView } from './checklist/ChecklistBoardView'
 
 interface ChecklistBoardProps {
   eventId: string
@@ -84,6 +84,22 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
     } catch {
       setItems(prev => prev.map(i => i.id === active.id ? { ...i, status: previousStatus } : i))
     }
+  }
+
+  function handleListDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const previousItems = items
+    const reordered = arrayMove(
+      items,
+      items.findIndex(i => i.id === active.id),
+      items.findIndex(i => i.id === over.id)
+    )
+    setItems(reordered)
+    reorderChecklistItemsAction(eventId, reordered.map(i => i.id)).catch(() => {
+      setItems(previousItems)
+      toast.error('Erro ao reordenar')
+    })
   }
 
   function toggleSelect(id: string) {
@@ -261,31 +277,9 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
     }
   }
 
-  const colLabels: Record<ChecklistItemStatus, string> = {
-    pending: 'A fazer',
-    in_progress: 'Em progresso',
-    completed: 'Concluído',
-    skipped: 'Ignorado',
-  }
-  const colColors: Record<ChecklistItemStatus, string> = {
-    pending: 'border-amber-200 bg-amber-50/40',
-    in_progress: 'border-blue-200 bg-blue-50/40',
-    completed: 'border-green-200 bg-green-50/40',
-    skipped: 'border-slate-200 bg-slate-50/40',
-  }
-
   return (
     <div>
-      {/* Progress bar */}
-      <div className="mb-6 p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-slate-500">Progresso</span>
-          <span className="text-sm font-semibold text-slate-800">{completed}/{total} etapas · {percent}%</span>
-        </div>
-        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-          <div className="h-full bg-green-500 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
-        </div>
-      </div>
+      <ChecklistProgressHeader completed={completed} total={total} percent={percent} />
 
       {/* Seed button */}
       <div className="mb-4 flex justify-end">
@@ -336,34 +330,12 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
         </div>
       </div>
 
-      {/* Bulk toolbar */}
-      {selected.size > 0 && (
-        <div className="sticky top-2 z-10 flex items-center gap-2 mb-3 p-3 bg-slate-900 text-white rounded-xl shadow-lg">
-          <span className="text-sm font-medium flex-1">
-            {selected.size} selecionado{selected.size !== 1 ? 's' : ''}
-          </span>
-          <Button size="sm" disabled={bulkLoading}
-            className="h-7 px-3 text-xs bg-green-600 hover:bg-green-500 text-white border-0"
-            onClick={() => bulkUpdate('completed')}>
-            <CheckCircle2 className="w-3.5 h-3.5 mr-1" />Concluído
-          </Button>
-          <Button size="sm" disabled={bulkLoading}
-            className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-500 text-white border-0"
-            onClick={() => bulkUpdate('in_progress')}>
-            Em Progresso
-          </Button>
-          <Button size="sm" disabled={bulkLoading}
-            className="h-7 px-3 text-xs bg-slate-600 hover:bg-slate-500 text-white border-0"
-            onClick={() => bulkUpdate('skipped')}>
-            <SkipForward className="w-3.5 h-3.5 mr-1" />Saltar
-          </Button>
-          <Button size="sm" variant="ghost" disabled={bulkLoading}
-            className="h-7 px-2 text-white/60 hover:text-white hover:bg-slate-700"
-            onClick={() => setSelected(new Set())}>
-            <X className="w-3.5 h-3.5" />
-          </Button>
-        </div>
-      )}
+      <ChecklistBulkBar
+        selectedCount={selected.size}
+        bulkLoading={bulkLoading}
+        onBulkUpdate={bulkUpdate}
+        onClearSelection={() => setSelected(new Set())}
+      />
 
       {/* Category Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -404,123 +376,56 @@ export function ChecklistBoard({ eventId, initialItems, currentMemberId }: Check
               {/* List view */}
               {view === 'list' && (
                 tab === 'Todas' ? (
-                  <DndContext sensors={sensors} collisionDetection={closestCenter}
-                    onDragEnd={e => {
-                      const { active, over } = e
-                      if (!over || active.id === over.id) return
-                      const previousItems = items
-                      const reordered = arrayMove(
-                        items,
-                        items.findIndex(i => i.id === active.id),
-                        items.findIndex(i => i.id === over.id)
-                      )
-                      setItems(reordered)
-                      reorderChecklistItemsAction(eventId, reordered.map(i => i.id)).catch(() => {
-                        setItems(previousItems)
-                        toast.error('Erro ao reordenar')
-                      })
-                    }}>
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleListDragEnd}>
                     <SortableContext items={tabItems.map(i => i.id)} strategy={verticalListSortingStrategy}>
-                      <div className="space-y-2 mb-4">
-                        {tabItems.map(item =>
-                          editingId === item.id ? (
-                            <EditRow
-                              key={item.id}
-                              item={item}
-                              orgMembers={orgMembers}
-                              onSave={edits => saveEdit(item.id, edits)}
-                              onCancel={() => setEditingId(null)}
-                              isLoading={loadingId === item.id}
-                            />
-                          ) : (
-                            <SortableChecklistItem
-                              key={item.id}
-                              item={item}
-                              orgMembers={orgMembers}
-                              isLoading={loadingId === item.id}
-                              isSelected={selected.has(item.id)}
-                              onToggleSelect={() => toggleSelect(item.id)}
-                              onComplete={() => updateStatus(item.id, 'completed')}
-                              onStart={() => updateStatus(item.id, 'in_progress')}
-                              onSkip={() => updateStatus(item.id, 'skipped')}
-                              onReset={() => updateStatus(item.id, 'pending')}
-                              onEdit={() => setEditingId(item.id)}
-                              onDelete={() => deleteItem(item.id)}
-                              onOpenDetail={() => setSelectedItemId(item.id)}
-                            />
-                          )
-                        )}
-                        {!tabItems.length && (
-                          <p className="text-slate-400 text-sm text-center py-8">Nenhuma etapa adicionada ainda.</p>
-                        )}
-                      </div>
+                      <ChecklistItemList
+                        items={tabItems}
+                        orgMembers={orgMembers}
+                        editingId={editingId}
+                        loadingId={loadingId}
+                        selected={selected}
+                        onToggleSelect={toggleSelect}
+                        onComplete={id => updateStatus(id, 'completed')}
+                        onStart={id => updateStatus(id, 'in_progress')}
+                        onSkip={id => updateStatus(id, 'skipped')}
+                        onReset={id => updateStatus(id, 'pending')}
+                        onEdit={id => setEditingId(id)}
+                        onCancelEdit={() => setEditingId(null)}
+                        onSaveEdit={saveEdit}
+                        onDelete={deleteItem}
+                        onOpenDetail={id => setSelectedItemId(id)}
+                      />
                     </SortableContext>
                   </DndContext>
                 ) : (
-                  <div className="space-y-2 mb-4">
-                    {tabItems.map(item =>
-                      editingId === item.id ? (
-                        <EditRow
-                          key={item.id}
-                          item={item}
-                          orgMembers={orgMembers}
-                          onSave={edits => saveEdit(item.id, edits)}
-                          onCancel={() => setEditingId(null)}
-                          isLoading={loadingId === item.id}
-                        />
-                      ) : (
-                        <SortableChecklistItem
-                          key={item.id}
-                          item={item}
-                          orgMembers={orgMembers}
-                          isLoading={loadingId === item.id}
-                          isSelected={selected.has(item.id)}
-                          onToggleSelect={() => toggleSelect(item.id)}
-                          onComplete={() => updateStatus(item.id, 'completed')}
-                          onStart={() => updateStatus(item.id, 'in_progress')}
-                          onSkip={() => updateStatus(item.id, 'skipped')}
-                          onReset={() => updateStatus(item.id, 'pending')}
-                          onEdit={() => setEditingId(item.id)}
-                          onDelete={() => deleteItem(item.id)}
-                          onOpenDetail={() => setSelectedItemId(item.id)}
-                        />
-                      )
-                    )}
-                    {!tabItems.length && (
-                      <p className="text-slate-400 text-sm text-center py-8">Nenhuma etapa adicionada ainda.</p>
-                    )}
-                  </div>
+                  <ChecklistItemList
+                    items={tabItems}
+                    orgMembers={orgMembers}
+                    editingId={editingId}
+                    loadingId={loadingId}
+                    selected={selected}
+                    onToggleSelect={toggleSelect}
+                    onComplete={id => updateStatus(id, 'completed')}
+                    onStart={id => updateStatus(id, 'in_progress')}
+                    onSkip={id => updateStatus(id, 'skipped')}
+                    onReset={id => updateStatus(id, 'pending')}
+                    onEdit={id => setEditingId(id)}
+                    onCancelEdit={() => setEditingId(null)}
+                    onSaveEdit={saveEdit}
+                    onDelete={deleteItem}
+                    onOpenDetail={id => setSelectedItemId(id)}
+                  />
                 )
               )}
 
               {/* Board view */}
               {view === 'board' && (
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBoardDragEnd}>
-                  <div className="grid grid-cols-4 gap-4 mb-4">
-                    {(['pending', 'in_progress', 'completed', 'skipped'] as ChecklistItemStatus[]).map(col => {
-                      const colItems = tabItems.filter(i => i.status === col)
-                      return (
-                        <div key={col} className={`rounded-xl border ${colColors[col]} p-3 min-h-[200px]`}>
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="text-xs font-semibold text-slate-600">{colLabels[col]}</span>
-                            <span className="text-xs text-slate-400 ml-auto">{colItems.length}</span>
-                          </div>
-                          <SortableContext items={colItems.map(i => i.id)} strategy={verticalListSortingStrategy}>
-                            {colItems.length === 0 ? (
-                              <div className="border border-dashed border-slate-200 rounded-lg p-3 text-center text-xs text-slate-300">
-                                Sem tarefas
-                              </div>
-                            ) : (
-                              colItems.map(item => (
-                                <KanbanCard key={item.id} item={item} onClick={() => setSelectedItemId(item.id)} />
-                              ))
-                            )}
-                          </SortableContext>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </DndContext>
+                <ChecklistBoardView
+                  items={tabItems}
+                  sensors={sensors}
+                  onDragEnd={handleBoardDragEnd}
+                  onOpenDetail={id => setSelectedItemId(id)}
+                />
               )}
             </TabsContent>
           )
