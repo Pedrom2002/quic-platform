@@ -35,7 +35,7 @@ export function ChecklistBulkBar({ selectedCount, bulkLoading, onBulkUpdate, onC
       </Button>
       <Button size="sm" variant="ghost" disabled={bulkLoading}
         className="h-7 px-2 text-white/60 hover:text-white hover:bg-slate-700"
-        onClick={onClearSelection}>
+        onClick={onClearSelection} aria-label="Limpar seleção">
         <X className="w-3.5 h-3.5" />
       </Button>
     </div>
