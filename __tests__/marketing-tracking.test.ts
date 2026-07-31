@@ -10,13 +10,14 @@ import { signTrackedLink } from '@/lib/marketing/render'
 
 // ─── Hoisted mocks ────────────────────────────────────────────────────────────
 
-const { mockFrom, mockRpc, mockNextResponseJson, mockNextResponseRedirect, mockServerFrom, mockGetUser } = vi.hoisted(() => ({
+const { mockFrom, mockRpc, mockNextResponseJson, mockNextResponseRedirect, mockServerFrom, mockGetUser, mockIsRateLimited } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
   mockRpc: vi.fn(),
   mockNextResponseJson: vi.fn(),
   mockNextResponseRedirect: vi.fn(),
   mockServerFrom: vi.fn(),
   mockGetUser: vi.fn(),
+  mockIsRateLimited: vi.fn(),
 }))
 
 vi.mock('@/lib/supabase/admin', () => ({
@@ -25,6 +26,11 @@ vi.mock('@/lib/supabase/admin', () => ({
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(async () => ({ auth: { getUser: mockGetUser }, from: mockServerFrom })),
+}))
+
+vi.mock('@/lib/rate-limit', () => ({
+  isRateLimited: mockIsRateLimited,
+  getClientIp: () => '203.0.113.1',
 }))
 
 vi.mock('next/server', () => {
@@ -167,9 +173,19 @@ describe('GET /api/marketing/track/open', () => {
     mockFrom.mockReset()
     mockRpc.mockReset()
     mockRpc.mockResolvedValue({ data: null, error: null })
+    mockIsRateLimited.mockReset()
+    mockIsRateLimited.mockResolvedValue(false)
     mockNextResponseJson.mockImplementation((body: unknown, init?: { status?: number }) => ({
       body, status: init?.status ?? 200,
     }))
+  })
+
+  it('returns pixel (200, no DB write) when rate limited', async () => {
+    mockIsRateLimited.mockResolvedValue(true)
+    const { GET } = await import('@/app/api/marketing/track/open/route')
+    const res = await GET(makeNextReq('http://localhost/api/marketing/track/open?sid=s1') as never)
+    expect(mockFrom).not.toHaveBeenCalled()
+    expect((res as { status: number }).status).toBe(200)
   })
 
   it('returns pixel (200) when sid is absent', async () => {
@@ -221,9 +237,19 @@ describe('GET /api/marketing/unsubscribe', () => {
     mockFrom.mockReset()
     mockRpc.mockReset()
     mockRpc.mockResolvedValue({ data: null, error: null })
+    mockIsRateLimited.mockReset()
+    mockIsRateLimited.mockResolvedValue(false)
     mockNextResponseJson.mockImplementation((body: unknown, init?: { status?: number }) => ({
       body, status: init?.status ?? 200,
     }))
+  })
+
+  it('returns 429 when rate limited', async () => {
+    mockIsRateLimited.mockResolvedValue(true)
+    const { GET } = await import('@/app/api/marketing/unsubscribe/route')
+    const res = await GET(makeNextReq('http://localhost/api/marketing/unsubscribe?sid=s1') as never)
+    expect(mockFrom).not.toHaveBeenCalled()
+    expect((res as { status: number }).status).toBe(429)
   })
 
   it('returns 400 when sid is absent', async () => {

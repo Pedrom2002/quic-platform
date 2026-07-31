@@ -1,6 +1,10 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { SCORE_DELTA } from '@/lib/marketing/scoring'
+import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+
+const UNSUBSCRIBE_LIMIT = 5
+const UNSUBSCRIBE_WINDOW_MS = 10 * 60 * 1_000
 
 async function processUnsubscribe(sid: string): Promise<boolean> {
   const supabase = createAdminClient()
@@ -22,6 +26,11 @@ async function processUnsubscribe(sid: string): Promise<boolean> {
 }
 
 export async function GET(request: NextRequest) {
+  const ip = getClientIp(request)
+  if (await isRateLimited(`unsubscribe:${ip}`, UNSUBSCRIBE_LIMIT, UNSUBSCRIBE_WINDOW_MS)) {
+    return NextResponse.json({ error: 'Demasiadas tentativas. Tenta novamente mais tarde.' }, { status: 429 })
+  }
+
   const sid = request.nextUrl.searchParams.get('sid')
   if (!sid) return new NextResponse('Link inválido', { status: 400 })
 
@@ -40,6 +49,11 @@ export async function GET(request: NextRequest) {
 
 // RFC 8058 one-click unsubscribe (Gmail/Outlook 2024 requirement)
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request)
+  if (await isRateLimited(`unsubscribe:${ip}`, UNSUBSCRIBE_LIMIT, UNSUBSCRIBE_WINDOW_MS)) {
+    return NextResponse.json({ error: 'Demasiadas tentativas. Tenta novamente mais tarde.' }, { status: 429 })
+  }
+
   const sid = request.nextUrl.searchParams.get('sid')
   if (!sid) return new NextResponse('Link inválido', { status: 400 })
 

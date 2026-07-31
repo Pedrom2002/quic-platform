@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { SCORE_DELTA } from '@/lib/marketing/scoring'
 import type { TablesUpdate } from '@/types/database'
+import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 
 const PIXEL = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64')
 const PIXEL_HEADERS = {
@@ -13,7 +14,17 @@ const PIXEL_HEADERS = {
 // Real user opens top first, scrolls (or doesn't), bottom fires later or never.
 const BOT_GAP_MS = 2000
 
+// Generous: legitimate email opens can burst (multiple images loading, client prefetch).
+const TRACK_OPEN_LIMIT = 30
+const TRACK_OPEN_WINDOW_MS = 60 * 1_000
+
 export async function GET(request: NextRequest) {
+  const ip = getClientIp(request)
+  if (await isRateLimited(`track-open:${ip}`, TRACK_OPEN_LIMIT, TRACK_OPEN_WINDOW_MS)) {
+    // Silently drop the tracking write; still return the pixel so email clients don't show a broken image.
+    return new NextResponse(PIXEL, { headers: PIXEL_HEADERS })
+  }
+
   const sid = request.nextUrl.searchParams.get('sid')
   const pos = request.nextUrl.searchParams.get('pos') as 'top' | 'bottom' | null
 
