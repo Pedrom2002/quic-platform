@@ -39,6 +39,7 @@ function makeQuery(resolvedValue: unknown) {
   query.limit = vi.fn(chain)
   query.maybeSingle = vi.fn(chain)
   query.single = vi.fn(chain)
+  query.returns = vi.fn(chain)
   return query
 }
 

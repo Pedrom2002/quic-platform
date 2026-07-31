@@ -2,8 +2,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { renderTemplate } from './template-renderer'
 import { getEnv } from '@/lib/env'
 import { createLogger } from '@/lib/logger'
-import type { NotificationRule, NotificationChannel, NotificationJobPayload } from '@/types/app'
-import type { EventChecklistItem, Event, Client, EventClient, MessageTemplate, NotificationJob } from '@/types/database'
+import type { NotificationRule, NotificationChannel, NotificationJobPayload, EventClientWithClient } from '@/types/app'
+import type { EventChecklistItem, Event, Client, MessageTemplate, NotificationJob } from '@/types/database'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import { calcProgress } from '@/lib/event-status'
@@ -142,6 +142,7 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
     .select('*, client:clients(*)')
     .eq('event_id', ctx.event.id)
     .eq('opted_out', false)
+    .returns<EventClientWithClient[]>()
 
   if (!eventClients?.length) return
 
@@ -160,7 +161,7 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
 
   const templateKeys = new Set<string>()
   for (const rule of rules) {
-    const targets = filterClientsByAudience(eventClients as unknown as (EventClient & { client: Client })[], rule.audience)
+    const targets = filterClientsByAudience(eventClients, rule.audience)
     for (const ec of targets) {
       const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
       const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
@@ -198,7 +199,7 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
   const jobDrafts: JobDraft[] = []
 
   for (const rule of rules) {
-    const targetClients = filterClientsByAudience(eventClients as unknown as (EventClient & { client: Client })[], rule.audience)
+    const targetClients = filterClientsByAudience(eventClients, rule.audience)
 
     for (const ec of targetClients) {
       const client = ec.client
@@ -233,7 +234,7 @@ export async function dispatchNotificationsForItem(ctx: DispatchContext): Promis
           scheduled_at: rule.delay_minutes > 0
             ? new Date(Date.now() + rule.delay_minutes * 60 * 1000).toISOString()
             : new Date().toISOString(),
-          _client: client as unknown as Client,
+          _client: client,
           _delay_minutes: rule.delay_minutes,
         })
       }
@@ -256,6 +257,7 @@ export async function dispatchStartNotificationForItem(ctx: StartDispatchContext
     .select('*, client:clients(*)')
     .eq('event_id', ctx.event.id)
     .eq('opted_out', false)
+    .returns<EventClientWithClient[]>()
 
   if (!eventClients?.length) return
 
@@ -266,7 +268,7 @@ export async function dispatchStartNotificationForItem(ctx: StartDispatchContext
   // Collect (channel, language) pairs needed for template lookup
   const templateKeys = new Set<string>()
   const hardcodedChannels: NotificationChannel[] = ['email', 'portal', 'sms', 'push']
-  for (const ec of eventClients as unknown as (EventClient & { client: Client })[]) {
+  for (const ec of eventClients) {
     const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
     const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
     const lang = prefs?.language ?? 'pt'
@@ -310,7 +312,7 @@ export async function dispatchStartNotificationForItem(ctx: StartDispatchContext
 
   const jobDrafts: StartJobDraft[] = []
 
-  for (const ec of eventClients as unknown as (EventClient & { client: Client })[]) {
+  for (const ec of eventClients) {
     const client = ec.client
     const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
     const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
@@ -344,7 +346,7 @@ export async function dispatchStartNotificationForItem(ctx: StartDispatchContext
         rendered_body: renderedBody,
         status: 'queued' as const,
         scheduled_at: new Date().toISOString(),
-        _client: client as unknown as Client,
+        _client: client,
       })
     }
   }
@@ -366,6 +368,7 @@ export async function dispatchClientUpdate(ctx: ClientUpdateContext): Promise<{ 
     .select('*, client:clients(*)')
     .eq('event_id', ctx.event.id)
     .eq('opted_out', false)
+    .returns<EventClientWithClient[]>()
 
   if (!eventClients?.length) return { sent: 0 }
 
@@ -375,7 +378,7 @@ export async function dispatchClientUpdate(ctx: ClientUpdateContext): Promise<{ 
 
   const templateKeys = new Set<string>()
   const hardcodedChannels: NotificationChannel[] = ['email', 'sms', 'portal', 'push']
-  for (const ec of eventClients as unknown as (EventClient & { client: Client })[]) {
+  for (const ec of eventClients) {
     const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
     const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
     const lang = prefs?.language ?? 'pt'
@@ -419,7 +422,7 @@ export async function dispatchClientUpdate(ctx: ClientUpdateContext): Promise<{ 
 
   const jobDrafts: UpdateJobDraft[] = []
 
-  for (const ec of eventClients as unknown as (EventClient & { client: Client })[]) {
+  for (const ec of eventClients) {
     const client = ec.client
     const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
     const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
@@ -453,7 +456,7 @@ export async function dispatchClientUpdate(ctx: ClientUpdateContext): Promise<{ 
         rendered_body: renderedBody,
         status: 'queued' as const,
         scheduled_at: new Date().toISOString(),
-        _client: client as unknown as Client,
+        _client: client,
       })
     }
   }
@@ -466,9 +469,9 @@ export async function dispatchClientUpdate(ctx: ClientUpdateContext): Promise<{ 
 // "specific_clients" targets primary contacts only — the audience rule means
 // "the client(s) directly responsible for this event", not a generic subset.
 function filterClientsByAudience(
-  clients: (EventClient & { client: Client })[],
+  clients: EventClientWithClient[],
   audience: NotificationRule['audience']
-): (EventClient & { client: Client })[] {
+): EventClientWithClient[] {
   switch (audience) {
     case 'all_clients':      return clients
     case 'vip_only':         return clients.filter(ec => ec.role === 'vip')

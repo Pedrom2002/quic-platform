@@ -140,6 +140,13 @@ export interface EventClientWithDetails {
   }
 }
 
+// Resultado do join `event_clients` -> `clients` usado pelos dispatchers de
+// notificações (select('*, client:clients(*)')). Tipa a query na origem para
+// evitar `as unknown as` repetido em cada local de uso.
+export type EventClientWithClient = import('./database').EventClient & {
+  client: import('./database').Client
+}
+
 // Payload do job de notificação enviado ao QStash
 export interface NotificationJobPayload {
   job_id: string

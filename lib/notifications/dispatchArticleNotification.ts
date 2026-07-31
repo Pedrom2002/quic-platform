@@ -4,8 +4,8 @@ import { sendEmail, buildArticleEmailHtml } from './channels/email'
 import { sendSms } from './channels/sms'
 import { getEnv } from '@/lib/env'
 import { createLogger } from '@/lib/logger'
-import type { NotificationChannel, NotificationJobPayload } from '@/types/app'
-import type { Event, Client, EventClient, MessageTemplate, NotificationJob, EventArticle } from '@/types/database'
+import type { NotificationChannel, NotificationJobPayload, EventClientWithClient } from '@/types/app'
+import type { Event, Client, MessageTemplate, NotificationJob, EventArticle } from '@/types/database'
 import { format } from 'date-fns'
 import { pt } from 'date-fns/locale'
 
@@ -26,6 +26,7 @@ export async function dispatchArticleNotification(ctx: ArticleDispatchContext): 
     .select('*, client:clients(*)')
     .eq('event_id', ctx.event.id)
     .eq('opted_out', false)
+    .returns<EventClientWithClient[]>()
 
   if (!eventClients?.length) return
 
@@ -34,7 +35,7 @@ export async function dispatchArticleNotification(ctx: ArticleDispatchContext): 
   const eventDate = format(new Date(ctx.event.start_datetime), "d 'de' MMMM 'de' yyyy", { locale: pt })
 
   const templateKeys = new Set<string>()
-  for (const ec of eventClients as unknown as (EventClient & { client: Client })[]) {
+  for (const ec of eventClients) {
     const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
     const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
     const lang = prefs?.language ?? 'pt'
@@ -93,7 +94,7 @@ export async function dispatchArticleNotification(ctx: ArticleDispatchContext): 
 
   const jobDrafts: ArticleJobDraft[] = []
 
-  for (const ec of eventClients as unknown as (EventClient & { client: Client })[]) {
+  for (const ec of eventClients) {
     const client = ec.client
     const prefs = ec.notification_prefs as { channels: NotificationChannel[]; language: string } | null
     const prefChannels: NotificationChannel[] = prefs?.channels ?? ['email', 'portal']
@@ -127,7 +128,7 @@ export async function dispatchArticleNotification(ctx: ArticleDispatchContext): 
         rendered_body: renderedBody,
         status: 'queued' as const,
         scheduled_at: new Date().toISOString(),
-        _client: client as unknown as Client,
+        _client: client,
       })
     }
   }

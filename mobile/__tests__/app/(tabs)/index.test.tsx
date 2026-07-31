@@ -34,12 +34,12 @@ describe('InicioScreen', () => {
     })
   })
 
-  it('shows the header title', async () => {
+  it('shows the banner image', async () => {
     mockFetchPublicEvents.mockResolvedValue([])
-    const { getByText } = render(<InicioScreen />)
+    const { getByTestId } = render(<InicioScreen />)
 
     await waitFor(() => {
-      expect(getByText('Próximos eventos')).toBeTruthy()
+      expect(getByTestId('banner-header-image')).toBeTruthy()
     })
   })
 
