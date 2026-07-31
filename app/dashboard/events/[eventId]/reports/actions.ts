@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { del } from '@vercel/blob'
-import { createClient } from '@/lib/supabase/server'
+import { getOrgAuthFull } from '@/lib/supabase/actions'
 import { createLogger } from '@/lib/logger'
 import type { ReportType } from '@/types/database'
 
@@ -27,9 +27,9 @@ export async function createReportAction(
   eventId: string,
   formData: FormData
 ): Promise<CreateReportResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Nao autenticado' }
+  const auth = await getOrgAuthFull()
+  if (!auth) return { ok: false, error: 'Nao autenticado' }
+  const { supabase, member } = auth
 
   const parsed = ReportSchema.safeParse({
     title: formData.get('title'),
@@ -43,13 +43,6 @@ export async function createReportAction(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'Dados invalidos' }
   }
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('id, organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) return { ok: false, error: 'Membro nao encontrado' }
 
   const { data: event } = await supabase
     .from('events')
@@ -93,16 +86,9 @@ export async function deleteReportAction(
   reportId: string,
   blobUrl: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Nao autenticado' }
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) return { ok: false, error: 'Membro nao encontrado' }
+  const auth = await getOrgAuthFull()
+  if (!auth) return { ok: false, error: 'Nao autenticado' }
+  const { supabase, member } = auth
 
   const { error } = await supabase
     .from('event_reports')

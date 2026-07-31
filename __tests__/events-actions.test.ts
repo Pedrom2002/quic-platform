@@ -201,7 +201,7 @@ describe('reports actions', () => {
   }
 
   it('rejects unauthenticated', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: null } })
+    mockGetOrgAuthFull.mockResolvedValue(null)
     const { createReportAction } = await import(
       '@/app/dashboard/events/[eventId]/reports/actions'
     )
@@ -210,9 +210,9 @@ describe('reports actions', () => {
   })
 
   it('creates report', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-    mockServerFrom
-      .mockReturnValueOnce(chain({ data: { id: 'tm-1' } })) // member
+    const { supabase, from } = makeSeqSupabase()
+    authAll(supabase)
+    from
       .mockReturnValueOnce(chain({ data: { organization_id: 'org-1' } })) // event
       .mockReturnValueOnce(chain({ data: { id: 'rep-1' }, error: null })) // insert
     const { createReportAction } = await import(
@@ -223,9 +223,9 @@ describe('reports actions', () => {
   })
 
   it('cleans up blob when insert fails', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-    mockServerFrom
-      .mockReturnValueOnce(chain({ data: { id: 'tm-1' } }))
+    const { supabase, from } = makeSeqSupabase()
+    authAll(supabase)
+    from
       .mockReturnValueOnce(chain({ data: { organization_id: 'org-1' } }))
       .mockReturnValueOnce(chain({ data: null, error: { message: 'boom' } }))
     const { createReportAction } = await import(
@@ -247,7 +247,8 @@ describe('cliping actions', () => {
   }
 
   it('rejects invalid url', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    const { supabase } = makeSeqSupabase()
+    authAll(supabase)
     const { createArticleAction } = await import(
       '@/app/dashboard/events/[eventId]/cliping/actions'
     )
@@ -258,9 +259,9 @@ describe('cliping actions', () => {
   })
 
   it('creates article, counts clients and schedules notification', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-    mockServerFrom
-      .mockReturnValueOnce(chain({ data: { id: 'tm-1' } })) // member
+    const { supabase, from } = makeSeqSupabase()
+    authAll(supabase)
+    from
       .mockReturnValueOnce(chain({ data: { id: EVENT, organization_id: 'org-1' } })) // event
       .mockReturnValueOnce(chain({ data: { id: 'art-1' }, error: null })) // insert
     mockAdminFrom.mockReturnValueOnce(chain({ count: 3 }))

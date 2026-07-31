@@ -3,8 +3,8 @@
 import { z } from 'zod'
 import { after } from 'next/server'
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getOrgAuthFull } from '@/lib/supabase/actions'
 import { dispatchArticleNotification } from '@/lib/notifications/dispatchArticleNotification'
 import { createLogger } from '@/lib/logger'
 import type { Event, EventArticle } from '@/types/database'
@@ -27,9 +27,9 @@ export type CreateArticleResult =
   | { ok: false; error: string }
 
 export async function createArticleAction(eventId: string, formData: FormData): Promise<CreateArticleResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Nao autenticado' }
+  const auth = await getOrgAuthFull()
+  if (!auth) return { ok: false, error: 'Nao autenticado' }
+  const { supabase, member } = auth
 
   const parsed = ArticleSchema.safeParse({
     title: formData.get('title'),
@@ -39,13 +39,6 @@ export async function createArticleAction(eventId: string, formData: FormData): 
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'Dados invalidos' }
   }
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('id, organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) return { ok: false, error: 'Nao autenticado' }
 
   const { data: event } = await supabase
     .from('events')
@@ -92,16 +85,9 @@ export async function createArticleAction(eventId: string, formData: FormData): 
 }
 
 export async function deleteArticleAction(eventId: string, articleId: string): Promise<{ ok: boolean; error?: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Nao autenticado' }
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) return { ok: false, error: 'Nao autenticado' }
+  const auth = await getOrgAuthFull()
+  if (!auth) return { ok: false, error: 'Nao autenticado' }
+  const { supabase, member } = auth
 
   const { error } = await supabase
     .from('event_articles')

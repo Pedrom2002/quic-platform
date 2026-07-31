@@ -1,19 +1,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { requireOrgAuth, getOrgAuth } from '@/lib/supabase/actions'
 
 export async function createList(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) throw new Error('Não autenticado')
+  const { supabase, user, member } = await requireOrgAuth()
 
   await supabase.from('marketing_lists').insert({
     name: formData.get('name') as string,
@@ -28,16 +19,9 @@ export async function addContact(
   _prev: { ok: boolean; message: string } | null,
   formData: FormData
 ): Promise<{ ok: boolean; message: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { ok: false, message: 'Não autenticado' }
-
-  const { data: member } = await supabase
-    .from('team_members')
-    .select('organization_id')
-    .eq('auth_user_id', user.id)
-    .single()
-  if (!member) return { ok: false, message: 'Não autenticado' }
+  const auth = await getOrgAuth()
+  if (!auth) return { ok: false, message: 'Não autenticado' }
+  const { supabase, member } = auth
 
   const list_id = formData.get('list_id') as string
   const email = (formData.get('email') as string)?.trim().toLowerCase()
@@ -64,9 +48,9 @@ export async function addContact(
 }
 
 export async function deleteContact(contactId: string): Promise<{ ok: boolean }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { ok: false }
+  const auth = await getOrgAuth()
+  if (!auth) return { ok: false }
+  const { supabase } = auth
 
   await supabase.from('marketing_contacts').delete().eq('id', contactId)
   revalidatePath('/dashboard/marketing/contacts')

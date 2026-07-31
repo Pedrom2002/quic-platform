@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockGetUser, mockFrom, mockAdminFrom, mockRedirect, mockRevalidate, mockEncrypt, mockTestSmtp, mockPublishJSON } = vi.hoisted(() => ({
+const { mockGetUser, mockFrom, mockAdminFrom, mockRedirect, mockRevalidate, mockEncrypt, mockTestSmtp, mockPublishJSON, mockRequireOrgAuth, mockGetOrgAuth } = vi.hoisted(() => ({
   mockGetUser: vi.fn(),
   mockFrom: vi.fn(),
   mockAdminFrom: vi.fn(),
@@ -15,6 +15,8 @@ const { mockGetUser, mockFrom, mockAdminFrom, mockRedirect, mockRevalidate, mock
   mockEncrypt: vi.fn(() => 'enc-pw'),
   mockTestSmtp: vi.fn(),
   mockPublishJSON: vi.fn().mockResolvedValue({ messageId: 'm1' }),
+  mockRequireOrgAuth: vi.fn(),
+  mockGetOrgAuth: vi.fn(),
 }))
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -23,11 +25,23 @@ vi.mock('@/lib/supabase/server', () => ({
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: vi.fn(() => ({ from: mockAdminFrom })),
 }))
+vi.mock('@/lib/supabase/actions', () => ({
+  requireOrgAuth: mockRequireOrgAuth,
+  getOrgAuth: mockGetOrgAuth,
+}))
 vi.mock('next/navigation', () => ({ redirect: mockRedirect }))
 vi.mock('next/cache', () => ({ revalidatePath: mockRevalidate }))
 vi.mock('@/lib/marketing/crypto', () => ({ encryptPassword: mockEncrypt }))
 vi.mock('@/lib/marketing/smtp', () => ({ testSmtpConnection: mockTestSmtp }))
 vi.mock('@upstash/qstash', () => ({ Client: function Client() { return { publishJSON: mockPublishJSON } } }))
+
+const MEMBER = { organization_id: 'org-1' }
+
+function authAll(supabase: unknown, user: { id: string } = { id: 'user-1' }) {
+  const auth = { supabase, user, member: MEMBER }
+  mockRequireOrgAuth.mockResolvedValue(auth)
+  mockGetOrgAuth.mockResolvedValue(auth)
+}
 
 function fd(obj: Record<string, string>): FormData {
   const f = new FormData()
@@ -45,17 +59,17 @@ beforeEach(() => {
 
 describe('createList', () => {
   it('throws when not authenticated', async () => {
-    mockGetUser.mockResolvedValueOnce({ data: { user: null } })
+    mockRequireOrgAuth.mockRejectedValueOnce(new Error('Não autenticado'))
     const { createList } = await import('@/app/dashboard/marketing/contacts/actions')
     await expect(createList(fd({ name: 'Lista A' }))).rejects.toThrow('Não autenticado')
   })
 
   it('inserts a list scoped to the user and revalidates', async () => {
     const insert = vi.fn().mockResolvedValue({ error: null })
-    mockFrom.mockReturnValue({ insert })
+    authAll({ from: vi.fn().mockReturnValue({ insert }) })
     const { createList } = await import('@/app/dashboard/marketing/contacts/actions')
     await createList(fd({ name: 'Lista A' }))
-    expect(insert).toHaveBeenCalledWith({ name: 'Lista A', created_by: 'user-1' })
+    expect(insert).toHaveBeenCalledWith({ name: 'Lista A', created_by: 'user-1', organization_id: 'org-1' })
     expect(mockRevalidate).toHaveBeenCalled()
   })
 })
@@ -148,22 +162,24 @@ describe('createCampaign', () => {
   const LIST_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
 
   it('throws when not authenticated', async () => {
-    mockGetUser.mockResolvedValueOnce({ data: { user: null } })
+    mockRequireOrgAuth.mockRejectedValueOnce(new Error('Não autenticado'))
     const { createCampaign } = await import('@/app/dashboard/marketing/campaigns/new/actions')
     await expect(createCampaign(fd({ list_id: LIST_ID }))).rejects.toThrow('Não autenticado')
   })
 
   it('throws when the list does not belong to the user (ownership check)', async () => {
-    mockFrom.mockReturnValue({
-      select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: null }), // RLS hides foreign list
+    authAll({
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null }), // RLS hides foreign list
+      }),
     })
     const { createCampaign } = await import('@/app/dashboard/marketing/campaigns/new/actions')
     await expect(createCampaign(fd({ list_id: LIST_ID, name: 'C' }))).rejects.toThrow('Lista não encontrada')
   })
 
   it('creates the campaign and redirects when list is owned (no immediate dispatch)', async () => {
-    mockFrom.mockImplementation((table: string) => {
+    const from = vi.fn().mockImplementation((table: string) => {
       if (table === 'marketing_lists') {
         return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { id: LIST_ID } }) }
       }
@@ -174,6 +190,7 @@ describe('createCampaign', () => {
         }),
       }
     })
+    authAll({ from })
     const { createCampaign } = await import('@/app/dashboard/marketing/campaigns/new/actions')
     await createCampaign(fd({
       list_id: LIST_ID, name: 'Campanha', subject_template: 'S', body_template: 'B',

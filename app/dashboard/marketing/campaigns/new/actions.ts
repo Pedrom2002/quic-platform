@@ -1,15 +1,13 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireOrgAuth } from '@/lib/supabase/actions'
 import { Client } from '@upstash/qstash'
 import { getEnv } from '@/lib/env'
 
 export async function createCampaign(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
+  const { supabase, user } = await requireOrgAuth()
 
   const scheduleNow = formData.get('schedule_now') === 'true'
   const scheduledAt = formData.get('scheduled_at') as string | null
