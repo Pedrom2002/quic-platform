@@ -58,6 +58,9 @@
 }
 
 :root {
+  --quic-magenta: #951b81;
+  --quic-magenta-hover: #7a1669;
+  --quic-black: #0d0c0d;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
