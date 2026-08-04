@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Users2 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 const roleLabels: Record<string, string> = {
   admin: 'Admin',
@@ -9,7 +10,8 @@ const roleLabels: Record<string, string> = {
   member: 'Membro',
 }
 
-const roleColors: Record<string, string> = {
+// cores do design original, sem variante shadcn dedicada por role.
+const roleClassNames: Record<string, string> = {
   admin: 'bg-red-50 text-red-700 border-red-200',
   manager: 'bg-blue-50 text-blue-700 border-blue-200',
   member: 'bg-slate-50 text-slate-600 border-slate-200',
@@ -94,9 +96,12 @@ export default async function TeamPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-slate-900 font-semibold">{m.full_name}</p>
-                      <span className={`text-xs border px-1.5 py-0.5 rounded ${roleColors[m.role] ?? 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                      <Badge
+                        variant="outline"
+                        className={roleClassNames[m.role] ?? 'bg-slate-50 text-slate-600 border-slate-200'}
+                      >
                         {roleLabels[m.role] ?? m.role}
-                      </span>
+                      </Badge>
                     </div>
                     <p className="text-slate-400 text-xs mt-0.5">{m.email}</p>
                   </div>

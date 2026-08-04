@@ -4,6 +4,14 @@ import { useState } from 'react'
 import { useActionState } from 'react'
 import { addContact, deleteContact } from '@/app/dashboard/marketing/contacts/actions'
 import { Trash2, Plus } from 'lucide-react'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 type Contact = {
   id: string
@@ -89,24 +97,24 @@ export function ListContacts({ listId, contacts }: { listId: string; contacts: C
             />
           )}
           <div className="border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50 text-xs text-zinc-500 uppercase">
-              <tr>
-                <th className="text-left px-3 py-2">Email</th>
-                <th className="text-left px-3 py-2">Nome</th>
-                <th className="text-left px-3 py-2">Empresa</th>
-                <th className="text-left px-3 py-2">Status</th>
-                <th className="text-left px-3 py-2">Score</th>
-                <th className="w-10"></th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader className="bg-zinc-50 text-xs text-zinc-500 uppercase">
+              <TableRow>
+                <TableHead className="px-3 py-2 h-auto">Email</TableHead>
+                <TableHead className="px-3 py-2 h-auto">Nome</TableHead>
+                <TableHead className="px-3 py-2 h-auto">Empresa</TableHead>
+                <TableHead className="px-3 py-2 h-auto">Status</TableHead>
+                <TableHead className="px-3 py-2 h-auto">Score</TableHead>
+                <TableHead className="w-10"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {visible.map(c => (
-                <tr key={c.id} className="border-t">
-                  <td className="px-3 py-2">{c.email}</td>
-                  <td className="px-3 py-2">{c.name ?? '—'}</td>
-                  <td className="px-3 py-2">{c.company ?? '—'}</td>
-                  <td className="px-3 py-2">
+                <TableRow key={c.id}>
+                  <TableCell className="px-3 py-2">{c.email}</TableCell>
+                  <TableCell className="px-3 py-2">{c.name ?? '—'}</TableCell>
+                  <TableCell className="px-3 py-2">{c.company ?? '—'}</TableCell>
+                  <TableCell className="px-3 py-2">
                     <span className={`text-xs px-2 py-0.5 rounded ${
                       c.status === 'active' ? 'bg-green-100 text-green-700' :
                       c.status === 'bounced' ? 'bg-red-100 text-red-700' :
@@ -114,9 +122,9 @@ export function ListContacts({ listId, contacts }: { listId: string; contacts: C
                     }`}>
                       {c.status}
                     </span>
-                  </td>
-                  <td className="px-3 py-2">{c.engagement_score}</td>
-                  <td className="px-3 py-2">
+                  </TableCell>
+                  <TableCell className="px-3 py-2">{c.engagement_score}</TableCell>
+                  <TableCell className="px-3 py-2">
                     <button
                       onClick={async () => {
                         if (confirm(`Eliminar ${c.email}?`)) await deleteContact(c.id)
@@ -126,11 +134,11 @@ export function ListContacts({ listId, contacts }: { listId: string; contacts: C
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
           {pageCount > 1 && (
             <div className="flex items-center justify-between border-t bg-zinc-50 px-3 py-2">
               <p className="text-xs text-zinc-500">
