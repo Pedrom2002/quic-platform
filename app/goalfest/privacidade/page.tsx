@@ -70,7 +70,7 @@ const SECTIONS: { num: string; label: string; body: React.ReactNode }[] = [
         Tens direito a <strong>acesso</strong>, <strong>retificação</strong>,{' '}
         <strong>eliminação</strong> e <strong>portabilidade</strong> dos teus
         dados. Para exercer, envia email para{' '}
-        <a className="font-bold text-red-600 underline" href="mailto:info@quic.pt">
+        <a className="font-bold text-[var(--quic-magenta)] underline" href="mailto:info@quic.pt">
           info@quic.pt
         </a>{' '}
         com o email que registaste. Respondemos em até <strong>30 dias</strong>.
@@ -83,7 +83,7 @@ const SECTIONS: { num: string; label: string; body: React.ReactNode }[] = [
     body: (
       <p>
         QUiC · Lisboa, Portugal ·{' '}
-        <a className="font-bold text-red-600 underline" href="mailto:info@quic.pt">
+        <a className="font-bold text-[var(--quic-magenta)] underline" href="mailto:info@quic.pt">
           info@quic.pt
         </a>
       </p>
@@ -95,7 +95,7 @@ export default function PrivacidadePage() {
   return (
     <main className="min-h-screen bg-gray-50 px-4 pb-20 pt-12 sm:pt-16">
       <header className="mx-auto max-w-2xl text-center">
-        <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-red-600">
+        <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[var(--quic-magenta)]">
           QUiC · Goalfest
         </p>
         <h1 className="mt-3 text-4xl font-black leading-tight text-gray-900 sm:text-5xl">
@@ -111,7 +111,7 @@ export default function PrivacidadePage() {
           {SECTIONS.map(s => (
             <section key={s.num} className="grid gap-3 sm:grid-cols-[68px_1fr] sm:gap-6">
               <div className="flex sm:flex-col sm:items-end sm:text-right">
-                <span className="text-3xl font-black leading-none text-red-600">
+                <span className="text-3xl font-black leading-none text-[var(--quic-magenta)]">
                   {s.num}
                 </span>
               </div>
@@ -137,7 +137,7 @@ export default function PrivacidadePage() {
       <div className="mx-auto mt-10 max-w-2xl text-center">
         <Link
           href="/goalfest"
-          className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-6 py-3 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:bg-gray-700"
+          className="inline-flex items-center gap-2 rounded-full bg-[var(--quic-black)] px-6 py-3 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:bg-[#1a1a1a]"
         >
           ← Voltar ao registo
         </Link>
