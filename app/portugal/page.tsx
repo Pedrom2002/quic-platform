@@ -149,7 +149,7 @@ export default function PortugalPage() {
               type="checkbox"
               checked={consent}
               onChange={e => setConsent(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/30 accent-red-600"
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/30 accent-[var(--quic-magenta)]"
             />
             <span>
               Aceito que os meus dados sejam armazenados para participar no
@@ -171,7 +171,7 @@ export default function PortugalPage() {
           <button
             type="submit"
             disabled={loading || !consent}
-            className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold rounded-lg py-2.5 transition-colors shadow-lg"
+            className="w-full bg-[var(--quic-magenta)] hover:bg-[var(--quic-magenta-hover)] disabled:opacity-60 text-white font-semibold rounded-lg py-2.5 transition-colors shadow-lg"
           >
             {loading ? 'A registar...' : 'Quero concorrer!'}
           </button>
