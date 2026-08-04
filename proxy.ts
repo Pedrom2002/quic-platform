@@ -231,6 +231,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/portal/') ||
     pathname.startsWith('/artista/') ||
     pathname.startsWith('/auth/') ||
+    pathname.startsWith('/api/auth/') ||
     pathname.startsWith('/portugal') ||
     pathname.startsWith('/api/portugal/') ||
     pathname.startsWith('/goalfest') ||
