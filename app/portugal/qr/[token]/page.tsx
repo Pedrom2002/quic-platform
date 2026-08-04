@@ -36,7 +36,7 @@ export default async function QRPage({ params }: Props) {
   const used = !!winner.redeemed_at
 
   return (
-    <div className="min-h-screen bg-red-700 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--quic-black)] flex flex-col items-center justify-center p-4">
     <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center space-y-4">
       <div className="text-4xl">🍺</div>
       <h1 className="text-xl font-bold text-gray-900">Parabens, {name}!</h1>
@@ -59,7 +59,7 @@ export default async function QRPage({ params }: Props) {
 
       <p className="text-xs text-gray-400">
         Powered by{' '}
-        <a href="https://quic.pt" className="text-red-600 hover:underline">QUiC</a>
+        <a href="https://quic.pt" className="text-[var(--quic-magenta)] hover:underline">QUiC</a>
       </p>
     </div>
     </div>
