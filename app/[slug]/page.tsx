@@ -95,7 +95,7 @@ export default async function PublicCardPage({
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data=${encodeURIComponent(cardUrl)}`
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-8">
+    <div className="min-h-screen bg-[#0d0c0d] flex items-center justify-center p-8">
       <div className="w-full max-w-sm flex flex-col items-center">
         <div style={{ width: 48, height: 2, background: '#fff', marginBottom: 36 }} />
 
@@ -116,7 +116,7 @@ export default async function PublicCardPage({
               href={`mailto:${member.email}`}
               style={{
                 display: 'flex', alignItems: 'center', gap: 14,
-                background: '#111', border: '1px solid #1e1e1e', borderRadius: 12,
+                background: '#0d0c0d', border: '1px solid #1e1e1e', borderRadius: 12,
                 padding: '13px 16px', textDecoration: 'none',
               }}
             >
@@ -138,7 +138,7 @@ export default async function PublicCardPage({
           href={vcfData}
           download={`${member.full_name.replace(/\s+/g, '-').toLowerCase()}.vcf`}
           style={{
-            width: '100%', background: '#fff', color: '#0a0a0a',
+            width: '100%', background: '#fff', color: '#0d0c0d',
             padding: '14px', borderRadius: 12, fontSize: 14, fontWeight: 700,
             textDecoration: 'none', textAlign: 'center', display: 'block', marginBottom: 32,
           }}
