@@ -106,7 +106,7 @@ export default function ScanPage() {
 
   if (!authed) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[var(--quic-black)] flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full space-y-4">
         <h1 className="text-xl font-bold text-center">Scan QR — Staff</h1>
         {authError && (
@@ -119,12 +119,12 @@ export default function ScanPage() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             placeholder="Password"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--quic-magenta)]"
           />
           <button
             type="submit"
             disabled={loggingIn}
-            className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold rounded-lg py-2.5"
+            className="w-full bg-[var(--quic-magenta)] hover:bg-[var(--quic-magenta-hover)] disabled:opacity-60 text-white font-semibold rounded-lg py-2.5"
           >
             {loggingIn ? 'A validar...' : 'Abrir Scanner'}
           </button>
@@ -135,7 +135,7 @@ export default function ScanPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--quic-black)] flex items-center justify-center p-4">
     <div className="w-full max-w-sm space-y-4">
       <div className="relative rounded-2xl overflow-hidden bg-black aspect-square">
         <video ref={videoRef} className="w-full h-full object-cover" />

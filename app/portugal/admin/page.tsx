@@ -154,12 +154,12 @@ export default function AdminPage() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             placeholder="Password admin"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--quic-magenta)]"
           />
           <button
             type="submit"
             disabled={loggingIn}
-            className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold rounded-lg py-2.5"
+            className="w-full bg-[var(--quic-magenta)] hover:bg-[var(--quic-magenta-hover)] disabled:opacity-60 text-white font-semibold rounded-lg py-2.5"
           >
             {loggingIn ? 'A validar...' : 'Entrar'}
           </button>
@@ -191,13 +191,13 @@ export default function AdminPage() {
               max={100}
               value={drawCount}
               onChange={e => setDrawCount(Number(e.target.value))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--quic-magenta)]"
             />
           </div>
           <button
             onClick={handleDraw}
             disabled={drawing || drawn}
-            className="bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold rounded-lg px-6 py-2.5 transition-colors"
+            className="bg-[var(--quic-magenta)] hover:bg-[var(--quic-magenta-hover)] disabled:opacity-60 text-white font-semibold rounded-lg px-6 py-2.5 transition-colors"
           >
             {drawing ? 'A sortear...' : 'Sortear agora'}
           </button>
@@ -236,7 +236,7 @@ export default function AdminPage() {
                         href={`/portugal/qr/${w.qr_token}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-red-600 hover:underline"
+                        className="text-[var(--quic-magenta)] hover:underline"
                       >
                         Ver QR
                       </a>
