@@ -56,7 +56,23 @@ export async function GET(request: NextRequest) {
     .eq('blob_url', url)
     .limit(1)
     .maybeSingle()
-  if (!file) {
+
+  // event_reports é uma tabela separada de event_files (relatórios técnicos
+  // e de contrato do portal). Só verificamos aqui se não encontrámos o URL
+  // em event_files, mantendo o mesmo padrão de scoping por event_id + token.
+  let hasAccess = Boolean(file)
+  if (!hasAccess) {
+    const { data: report } = await supabase
+      .from('event_reports')
+      .select('id')
+      .eq('event_id', event.id)
+      .eq('blob_url', url)
+      .limit(1)
+      .maybeSingle()
+    hasAccess = Boolean(report)
+  }
+
+  if (!hasAccess) {
     return new NextResponse('Forbidden', { status: 403 })
   }
 

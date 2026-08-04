@@ -20,9 +20,11 @@ function req(params: Record<string, string>) {
 function mockTables({
   event,
   file,
+  report,
 }: {
   event: { id: string; portal_token_expires_at: string | null } | null
   file: { id: string } | null
+  report?: { id: string } | null
 }) {
   mockFrom.mockImplementation((table: string) => {
     if (table === 'events') {
@@ -40,6 +42,18 @@ function mockTables({
         eq: vi.fn(),
         limit: vi.fn(),
         maybeSingle: vi.fn().mockResolvedValue({ data: file, error: null }),
+      }
+      chain.select.mockReturnValue(chain)
+      chain.eq.mockReturnValue(chain)
+      chain.limit.mockReturnValue(chain)
+      return chain
+    }
+    if (table === 'event_reports') {
+      const chain = {
+        select: vi.fn(),
+        eq: vi.fn(),
+        limit: vi.fn(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: report ?? null, error: null }),
       }
       chain.select.mockReturnValue(chain)
       chain.eq.mockReturnValue(chain)
@@ -128,6 +142,18 @@ describe('GET /api/portal/download', () => {
         chain.limit = vi.fn().mockReturnValue(chain)
         return chain
       }
+      if (table === 'event_reports') {
+        const chain = {
+          select: vi.fn(),
+          eq: vi.fn(),
+          limit: vi.fn(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }
+        chain.select.mockReturnValue(chain)
+        chain.eq.mockReturnValue(chain)
+        chain.limit.mockReturnValue(chain)
+        return chain
+      }
       throw new Error(`tabela inesperada: ${table}`)
     })
 
@@ -135,6 +161,72 @@ describe('GET /api/portal/download', () => {
     expect(res.status).toBe(403)
     // Confirms the fix: the event_files query filters by event_id, not just blob_url.
     expect(eventFilesEq).toHaveBeenCalledWith('event_id', activeEvent.id)
+  })
+
+  it('200 streams an event_reports file when not found in event_files', async () => {
+    // event_reports is a separate table from event_files (used for the
+    // portal reports tab). The route must fall back to it when the URL
+    // isn't a known event_files row.
+    mockTables({ event: activeEvent, file: null, report: { id: 'r1' } })
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response('report-bytes', { status: 200, headers: { 'content-type': 'application/pdf' } })
+      )
+    )
+    const res = await GET(req({ token: 'tok', url: BLOB_URL, name: 'relatorio.pdf' }))
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-disposition')).toContain('relatorio.pdf')
+  })
+
+  it('403 when report url belongs to a DIFFERENT event than the caller token grants access to', async () => {
+    // event_reports lookup must be scoped by event_id — a blob_url that
+    // exists in the table but belongs to another event must not resolve
+    // for this token, even though it passes the allowed-host check.
+    const eventReportsEq = vi.fn()
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'events') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({ data: activeEvent, error: null }),
+            }),
+          }),
+        }
+      }
+      if (table === 'event_files') {
+        const chain = {
+          select: vi.fn(),
+          eq: vi.fn(),
+          limit: vi.fn(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }
+        chain.select.mockReturnValue(chain)
+        chain.eq.mockReturnValue(chain)
+        chain.limit.mockReturnValue(chain)
+        return chain
+      }
+      if (table === 'event_reports') {
+        const chain: Record<string, unknown> = {
+          select: vi.fn(),
+          eq: eventReportsEq,
+          limit: vi.fn(),
+          // Simulates a blob_url that exists in event_reports but for a
+          // different event_id — the org-scoped filter must exclude it.
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }
+        chain.select = vi.fn().mockReturnValue(chain)
+        eventReportsEq.mockReturnValue(chain)
+        chain.limit = vi.fn().mockReturnValue(chain)
+        return chain
+      }
+      throw new Error(`tabela inesperada: ${table}`)
+    })
+
+    const res = await GET(req({ token: 'tok', url: BLOB_URL }))
+    expect(res.status).toBe(403)
+    // Confirms the fix: the event_reports query filters by event_id, not just blob_url.
+    expect(eventReportsEq).toHaveBeenCalledWith('event_id', activeEvent.id)
   })
 
   it('200 streams the file with attachment header', async () => {
