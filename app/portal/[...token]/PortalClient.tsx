@@ -78,10 +78,10 @@ function formatFileSize(bytes: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function FileRow({ file }: { file: PortalItemFile }) {
+function FileRow({ file, portalToken }: { file: PortalItemFile; portalToken: string }) {
   const isImage = file.mime_type?.startsWith('image/') ?? false
   const isPdf = file.mime_type === 'application/pdf'
-  const downloadHref = `/api/portal/download?url=${encodeURIComponent(file.blob_url)}&name=${encodeURIComponent(file.file_name)}`
+  const downloadHref = `/api/portal/download?token=${encodeURIComponent(portalToken)}&url=${encodeURIComponent(file.blob_url)}&name=${encodeURIComponent(file.file_name)}`
 
   return (
     <div className="bg-stone-50 border border-stone-100 rounded overflow-hidden">
@@ -213,7 +213,7 @@ function ClippingTab({ articles }: { articles: PortalArticle[] }) {
   )
 }
 
-function DocumentsTab({ files }: { files: PortalItemFile[] }) {
+function DocumentsTab({ files, portalToken }: { files: PortalItemFile[]; portalToken: string }) {
   return (
     <div className="anim-tab-fade">
       <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
@@ -227,7 +227,7 @@ function DocumentsTab({ files }: { files: PortalItemFile[] }) {
       <ul className="space-y-3">
         {files.map(file => (
           <li key={file.id}>
-            <FileRow file={file} />
+            <FileRow file={file} portalToken={portalToken} />
           </li>
         ))}
       </ul>
@@ -240,11 +240,13 @@ function ItemRow({
   idx,
   animatingOut,
   justCompleted,
+  portalToken,
 }: {
   item: PortalItem
   idx: number
   animatingOut: Set<string>
   justCompleted: Set<string>
+  portalToken: string
 }) {
   const [expanded, setExpanded] = useState(false)
   const isCompleted = item.status === 'completed'
@@ -284,7 +286,7 @@ function ItemRow({
             )}
             {item.files.length > 0 && (
               <div className="space-y-2">
-                {item.files.map(file => <FileRow key={file.id} file={file} />)}
+                {item.files.map(file => <FileRow key={file.id} file={file} portalToken={portalToken} />)}
               </div>
             )}
           </div>
@@ -300,12 +302,14 @@ function CategorySection({
   animatingOut,
   justCompleted,
   initialOpen,
+  portalToken,
 }: {
   category: string
   items: PortalItem[]
   animatingOut: Set<string>
   justCompleted: Set<string>
   initialOpen: boolean
+  portalToken: string
 }) {
   const [open, setOpen] = useState(initialOpen)
   const completed = items.filter(i => i.status === 'completed').length
@@ -351,6 +355,7 @@ function CategorySection({
               idx={idx}
               animatingOut={animatingOut}
               justCompleted={justCompleted}
+              portalToken={portalToken}
             />
           ))}
         </ul>
@@ -363,10 +368,12 @@ function ProgressTab({
   items,
   animatingOut,
   justCompleted,
+  portalToken,
 }: {
   items: PortalItem[]
   animatingOut: Set<string>
   justCompleted: Set<string>
+  portalToken: string
 }) {
   // derive ordered categories: items with category first (sorted alpha), then null -> "Geral"
   const categoryOrder = Array.from(
@@ -401,6 +408,7 @@ function ProgressTab({
             animatingOut={animatingOut}
             justCompleted={justCompleted}
             initialOpen={false}
+            portalToken={portalToken}
           />
         )
       })}
@@ -416,14 +424,14 @@ const REPORT_TYPE_LABEL: Record<string, string> = {
   contract: 'Execução de Contrato',
 }
 
-function ReportSection({ title, items }: { title: string; items: PortalReport[] }) {
+function ReportSection({ title, items, portalToken }: { title: string; items: PortalReport[]; portalToken: string }) {
   if (!items.length) return null
   return (
     <div className="mb-8">
       <h3 className="text-xs font-semibold tracking-widest uppercase text-stone-500 mb-4">{title}</h3>
       <ul className="space-y-3">
         {items.map(r => {
-          const downloadHref = `/api/portal/download?url=${encodeURIComponent(r.blob_url)}&name=${encodeURIComponent(r.file_name)}`
+          const downloadHref = `/api/portal/download?token=${encodeURIComponent(portalToken)}&url=${encodeURIComponent(r.blob_url)}&name=${encodeURIComponent(r.file_name)}`
           return (
             <li key={r.id} className="bg-stone-50 border border-stone-100 rounded px-4 py-3 flex items-center gap-3">
               <div className="flex-1 min-w-0">
@@ -448,7 +456,7 @@ function ReportSection({ title, items }: { title: string; items: PortalReport[] 
   )
 }
 
-function ReportsTab({ reports }: { reports: PortalReport[] }) {
+function ReportsTab({ reports, portalToken }: { reports: PortalReport[]; portalToken: string }) {
   const technical = reports.filter(r => r.type === 'technical')
   const contract = reports.filter(r => r.type === 'contract')
 
@@ -462,8 +470,8 @@ function ReportsTab({ reports }: { reports: PortalReport[] }) {
           {String(reports.length).padStart(2, '0')}
         </span>
       </div>
-      <ReportSection title={REPORT_TYPE_LABEL.technical} items={technical} />
-      <ReportSection title={REPORT_TYPE_LABEL.contract} items={contract} />
+      <ReportSection title={REPORT_TYPE_LABEL.technical} items={technical} portalToken={portalToken} />
+      <ReportSection title={REPORT_TYPE_LABEL.contract} items={contract} portalToken={portalToken} />
     </div>
   )
 }
@@ -476,6 +484,7 @@ export function PortalClient({
   status,
   initialItems,
   initialProgress,
+  portalToken,
   heroVideo,
   contentVideo,
   eventFiles,
@@ -727,13 +736,14 @@ export function PortalClient({
               items={items}
               animatingOut={animatingOut}
               justCompleted={justCompleted}
+              portalToken={portalToken}
             />
           )}
           {activeTab === 'clipping' && (
             <ClippingTab articles={articles} />
           )}
           {activeTab === 'reports' && (
-            <ReportsTab reports={reports} />
+            <ReportsTab reports={reports} portalToken={portalToken} />
           )}
         </section>
       </section>

@@ -10,11 +10,12 @@ const ALLOWED_SUFFIXES = [
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
+  const token = searchParams.get('token')
   const url = searchParams.get('url')
   const name = searchParams.get('name') ?? 'download'
 
-  if (!url) {
-    return new NextResponse('Missing url param', { status: 400 })
+  if (!token || !url) {
+    return new NextResponse('Missing params', { status: 400 })
   }
 
   let parsed: URL
@@ -29,14 +30,29 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Forbidden', { status: 403 })
   }
 
-  // Anti open-proxy: só fazemos stream de URLs que correspondem a um ficheiro
-  // realmente armazenado (event_files.blob_url). Sem isto, o endpoint público
-  // serviria conteúdo arbitrário de qualquer projeto Supabase / blob Vercel
-  // sob o nosso domínio.
   const supabase = createAdminClient()
+
+  // Token do portal tem de resolver para um evento com portal ativo.
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, portal_token_expires_at')
+    .eq('portal_token', token)
+    .single()
+  if (!event) {
+    return new NextResponse('Unauthorized', { status: 401 })
+  }
+  const expiresAt = (event as Record<string, unknown>).portal_token_expires_at
+  if (expiresAt && new Date(expiresAt as string) <= new Date()) {
+    return new NextResponse('Unauthorized', { status: 401 })
+  }
+
+  // Anti open-proxy: o URL tem de pertencer a um ficheiro DESTE evento.
+  // Sem o filtro por event_id, bastaria conhecer/adivinhar um blob_url
+  // armazenado para outro evento/organização para o proxy o servir na mesma.
   const { data: file } = await supabase
     .from('event_files')
     .select('id')
+    .eq('event_id', event.id)
     .eq('blob_url', url)
     .limit(1)
     .maybeSingle()
