@@ -76,7 +76,7 @@ export default function GuiaClientePage() {
       {/* ── Hero ── */}
       <section
         className="relative flex flex-col"
-        style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}
+        style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}
       >
         <video
           autoPlay muted loop playsInline
@@ -334,7 +334,7 @@ export default function GuiaClientePage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}>
+      <footer style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}>
         <div className="max-w-5xl mx-auto px-6 md:px-12 py-8">
           <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
             <div className="flex items-center gap-5">

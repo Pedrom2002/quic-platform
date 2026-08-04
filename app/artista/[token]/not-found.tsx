@@ -4,7 +4,7 @@ export default function ArtistPortalNotFound() {
   return (
     <main
       className="flex min-h-screen flex-col items-center justify-center px-6 text-white"
-      style={{ background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}
+      style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}
     >
       <Image src="/logo-branco.png" alt="Quic" width={130} height={52} className="mb-10" />
       <h1

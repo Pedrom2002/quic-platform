@@ -267,7 +267,7 @@ export function ArtistPortalClient({ data, token }: Props) {
       {/* Hero */}
       <section
         className="text-white relative overflow-hidden flex flex-col justify-between"
-        style={{ height: '100dvh', background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 50%, #0d0d0d 100%)' }}
+        style={{ height: '100dvh', background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}
       >
         <video
           autoPlay

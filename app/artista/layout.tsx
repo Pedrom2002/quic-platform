@@ -9,7 +9,7 @@ const playfair = Playfair_Display({
 export default function ArtistPortalLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className={playfair.variable}>
-      <style>{`body { background-color: #111111 !important; }`}</style>
+      <style>{`body { background-color: #0d0c0d !important; }`}</style>
       {children}
     </div>
   )
