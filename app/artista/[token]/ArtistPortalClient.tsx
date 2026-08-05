@@ -274,7 +274,7 @@ export function ArtistPortalClient({ data, token }: Props) {
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
           className="absolute inset-0 w-full h-full object-cover opacity-[0.07] pointer-events-none"
           src={HERO_VIDEO}
         />

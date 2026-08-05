@@ -30,6 +30,7 @@ function makeTask(overrides: Partial<EventTask> = {}): EventTask {
     assigned_to: null,
     due_at: null,
     position: 0,
+    completed_at: null,
     created_at: '2026-07-01T00:00:00.000Z',
     updated_at: '2026-07-01T00:00:00.000Z',
     assigned_member: null,

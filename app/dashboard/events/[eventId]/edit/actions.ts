@@ -1,12 +1,13 @@
 'use server'
 
 import * as z from 'zod'
-import { put } from '@vercel/blob'
+import { put, del } from '@vercel/blob'
 
 import { requireOrgAuth } from '@/lib/supabase/actions'
 import { audit } from '@/lib/audit'
 import { detectMimeFromMagic, safeBlobPathname } from '@/schemas/file.schema'
 import { getEnv } from '@/lib/env'
+import { lisbonDatetimeLocalToUTC } from '@/lib/timezone'
 import type { UpdateEventInput } from '@/schemas/event.schema'
 
 export type ActionResult = { error?: string }
@@ -46,7 +47,7 @@ export async function updateEventAction(eventId: string, data: UpdateEventInput)
     .single()
   if (!event) throw new Error('Evento não encontrado')
 
-  const normalise = (s?: string) => s ? new Date(s).toISOString() : undefined
+  const normalise = (s?: string) => s ? lisbonDatetimeLocalToUTC(s) : undefined
 
   const { error } = await supabase
     .from('events')
@@ -131,6 +132,13 @@ export async function updateEventCoverPhoto(formData: FormData): Promise<ActionR
   const token = getEnv().BLOB_READ_WRITE_TOKEN
   if (!token) return { error: 'Upload de ficheiros não configurado' }
 
+  const { data: existing } = await auth.supabase
+    .from('events')
+    .select('cover_image_url')
+    .eq('id', id.data)
+    .eq('organization_id', auth.member.organization_id)
+    .single()
+
   const blob = await put(safeBlobPathname(photo.name), photo, { access: 'public', token })
 
   const { error } = await auth.supabase
@@ -138,7 +146,14 @@ export async function updateEventCoverPhoto(formData: FormData): Promise<ActionR
     .update({ cover_image_url: blob.url })
     .eq('id', id.data)
     .eq('organization_id', auth.member.organization_id)
-  if (error) return { error: 'Erro ao guardar a foto' }
+  if (error) {
+    try { await del(blob.url, { token }) } catch { /* best effort */ }
+    return { error: 'Erro ao guardar a foto' }
+  }
+
+  if (existing?.cover_image_url) {
+    try { await del(existing.cover_image_url, { token }) } catch { /* best effort */ }
+  }
 
   return {}
 }

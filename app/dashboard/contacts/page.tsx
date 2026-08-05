@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { resolveOrgMember } from '@/lib/supabase/actions'
 import { redirect } from 'next/navigation'
 import { ContactsLayout } from '@/components/contacts/ContactsLayout'
-import { loadContactsAction, loadGroupsAction } from './actions'
+import { loadContactsPageAction, loadGroupsAction, loadGroupCountsAction } from './actions'
 
 export default async function ContactsPage() {
   const supabase = await createClient()
@@ -14,16 +14,19 @@ export default async function ContactsPage() {
 
   const isAdmin = member.role === 'admin'
 
-  const [contacts, groups] = await Promise.all([
-    loadContactsAction(null),
+  const [firstPage, groups, counts] = await Promise.all([
+    loadContactsPageAction(null),
     loadGroupsAction(),
+    loadGroupCountsAction(),
   ])
 
   return (
     <div className="h-full flex flex-col">
       <ContactsLayout
-        initialContacts={contacts}
+        initialContacts={firstPage.contacts}
+        initialCursor={firstPage.nextCursor}
         initialGroups={groups}
+        initialCounts={counts}
         isAdmin={isAdmin}
       />
     </div>

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
+import { put, del } from '@vercel/blob'
 import { createClient } from '@/lib/supabase/server'
 import {
   MAX_FILE_SIZE,
@@ -80,7 +80,10 @@ export async function POST(
         .returns<EventFileWithUploader[]>()
         .single()
 
-      if (!data) return NextResponse.json({ error: 'Erro ao guardar ficheiro' }, { status: 500 })
+      if (!data) {
+        try { await del(blobUrl, { token: getEnv().BLOB_READ_WRITE_TOKEN }) } catch { /* best effort */ }
+        return NextResponse.json({ error: 'Erro ao guardar ficheiro' }, { status: 500 })
+      }
 
       audit({
         action: 'file.uploaded',
@@ -128,7 +131,10 @@ export async function POST(
       .returns<EventFileWithUploader[]>()
       .single()
 
-    if (!data) return NextResponse.json({ error: 'Erro ao guardar ficheiro' }, { status: 500 })
+    if (!data) {
+      try { await del(blob.url, { token }) } catch { /* best effort */ }
+      return NextResponse.json({ error: 'Erro ao guardar ficheiro' }, { status: 500 })
+    }
 
     audit({
       action: 'file.uploaded',

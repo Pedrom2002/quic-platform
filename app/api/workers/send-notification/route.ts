@@ -34,6 +34,24 @@ export async function POST(request: Request) {
   const payload = parsed.data
   const supabase = createAdminClient()
 
+  // QStash garante at-least-once delivery: um retry de rede depois do envio
+  // já ter tido sucesso (mas antes deste worker responder 200) reenviaria o
+  // mesmo email/SMS/push ao cliente. Gate atómico: só continua se conseguir
+  // marcar o job como 'processing' vindo de 'queued' ou 'processing' (retry
+  // do próprio QStash antes de um envio anterior ter terminado); se já está
+  // 'delivered'/'sent'/'failed'/'cancelled', a entrega já foi decidida.
+  const { data: claimed } = await supabase
+    .from('notification_jobs')
+    .update({ status: 'processing' })
+    .eq('id', payload.job_id)
+    .in('status', ['queued', 'processing'])
+    .select('id')
+    .maybeSingle()
+
+  if (!claimed) {
+    return NextResponse.json({ success: true, skipped: 'already-processed' })
+  }
+
   try {
     let providerId: string | null = null
 

@@ -6,9 +6,9 @@ const schema = z.object({
   contacts: z.array(z.object({
     list_id: z.string().uuid(),
     email: z.string().email(),
-    name: z.string().optional(),
-    company: z.string().optional(),
-    role: z.string().optional(),
+    name: z.string().max(255).optional(),
+    company: z.string().max(255).optional(),
+    role: z.string().max(255).optional(),
   })).max(1000),
 })
 

@@ -10,6 +10,7 @@ interface Props {
   onSelectGroup: (id: string | null) => void
   totalCount: number
   ungroupedCount: number
+  countsByGroup: Record<string, number>
   isAdmin: boolean
   onNewGroup: () => void
 }
@@ -20,6 +21,7 @@ export function GroupsPanel({
   onSelectGroup,
   totalCount,
   ungroupedCount,
+  countsByGroup,
   isAdmin,
   onNewGroup,
 }: Props) {
@@ -60,6 +62,7 @@ export function GroupsPanel({
               <GroupItem
                 key={g.id}
                 label={g.name}
+                count={countsByGroup[g.id] ?? 0}
                 active={selectedGroupId === g.id}
                 onClick={() => onSelectGroup(g.id)}
                 color={g.color ?? '#6366f1'}

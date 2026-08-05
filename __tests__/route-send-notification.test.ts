@@ -22,6 +22,15 @@ const makeFromChain = (table: string) => {
   }
 }
 
+// Chain for the idempotency claim: update({status:'processing'}).eq(id).in(status).select().maybeSingle()
+// Returns the `eq` function itself (the value .update() should resolve to as { eq }).
+function makeClaimEq() {
+  const maybeSingle = vi.fn().mockResolvedValue({ data: { id: 'job-1' } })
+  const select = vi.fn().mockReturnValue({ maybeSingle })
+  const inFn = vi.fn().mockReturnValue({ select })
+  return vi.fn().mockReturnValue({ in: inFn })
+}
+
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: vi.fn(() => ({ from: mockFrom })),
 }))
@@ -76,7 +85,11 @@ describe('POST /api/workers/send-notification', () => {
 
     // Default mock implementations
     const eqMock = vi.fn().mockResolvedValue({ error: null })
-    mockUpdate = vi.fn().mockReturnValue({ eq: eqMock })
+    // First update() call is the idempotency claim: .update().eq().in().select().maybeSingle()
+    // Subsequent update() calls (mark delivered/failed) just resolve on .eq().
+    mockUpdate = vi.fn()
+    mockUpdate.mockImplementationOnce(() => ({ eq: makeClaimEq() }))
+    mockUpdate.mockImplementation(() => ({ eq: eqMock }))
     mockInsert = vi.fn().mockResolvedValue({ error: null })
     mockSingle = vi.fn().mockResolvedValue({ data: { name: 'Concerto Test' } })
     mockSelect = vi.fn().mockReturnValue({ eq: mockEq })

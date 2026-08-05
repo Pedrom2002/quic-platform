@@ -1,6 +1,6 @@
 'use server'
 
-import { getOrgAuth, assertEventOwnership } from '@/lib/supabase/actions'
+import { getOrgAuth, assertEventOwnership, assertChecklistItemBelongsToEvent } from '@/lib/supabase/actions'
 import type { ChecklistItemNote } from '@/types/app'
 
 export async function addItemNoteAction(
@@ -14,6 +14,9 @@ export async function addItemNoteAction(
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
+
+  const itemBelongs = await assertChecklistItemBelongsToEvent(supabase, itemId, eventId)
+  if (!itemBelongs) return null
 
   if (!content.trim() || content.length > 10000) return null
 

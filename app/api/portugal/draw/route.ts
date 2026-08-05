@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { isValidAdminToken } from '@/lib/portugal-auth'
 import { sendSms } from '@/lib/notifications/channels/sms'
 import { getEnv } from '@/lib/env'
+import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 
 const schema = z.object({
   count: z.number().int().min(1).max(100),
@@ -12,7 +13,15 @@ const schema = z.object({
 type Registration = { id: string; name: string; email: string; phone: string }
 type Winner = { id: string; registration_id: string; qr_token: string }
 
+const ADMIN_LIMIT = 20
+const ADMIN_WINDOW_MS = 5 * 60 * 1_000
+
 export async function POST(request: Request) {
+  const ip = getClientIp(request)
+  if (await isRateLimited(`portugal-admin:${ip}`, ADMIN_LIMIT, ADMIN_WINDOW_MS)) {
+    return NextResponse.json({ error: 'Demasiadas tentativas. Tenta novamente mais tarde.' }, { status: 429 })
+  }
+
   const token = request.headers.get('x-admin-token')
   if (!isValidAdminToken(token)) {
     return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })

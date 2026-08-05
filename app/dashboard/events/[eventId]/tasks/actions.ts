@@ -1,7 +1,12 @@
 'use server'
 
-import { getOrgAuth, assertEventOwnership } from '@/lib/supabase/actions'
-import { put } from '@vercel/blob'
+import {
+  getOrgAuth,
+  assertEventOwnership,
+  assertEventTaskBelongsToEvent,
+  assertEventFileBelongsToEvent,
+} from '@/lib/supabase/actions'
+import { put, del } from '@vercel/blob'
 import { MAX_FILE_SIZE } from '@/schemas/file.schema'
 import type { ChecklistItemStatus, EventTask, EventTaskNote, EventTaskFileLink, EventFileWithUploader } from '@/types/app'
 import type { TablesUpdate } from '@/types/database'
@@ -92,6 +97,9 @@ export async function updateTaskAction(
   if (fields.description !== undefined && fields.description !== null && fields.description.length > 2000) return null
 
   const updateData: TablesUpdate<'event_tasks'> = { ...fields }
+  if (fields.status === 'completed') {
+    updateData.completed_at = new Date().toISOString()
+  }
 
   const { data } = await supabase
     .from('event_tasks')
@@ -170,6 +178,9 @@ export async function addTaskNoteAction(
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
 
+  const taskBelongs = await assertEventTaskBelongsToEvent(supabase, taskId, eventId)
+  if (!taskBelongs) return null
+
   if (!content.trim() || content.length > 10000) return null
 
   const { data: authorRow } = await supabase
@@ -202,6 +213,9 @@ export async function deleteTaskNoteAction(
   const auth = await getOrgAuth()
   if (!auth) return false
   const { supabase, member } = auth
+
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) return false
 
   const { error, count } = await supabase
     .from('event_task_notes')
@@ -260,6 +274,15 @@ export async function linkFileToTaskAction(
   if (!auth) return null
   const { supabase, user, member } = auth
 
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) return null
+
+  const [taskBelongs, fileBelongs] = await Promise.all([
+    assertEventTaskBelongsToEvent(supabase, taskId, eventId),
+    assertEventFileBelongsToEvent(supabase, eventFileId, eventId),
+  ])
+  if (!taskBelongs || !fileBelongs) return null
+
   const { data: linkedByRow } = await supabase
     .from('team_members')
     .select('id')
@@ -290,6 +313,9 @@ export async function unlinkFileFromTaskAction(
   if (!auth) return false
   const { supabase, member } = auth
 
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) return false
+
   const { error, count } = await supabase
     .from('event_task_files')
     .delete({ count: 'exact' })
@@ -311,6 +337,9 @@ export async function uploadFileToTaskAction(
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
+
+  const taskBelongs = await assertEventTaskBelongsToEvent(supabase, taskId, eventId)
+  if (!taskBelongs) return null
 
   const file = formData.get('file') as File | null
   if (!file || file.size === 0) return null
@@ -351,7 +380,10 @@ export async function uploadFileToTaskAction(
     .select('id')
     .single()
 
-  if (!eventFile) return null
+  if (!eventFile) {
+    try { await del(blob.url, { token: blobToken }) } catch { /* best effort */ }
+    return null
+  }
 
   const { data } = await supabase
     .from('event_task_files')
@@ -364,6 +396,12 @@ export async function uploadFileToTaskAction(
     .select('*, file:event_files!event_file_id(*, uploader:team_members!uploaded_by(id, full_name, avatar_url))')
     .returns<EventTaskFileLink[]>()
     .single()
+
+  if (!data) {
+    await supabase.from('event_files').delete().eq('id', eventFile.id)
+    try { await del(blob.url, { token: blobToken }) } catch { /* best effort */ }
+    return null
+  }
 
   return data ?? null
 }

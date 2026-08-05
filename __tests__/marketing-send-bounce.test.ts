@@ -315,7 +315,7 @@ describe('GET /api/marketing/bounce-poll', () => {
         return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: creds }) }
       }
       if (table === 'marketing_contacts') {
-        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue({ data: null }) }
+        return { select: vi.fn().mockReturnThis(), in: vi.fn().mockResolvedValue({ data: [] }) }
       }
       return {}
     })
@@ -346,8 +346,8 @@ describe('GET /api/marketing/bounce-poll', () => {
       if (table === 'marketing_contacts') {
         return {
           select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockResolvedValue({ data: [{ id: contact.id, email: bounceInfo.bouncedEmail }] }),
           eq: vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn().mockResolvedValue({ data: contact }),
           update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }),
         }
       }

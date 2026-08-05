@@ -29,7 +29,14 @@ vi.mock('@/lib/supabase/admin', () => ({
         return { select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { name: 'Casamento Silva' } }) }) }) }
       }
       if (table === 'notification_jobs') {
-        return { update: () => ({ eq: mockUpdate }) }
+        return {
+          update: (payload: { status?: string }) => {
+            if (payload.status === 'processing') {
+              return { eq: () => ({ in: () => ({ select: () => ({ maybeSingle: () => Promise.resolve({ data: { id: 'job-1' } }) }) }) }) }
+            }
+            return { eq: mockUpdate }
+          },
+        }
       }
       if (table === 'notification_log') {
         return { insert: mockInsertLog }

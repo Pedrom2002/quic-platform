@@ -102,9 +102,26 @@ describe('addContact', () => {
     expect(from).not.toHaveBeenCalled()
   })
 
+  function makeAddContactFrom(insert: ReturnType<typeof vi.fn>) {
+    return vi.fn((table: string) => {
+      if (table === 'marketing_lists') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: { id: 'list-1' } }),
+              }),
+            }),
+          }),
+        }
+      }
+      return { insert }
+    })
+  }
+
   it('inserts contact scoped to the member organization_id, trimmed/lowercased', async () => {
     const insert = vi.fn().mockResolvedValue({ error: null })
-    authAll({ from: vi.fn().mockReturnValue({ insert }) })
+    authAll({ from: makeAddContactFrom(insert) })
     const { addContact } = await import('@/app/dashboard/marketing/contacts/actions')
     const result = await addContact(
       null,
@@ -124,7 +141,7 @@ describe('addContact', () => {
 
   it('maps duplicate-email db error (23505) to friendly message', async () => {
     const insert = vi.fn().mockResolvedValue({ error: { code: '23505', message: 'duplicate key' } })
-    authAll({ from: vi.fn().mockReturnValue({ insert }) })
+    authAll({ from: makeAddContactFrom(insert) })
     const { addContact } = await import('@/app/dashboard/marketing/contacts/actions')
     const result = await addContact(null, fd({ list_id: 'list-1', email: 'foo@bar.com' }))
     expect(result).toEqual({ ok: false, message: 'Email já existe nesta lista' })
@@ -132,7 +149,7 @@ describe('addContact', () => {
 
   it('surfaces generic db error message', async () => {
     const insert = vi.fn().mockResolvedValue({ error: { code: '500', message: 'db down' } })
-    authAll({ from: vi.fn().mockReturnValue({ insert }) })
+    authAll({ from: makeAddContactFrom(insert) })
     const { addContact } = await import('@/app/dashboard/marketing/contacts/actions')
     const result = await addContact(null, fd({ list_id: 'list-1', email: 'foo@bar.com' }))
     expect(result).toEqual({ ok: false, message: 'db down' })
@@ -260,7 +277,7 @@ describe('createCampaign', () => {
       }),
     })
     const { createCampaign } = await import('@/app/dashboard/marketing/campaigns/new/actions')
-    await expect(createCampaign(fd({ list_id: LIST_ID, name: 'C' }))).rejects.toThrow('Lista não encontrada')
+    await expect(createCampaign(fd({ list_id: LIST_ID, name: 'C', subject_template: 'S', body_template: 'B' }))).rejects.toThrow('Lista não encontrada')
   })
 
   it('creates the campaign and redirects when list is owned (no immediate dispatch)', async () => {

@@ -116,41 +116,34 @@ describe('POST /api/webhooks/resend', () => {
     expect(mockInsert).toHaveBeenCalledTimes(1) // only webhook_events
   })
 
-  it('inserts notification_log entry for delivered event when job found', async () => {
-    mockMaybeSingle.mockResolvedValue({ data: { notification_job_id: 'job-1' } })
-    const body = JSON.stringify({ type: 'email.delivered', data: { email_id: 'brevo-2' } })
+  // O webhook recebe eventos do Resend, mas o envio real de email é feito via
+  // Brevo (provider_message_id gravado pelo worker é sempre um ID da Brevo,
+  // nunca do Resend) — o matching por email_id nunca encontraria o job
+  // correto e foi removido (ver app/api/webhooks/resend/route.ts). O webhook
+  // agora só regista o evento em webhook_events, sem tentar ligar a um job.
+  it('does not attempt job matching for delivered event (no provider correspondente)', async () => {
+    const body = JSON.stringify({ type: 'email.delivered', data: { email_id: 'resend-2' } })
     const req = makeRequest(body, buildValidSig('msg-3', '1700000002', body), 'msg-3', '1700000002')
     const res = await POST(req)
     expect(res.status).toBe(200)
-    expect(mockInsert).toHaveBeenCalledTimes(2) // webhook_events + notification_log
+    expect(mockInsert).toHaveBeenCalledTimes(1) // only webhook_events
+    expect(mockUpdate).not.toHaveBeenCalled()
   })
 
-  it('updates job status to delivered for delivered event', async () => {
-    mockMaybeSingle.mockResolvedValue({ data: { notification_job_id: 'job-2' } })
-    mockEq.mockReturnThis()
-    const body = JSON.stringify({ type: 'email.delivered', data: { email_id: 'brevo-3' } })
-    const req = makeRequest(body, buildValidSig('msg-4', '1700000003', body), 'msg-4', '1700000003')
-    await POST(req)
-    // update was called on notification_jobs
-    expect(mockUpdate).toHaveBeenCalledWith({ status: 'delivered' })
-  })
-
-  it('inserts log entry for opened event when job found', async () => {
-    mockMaybeSingle.mockResolvedValue({ data: { notification_job_id: 'job-3' } })
-    const body = JSON.stringify({ type: 'email.opened', data: { email_id: 'brevo-4' } })
+  it('does not attempt job matching for opened event', async () => {
+    const body = JSON.stringify({ type: 'email.opened', data: { email_id: 'resend-4' } })
     const req = makeRequest(body, buildValidSig('msg-5', '1700000004', body), 'msg-5', '1700000004')
     const res = await POST(req)
     expect(res.status).toBe(200)
-    expect(mockInsert).toHaveBeenCalledTimes(2)
+    expect(mockInsert).toHaveBeenCalledTimes(1)
   })
 
-  it('inserts log entry for bounced event when job found', async () => {
-    mockMaybeSingle.mockResolvedValue({ data: { notification_job_id: 'job-4' } })
-    const body = JSON.stringify({ type: 'email.bounced', data: { email_id: 'brevo-5' } })
+  it('does not attempt job matching for bounced event', async () => {
+    const body = JSON.stringify({ type: 'email.bounced', data: { email_id: 'resend-5' } })
     const req = makeRequest(body, buildValidSig('msg-6', '1700000005', body), 'msg-6', '1700000005')
     const res = await POST(req)
     expect(res.status).toBe(200)
-    expect(mockInsert).toHaveBeenCalledTimes(2)
+    expect(mockInsert).toHaveBeenCalledTimes(1)
   })
 
   it('does not insert extra log when logEntry not found for delivered event', async () => {

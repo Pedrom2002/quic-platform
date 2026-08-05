@@ -264,6 +264,7 @@ export interface EventTask {
   assigned_to: string | null
   due_at: string | null
   position: number
+  completed_at: string | null
   created_at: string
   updated_at: string
   assigned_member?: { id: string; full_name: string; avatar_url: string | null } | null

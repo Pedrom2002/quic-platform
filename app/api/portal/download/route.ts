@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 
 const ALLOWED_SUFFIXES = [
   '.public.blob.vercel-storage.com',
@@ -8,7 +9,15 @@ const ALLOWED_SUFFIXES = [
   '.unsplash.com',
 ]
 
+const DOWNLOAD_LIMIT = 60
+const DOWNLOAD_WINDOW_MS = 5 * 60 * 1_000
+
 export async function GET(request: NextRequest) {
+  const ip = getClientIp(request)
+  if (await isRateLimited(`portal-download:${ip}`, DOWNLOAD_LIMIT, DOWNLOAD_WINDOW_MS)) {
+    return new NextResponse('Too Many Requests', { status: 429 })
+  }
+
   const { searchParams } = request.nextUrl
   const token = searchParams.get('token')
   const url = searchParams.get('url')

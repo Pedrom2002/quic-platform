@@ -30,7 +30,7 @@ function makeSupabase() {
   const chain: {
     insert: (payload: unknown) => Promise<{ error: null }>
     update: (payload: unknown) => { eq: (col: string, val: unknown) => unknown }
-    select?: (...args: unknown[]) => unknown
+    select: (...args: unknown[]) => { eq: (col: string, val: unknown) => unknown }
   } = {
     insert: vi.fn((payload: unknown) => {
       calls.insert.push(payload)
@@ -44,6 +44,13 @@ function makeSupabase() {
           return eqChain()
         }),
       }
+    }),
+    select: vi.fn(() => {
+      const selectEqChain: { eq: (col: string, val: unknown) => unknown; single: () => Promise<{ data: null }> } = {
+        eq: vi.fn(() => selectEqChain),
+        single: vi.fn(() => Promise.resolve({ data: null })),
+      }
+      return selectEqChain
     }),
   }
   return { supabase: { from: vi.fn(() => chain) }, calls, chain }

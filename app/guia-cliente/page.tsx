@@ -79,7 +79,7 @@ export default function GuiaClientePage() {
         style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}
       >
         <video
-          autoPlay muted loop playsInline
+          autoPlay muted loop playsInline preload="metadata"
           className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none"
           src="/a.mp4"
         />
@@ -144,7 +144,7 @@ export default function GuiaClientePage() {
       {/* ── Content ── */}
       <section className="relative">
         <video
-          autoPlay muted loop playsInline
+          autoPlay muted loop playsInline preload="metadata"
           className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-30"
           src="/qp_b.mp4"
         />

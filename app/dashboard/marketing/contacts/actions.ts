@@ -33,6 +33,14 @@ export async function addContact(
     return { ok: false, message: 'Email inválido' }
   }
 
+  const { data: listRow } = await supabase
+    .from('marketing_lists')
+    .select('id')
+    .eq('id', list_id)
+    .eq('organization_id', member.organization_id)
+    .single()
+  if (!listRow) return { ok: false, message: 'Lista inválida' }
+
   const { error } = await supabase.from('marketing_contacts').insert({
     list_id, email, name, company, role,
     organization_id: member.organization_id,

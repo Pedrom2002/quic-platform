@@ -37,30 +37,38 @@ export async function runMarketingFollowup(): Promise<{ dispatched: number }> {
 
     if (!eligibleSends?.length || !qstash) continue
 
-    for (let i = 0; i < eligibleSends.length; i++) {
-      const send = eligibleSends[i]
+    // followup_count differs per row, so it can't collapse into one UPDATE -
+    // but the sequential await-in-a-loop (update, then publish, one row at a
+    // time) serialized N DB round-trips + N HTTP calls for no reason. Both
+    // rounds are now fired concurrently.
+    await Promise.all(
+      eligibleSends.map(send =>
+        supabase.from('marketing_sends').update({
+          followup_count: send.followup_count + 1,
+          last_followup_at: now.toISOString(),
+        }).eq('id', send.id)
+      )
+    )
 
-      await supabase.from('marketing_sends').update({
-        followup_count: send.followup_count + 1,
-        last_followup_at: now.toISOString(),
-      }).eq('id', send.id)
+    await Promise.all(
+      eligibleSends.map((send, i) =>
+        qstash.publishJSON({
+          url: `${env.NEXT_PUBLIC_APP_URL}/api/marketing/send`,
+          delay: i * 6,
+          body: {
+            send_id: send.id,
+            campaign_id: campaign.id,
+            contact_id: send.contact_id,
+            sender_user_id: campaign.created_by,
+            is_followup: true,
+            followup_subject: campaign.followup_subject,
+            followup_body: campaign.followup_body,
+          },
+        })
+      )
+    )
 
-      await qstash.publishJSON({
-        url: `${env.NEXT_PUBLIC_APP_URL}/api/marketing/send`,
-        delay: i * 6,
-        body: {
-          send_id: send.id,
-          campaign_id: campaign.id,
-          contact_id: send.contact_id,
-          sender_user_id: campaign.created_by,
-          is_followup: true,
-          followup_subject: campaign.followup_subject,
-          followup_body: campaign.followup_body,
-        },
-      })
-
-      dispatched++
-    }
+    dispatched += eligibleSends.length
   }
 
   return { dispatched }
@@ -91,32 +99,44 @@ export async function runBouncePoll(): Promise<{ processed: number }> {
 
     try {
       const bounces = await pollBounces(creds, since)
+      if (!bounces.length) continue
 
-      for (const bounce of bounces) {
-        const { data: contact } = await supabase
-          .from('marketing_contacts')
-          .select('id')
-          .eq('email', bounce.bouncedEmail)
-          .maybeSingle()
+      // Batch the contact lookup once per sender instead of one SELECT per
+      // bounce (real N+1: a mailbox with 50 bounces did 50 sequential
+      // round-trips just to resolve email -> contact id).
+      const bouncedEmails = [...new Set(bounces.map(b => b.bouncedEmail))]
+      const { data: contacts } = await supabase
+        .from('marketing_contacts')
+        .select('id, email')
+        .in('email', bouncedEmails)
 
-        if (!contact) continue
+      // email is only unique per list (UNIQUE(list_id, email)), so the same
+      // address can map to multiple contact rows across different lists -
+      // all of them should be marked bounced, not just one.
+      const contactIdsByEmail = new Map<string, string[]>()
+      for (const c of contacts ?? []) {
+        contactIdsByEmail.set(c.email, (contactIdsByEmail.get(c.email) ?? []).concat(c.id))
+      }
 
-        await Promise.all([
+      const matched = bounces.flatMap(b => contactIdsByEmail.get(b.bouncedEmail) ?? [])
+
+      await Promise.all(
+        matched.flatMap(contactId => [
           supabase.from('marketing_sends')
             .update({ status: 'bounced' })
-            .eq('contact_id', contact.id)
+            .eq('contact_id', contactId)
             .eq('status', 'sent'),
           supabase.from('marketing_contacts')
             .update({ status: 'bounced' })
-            .eq('id', contact.id),
+            .eq('id', contactId),
           supabase.rpc('marketing_increment_score', {
-            p_contact_id: contact.id,
+            p_contact_id: contactId,
             p_delta: SCORE_DELTA.bounced,
           }),
         ])
+      )
 
-        totalBounces++
-      }
+      totalBounces += matched.length
     } catch (err) {
       console.error(`[bounce-poll] IMAP error for user ${userId}:`, err)
     }

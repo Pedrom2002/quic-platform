@@ -32,6 +32,7 @@ describe('dispatcher additional branches', () => {
     q.eq = vi.fn(chain); q.in = vi.fn(chain); q.is = vi.fn(chain)
     q.lte = vi.fn(chain); q.limit = vi.fn(chain)
     q.maybeSingle = vi.fn(chain); q.single = vi.fn(chain)
+    q.returns = vi.fn(chain)
     return q
   }
 
@@ -246,7 +247,7 @@ describe('lib/portal/data getPortalData error log branches', () => {
   it('logs error when itemFiles query fails', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const { createAdminClient } = await import('@/lib/supabase/admin')
-    const mockEvent = { id: 'evt-1', name: 'Test', venue_name: null, start_datetime: '2026-06-15T20:00:00Z', status: 'active', settings: {} }
+    const mockEvent = { id: 'evt-1', organization_id: 'org-1', name: 'Test', venue_name: null, start_datetime: '2026-06-15T20:00:00Z', status: 'active', settings: {} }
     const mockItems = [{ id: 'item-1', client_label: null, title: 'T', status: 'pending', completed_at: null, completion_note: null, position: 1, due_at: null }]
 
     vi.mocked(createAdminClient).mockReturnValue({
@@ -259,7 +260,7 @@ describe('lib/portal/data getPortalData error log branches', () => {
         }
         if (table === 'checklist_item_files') {
           // Return error to trigger itemFilesError log
-          return { select: vi.fn().mockReturnThis(), in: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB error' } }) }
+          return { select: vi.fn().mockReturnThis(), in: vi.fn().mockReturnThis(), eq: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB error' } }) }
         }
         if (table === 'event_files') {
           return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockResolvedValue({ data: [], error: null }) }

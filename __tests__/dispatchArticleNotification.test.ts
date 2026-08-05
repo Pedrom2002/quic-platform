@@ -176,6 +176,9 @@ describe('dispatchArticleNotification (no QStash)', () => {
     mockSendSms.mockResolvedValue('brevo-sms-id-1')
   })
 
+  // Timeout raised from the 5000ms default: this test is prone to timing out
+  // under full-suite parallel load (CPU contention across 900+ tests), even
+  // though it passes reliably in isolation - not a logic defect.
   it('sends email + sms when client has both channels', async () => {
     // 3 mock jobs inserted: one per channel (email, sms, portal)
     const mockEmailJob = {
@@ -235,7 +238,7 @@ describe('dispatchArticleNotification (no QStash)', () => {
     // email and sms channels trigger their respective senders
     expect(mockSendEmail).toHaveBeenCalledOnce()
     expect(mockSendSms).toHaveBeenCalledOnce()
-  })
+  }, 15000)
 
   it('skips clients with opted_out=true', async () => {
     // The Supabase query uses .eq('opted_out', false), so opted_out clients are

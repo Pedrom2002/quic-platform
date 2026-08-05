@@ -1,15 +1,19 @@
 // __tests__/checklist-files-actions.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockGetOrgAuth, mockAssertOwnership, mockPut } = vi.hoisted(() => ({
+const { mockGetOrgAuth, mockAssertOwnership, mockAssertItemBelongsToEvent, mockAssertFileBelongsToEvent, mockPut } = vi.hoisted(() => ({
   mockGetOrgAuth: vi.fn(),
   mockAssertOwnership: vi.fn(),
+  mockAssertItemBelongsToEvent: vi.fn(),
+  mockAssertFileBelongsToEvent: vi.fn(),
   mockPut: vi.fn(),
 }))
 
 vi.mock('@/lib/supabase/actions', () => ({
   getOrgAuth: mockGetOrgAuth,
   assertEventOwnership: mockAssertOwnership,
+  assertChecklistItemBelongsToEvent: mockAssertItemBelongsToEvent,
+  assertEventFileBelongsToEvent: mockAssertFileBelongsToEvent,
 }))
 vi.mock('@vercel/blob', () => ({ put: mockPut }))
 
@@ -45,6 +49,8 @@ function authAs(supabase: unknown) {
 beforeEach(() => {
   vi.clearAllMocks()
   mockAssertOwnership.mockResolvedValue(true)
+  mockAssertItemBelongsToEvent.mockResolvedValue(true)
+  mockAssertFileBelongsToEvent.mockResolvedValue(true)
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token'
 })
 

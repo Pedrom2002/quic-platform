@@ -34,48 +34,19 @@ export async function POST(request: Request) {
     payload: payload as unknown as import('@/types/database').Json,
   })
 
-  // Processar eventos de entrega
-  const emailId = payload.data?.email_id as string | undefined
-  const eventType = payload.type as string
-
-  if (emailId) {
-    const logEventType = eventType.includes('delivered') ? 'delivered'
-      : eventType.includes('opened') ? 'opened'
-      : eventType.includes('bounced') ? 'bounced'
-      : null
-
-    if (logEventType) {
-      // Look up the job via notification_log where the Brevo message ID was
-      // stored at send time by the worker (provider_message_id column).
-      // Cannot use qstash_message_id — that holds the QStash message ID, not
-      // the Brevo one.
-      const { data: logEntry } = await supabase
-        .from('notification_log')
-        .select('notification_job_id')
-        .eq('provider_message_id', emailId)
-        .eq('provider', 'brevo')
-        .limit(1)
-        .maybeSingle()
-
-      if (logEntry) {
-        await supabase.from('notification_log').insert({
-          notification_job_id: logEntry.notification_job_id,
-          event_type: logEventType as 'delivered' | 'opened' | 'bounced',
-          channel: 'email',
-          provider: 'brevo',
-          provider_message_id: emailId,
-          metadata: payload.data as unknown as import('@/types/database').Json,
-        })
-
-        if (logEventType === 'delivered') {
-          await supabase
-            .from('notification_jobs')
-            .update({ status: 'delivered' })
-            .eq('id', logEntry.notification_job_id)
-        }
-      }
-    }
-  }
+  // NOTA: este webhook recebe eventos do Resend (svix-signature,
+  // RESEND_WEBHOOK_SECRET), mas o envio real de email transacional é feito
+  // via Brevo (ver lib/notifications/channels/email.ts, provider_message_id
+  // gravado como provider='brevo' pelo worker em
+  // app/api/workers/send-notification/route.ts). O email_id deste payload
+  // é um ID do Resend — nunca corresponde a um provider_message_id da Brevo,
+  // pelo que o matching por email_id nunca encontraria o job correto e foi
+  // removido (tentá-lo apenas mascarava que o tracking de entrega/abertura
+  // não está ligado a nenhum provider real). O evento fica registado em
+  // webhook_events para auditoria/depuração manual.
+  console.warn('[webhooks/resend] evento recebido sem provider correspondente configurado', {
+    type: payload.type,
+  })
 
   return NextResponse.json({ received: true })
 }

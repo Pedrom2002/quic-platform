@@ -8,37 +8,49 @@ import { NewContactDialog } from './NewContactDialog'
 import { EditContactDialog } from './EditContactDialog'
 import { NewGroupDialog } from './NewGroupDialog'
 import {
-  loadContactsAction,
+  loadContactsPageAction,
   loadGroupsAction,
+  loadGroupCountsAction,
   deactivateContactAction,
   type ContactGroup,
   type ContactWithGroups,
+  type GroupCounts,
 } from '@/app/dashboard/contacts/actions'
+
+type Cursor = { name: string; id: string } | null
 
 interface Props {
   initialContacts: ContactWithGroups[]
+  initialCursor: Cursor
   initialGroups: ContactGroup[]
+  initialCounts: GroupCounts
   isAdmin: boolean
 }
 
-export function ContactsLayout({ initialContacts, initialGroups, isAdmin }: Props) {
+export function ContactsLayout({ initialContacts, initialCursor, initialGroups, initialCounts, isAdmin }: Props) {
   const [contacts, setContacts] = useState(initialContacts)
+  const [cursor, setCursor] = useState<Cursor>(initialCursor)
   const [groups, setGroups] = useState(initialGroups)
+  const [counts, setCounts] = useState(initialCounts)
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [editingContact, setEditingContact] = useState<ContactWithGroups | null>(null)
   const [showNewContact, setShowNewContact] = useState(false)
   const [showNewGroup, setShowNewGroup] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   const reloadContacts = useCallback(() => {
     startTransition(async () => {
       try {
-        const [newContacts, newGroups] = await Promise.all([
-          loadContactsAction(selectedGroupId),
+        const [page, newGroups, newCounts] = await Promise.all([
+          loadContactsPageAction(selectedGroupId),
           loadGroupsAction(),
+          loadGroupCountsAction(),
         ])
-        setContacts(newContacts)
+        setContacts(page.contacts)
+        setCursor(page.nextCursor)
         setGroups(newGroups)
+        setCounts(newCounts)
       } catch (err: unknown) {
         toast.error(err instanceof Error ? err.message : 'Erro ao carregar')
       }
@@ -49,12 +61,28 @@ export function ContactsLayout({ initialContacts, initialGroups, isAdmin }: Prop
     setSelectedGroupId(id)
     startTransition(async () => {
       try {
-        setContacts(await loadContactsAction(id))
+        const page = await loadContactsPageAction(id)
+        setContacts(page.contacts)
+        setCursor(page.nextCursor)
       } catch (err: unknown) {
         toast.error(err instanceof Error ? err.message : 'Erro ao filtrar')
       }
     })
   }
+
+  const handleLoadMore = useCallback(() => {
+    if (!cursor || isLoadingMore) return
+    setIsLoadingMore(true)
+    loadContactsPageAction(selectedGroupId, cursor)
+      .then(page => {
+        setContacts(prev => prev.concat(page.contacts))
+        setCursor(page.nextCursor)
+      })
+      .catch((err: unknown) => {
+        toast.error(err instanceof Error ? err.message : 'Erro ao carregar mais contactos')
+      })
+      .finally(() => setIsLoadingMore(false))
+  }, [cursor, isLoadingMore, selectedGroupId])
 
   function handleDeactivate(contactId: string) {
     if (!confirm('Desativar este contacto? Será removido do directório.')) return
@@ -69,16 +97,15 @@ export function ContactsLayout({ initialContacts, initialGroups, isAdmin }: Prop
     })
   }
 
-  const ungroupedCount = contacts.filter(c => c.groups.length === 0).length
-
   return (
     <div className="flex h-full">
       <GroupsPanel
         groups={groups}
         selectedGroupId={selectedGroupId}
         onSelectGroup={handleSelectGroup}
-        totalCount={contacts.length}
-        ungroupedCount={ungroupedCount}
+        totalCount={counts.total}
+        ungroupedCount={counts.ungrouped}
+        countsByGroup={counts.byGroup}
         isAdmin={isAdmin}
         onNewGroup={() => setShowNewGroup(true)}
       />
@@ -89,6 +116,9 @@ export function ContactsLayout({ initialContacts, initialGroups, isAdmin }: Prop
         onEdit={setEditingContact}
         onDeactivate={handleDeactivate}
         disabled={isPending}
+        hasMore={cursor !== null}
+        isLoadingMore={isLoadingMore}
+        onLoadMore={handleLoadMore}
       />
 
       <NewContactDialog

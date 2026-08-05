@@ -46,6 +46,73 @@ export async function assertEventOwnership(
   return !!data
 }
 
+// Confirms checklistItemId belongs to eventId. assertEventOwnership alone
+// checks that the caller owns eventId, but itemId is an independent
+// caller-supplied value: without this check a member can link/unlink files
+// onto a checklist item belonging to a different event.
+export async function assertChecklistItemBelongsToEvent(
+  supabase: SupabaseClient,
+  itemId: string,
+  eventId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from('event_checklist_items')
+    .select('id')
+    .eq('id', itemId)
+    .eq('event_id', eventId)
+    .single()
+  return !!data
+}
+
+// Confirms eventFileId belongs to eventId, so a member can't link a file
+// from another event onto this event's checklist item.
+export async function assertEventFileBelongsToEvent(
+  supabase: SupabaseClient,
+  eventFileId: string,
+  eventId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from('event_files')
+    .select('id')
+    .eq('id', eventFileId)
+    .eq('event_id', eventId)
+    .single()
+  return !!data
+}
+
+// Confirms taskId belongs to eventId, same rationale as
+// assertChecklistItemBelongsToEvent but for event_tasks.
+export async function assertEventTaskBelongsToEvent(
+  supabase: SupabaseClient,
+  taskId: string,
+  eventId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from('event_tasks')
+    .select('id')
+    .eq('id', taskId)
+    .eq('event_id', eventId)
+    .single()
+  return !!data
+}
+
+// Confirms raffleId belongs to organizationId. Used by raffle entry actions
+// that only receive raffleId (no eventId), preventing a member from adding
+// entries/drawing a winner on a raffle owned by another organization.
+export async function assertRaffleBelongsToOrg(
+  supabase: SupabaseClient,
+  raffleId: string,
+  organizationId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from('event_raffles')
+    .select('id')
+    .eq('id', raffleId)
+    .eq('organization_id', organizationId)
+    .single()
+  return !!data
+}
+
 // Auth helpers:replace the 4-line auth boilerplate in every Server Action.
 //
 // requireOrgAuth / requireOrgAuthFull: throw on unauthenticated/unauthorized.

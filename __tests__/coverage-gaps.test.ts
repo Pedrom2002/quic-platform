@@ -55,7 +55,7 @@ describe('lib/portal/data getPortalData', () => {
 
   it('returns full portal data for happy path', async () => {
     const mockEvent = {
-      id: 'evt-1', name: 'Summer Gala', venue_name: 'Grand Hall',
+      id: 'evt-1', organization_id: 'org-1', name: 'Summer Gala', venue_name: 'Grand Hall',
       start_datetime: '2026-06-15T20:00:00Z', status: 'active',
       settings: {
         portal_hero_video: 'https://cdn.example.com/hero.mp4',
@@ -83,7 +83,7 @@ describe('lib/portal/data getPortalData', () => {
         return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockResolvedValue({ data: mockItems }) }
       }
       if (table === 'checklist_item_files') {
-        return { select: vi.fn().mockReturnThis(), in: vi.fn().mockResolvedValue({ data: mockItemFiles, error: null }) }
+        return { select: vi.fn().mockReturnThis(), in: vi.fn().mockReturnThis(), eq: vi.fn().mockResolvedValue({ data: mockItemFiles, error: null }) }
       }
       if (table === 'event_files') {
         return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockResolvedValue({ data: mockEventFiles, error: null }) }
@@ -707,6 +707,7 @@ describe('dispatcher with QStash token set', () => {
       q.eq = vi.fn(chain); q.in = vi.fn(chain); q.is = vi.fn(chain)
       q.lte = vi.fn(chain); q.limit = vi.fn(chain)
       q.maybeSingle = vi.fn(chain); q.single = vi.fn(chain)
+      q.returns = vi.fn(chain)
       return q
     }
 

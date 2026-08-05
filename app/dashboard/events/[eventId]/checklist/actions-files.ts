@@ -1,7 +1,12 @@
 'use server'
 
-import { getOrgAuth, assertEventOwnership } from '@/lib/supabase/actions'
-import { put } from '@vercel/blob'
+import {
+  getOrgAuth,
+  assertEventOwnership,
+  assertChecklistItemBelongsToEvent,
+  assertEventFileBelongsToEvent,
+} from '@/lib/supabase/actions'
+import { put, del } from '@vercel/blob'
 import { MAX_FILE_SIZE } from '@/schemas/file.schema'
 import type { ChecklistItemFileLink, EventFileWithUploader } from '@/types/app'
 
@@ -51,6 +56,12 @@ export async function linkFileToItemAction(
 
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
+
+  const [itemBelongs, fileBelongs] = await Promise.all([
+    assertChecklistItemBelongsToEvent(supabase, itemId, eventId),
+    assertEventFileBelongsToEvent(supabase, eventFileId, eventId),
+  ])
+  if (!itemBelongs || !fileBelongs) return null
 
   const { data: linkedByRow } = await supabase
     .from('team_members')
@@ -107,6 +118,9 @@ export async function uploadFileToItemAction(
   const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
   if (!owns) return null
 
+  const itemBelongs = await assertChecklistItemBelongsToEvent(supabase, itemId, eventId)
+  if (!itemBelongs) return null
+
   const file = formData.get('file') as File | null
   if (!file || file.size === 0) return null
   if (file.size > MAX_FILE_SIZE) return null
@@ -146,7 +160,10 @@ export async function uploadFileToItemAction(
     .select('id')
     .single()
 
-  if (!eventFile) return null
+  if (!eventFile) {
+    try { await del(blob.url, { token: blobToken }) } catch { /* best effort */ }
+    return null
+  }
 
   const { data } = await supabase
     .from('checklist_item_files')
@@ -159,6 +176,12 @@ export async function uploadFileToItemAction(
     .select('*, file:event_files!event_file_id(*, uploader:team_members!uploaded_by(id, full_name, avatar_url))')
     .returns<ChecklistItemFileLink[]>()
     .single()
+
+  if (!data) {
+    await supabase.from('event_files').delete().eq('id', eventFile.id)
+    try { await del(blob.url, { token: blobToken }) } catch { /* best effort */ }
+    return null
+  }
 
   return data ?? null
 }

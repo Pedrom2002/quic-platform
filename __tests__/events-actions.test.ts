@@ -6,6 +6,9 @@ const {
   mockGetOrgAuth,
   mockGetOrgAuthFull,
   mockAssertOwnership,
+  mockAssertRaffleBelongsToOrg,
+  mockAssertEventTaskBelongsToEvent,
+  mockAssertEventFileBelongsToEvent,
   mockRevalidate,
   mockAudit,
   mockAfter,
@@ -19,6 +22,9 @@ const {
   mockGetOrgAuth: vi.fn(),
   mockGetOrgAuthFull: vi.fn(),
   mockAssertOwnership: vi.fn(),
+  mockAssertRaffleBelongsToOrg: vi.fn(),
+  mockAssertEventTaskBelongsToEvent: vi.fn(),
+  mockAssertEventFileBelongsToEvent: vi.fn(),
   mockRevalidate: vi.fn(),
   mockAudit: vi.fn(),
   mockAfter: vi.fn(),
@@ -34,6 +40,9 @@ vi.mock('@/lib/supabase/actions', () => ({
   getOrgAuth: mockGetOrgAuth,
   getOrgAuthFull: mockGetOrgAuthFull,
   assertEventOwnership: mockAssertOwnership,
+  assertRaffleBelongsToOrg: mockAssertRaffleBelongsToOrg,
+  assertEventTaskBelongsToEvent: mockAssertEventTaskBelongsToEvent,
+  assertEventFileBelongsToEvent: mockAssertEventFileBelongsToEvent,
 }))
 vi.mock('next/cache', () => ({ revalidatePath: mockRevalidate }))
 vi.mock('next/server', () => ({ after: mockAfter }))
@@ -96,6 +105,9 @@ function authAll(supabase: unknown) {
 beforeEach(() => {
   vi.clearAllMocks()
   mockAssertOwnership.mockResolvedValue(true)
+  mockAssertRaffleBelongsToOrg.mockResolvedValue(true)
+  mockAssertEventTaskBelongsToEvent.mockResolvedValue(true)
+  mockAssertEventFileBelongsToEvent.mockResolvedValue(true)
 })
 
 describe('clients actions', () => {

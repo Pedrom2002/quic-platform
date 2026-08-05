@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isValidAdminToken } from '@/lib/portugal-auth'
+import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 
 const schema = z.object({
   token: z.string().min(1),
@@ -13,7 +14,15 @@ type WinnerRow = {
   portugal_registrations: { name: string } | null
 }
 
+const ADMIN_LIMIT = 20
+const ADMIN_WINDOW_MS = 5 * 60 * 1_000
+
 export async function POST(request: Request) {
+  const ip = getClientIp(request)
+  if (await isRateLimited(`portugal-admin:${ip}`, ADMIN_LIMIT, ADMIN_WINDOW_MS)) {
+    return NextResponse.json({ error: 'Demasiadas tentativas. Tenta novamente mais tarde.' }, { status: 429 })
+  }
+
   const adminToken = request.headers.get('x-admin-token')
   if (!isValidAdminToken(adminToken)) {
     return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })

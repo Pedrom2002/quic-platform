@@ -143,33 +143,36 @@ describe('contacts', () => {
     await expect(syncContactGroupsAction('c1', [])).rejects.toThrow('Contacto não encontrado')
   })
 
-  it('loadContactsAction maps groups and applies visibility for admin', async () => {
-    const { supabase, from } = makeSupabase()
-    authAs(supabase, 'admin')
-    from.mockReturnValueOnce(
+  it('loadContactsPageAction maps groups from a batch join after the RPC page', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'c1',
+          full_name: 'João',
+          email: null,
+          phone: null,
+          company: null,
+          notes: null,
+          is_active: true,
+          created_at: '2026-07-01T00:00:00Z',
+        },
+      ],
+      error: null,
+    })
+    const from = vi.fn().mockReturnValue(
       chain({
         data: [
-          {
-            id: 'c1',
-            full_name: 'João',
-            email: null,
-            phone: null,
-            company: null,
-            notes: null,
-            is_active: true,
-            created_at: '2026-07-01T00:00:00Z',
-            contact_group_members: [
-              { contact_groups: { id: 'g1', name: 'VIPs', color: null, admin_only: false } },
-            ],
-          },
+          { contact_id: 'c1', contact_groups: { id: 'g1', name: 'VIPs', color: null, admin_only: false } },
         ],
         error: null,
       })
     )
-    const { loadContactsAction } = await import('@/app/dashboard/contacts/actions')
-    const contacts = await loadContactsAction()
-    expect(contacts).toHaveLength(1)
-    expect(contacts[0].groups.map((g) => g.name)).toEqual(['VIPs'])
+    authAs({ rpc, from }, 'admin')
+    const { loadContactsPageAction } = await import('@/app/dashboard/contacts/actions')
+    const page = await loadContactsPageAction()
+    expect(page.contacts).toHaveLength(1)
+    expect(page.contacts[0].groups.map((g) => g.name)).toEqual(['VIPs'])
+    expect(page.nextCursor).toBeNull()
   })
 })
 

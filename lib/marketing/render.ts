@@ -19,8 +19,24 @@ export interface ContactVars {
   [key: string]: string | undefined
 }
 
+// Contact-sourced values (name/company/role, imported via CSV or entered
+// manually) are attacker-controllable and get substituted into HTML email
+// bodies sent to third parties. Without escaping, a malicious "company"
+// value like `<img src=x onerror=...>` renders live in the sent email.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export function renderTemplate(template: string, vars: ContactVars): string {
-  return template.replace(VAR_RE, (_, key) => vars[key] ?? '')
+  return template.replace(VAR_RE, (_, key) => {
+    const value = vars[key]
+    return value ? escapeHtml(value) : ''
+  })
 }
 
 export function injectTracking(html: string, sendId: string, appUrl: string): string {

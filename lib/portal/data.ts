@@ -94,7 +94,7 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
   // Lookup by portal_token value stored in DB — no JWT secret dependency
   const { data: eventRaw } = await supabase
     .from('events')
-    .select('id, name, venue_name, start_datetime, status, settings, portal_token_expires_at')
+    .select('id, organization_id, name, venue_name, start_datetime, status, settings, portal_token_expires_at')
     .eq('portal_token', token)
     .single()
 
@@ -105,6 +105,7 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
   if (expiresAt && new Date(expiresAt as string) <= new Date()) return null
 
   const eventId = eventRaw.id
+  const organizationId = (eventRaw as Record<string, unknown>).organization_id as string
 
   const eventSettings = (eventRaw.settings ?? {}) as Record<string, unknown>
   const normalizeVideo = (v: unknown): string | null => {
@@ -130,6 +131,7 @@ export async function getPortalData(token: string): Promise<PortalEventData | nu
         .from('checklist_item_files')
         .select('checklist_item_id, event_file:event_files!event_file_id(id, file_name, file_size, mime_type, blob_url)')
         .in('checklist_item_id', itemIds)
+        .eq('organization_id', organizationId)
     : { data: [], error: null }
   if (itemFilesError) log.error('itemFiles query failed', { error: itemFilesError.message })
 

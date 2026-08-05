@@ -9,15 +9,17 @@ Plataforma multi-tenant de gestão de eventos e comunicação automatizada com c
 | Framework | Next.js 16 (App Router) + React 19 |
 | Base de dados | Supabase (PostgreSQL + RLS) |
 | Autenticação | Supabase Auth (email/password) |
-| Email transacional | Brevo (API REST) |
+| Email transacional | Brevo (API REST), webhooks de entrega via Resend |
 | Email marketing | Nodemailer SMTP + IMAP |
+| Pagamentos | Stripe (checkout + webhooks) |
 | Ficheiros | Vercel Blob |
 | Queue | Upstash QStash (serverless) |
 | Cron | Vercel Cron |
 | AI | Google Gemini |
 | UI | shadcn/ui + Tailwind CSS v4 |
 | Validação | Zod |
-| Testes | Vitest (unit, ~86% em `lib`/`app/api`/`schemas`) + Playwright (e2e) |
+| Testes | Vitest (unit, thresholds por área — ver secção Testes) + Playwright (e2e) |
+| App mobile | Expo / React Native (staff: check-in QR, catálogo, portal) |
 
 ---
 
@@ -123,6 +125,22 @@ Catálogo de materiais (`/rentals`, público) e área de gestão (`/dashboard/st
 
 Migrado de um repositório standalone anterior (Stock-Plat) em 3 sub-projetos: migração de auth/RLS, catálogo público, área admin. Todas as tabelas usam o prefixo `stock_` (ver secção "Base de dados partilhada" abaixo).
 
+### Bilhetes (checkout Stripe)
+
+Venda de bilhetes por evento (`/dashboard/events/[eventId]/tickets`), com tipos de bilhete configuráveis (nome, preço, quantidade). Checkout público via Stripe (`POST /api/tickets/checkout`), confirmação de pagamento por webhook (`POST /api/webhooks/stripe`, assinatura verificada com `stripe.webhooks.constructEvent`, idempotente). Cada bilhete gera um QR code único (`qr_code`), validado à entrada do evento pela função SQL `check_in_ticket` (RPC `SECURITY DEFINER`, scoped à organização do staff autenticado).
+
+### Portugal / Goalfest (giveaways públicos)
+
+Duas landing pages públicas de passatempo/giveaway ligadas a campanhas de ativação de marca (`/portugal`, `/goalfest`):
+
+- **Registo público**: formulário com nome/email/telefone e consentimento (`POST /api/portugal/register`, `POST /api/goalfest/register`)
+- **Contagem em tempo real**: número de participantes (`GET /api/portugal/count`)
+- **Sorteio**: seleção aleatória de vencedores (Fisher-Yates) com lock atómico anti-repetição, envio de SMS com QR code individual a cada vencedor (`POST /api/portugal/draw`)
+- **Validação no bar**: staff lê o QR do vencedor para resgatar o prémio (`app/portugal/scan`, `POST /api/portugal/validate`), update atómico condicionado a `redeemed_at IS NULL`
+- **Admin**: listagem de registos e painel de contagem (`app/portugal/admin`, `GET /api/portugal/registrations`)
+
+Acesso admin protegido por password partilhada (`x-admin-token`, `lib/portugal-auth.ts`, comparação constant-time) com rate limiting por IP em todos os endpoints admin.
+
 ### Artistas agenciados
 
 Gestão de artistas agenciados (`/dashboard/artists`) com portal privado por artista (`/artista/[token]`, acesso por token URL-safe, mesmo padrão do portal de eventos). Substitui o envio manual de emails com agenda, imprensa e ficheiros.
@@ -135,6 +153,17 @@ Gestão de artistas agenciados (`/dashboard/artists`) com portal privado por art
 - **Gestão do link**: copiar, regenerar, revogar e reativar o token; artista inativo fica sem acesso
 
 Tabelas: `artists`, `artist_agenda_items`, `artist_clippings`, `artist_assets` (RLS por organização via `get_user_org_id()`; portal lê com service role após validar o token). Migração `0040_artists_init.sql`. Download de ficheiros do portal via `/api/artist-portal/download` com validação de token e ownership (anti open-proxy).
+
+### App mobile (`mobile/`)
+
+App companion em Expo/React Native (Expo Router, iOS + Android), autenticação própria via Supabase (email/password), usada por staff em produção de eventos:
+
+- **Bilhetes**: consulta de bilhetes comprados e leitura de QR code na entrada (`expo-camera`) para check-in, chamando a mesma RPC `check_in_ticket` do backend
+- **Catálogo de stock**: navegação pelo catálogo de materiais e submissão de pedidos de orçamento (espelha `/rentals` da web)
+- **Eventos e artistas**: consulta de eventos e portal de artistas a partir do telemóvel
+- **Notificações push**: registo de push token (`expo-notifications`), consumido por `/api/portal/push-token`
+
+Scripts próprios em `mobile/package.json` (`npm start`, `npm run android`, `npm run ios`, `npm test`, `npm run typecheck`) — projeto Expo independente, não faz parte do build/deploy Next.js.
 
 ---
 
@@ -175,8 +204,9 @@ dispatchNotificationsForItem()
             Envia email diretamente via Brevo
             Atualiza job status → delivered
 
-Brevo → POST /api/webhooks/resend (delivery events)
-    Verifica assinatura HMAC
+Resend → POST /api/webhooks/resend (delivery events)
+    Verifica assinatura HMAC (svix, RESEND_WEBHOOK_SECRET)
+    Faz match por provider_message_id + provider='brevo' em notification_log
     Regista evento em notification_log
 ```
 
@@ -239,16 +269,21 @@ Código consumidor: `app/rentals/*` (catálogo público), `app/dashboard/stock/*
 app/
   [slug]/            Card público de membro
   artista/[token]/   Portal público do artista (acesso por token)
+  goalfest/          Landing page pública do giveaway Goalfest
   guia-cliente/      Página de boas-vindas para clientes
+  portugal/          Landing page pública do giveaway Portugal (registo, admin, scan/validação)
   stock/             Catálogo público de materiais + pedido de orçamento
   api/
     ai/              Endpoints Gemini (resumo, tarefas, risco, insights, geração email)
     cron/            Cron handlers (process-scheduled, marketing-maintenance, marketing-retry)
     events/          Checklist items, ficheiros
     artist-portal/   Download de ficheiros do portal do artista
+    goalfest/        Registo público do giveaway Goalfest
     marketing/       Send worker, tracking, bounce-poll, reply-poll, unsubscribe, importação
     portal/          Download de ficheiros do portal
-    webhooks/        Webhook Brevo
+    portugal/        Registo, contagem, sorteio, validação e admin do giveaway Portugal
+    tickets/         Checkout Stripe de bilhetes
+    webhooks/        Webhooks Resend (entrega de email) e Stripe (pagamentos)
     workers/         Worker QStash de notificações
   auth/              Login + OAuth callback
   dashboard/
@@ -256,7 +291,7 @@ app/
     cards/           Gestão de cartões de membro
     contacts/        Base de contactos
     events/          Lista, criação e detalhe de eventos
-      [eventId]/     Checklist, clientes, clipping, ficheiros, notificações, relatórios, sorteios, tarefas, equipa
+      [eventId]/     Checklist, clientes, clipping, ficheiros, notificações, relatórios, sorteios, tarefas, bilhetes, equipa
     files/           Ficheiros globais
     marketing/       Campanhas, contactos, settings SMTP
     settings/        Configurações da organização
@@ -300,7 +335,17 @@ npm run test:coverage  # com relatório de cobertura
 npm run test:watch     # modo watch
 ```
 
-A cobertura é medida sobre `lib/`, `app/api/` e `schemas/` e sobre as Server Actions em `app/dashboard/**/actions.ts`, com thresholds mínimos definidos em `vitest.config.ts` (linhas 80%, funções 80%, branches 70%). O CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) corre lint, typecheck, testes com cobertura e `npm audit`.
+A cobertura é medida sobre `lib/`, `app/api/` e `schemas/` e sobre as Server Actions em `app/dashboard/**/actions.ts`, com thresholds *ratchet* por área definidos em `vitest.config.ts` (piso atual medido, nunca desce — ver comentário no próprio ficheiro). O CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) corre lint, typecheck, testes com cobertura e `npm audit`.
+
+### App mobile
+
+```bash
+cd mobile
+npm test        # Jest
+npm run typecheck
+```
+
+> Nota: os ficheiros de teste da mobile (`mobile/lib/*.test.ts`, `mobile/__tests__/**`) têm gap de tipagem nos mocks Supabase (`jest.fn()` sem tipo genérico, ~120 erros `tsc` confinados a ficheiros `.test.ts(x)`) — o código de produção (`app/`, `lib/`, `hooks/`) não tem nenhum erro de tipo. Por corrigir.
 
 ---
 
@@ -310,6 +355,7 @@ A cobertura é medida sobre `lib/`, `app/api/` e `schemas/` e sobre as Server Ac
 - Service role key usada apenas em route handlers e workers (nunca exposta ao cliente)
 - Tokens de portal: 12 bytes aleatórios → 16 chars base64url, armazenados em `events.portal_token`
 - Assinaturas QStash verificadas com `@upstash/qstash` Receiver
-- Webhooks Brevo verificados com HMAC-SHA256
+- Webhooks Resend verificados com HMAC-SHA256 (svix)
+- Webhooks Stripe verificados com `stripe.webhooks.constructEvent`
 - Authorization checks a nível de aplicação nas API routes (verificação de `organization_id`)
 - Isolamento de tenant verificado em testes e2e

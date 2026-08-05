@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import * as z from 'zod'
-import { put } from '@vercel/blob'
+import { put, del } from '@vercel/blob'
 
 import { requireOrgAuth } from '@/lib/supabase/actions'
 import { artistSchema } from '@/lib/artists/validation'
@@ -137,6 +137,13 @@ export async function updateArtistPhoto(formData: FormData): Promise<ActionResul
   const token = getEnv().BLOB_READ_WRITE_TOKEN
   if (!token) return { error: 'Upload de ficheiros não configurado' }
 
+  const { data: existing } = await auth.supabase
+    .from('artists')
+    .select('photo_url')
+    .eq('id', id.data)
+    .eq('organization_id', auth.member.organization_id)
+    .single()
+
   const blob = await put(safeBlobPathname(photo.name), photo, { access: 'public', token })
 
   const { error } = await auth.supabase
@@ -144,7 +151,14 @@ export async function updateArtistPhoto(formData: FormData): Promise<ActionResul
     .update({ photo_url: blob.url })
     .eq('id', id.data)
     .eq('organization_id', auth.member.organization_id)
-  if (error) return { error: 'Erro ao guardar a foto' }
+  if (error) {
+    try { await del(blob.url, { token }) } catch { /* best effort */ }
+    return { error: 'Erro ao guardar a foto' }
+  }
+
+  if (existing?.photo_url) {
+    try { await del(existing.photo_url, { token }) } catch { /* best effort */ }
+  }
 
   revalidatePath('/dashboard/artists')
   revalidatePath(`/dashboard/artists/${id.data}`)

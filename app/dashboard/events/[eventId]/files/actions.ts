@@ -50,7 +50,7 @@ export async function uploadFileAction(eventId: string, formData: FormData): Pro
     token: getBlobToken(),
   })
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('event_files')
     .insert({
       event_id: eventId,
@@ -65,6 +65,11 @@ export async function uploadFileAction(eventId: string, formData: FormData): Pro
     .select('*, uploader:team_members!uploaded_by(id, full_name, avatar_url)')
     .returns<EventFileWithUploader[]>()
     .single()
+
+  if (error || !data) {
+    try { await del(blob.url, { token: getBlobToken() }) } catch { /* best effort */ }
+    return null
+  }
 
   if (data) {
     audit({

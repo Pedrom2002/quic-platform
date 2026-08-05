@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Search, Plus, Users } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Search, Plus, Users, Loader2 } from 'lucide-react'
 import { ContactCard } from './ContactCard'
 import type { ContactWithGroups } from '@/app/dashboard/contacts/actions'
 
@@ -11,10 +11,33 @@ interface Props {
   onEdit: (contact: ContactWithGroups) => void
   onDeactivate: (contactId: string) => void
   disabled?: boolean
+  hasMore: boolean
+  isLoadingMore: boolean
+  onLoadMore: () => void
 }
 
-export function ContactsList({ contacts, onNewContact, onEdit, onDeactivate, disabled }: Props) {
+export function ContactsList({
+  contacts, onNewContact, onEdit, onDeactivate, disabled,
+  hasMore, isLoadingMore, onLoadMore,
+}: Props) {
   const [search, setSearch] = useState('')
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  // Auto-loads the next page when the sentinel scrolls into view. Search is
+  // client-side over what's currently loaded (common for infinite scroll),
+  // so it's disabled while a search term is active to avoid confusing
+  // "load more while filtering" behavior.
+  useEffect(() => {
+    if (search.trim() || !hasMore) return
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      entries => { if (entries[0]?.isIntersecting) onLoadMore() },
+      { rootMargin: '200px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [search, hasMore, onLoadMore])
 
   const filtered = search.trim()
     ? contacts.filter(c => {
@@ -73,15 +96,22 @@ export function ContactsList({ contacts, onNewContact, onEdit, onDeactivate, dis
             )}
           </div>
         ) : (
-          filtered.map(c => (
-            <ContactCard
-              key={c.id}
-              contact={c}
-              onEdit={onEdit}
-              onDeactivate={onDeactivate}
-              disabled={disabled}
-            />
-          ))
+          <>
+            {filtered.map(c => (
+              <ContactCard
+                key={c.id}
+                contact={c}
+                onEdit={onEdit}
+                onDeactivate={onDeactivate}
+                disabled={disabled}
+              />
+            ))}
+            {!search.trim() && hasMore && (
+              <div ref={sentinelRef} className="flex items-center justify-center py-4">
+                {isLoadingMore && <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

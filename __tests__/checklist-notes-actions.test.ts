@@ -1,14 +1,16 @@
 // __tests__/checklist-notes-actions.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockGetOrgAuth, mockAssertOwnership } = vi.hoisted(() => ({
+const { mockGetOrgAuth, mockAssertOwnership, mockAssertItemBelongsToEvent } = vi.hoisted(() => ({
   mockGetOrgAuth: vi.fn(),
   mockAssertOwnership: vi.fn(),
+  mockAssertItemBelongsToEvent: vi.fn(),
 }))
 
 vi.mock('@/lib/supabase/actions', () => ({
   getOrgAuth: mockGetOrgAuth,
   assertEventOwnership: mockAssertOwnership,
+  assertChecklistItemBelongsToEvent: mockAssertItemBelongsToEvent,
 }))
 
 const EVENT = '5f0f0e6a-7f7a-4b1a-9a2a-1c2d3e4f5a6b'
@@ -43,6 +45,7 @@ function authAs(supabase: unknown) {
 beforeEach(() => {
   vi.clearAllMocks()
   mockAssertOwnership.mockResolvedValue(true)
+  mockAssertItemBelongsToEvent.mockResolvedValue(true)
 })
 
 describe('addItemNoteAction', () => {
