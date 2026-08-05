@@ -1,10 +1,9 @@
 // __tests__/stripe-webhook.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockConstructEvent, mockFrom, mockInsert, mockRpc } = vi.hoisted(() => ({
+const { mockConstructEvent, mockFrom, mockRpc } = vi.hoisted(() => ({
   mockConstructEvent: vi.fn(),
   mockFrom: vi.fn(),
-  mockInsert: vi.fn(),
   mockRpc: vi.fn(),
 }))
 
@@ -31,7 +30,6 @@ function makeRequest(rawBody: string, signature = 'sig_valid') {
 beforeEach(() => {
   mockConstructEvent.mockReset()
   mockFrom.mockReset()
-  mockInsert.mockReset()
   mockRpc.mockReset()
 })
 
@@ -45,7 +43,7 @@ describe('POST /api/webhooks/stripe', () => {
     expect(res.status).toBe(400)
   })
 
-  it('creates tickets on checkout.session.completed and skips duplicates', async () => {
+  it('calls purchase_tickets atomically on checkout.session.completed', async () => {
     mockConstructEvent.mockReturnValue({
       type: 'checkout.session.completed',
       data: {
@@ -56,42 +54,21 @@ describe('POST /api/webhooks/stripe', () => {
       },
     })
 
-    const existingCheck = { data: [], error: null }
-    const selectChain = { eq: vi.fn(() => Promise.resolve(existingCheck)) }
-    const ticketTypeChain = {
-      eq: vi.fn(() => ({ single: vi.fn(() => Promise.resolve({ data: { event_id: 'evt-1', organization_id: 'org-1' }, error: null })) })),
-    }
-
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'tickets') {
-        return {
-          select: vi.fn(() => selectChain),
-          insert: mockInsert.mockReturnValue(Promise.resolve({ error: null })),
-        }
-      }
-      if (table === 'ticket_types') {
-        return {
-          select: vi.fn(() => ticketTypeChain),
-        }
-      }
-      throw new Error(`unexpected table ${table}`)
-    })
-    mockRpc.mockReturnValue(Promise.resolve({ error: null }))
+    mockRpc.mockReturnValue(Promise.resolve({ data: { success: true }, error: null }))
 
     const { POST } = await import('@/app/api/webhooks/stripe/route')
     const res = await POST(makeRequest('{}'))
 
     expect(res.status).toBe(200)
-    expect(mockInsert).toHaveBeenCalledOnce()
-    const insertedRows = mockInsert.mock.calls[0][0] as unknown[]
-    expect(insertedRows).toHaveLength(2)
-    expect(mockRpc).toHaveBeenCalledWith('increment_ticket_type_sold', {
+    expect(mockRpc).toHaveBeenCalledWith('purchase_tickets', {
       p_ticket_type_id: 'tt-1',
-      p_delta: 2,
+      p_quantity: 2,
+      p_buyer_auth_user_id: 'user-1',
+      p_stripe_checkout_session_id: 'cs_test_123',
     })
   })
 
-  it('treats a unique-violation on insert (23505) as already processed, not an error', async () => {
+  it('treats an already-processed session as success without erroring', async () => {
     mockConstructEvent.mockReturnValue({
       type: 'checkout.session.completed',
       data: {
@@ -102,33 +79,53 @@ describe('POST /api/webhooks/stripe', () => {
       },
     })
 
-    const existingCheck = { data: [], error: null }
-    const selectChain = { eq: vi.fn(() => Promise.resolve(existingCheck)) }
-    const ticketTypeChain = {
-      eq: vi.fn(() => ({ single: vi.fn(() => Promise.resolve({ data: { event_id: 'evt-1', organization_id: 'org-1' }, error: null })) })),
-    }
-
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'tickets') {
-        return {
-          select: vi.fn(() => selectChain),
-          insert: mockInsert.mockReturnValue(Promise.resolve({ error: { code: '23505', message: 'duplicate key value violates unique constraint' } })),
-        }
-      }
-      if (table === 'ticket_types') {
-        return {
-          select: vi.fn(() => ticketTypeChain),
-        }
-      }
-      throw new Error(`unexpected table ${table}`)
-    })
+    mockRpc.mockReturnValue(Promise.resolve({ data: { success: true, note: 'já processado' }, error: null }))
 
     const { POST } = await import('@/app/api/webhooks/stripe/route')
     const res = await POST(makeRequest('{}'))
 
     expect(res.status).toBe(200)
-    expect(mockRpc).not.toHaveBeenCalled()
     const body = await res.json()
-    expect(body.note).toBe('já processado')
+    expect(body.received).toBe(true)
+  })
+
+  it('returns 409 when purchase_tickets rejects due to capacity or invalid data', async () => {
+    mockConstructEvent.mockReturnValue({
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          id: 'cs_test_789',
+          metadata: { ticket_type_id: 'tt-1', buyer_auth_user_id: 'user-1', quantity: '5' },
+        },
+      },
+    })
+
+    mockRpc.mockReturnValue(Promise.resolve({ data: { success: false, error: 'Capacidade esgotada' }, error: null }))
+
+    const { POST } = await import('@/app/api/webhooks/stripe/route')
+    const res = await POST(makeRequest('{}'))
+
+    expect(res.status).toBe(409)
+    const body = await res.json()
+    expect(body.error).toBe('Capacidade esgotada')
+  })
+
+  it('returns 500 when the RPC call itself errors', async () => {
+    mockConstructEvent.mockReturnValue({
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          id: 'cs_test_999',
+          metadata: { ticket_type_id: 'tt-1', buyer_auth_user_id: 'user-1', quantity: '1' },
+        },
+      },
+    })
+
+    mockRpc.mockReturnValue(Promise.resolve({ data: null, error: { message: 'connection error' } }))
+
+    const { POST } = await import('@/app/api/webhooks/stripe/route')
+    const res = await POST(makeRequest('{}'))
+
+    expect(res.status).toBe(500)
   })
 })

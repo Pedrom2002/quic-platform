@@ -36,50 +36,23 @@ export async function POST(request: Request) {
 
   const supabase = createAdminClient()
 
-  const { data: existing } = await supabase
-    .from('tickets')
-    .select('id')
-    .eq('stripe_checkout_session_id', session.id)
-  if (existing && existing.length > 0) {
-    return Response.json({ received: true, note: 'já processado' })
-  }
-
-  const { data: ticketType } = await supabase
-    .from('ticket_types')
-    .select('event_id, organization_id')
-    .eq('id', ticketTypeId)
-    .single()
-  if (!ticketType) {
-    log.error('ticket_type não encontrado', { ticketTypeId })
-    return Response.json({ error: 'Tipo de bilhete não encontrado' }, { status: 404 })
-  }
-
-  const rows = Array.from({ length: quantity }, () => ({
-    ticket_type_id: ticketTypeId,
-    event_id: ticketType.event_id,
-    organization_id: ticketType.organization_id,
-    buyer_auth_user_id: buyerAuthUserId,
-    stripe_checkout_session_id: session.id,
-  }))
-
-  const { error: insertError } = await supabase.from('tickets').insert(rows)
-  if (insertError) {
-    // 23505 = unique_violation — outra entrega concorrente do mesmo webhook já
-    // inseriu os bilhetes primeiro (o pre-check SELECT acima é só fast-path;
-    // este constraint é o que garante mesmo a nao duplicacao).
-    if (insertError.code === '23505') {
-      return Response.json({ received: true, note: 'já processado' })
-    }
-    log.error('erro ao criar bilhetes', { error: insertError.message })
-    return Response.json({ error: 'Erro ao criar bilhetes' }, { status: 500 })
-  }
-
-  const { error: rpcError } = await supabase.rpc('increment_ticket_type_sold', {
+  // purchase_tickets faz idempotencia + verificacao de capacidade + insert dos
+  // bilhetes + incremento de quantity_sold numa unica transacao (SECURITY DEFINER
+  // com SELECT ... FOR UPDATE no ticket_type), evitando que compras concorrentes
+  // insiram bilhetes alem da capacidade antes do incremento falhar tarde demais.
+  const { data: result, error: rpcError } = await supabase.rpc('purchase_tickets', {
     p_ticket_type_id: ticketTypeId,
-    p_delta: quantity,
+    p_quantity: quantity,
+    p_buyer_auth_user_id: buyerAuthUserId,
+    p_stripe_checkout_session_id: session.id,
   })
   if (rpcError) {
-    log.error('erro ao incrementar quantity_sold', { error: rpcError.message, ticketTypeId })
+    log.error('erro ao processar compra de bilhetes', { error: rpcError.message, ticketTypeId })
+    return Response.json({ error: 'Erro ao criar bilhetes' }, { status: 500 })
+  }
+  if (!result?.success) {
+    log.error('compra de bilhetes rejeitada', { error: result?.error, ticketTypeId })
+    return Response.json({ error: result?.error ?? 'Erro ao criar bilhetes' }, { status: 409 })
   }
 
   return Response.json({ received: true })
