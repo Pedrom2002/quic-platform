@@ -32,9 +32,9 @@ describe('splitAssets', () => {
 
 describe('fetchArtistPortalData', () => {
   function makeQuery(resolved: { data: unknown; error: unknown }) {
-    const order = jest.fn().mockResolvedValue(resolved)
+    const order = jest.fn<() => Promise<{ data: unknown; error: unknown }>>().mockResolvedValue(resolved)
     // eq2 resolves directly (agenda chain: select().eq().eq(), no terminal order())
-    const eq2 = jest.fn().mockResolvedValue(resolved)
+    const eq2 = jest.fn<() => Promise<{ data: unknown; error: unknown }>>().mockResolvedValue(resolved)
     const eq1 = jest.fn(() => ({ eq: eq2, order }))
     const select = jest.fn(() => ({ eq: eq1 }))
     return { select, eq1, eq2, order }

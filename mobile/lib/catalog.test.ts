@@ -3,23 +3,28 @@ import { fetchCategories, fetchCatalogMaterials } from './catalog'
 
 describe('fetchCategories', () => {
   it('queries categories ordered by sort_order', async () => {
-    const order = jest.fn().mockResolvedValue({
-      data: [{ id: 'c1', name: 'Som', sort_order: 0 }],
-      error: null,
-    })
+    const order = jest
+      .fn<() => Promise<{ data: { id: string; name: string; sort_order: number }[] | null; error: { message: string } | null }>>()
+      .mockResolvedValue({
+        data: [{ id: 'c1', name: 'Som', sort_order: 0 }],
+        error: null,
+      })
     const select = jest.fn(() => ({ order }))
-    const supabase = { from: jest.fn(() => ({ select })) } as never
+    const from = jest.fn(() => ({ select }))
+    const supabase = { from } as never
 
     const result = await fetchCategories(supabase)
 
-    expect(supabase.from).toHaveBeenCalledWith('stock_categories')
+    expect(from).toHaveBeenCalledWith('stock_categories')
     expect(select).toHaveBeenCalledWith('*')
     expect(order).toHaveBeenCalledWith('sort_order')
     expect(result).toEqual([{ id: 'c1', name: 'Som', sort_order: 0 }])
   })
 
   it('returns empty array on error', async () => {
-    const order = jest.fn().mockResolvedValue({ data: null, error: { message: 'boom' } })
+    const order = jest
+      .fn<() => Promise<{ data: { id: string; name: string; sort_order: number }[] | null; error: { message: string } | null }>>()
+      .mockResolvedValue({ data: null, error: { message: 'boom' } })
     const select = jest.fn(() => ({ order }))
     const supabase = { from: jest.fn(() => ({ select })) } as never
 
@@ -30,7 +35,7 @@ describe('fetchCategories', () => {
 
 describe('fetchCatalogMaterials', () => {
   function makeChain(resolved: { data: unknown; error: unknown }) {
-    const range = jest.fn().mockResolvedValue(resolved)
+    const range = jest.fn<() => Promise<{ data: unknown; error: unknown }>>().mockResolvedValue(resolved)
     const orderName = jest.fn(() => ({ range }))
     const order = jest.fn(() => ({ order: orderName }))
     const eq = jest.fn(() => ({ order, eq: jest.fn(() => ({ order })) }))

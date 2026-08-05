@@ -1,9 +1,9 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 
-const mockGetPermissionsAsync = jest.fn()
-const mockRequestPermissionsAsync = jest.fn()
-const mockGetExpoPushTokenAsync = jest.fn()
-const mockSetNotificationChannelAsync = jest.fn()
+const mockGetPermissionsAsync = jest.fn<(...args: unknown[]) => Promise<{ status: string }>>()
+const mockRequestPermissionsAsync = jest.fn<(...args: unknown[]) => Promise<{ status: string }>>()
+const mockGetExpoPushTokenAsync = jest.fn<(...args: unknown[]) => Promise<{ data: string }>>()
+const mockSetNotificationChannelAsync = jest.fn<(...args: unknown[]) => Promise<void>>()
 const mockIsDevice = { value: true }
 const mockPlatformOS = { value: 'ios' as 'ios' | 'android' }
 const mockAppOwnership = { value: null as string | null }
@@ -27,7 +27,7 @@ jest.mock('react-native', () => ({
 
 import { registerForPushNotifications } from './pushNotifications'
 
-const mockFetch = jest.fn()
+const mockFetch = jest.fn<() => Promise<{ ok: boolean }>>()
 global.fetch = mockFetch as never
 
 beforeEach(() => {

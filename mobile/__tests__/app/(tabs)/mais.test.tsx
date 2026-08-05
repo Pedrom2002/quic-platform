@@ -3,10 +3,11 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { Alert } from 'react-native'
 import MaisScreen from '../../../app/(tabs)/mais'
+import type { UserRole } from '../../../lib/role'
 
 const mockUseSession = jest.fn()
-const mockResolveUserRole = jest.fn()
-const mockSignOut = jest.fn()
+const mockResolveUserRole = jest.fn<(...args: unknown[]) => Promise<UserRole>>()
+const mockSignOut = jest.fn<(...args: unknown[]) => Promise<{ error: { message: string } | null }>>()
 
 jest.mock('../../../hooks/useSession', () => ({ useSession: () => mockUseSession() }))
 jest.mock('../../../lib/role', () => ({ resolveUserRole: (...args: unknown[]) => mockResolveUserRole(...args) }))
@@ -44,7 +45,7 @@ describe('MaisScreen', () => {
 
   it('shows email as name for client role without duplicating it', async () => {
     mockUseSession.mockReturnValue({ session: { user: { id: 'u2', email: 'cliente@x.com' } }, loading: false })
-    mockResolveUserRole.mockResolvedValue({ role: 'client' })
+    mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: null })
 
     const { getByText, queryByText } = render(<MaisScreen />)
 
@@ -57,7 +58,7 @@ describe('MaisScreen', () => {
 
   it('shows the app version from expo-constants', async () => {
     mockUseSession.mockReturnValue({ session: { user: { id: 'u1', email: 'a@x.com' } }, loading: false })
-    mockResolveUserRole.mockResolvedValue({ role: 'client' })
+    mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: null })
 
     const { getByText } = render(<MaisScreen />)
 
@@ -68,7 +69,7 @@ describe('MaisScreen', () => {
 
   it('shows confirmation alert on logout tap without signing out yet', async () => {
     mockUseSession.mockReturnValue({ session: { user: { id: 'u1', email: 'a@x.com' } }, loading: false })
-    mockResolveUserRole.mockResolvedValue({ role: 'client' })
+    mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: null })
 
     const { getByText } = render(<MaisScreen />)
     await waitFor(() => expect(getByText('Terminar sessão')).toBeTruthy())
@@ -88,7 +89,7 @@ describe('MaisScreen', () => {
 
   it('calls signOut when the destructive alert button is confirmed', async () => {
     mockUseSession.mockReturnValue({ session: { user: { id: 'u1', email: 'a@x.com' } }, loading: false })
-    mockResolveUserRole.mockResolvedValue({ role: 'client' })
+    mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: null })
     jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
       const destructive = buttons?.find(b => b.style === 'destructive')
       destructive?.onPress?.()
@@ -106,7 +107,7 @@ describe('MaisScreen', () => {
 
   it('shows error alert when signOut fails', async () => {
     mockUseSession.mockReturnValue({ session: { user: { id: 'u1', email: 'a@x.com' } }, loading: false })
-    mockResolveUserRole.mockResolvedValue({ role: 'client' })
+    mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: null })
     mockSignOut.mockRejectedValue(new Error('network down'))
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
       const destructive = buttons?.find(b => b.style === 'destructive')

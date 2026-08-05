@@ -9,7 +9,9 @@ import { Alert } from 'react-native'
 import PedidoScreen from '../../app/pedido'
 
 const mockUseCart = jest.fn()
-const mockSubmitQuote = jest.fn()
+const mockSubmitQuote = jest.fn<
+  (...args: unknown[]) => Promise<{ success: boolean; error?: string }>
+>()
 const mockValidateQuote = jest.fn()
 
 jest.mock('../../hooks/useCart', () => ({ useCart: () => mockUseCart() }))

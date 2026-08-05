@@ -1,13 +1,15 @@
 import { describe, it, expect, jest } from '@jest/globals'
-import { fetchPublicEvents, fetchEventById } from './events'
+import { fetchPublicEvents, fetchEventById, type PublicEvent } from './events'
 
 describe('fetchPublicEvents', () => {
   function makeSupabase(eventsResult: { data: unknown; error: unknown }, ticketTypesResult?: { data: unknown; error: unknown }) {
-    const order = jest.fn().mockResolvedValue(eventsResult)
+    const order = jest.fn<() => Promise<{ data: unknown; error: unknown }>>().mockResolvedValue(eventsResult)
     const eventsEq = jest.fn(() => ({ order }))
     const eventsSelect = jest.fn(() => ({ eq: eventsEq }))
 
-    const inFn = jest.fn().mockResolvedValue(ticketTypesResult ?? { data: [], error: null })
+    const inFn = jest
+      .fn<() => Promise<{ data: unknown; error: unknown }>>()
+      .mockResolvedValue(ticketTypesResult ?? { data: [], error: null })
     const ticketTypesEq = jest.fn(() => ({ in: inFn }))
     const ticketTypesSelect = jest.fn(() => ({ eq: ticketTypesEq }))
 
@@ -77,10 +79,12 @@ describe('fetchPublicEvents', () => {
 
 describe('fetchEventById', () => {
   it('queries a single event by id', async () => {
-    const single = jest.fn().mockResolvedValue({
-      data: { id: 'e1', name: 'Show X', description: null, venue_name: null, venue_address: null, start_datetime: '2026-08-01T20:00:00Z', end_datetime: '2026-08-01T23:00:00Z', cover_image_url: null },
-      error: null,
-    })
+    const single = jest
+      .fn<() => Promise<{ data: Omit<PublicEvent, 'min_ticket_price_cents'> | null; error: { message: string } | null }>>()
+      .mockResolvedValue({
+        data: { id: 'e1', name: 'Show X', description: null, venue_name: null, venue_address: null, start_datetime: '2026-08-01T20:00:00Z', end_datetime: '2026-08-01T23:00:00Z', cover_image_url: null },
+        error: null,
+      })
     const eq = jest.fn(() => ({ single }))
     const select = jest.fn(() => ({ eq }))
     const supabase = { from: jest.fn(() => ({ select })) } as never
@@ -92,7 +96,9 @@ describe('fetchEventById', () => {
   })
 
   it('returns null when not found', async () => {
-    const single = jest.fn().mockResolvedValue({ data: null, error: null })
+    const single = jest
+      .fn<() => Promise<{ data: Omit<PublicEvent, 'min_ticket_price_cents'> | null; error: { message: string } | null }>>()
+      .mockResolvedValue({ data: null, error: null })
     const eq = jest.fn(() => ({ single }))
     const select = jest.fn(() => ({ eq }))
     const supabase = { from: jest.fn(() => ({ select })) } as never

@@ -1,11 +1,14 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, waitFor, fireEvent } from '@testing-library/react-native'
 import PortalScreen from '../../../app/(tabs)/portal'
+import type { UserRole } from '../../../lib/role'
+import type { ArtistPortalData } from '../../../lib/artistPortal'
+import type { PortalData } from '../../../lib/portal'
 
 const mockUseSession = jest.fn()
-const mockResolveUserRole = jest.fn()
-const mockFetchArtistPortalData = jest.fn()
-const mockFetchPortalData = jest.fn()
+const mockResolveUserRole = jest.fn<(...args: unknown[]) => Promise<UserRole>>()
+const mockFetchArtistPortalData = jest.fn<(...args: unknown[]) => Promise<ArtistPortalData>>()
+const mockFetchPortalData = jest.fn<(...args: unknown[]) => Promise<PortalData | null>>()
 
 jest.mock('../../../hooks/useSession', () => ({ useSession: () => mockUseSession() }))
 jest.mock('../../../lib/role', () => ({ resolveUserRole: (...args: unknown[]) => mockResolveUserRole(...args) }))

@@ -3,7 +3,12 @@ import { render, waitFor } from '@testing-library/react-native'
 import ScannerScreen from '../../app/scanner'
 
 const mockUseSession = jest.fn()
-const mockResolveUserRole = jest.fn()
+const mockResolveUserRole = jest.fn<
+  (...args: unknown[]) => Promise<
+    | { role: 'client' }
+    | { role: 'staff'; member: { id: string; full_name: string; role: string } }
+  >
+>()
 const mockCheckInTicket = jest.fn()
 
 let capturedOnBarcodeScanned: ((event: { data: string }) => void) | undefined

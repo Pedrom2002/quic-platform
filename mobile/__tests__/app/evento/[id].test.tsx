@@ -2,12 +2,18 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, waitFor, fireEvent } from '@testing-library/react-native'
 import { Linking } from 'react-native'
 import EventDetailScreen from '../../../app/evento/[id]'
+import type { PublicEvent } from '../../../lib/events'
+import type { TicketType } from '../../../lib/tickets'
 
-const mockFetchEventById = jest.fn()
+const mockFetchEventById = jest.fn<
+  (...args: unknown[]) => Promise<Omit<PublicEvent, 'min_ticket_price_cents'> | null>
+>()
 const mockUseLocalSearchParams = jest.fn()
-const mockFetchTicketTypes = jest.fn()
-const mockCreateCheckoutSession = jest.fn()
-const mockGetSession = jest.fn()
+const mockFetchTicketTypes = jest.fn<(...args: unknown[]) => Promise<TicketType[]>>()
+const mockCreateCheckoutSession = jest.fn<(...args: unknown[]) => Promise<string | null>>()
+const mockGetSession = jest.fn<
+  (...args: unknown[]) => Promise<{ data: { session: { access_token: string } | null } }>
+>()
 
 jest.mock('../../../lib/events', () => ({
   fetchEventById: (...args: unknown[]) => mockFetchEventById(...args),

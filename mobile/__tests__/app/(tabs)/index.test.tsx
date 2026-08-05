@@ -7,8 +7,11 @@ jest.mock('react-native-safe-area-context', () => ({
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import InicioScreen from '../../../app/(tabs)/index'
+import type { PublicEvent } from '../../../lib/events'
 
-const mockFetchPublicEvents = jest.fn()
+const mockFetchPublicEvents = jest.fn<
+  (...args: unknown[]) => Promise<Omit<PublicEvent, 'min_ticket_price_cents'>[]>
+>()
 const mockPush = jest.fn()
 
 jest.mock('../../../lib/events', () => ({

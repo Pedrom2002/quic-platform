@@ -1,8 +1,9 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, waitFor } from '@testing-library/react-native'
 import MyTicketsScreen from '../../../app/tickets/index'
+import type { MyTicket } from '../../../lib/tickets'
 
-const mockFetchMyTickets = jest.fn()
+const mockFetchMyTickets = jest.fn<(...args: unknown[]) => Promise<MyTicket[]>>()
 
 jest.mock('../../../lib/tickets', () => ({
   fetchMyTickets: (...args: unknown[]) => mockFetchMyTickets(...args),

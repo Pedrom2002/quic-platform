@@ -2,8 +2,12 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { renderHook, waitFor } from '@testing-library/react-native'
 import { useSession } from './useSession'
 
-const mockGetSession = jest.fn()
-const mockOnAuthStateChange = jest.fn()
+const mockGetSession = jest.fn<
+  (...args: unknown[]) => Promise<{ data: { session: { user: { id: string } } | null } }>
+>()
+const mockOnAuthStateChange = jest.fn<
+  (...args: unknown[]) => { data: { subscription: { unsubscribe: () => void } } }
+>()
 
 jest.mock('../lib/supabase', () => ({
   supabase: {
