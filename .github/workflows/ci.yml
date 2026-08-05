@@ -135,21 +135,27 @@ jobs:
           create schema if not exists storage;
           create table if not exists storage.buckets (
             id text primary key,
-            name text not null,
-            owner uuid,
-            public boolean default false,
-            created_at timestamptz default now(),
-            updated_at timestamptz default now()
+            name text not null
           );
           create table if not exists storage.objects (
             id uuid primary key default gen_random_uuid(),
-            bucket_id text references storage.buckets(id),
-            name text,
-            owner uuid,
-            created_at timestamptz default now(),
-            updated_at timestamptz default now(),
-            metadata jsonb
+            bucket_id text,
+            name text
           );
+          -- The supabase/postgres image already ships storage.buckets/objects
+          -- (from its own bundled migrations) but without the columns that
+          -- the real Supabase Storage service normally adds — add what's
+          -- missing rather than assuming the tables need creating from
+          -- scratch, since `create table if not exists` above is a no-op
+          -- against the image's pre-existing versions of these tables.
+          alter table storage.buckets add column if not exists owner uuid;
+          alter table storage.buckets add column if not exists public boolean default false;
+          alter table storage.buckets add column if not exists created_at timestamptz default now();
+          alter table storage.buckets add column if not exists updated_at timestamptz default now();
+          alter table storage.objects add column if not exists owner uuid;
+          alter table storage.objects add column if not exists created_at timestamptz default now();
+          alter table storage.objects add column if not exists updated_at timestamptz default now();
+          alter table storage.objects add column if not exists metadata jsonb;
           SQL
 
       - name: Apply all migrations in order
