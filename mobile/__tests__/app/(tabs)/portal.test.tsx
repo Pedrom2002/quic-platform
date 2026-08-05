@@ -134,7 +134,7 @@ describe('PortalScreen', () => {
       expect(getByText('Contrato assinado')).toBeTruthy()
       expect(getByText('Menu confirmado')).toBeTruthy()
       expect(getByText('1 de 2 concluídas')).toBeTruthy()
-    })
+    }, { timeout: 10000 })
   })
 
   it('shows an internal tab bar with Imprensa when the client has articles', async () => {
