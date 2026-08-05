@@ -91,6 +91,42 @@ jobs:
 
       - run: npm audit --omit=dev --audit-level=high
 
+  # Applies every migration in supabase/migrations/ in order against a real
+  # Postgres (the supabase/postgres image, not vanilla postgres, because ~17
+  # migrations reference the auth.*/storage.* schemas Supabase pre-creates
+  # and a plain Postgres image doesn't have). Mocked unit tests can't catch
+  # SQL that fails to apply (missing extension, bad syntax, wrong function
+  # signature) or a migration that silently doesn't do what its comment
+  # claims — this job catches that class of bug before merge, the way
+  # 0060's missing `unaccent` extension slipped through mocked tests.
+  migrations:
+    name: Migrations Apply Cleanly
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: supabase/postgres:15.8.1.044
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply all migrations in order
+        env:
+          PGPASSWORD: postgres
+        run: |
+          set -e
+          for f in supabase/migrations/*.sql; do
+            echo "▶ $f"
+            psql -h localhost -U postgres -d postgres -v ON_ERROR_STOP=1 -f "$f"
+          done
+
   # E2E runs on master pushes and manual dispatch only — it is not a PR gate.
   # e2e/artist-portal.spec.ts is a real (non-skip) test against an isolated
   # [E2E TEST] org/artist seeded in production (no staging DB exists yet).
@@ -118,7 +154,7 @@ jobs:
   all-checks:
     name: All Checks Passed
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, test, audit]
+    needs: [lint, typecheck, test, audit, migrations]
     if: always()
     steps:
       - name: Verify all jobs succeeded
@@ -126,7 +162,8 @@ jobs:
           if [[ "${{ needs.lint.result }}" != "success" || \
                 "${{ needs.typecheck.result }}" != "success" || \
                 "${{ needs.test.result }}" != "success" || \
-                "${{ needs.audit.result }}" != "success" ]]; then
+                "${{ needs.audit.result }}" != "success" || \
+                "${{ needs.migrations.result }}" != "success" ]]; then
             echo "One or more checks failed"
             exit 1
           fi
