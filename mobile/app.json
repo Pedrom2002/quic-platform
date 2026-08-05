@@ -37,7 +37,8 @@
           "microphonePermission": "Esta app não grava áudio. A permissão é pedida pela biblioteca de câmara mas nunca é usada."
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "@sentry/react-native/expo"
     ]
   }
 }
