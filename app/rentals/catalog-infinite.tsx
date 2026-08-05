@@ -26,14 +26,6 @@ export function CatalogInfinite({
   const [loading, setLoading] = useState(false)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
-  // Reset when the search/category filters change (parent re-mounts via key,
-  // but guard here too so a prop change re-seeds the list).
-  useEffect(() => {
-    setMaterials(initialMaterials)
-    setPage(1)
-    setHasMore(initialHasMore)
-  }, [initialMaterials, initialHasMore])
-
   const loadMore = useCallback(async () => {
     if (loading || !hasMore) return
     setLoading(true)

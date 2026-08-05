@@ -123,7 +123,7 @@ jobs:
       # migrations call both. Stub them to return NULL (the same as "no
       # session"), which is the correct, safe behavior for this smoke test —
       # we're checking the SQL applies cleanly, not exercising real auth.
-      - name: Stub auth.uid()/auth.jwt() (not provided by GoTrue here)
+      - name: Stub auth.uid()/auth.jwt()/storage.buckets (not provided outside real Supabase Storage/GoTrue)
         env:
           PGPASSWORD: postgres
         run: |
@@ -131,6 +131,25 @@ jobs:
           create schema if not exists auth;
           create or replace function auth.uid() returns uuid language sql stable as $$ select null::uuid $$;
           create or replace function auth.jwt() returns jsonb language sql stable as $$ select null::jsonb $$;
+
+          create schema if not exists storage;
+          create table if not exists storage.buckets (
+            id text primary key,
+            name text not null,
+            owner uuid,
+            public boolean default false,
+            created_at timestamptz default now(),
+            updated_at timestamptz default now()
+          );
+          create table if not exists storage.objects (
+            id uuid primary key default gen_random_uuid(),
+            bucket_id text references storage.buckets(id),
+            name text,
+            owner uuid,
+            created_at timestamptz default now(),
+            updated_at timestamptz default now(),
+            metadata jsonb
+          );
           SQL
 
       - name: Apply all migrations in order
