@@ -117,6 +117,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The supabase/postgres image ships the auth/storage schemas but not
+      # the auth.uid()/auth.jwt() functions themselves (those come from
+      # GoTrue, which isn't running here). RLS policies across this repo's
+      # migrations call both. Stub them to return NULL (the same as "no
+      # session"), which is the correct, safe behavior for this smoke test —
+      # we're checking the SQL applies cleanly, not exercising real auth.
+      - name: Stub auth.uid()/auth.jwt() (not provided by GoTrue here)
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d postgres -v ON_ERROR_STOP=1 <<'SQL'
+          create schema if not exists auth;
+          create or replace function auth.uid() returns uuid language sql stable as $$ select null::uuid $$;
+          create or replace function auth.jwt() returns jsonb language sql stable as $$ select null::jsonb $$;
+          SQL
+
       - name: Apply all migrations in order
         env:
           PGPASSWORD: postgres
