@@ -50,9 +50,10 @@ export async function POST(request: Request) {
     log.error('erro ao processar compra de bilhetes', { error: rpcError.message, ticketTypeId })
     return Response.json({ error: 'Erro ao criar bilhetes' }, { status: 500 })
   }
-  if (!result?.success) {
-    log.error('compra de bilhetes rejeitada', { error: result?.error, ticketTypeId })
-    return Response.json({ error: result?.error ?? 'Erro ao criar bilhetes' }, { status: 409 })
+  const purchase = result as { success: boolean; error?: string; note?: string } | null
+  if (!purchase?.success) {
+    log.error('compra de bilhetes rejeitada', { error: purchase?.error, ticketTypeId })
+    return Response.json({ error: purchase?.error ?? 'Erro ao criar bilhetes' }, { status: 409 })
   }
 
   return Response.json({ received: true })

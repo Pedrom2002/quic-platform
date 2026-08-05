@@ -3048,6 +3048,18 @@ export type Database = {
         Returns: undefined
       }
       is_stock_team: { Args: never; Returns: boolean }
+      // Adicionada manualmente: existe em producao desde a migration 0065
+      // mas o types/database.ts nao foi regenerado desde entao (migracoes
+      // sao aplicadas manualmente, nao via `supabase db push`).
+      purchase_tickets: {
+        Args: {
+          p_buyer_auth_user_id: string
+          p_quantity: number
+          p_stripe_checkout_session_id: string
+          p_ticket_type_id: string
+        }
+        Returns: Json
+      }
       marketing_check_warmup_limit: {
         Args: { p_user_id: string }
         Returns: Json
