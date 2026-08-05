@@ -1,15 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockRequireOrgAuth, mockRevalidate, mockPut, mockNotify } = vi.hoisted(() => ({
+const { mockRequireOrgAuth, mockRevalidate, mockPut, mockDel, mockNotify } = vi.hoisted(() => ({
   mockRequireOrgAuth: vi.fn(),
   mockRevalidate: vi.fn(),
   mockPut: vi.fn(),
+  mockDel: vi.fn(),
   mockNotify: vi.fn(),
 }))
 
 vi.mock('@/lib/supabase/actions', () => ({ requireOrgAuth: mockRequireOrgAuth }))
 vi.mock('next/cache', () => ({ revalidatePath: mockRevalidate }))
-vi.mock('@vercel/blob', () => ({ put: mockPut }))
+vi.mock('@vercel/blob', () => ({ put: mockPut, del: mockDel }))
 vi.mock('@/lib/artists/notify', () => ({ notifyArtistOfNewItem: mockNotify }))
 vi.mock('@/lib/env', () => ({
   getEnv: () => ({ BLOB_READ_WRITE_TOKEN: 'blob-token', NEXT_PUBLIC_APP_URL: 'https://app.quic.pt' }),
@@ -40,6 +41,11 @@ function makeSupabase(artistRow: typeof ownedArtist | null) {
       }
     }
     return {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
       insert: vi.fn((payload: unknown) => {
         inserts[table] = inserts[table] ?? []
         inserts[table].push(payload)
@@ -77,6 +83,7 @@ beforeEach(() => {
   mockRequireOrgAuth.mockReset()
   mockRevalidate.mockReset()
   mockPut.mockReset()
+  mockDel.mockReset()
   mockNotify.mockReset()
 })
 

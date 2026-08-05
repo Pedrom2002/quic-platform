@@ -39,14 +39,10 @@ export async function POST(request: Request) {
         const candidates = [reply.inReplyTo, ...reply.references].filter(Boolean)
         if (!candidates.length) continue
 
-        const orPattern = candidates
-          .map(c => `message_id.eq.${c.replace(/,/g, '\\,')}`)
-          .join(',')
-
         const { data: send } = await supabase
           .from('marketing_sends')
           .select('id, contact_id, replied_at')
-          .or(orPattern)
+          .in('message_id', candidates)
           .maybeSingle()
 
         if (!send || send.replied_at) continue

@@ -13,6 +13,8 @@ export default async function SettingsPage() {
     .eq('auth_user_id', user.id)
     .single()
 
+  if (!member) redirect('/auth/login')
+
   return (
     <div className="p-8 max-w-2xl">
       <div className="mb-8">

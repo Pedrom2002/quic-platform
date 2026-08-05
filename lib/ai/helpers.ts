@@ -46,7 +46,11 @@ export async function withAiAuth<T>(
 
 export function createGeminiModel(systemInstruction: string): GenerativeModel {
   const genAI = new GoogleGenerativeAI(getEnv().GEMINI_API_KEY!)
-  return genAI.getGenerativeModel({ model: 'gemini-2.5-flash', systemInstruction })
+  return genAI.getGenerativeModel({
+    model: 'gemini-2.5-flash',
+    systemInstruction,
+    generationConfig: { maxOutputTokens: 4096 },
+  })
 }
 
 export function streamGeminiResponse(

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn().mockResolvedValue({
-    auth: { exchangeCodeForSession: vi.fn() },
+    auth: { exchangeCodeForSession: vi.fn().mockResolvedValue({ error: null }) },
   }),
 }))
 

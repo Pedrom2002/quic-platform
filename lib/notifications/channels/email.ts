@@ -36,7 +36,7 @@ export async function sendEmail({ to, toName, subject, html }: SendEmailParams):
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) await new Promise(r => setTimeout(r, attempt * 500))
     try {
-      const res = await fetch(BREVO_API, { method: 'POST', headers, body })
+      const res = await fetch(BREVO_API, { method: 'POST', headers, body, signal: AbortSignal.timeout(10_000) })
       if (!res.ok) {
         const text = await res.text()
         // 4xx = permanent failure, don't retry

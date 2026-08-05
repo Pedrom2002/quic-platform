@@ -153,7 +153,10 @@ describe('POST /api/ai/marketing-insights', () => {
     return {
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ data: rows }),
+          eq: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue({ data: rows }),
+            then: (resolve: (v: unknown) => void) => resolve({ count: rows?.length ?? 0 }),
+          }),
         }),
       }),
     }

@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+
 interface Props {
   opens: { opened_at: string }[]
 }
@@ -42,8 +44,8 @@ export function OpenHeatmap({ opens }: Props) {
             </div>
           ))}
           {DAYS.map((day, dIdx) => (
-            <>
-              <div key={`label-${dIdx}`} className="text-[10px] text-zinc-500 pr-2 text-right">{day}</div>
+            <Fragment key={day}>
+              <div className="text-[10px] text-zinc-500 pr-2 text-right">{day}</div>
               {HOURS.map(h => (
                 <div
                   key={`${dIdx}-${h}`}
@@ -51,7 +53,7 @@ export function OpenHeatmap({ opens }: Props) {
                   title={`${day} ${h}h: ${grid[dIdx][h]} aberturas`}
                 />
               ))}
-            </>
+            </Fragment>
           ))}
         </div>
       </div>

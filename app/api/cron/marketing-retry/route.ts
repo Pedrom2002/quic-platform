@@ -12,17 +12,28 @@ export async function POST(request: Request) {
   }
 
   const supabase = createAdminClient()
+  const cutoff = new Date(Date.now() - MAX_RETRY_AGE_HOURS * 60 * 60 * 1000).toISOString()
+
+  // Filter by campaign recency first, then cap the sends fetched to that
+  // recent set — applying .limit(100) before this filter (as before) could
+  // starve genuinely recent failures if the first 100 rows happened to be
+  // older ones now outside the retry window.
+  const { data: recentCampaigns } = await supabase
+    .from('marketing_campaigns')
+    .select('id')
+    .gte('created_at', cutoff)
+
+  const recentCampaignIds = (recentCampaigns ?? []).map(c => c.id)
+  if (!recentCampaignIds.length) return NextResponse.json({ retried: 0 })
+
   const { data: failedSends } = await supabase
     .from('marketing_sends')
     .select('id, campaign_id, contact_id, error, marketing_campaigns(created_by, created_at)')
     .eq('status', 'failed')
+    .in('campaign_id', recentCampaignIds)
     .limit(100)
 
-  const cutoff = new Date(Date.now() - MAX_RETRY_AGE_HOURS * 60 * 60 * 1000).toISOString()
-  const recentFailed = (failedSends ?? []).filter(s => {
-    const camp = s.marketing_campaigns as { created_at?: string } | null
-    return camp?.created_at && camp.created_at >= cutoff
-  })
+  const recentFailed = failedSends ?? []
 
   if (!recentFailed.length) return NextResponse.json({ retried: 0 })
 

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import * as z from 'zod'
-import { put } from '@vercel/blob'
+import { put, del } from '@vercel/blob'
 
 import { requireOrgAuth } from '@/lib/supabase/actions'
 import { agendaItemSchema, clippingSchema, assetSchema } from '@/lib/artists/validation'
@@ -15,6 +15,7 @@ import {
   safeBlobPathname,
 } from '@/schemas/file.schema'
 import { getEnv } from '@/lib/env'
+import { lisbonDatetimeLocalToUTC } from '@/lib/timezone'
 
 export type ActionResult = { error?: string }
 
@@ -115,6 +116,8 @@ export async function createAgendaItem(formData: FormData): Promise<ActionResult
 
   const { error } = await auth.supabase.from('artist_agenda_items').insert({
     ...parsed.data,
+    starts_at: lisbonDatetimeLocalToUTC(parsed.data.starts_at),
+    ends_at: parsed.data.ends_at ? lisbonDatetimeLocalToUTC(parsed.data.ends_at) : null,
     artist_id: artist.id,
     organization_id: auth.member.organization_id,
   })
@@ -137,7 +140,11 @@ export async function updateAgendaItem(formData: FormData): Promise<ActionResult
 
   const { error } = await auth.supabase
     .from('artist_agenda_items')
-    .update(parsed.data)
+    .update({
+      ...parsed.data,
+      starts_at: lisbonDatetimeLocalToUTC(parsed.data.starts_at),
+      ends_at: parsed.data.ends_at ? lisbonDatetimeLocalToUTC(parsed.data.ends_at) : null,
+    })
     .eq('id', id.data)
   if (error) return { error: 'Erro ao atualizar o item' }
 
@@ -226,7 +233,10 @@ export async function createClipping(formData: FormData): Promise<ActionResult> 
     artist_id: artist.id,
     organization_id: auth.member.organization_id,
   })
-  if (error) return { error: 'Erro ao criar o clipping' }
+  if (error) {
+    if (image.url) { try { await del(image.url, { token: getEnv().BLOB_READ_WRITE_TOKEN }) } catch { /* best effort */ } }
+    return { error: 'Erro ao criar o clipping' }
+  }
 
   await maybeNotify(formData, artist, `novo artigo de imprensa: ${parsed.data.title}`)
   revalidateArtist(artist.id, 'clipping')
@@ -316,7 +326,10 @@ export async function createAsset(formData: FormData): Promise<ActionResult> {
     artist_id: artist.id,
     organization_id: auth.member.organization_id,
   })
-  if (error) return { error: 'Erro ao guardar' }
+  if (error) {
+    if (blobUrl) { try { await del(blobUrl, { token: getEnv().BLOB_READ_WRITE_TOKEN }) } catch { /* best effort */ } }
+    return { error: 'Erro ao guardar' }
+  }
 
   const label =
     parsed.data.section === 'content'
@@ -335,8 +348,18 @@ export async function deleteAsset(formData: FormData): Promise<ActionResult> {
   const id = z.uuid().safeParse(formData.get('id'))
   if (!id.success) return { error: 'Item inválido' }
 
+  const { data: asset } = await auth.supabase
+    .from('artist_assets')
+    .select('blob_url, thumbnail_url')
+    .eq('id', id.data)
+    .single()
+
   const { error } = await auth.supabase.from('artist_assets').delete().eq('id', id.data)
   if (error) return { error: 'Erro ao apagar' }
+
+  const token = getEnv().BLOB_READ_WRITE_TOKEN
+  if (asset?.blob_url) { try { await del(asset.blob_url, { token }) } catch { /* best effort */ } }
+  if (asset?.thumbnail_url) { try { await del(asset.thumbnail_url, { token }) } catch { /* best effort */ } }
 
   const artistId = optionalText(formData, 'artist_id')
   const section = formData.get('section') === 'document' ? 'documentos' : 'conteudos'

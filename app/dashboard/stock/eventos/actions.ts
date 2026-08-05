@@ -111,6 +111,24 @@ export async function updateEventStatus(
     return { error: issuesToMessage(status.error) }
   }
 
+  if (status.data === 'concluido') {
+    const { data: movements } = await supabase
+      .from('stock_movements')
+      .select('material_id, type, quantity')
+      .eq('event_id', id.data)
+      .in('type', ['saida', 'entrada'])
+
+    const outstanding = new Map<string, number>()
+    for (const m of movements ?? []) {
+      const qty = outstanding.get(m.material_id) ?? 0
+      outstanding.set(m.material_id, qty + (m.type === 'saida' ? m.quantity : -m.quantity))
+    }
+    const hasOutstanding = [...outstanding.values()].some((qty) => qty > 0)
+    if (hasOutstanding) {
+      return { error: 'Ainda há material por devolver. Regista as entradas antes de concluir o evento.' }
+    }
+  }
+
   const { error } = await supabase
     .from('stock_events')
     .update({ status: status.data })

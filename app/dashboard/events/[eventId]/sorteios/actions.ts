@@ -1,6 +1,6 @@
 'use server'
 
-import { getOrgAuth, requireOrgAuthFull } from '@/lib/supabase/actions'
+import { getOrgAuth, requireOrgAuthFull, assertEventOwnership, assertRaffleBelongsToOrg } from '@/lib/supabase/actions'
 import type { EventRaffle, EventRaffleEntry, EventRaffleWithEntries } from '@/types/app'
 
 export async function loadRafflesAction(eventId: string): Promise<EventRaffleWithEntries[]> {
@@ -23,6 +23,9 @@ export async function createRaffleAction(
   fields: { title: string; description?: string; prize?: string }
 ): Promise<EventRaffle> {
   const { supabase, member } = await requireOrgAuthFull()
+
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) throw new Error('Não autorizado')
 
   const { data, error } = await supabase
     .from('event_raffles')
@@ -58,6 +61,9 @@ export async function addEntryAction(
 ): Promise<EventRaffleEntry> {
   const { supabase, member } = await requireOrgAuthFull()
 
+  const raffleBelongs = await assertRaffleBelongsToOrg(supabase, raffleId, member.organization_id)
+  if (!raffleBelongs) throw new Error('Não autorizado')
+
   if (!participantName.trim()) throw new Error('Nome do participante não pode estar vazio')
 
   const { data, error } = await supabase
@@ -79,6 +85,9 @@ export async function addEntriesBulkAction(
   names: string[]
 ): Promise<number> {
   const { supabase, member } = await requireOrgAuthFull()
+
+  const raffleBelongs = await assertRaffleBelongsToOrg(supabase, raffleId, member.organization_id)
+  if (!raffleBelongs) throw new Error('Não autorizado')
 
   const rows = names
     .map(n => n.trim())
@@ -120,7 +129,8 @@ export async function drawWinnerAction(raffleId: string): Promise<EventRaffleEnt
   if (fetchError) throw new Error(fetchError.message)
   if (!entries?.length) throw new Error('Sem participantes para sortear')
 
-  const winner = entries[Math.floor(Math.random() * entries.length)]
+  const randomIndex = crypto.getRandomValues(new Uint32Array(1))[0] % entries.length
+  const winner = entries[randomIndex]
 
   const { data, error } = await supabase
     .from('event_raffle_entries')

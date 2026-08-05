@@ -40,7 +40,7 @@ describe('messageTemplateSchema', () => {
   })
 
   it('accepts all valid channels', () => {
-    for (const channel of ['email', 'whatsapp', 'sms', 'portal']) {
+    for (const channel of ['email', 'whatsapp', 'sms', 'portal', 'push']) {
       expect(messageTemplateSchema.safeParse({ ...validBase, channel }).success).toBe(true)
     }
   })

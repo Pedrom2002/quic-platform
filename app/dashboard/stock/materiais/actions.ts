@@ -123,6 +123,7 @@ export async function createMaterial(
     return { error: 'Erro ao criar material' }
   }
 
+  revalidatePath('/dashboard/stock')
   revalidatePath('/dashboard/stock/materiais')
   redirect('/dashboard/stock/materiais')
 }
@@ -162,6 +163,7 @@ export async function updateMaterial(
     return { error: 'Erro ao atualizar material' }
   }
 
+  revalidatePath('/dashboard/stock')
   revalidatePath('/dashboard/stock/materiais')
   revalidatePath(`/dashboard/stock/materiais/${id.data}`)
   redirect('/dashboard/stock/materiais')
@@ -203,6 +205,7 @@ async function setMaterialActive(
     }
   }
 
+  revalidatePath('/dashboard/stock')
   revalidatePath('/dashboard/stock/materiais')
   revalidatePath(`/dashboard/stock/materiais/${parsedId.data}`)
   return {}

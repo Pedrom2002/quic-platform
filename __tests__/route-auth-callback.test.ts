@@ -56,4 +56,11 @@ describe('GET /auth/callback', () => {
     const res = await GET(req)
     expect((res as unknown as { redirectUrl: string }).redirectUrl).toBe('http://localhost/settings')
   })
+
+  it('redirects to login with an error when exchangeCodeForSession fails', async () => {
+    mockExchangeCodeForSession.mockResolvedValue({ error: { message: 'invalid code' } })
+    const req = new Request('http://localhost/auth/callback?code=badcode&next=/events')
+    const res = await GET(req)
+    expect((res as unknown as { redirectUrl: string }).redirectUrl).toBe('http://localhost/auth/login?error=auth_callback_failed')
+  })
 })

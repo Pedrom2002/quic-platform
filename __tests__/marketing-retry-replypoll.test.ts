@@ -21,7 +21,7 @@ const CRON = 'test-cron-secret-minimum-32-chars-pad!'
 function chain(result: unknown, calls?: { updates?: unknown[] }) {
   const c: Record<string, unknown> = {}
   const self = () => c
-  for (const m of ['select', 'eq', 'in', 'or', 'limit', 'maybeSingle', 'single']) {
+  for (const m of ['select', 'eq', 'in', 'or', 'gte', 'limit', 'maybeSingle', 'single']) {
     c[m] = vi.fn(self)
   }
   c.update = vi.fn((payload: unknown) => {
@@ -62,6 +62,7 @@ describe('POST /api/cron/marketing-retry', () => {
     const now = new Date().toISOString()
     const updates: unknown[] = []
     mockFrom
+      .mockReturnValueOnce(chain({ data: [{ id: 'c1' }] }))
       .mockReturnValueOnce(
         chain({
           data: [
@@ -88,19 +89,21 @@ describe('POST /api/cron/marketing-retry', () => {
 
   it('skips permanent failures (550/invalid)', async () => {
     const now = new Date().toISOString()
-    mockFrom.mockReturnValueOnce(
-      chain({
-        data: [
-          {
-            id: 's1',
-            campaign_id: 'c1',
-            contact_id: 'ct1',
-            error: '550 mailbox not found',
-            marketing_campaigns: { created_by: 'user-1', created_at: now },
-          },
-        ],
-      })
-    )
+    mockFrom
+      .mockReturnValueOnce(chain({ data: [{ id: 'c1' }] }))
+      .mockReturnValueOnce(
+        chain({
+          data: [
+            {
+              id: 's1',
+              campaign_id: 'c1',
+              contact_id: 'ct1',
+              error: '550 mailbox not found',
+              marketing_campaigns: { created_by: 'user-1', created_at: now },
+            },
+          ],
+        })
+      )
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
 

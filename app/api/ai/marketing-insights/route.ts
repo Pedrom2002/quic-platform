@@ -15,15 +15,21 @@ export async function POST(req: NextRequest) {
 
     const supabase = await createClient()
 
-    const { data: sends } = await supabase
-      .from('marketing_sends')
-      .select('status, opened_at, contact_id, marketing_contacts(name, company, engagement_score)')
-      .eq('campaign_id', body.campaign_id)
-      .eq('organization_id', ctx.organizationId)
+    const [{ data: sends }, { count: total }] = await Promise.all([
+      supabase
+        .from('marketing_sends')
+        .select('status, opened_at, contact_id, marketing_contacts(name, company, engagement_score)')
+        .eq('campaign_id', body.campaign_id)
+        .eq('organization_id', ctx.organizationId)
+        .limit(2000),
+      supabase
+        .from('marketing_sends')
+        .select('id', { count: 'exact', head: true })
+        .eq('campaign_id', body.campaign_id)
+        .eq('organization_id', ctx.organizationId),
+    ])
 
     if (!sends?.length) return Response.json({ insights: [] })
-
-    const total = sends.length
     const opened = sends.filter(s => ['opened', 'clicked'].includes(s.status)).length
     const clicked = sends.filter(s => s.status === 'clicked').length
     const bounced = sends.filter(s => s.status === 'bounced').length

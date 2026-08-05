@@ -37,7 +37,7 @@ export async function sendPushNotifications({ tokens, title, body }: SendPushPar
     if (attempt > 0) await new Promise(r => setTimeout(r, attempt * 500))
     let res: Response
     try {
-      res = await fetch(EXPO_PUSH_API, { method: 'POST', headers, body: requestBody })
+      res = await fetch(EXPO_PUSH_API, { method: 'POST', headers, body: requestBody, signal: AbortSignal.timeout(10_000) })
     } catch (err) {
       lastErr = err
       continue

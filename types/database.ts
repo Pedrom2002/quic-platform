@@ -1371,6 +1371,7 @@ export type Database = {
         Row: {
           assigned_to: string | null
           checklist_item_id: string | null
+          completed_at: string | null
           created_at: string | null
           description: string | null
           due_at: string | null
@@ -1386,6 +1387,7 @@ export type Database = {
         Insert: {
           assigned_to?: string | null
           checklist_item_id?: string | null
+          completed_at?: string | null
           created_at?: string | null
           description?: string | null
           due_at?: string | null
@@ -1401,6 +1403,7 @@ export type Database = {
         Update: {
           assigned_to?: string | null
           checklist_item_id?: string | null
+          completed_at?: string | null
           created_at?: string | null
           description?: string | null
           due_at?: string | null
@@ -2718,6 +2721,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           organization_id: string
+          public_slug: string
           role: string
           updated_at: string | null
         }
@@ -2730,6 +2734,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           organization_id: string
+          public_slug: string
           role?: string
           updated_at?: string | null
         }
@@ -2742,6 +2747,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           organization_id?: string
+          public_slug?: string
           role?: string
           updated_at?: string | null
         }
@@ -2980,6 +2986,32 @@ export type Database = {
       }
     }
     Functions: {
+      list_contacts_page: {
+        Args: {
+          p_is_admin: boolean
+          p_group_id?: string | null
+          p_cursor_name?: string | null
+          p_cursor_id?: string | null
+          p_limit?: number
+        }
+        Returns: {
+          id: string
+          full_name: string
+          email: string | null
+          phone: string | null
+          company: string | null
+          notes: string | null
+          is_active: boolean
+          created_at: string
+        }[]
+      }
+      contact_group_counts: {
+        Args: { p_is_admin: boolean }
+        Returns: {
+          group_id: string | null
+          contact_count: number
+        }[]
+      }
       claim_accreditation_seat: {
         Args: { p_code: string }
         Returns: {

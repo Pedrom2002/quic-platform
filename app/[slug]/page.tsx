@@ -5,15 +5,6 @@ import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
 
-function toSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-}
-
 function buildVcard(name: string, role: string, email: string, cardUrl: string) {
   const parts = name.split(' ')
   const firstName = parts[0]
@@ -45,12 +36,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params
   const supabase = createAdminClient()
-  const { data: members } = await supabase
+  const { data: member } = await supabase
     .from('team_members')
     .select('full_name, role')
+    .eq('public_slug', slug)
     .eq('is_active', true)
+    .single()
 
-  const member = (members ?? []).find(m => toSlug(m.full_name) === slug)
   if (!member) return { title: 'Quic' }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.quic.pt'
@@ -80,12 +72,13 @@ export default async function PublicCardPage({
   const { slug } = await params
   const supabase = createAdminClient()
 
-  const { data: members } = await supabase
+  const { data: member } = await supabase
     .from('team_members')
     .select('id, full_name, email, role')
+    .eq('public_slug', slug)
     .eq('is_active', true)
+    .single()
 
-  const member = (members ?? []).find(m => toSlug(m.full_name) === slug)
   if (!member) notFound()
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.quic.pt'

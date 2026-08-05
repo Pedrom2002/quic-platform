@@ -69,6 +69,14 @@ export async function isRateLimited(key: string, limit: number, windowMs: number
 }
 
 export function getClientIp(request: Request): string {
+  // x-vercel-forwarded-for is set by Vercel's edge network itself and
+  // cannot be overridden by the client, unlike x-forwarded-for, whose
+  // leftmost entry is attacker-controlled (a client can send its own
+  // X-Forwarded-For header, which gets prepended ahead of the real chain,
+  // so trusting index [0] there lets every request pick its own rate-limit
+  // bucket). Prefer the Vercel-trusted header when present.
+  const vercelForwarded = request.headers.get('x-vercel-forwarded-for')
+  if (vercelForwarded) return vercelForwarded.split(',')[0].trim()
   const forwarded = request.headers.get('x-forwarded-for')
   if (forwarded) return forwarded.split(',')[0].trim()
   return request.headers.get('x-real-ip') ?? 'unknown'

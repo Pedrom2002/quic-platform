@@ -31,7 +31,7 @@ export async function sendSms({ to, message }: SendSmsParams): Promise<string> {
     if (attempt > 0) await new Promise(r => setTimeout(r, attempt * 500))
     let res: Response
     try {
-      res = await fetch(BREVO_SMS_API, { method: 'POST', headers, body })
+      res = await fetch(BREVO_SMS_API, { method: 'POST', headers, body, signal: AbortSignal.timeout(10_000) })
     } catch (err) {
       lastErr = err
       continue
