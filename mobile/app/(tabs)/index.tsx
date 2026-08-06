@@ -62,7 +62,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.5,
     color: '#1c1917',
-    paddingTop: 20,
-    paddingBottom: 12,
+    paddingVertical: 16,
   },
 })
