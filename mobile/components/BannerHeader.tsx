@@ -9,7 +9,7 @@ interface BannerHeaderProps {
   topInsetColor?: string
 }
 
-export function BannerHeader({ source, topInsetColor = '#81166F' }: BannerHeaderProps) {
+export function BannerHeader({ source, topInsetColor = '#ffffff' }: BannerHeaderProps) {
   const insets = useSafeAreaInsets()
 
   return (

@@ -24,10 +24,7 @@ export default function GoldenCircleScreen() {
 
   return (
     <View style={styles.container}>
-      <BannerHeader
-        source={require('../../assets/banners/golden-circle.png')}
-        topInsetColor="#81166F"
-      />
+      <BannerHeader source={require('../../assets/banners/golden-circle.png')} />
 
       <View style={styles.body}>
         <Text style={styles.title}>O que é o Golden Circle?</Text>
