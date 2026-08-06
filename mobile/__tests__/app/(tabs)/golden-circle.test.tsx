@@ -4,19 +4,28 @@ import { render } from '@testing-library/react-native'
 import GoldenCircleScreen from '../../../app/(tabs)/golden-circle'
 
 jest.mock('expo-video', () => ({
-  useVideoPlayer: () => ({ loop: false, muted: false }),
+  useVideoPlayer: (
+    _source: unknown,
+    setup?: (player: { loop: boolean; muted: boolean; play: () => void }) => void
+  ) => {
+    const player = { loop: false, muted: false, play: jest.fn() }
+    setup?.(player)
+    return player
+  },
   VideoView: () => null,
 }))
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }))
+jest.mock('expo-router', () => ({
+  useFocusEffect: (effect: () => void | (() => void)) => effect(),
+}))
 
 describe('GoldenCircleScreen', () => {
-  it('shows the title and the Junta-te em Gold button', () => {
+  it('shows the Junta-te ao Golden Circle button', () => {
     const { getByText } = render(<GoldenCircleScreen />)
 
-    expect(getByText('Golden Circle')).toBeTruthy()
-    expect(getByText('Junta-te em Gold')).toBeTruthy()
+    expect(getByText('Junta-te ao Golden Circle')).toBeTruthy()
   })
 
   it('renders the banner header image', () => {

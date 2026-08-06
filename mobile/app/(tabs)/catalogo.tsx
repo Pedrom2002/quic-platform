@@ -63,6 +63,7 @@ export default function CatalogoScreen() {
   return (
     <View style={styles.container}>
       <BannerHeader source={require('../../assets/banners/rental.png')} />
+      <Text style={styles.sectionTitle}>Catálogo</Text>
 
       <View style={styles.searchWrapper}>
         <Ionicons name="search-outline" size={18} color={colors.gray400} style={styles.searchIcon} />
@@ -122,6 +123,15 @@ export default function CatalogoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
+  sectionTitle: {
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    color: colors.gray900,
+    paddingTop: 20,
+    paddingBottom: 12,
+  },
   searchWrapper: { marginHorizontal: 16, marginBottom: 8, position: 'relative', justifyContent: 'center' },
   searchIcon: { position: 'absolute', left: 14, zIndex: 1 },
   search: {

@@ -8,7 +8,12 @@ import { EventCard } from '../../components/EventCard'
 import { BannerHeader } from '../../components/BannerHeader'
 
 function Header() {
-  return <BannerHeader source={require('../../assets/banners/tickets.png')} />
+  return (
+    <>
+      <BannerHeader source={require('../../assets/banners/tickets.png')} />
+      <Text style={styles.sectionTitle}>Próximos Eventos</Text>
+    </>
+  )
 }
 
 export default function InicioScreen() {
@@ -51,4 +56,13 @@ const styles = StyleSheet.create({
   list: { paddingBottom: 16 },
   empty: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
   emptyText: { color: '#78716c', fontSize: 14 },
+  sectionTitle: {
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    color: '#1c1917',
+    paddingTop: 20,
+    paddingBottom: 12,
+  },
 })

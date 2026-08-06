@@ -1,12 +1,23 @@
 import { Image, View, StyleSheet, type ImageSourcePropType } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-export function BannerHeader({ source }: { source: ImageSourcePropType }) {
+interface BannerHeaderProps {
+  source: ImageSourcePropType
+  // Cor de fundo do espaco reservado para a status bar/notch, para nao
+  // ficar branco a destacar contra o banner. Deve corresponder a cor
+  // dominante do topo da imagem passada em `source`.
+  topInsetColor?: string
+}
+
+export function BannerHeader({ source, topInsetColor = '#81166F' }: BannerHeaderProps) {
   const insets = useSafeAreaInsets()
 
   return (
     <>
-      <View testID="banner-header-wrapper" style={{ paddingTop: insets.top }}>
+      <View
+        testID="banner-header-wrapper"
+        style={{ paddingTop: insets.top, backgroundColor: topInsetColor }}
+      >
         <Image
           testID="banner-header-image"
           source={source}
