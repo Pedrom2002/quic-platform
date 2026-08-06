@@ -76,4 +76,22 @@ describe('POST /api/auth/signup', () => {
     expect(res.status).toBe(400)
     expect(body.error).toBe('Não foi possível criar a conta. Verifica os dados ou tenta iniciar sessão.')
   })
+
+  it('rate-limit keys are IP-scoped (different IPs do not share buckets)', async () => {
+    mockSignUp.mockResolvedValue({ error: null })
+    const { POST } = await import('@/app/api/auth/signup/route')
+
+    // First request from IP 1.2.3.4
+    mockGetClientIp.mockReturnValue('1.2.3.4')
+    mockIsRateLimited.mockResolvedValue(false)
+    await POST(makeRequest({ email: 'user1@example.com', password: 'password123' }))
+
+    // Second request from IP 5.6.7.8
+    mockGetClientIp.mockReturnValue('5.6.7.8')
+    await POST(makeRequest({ email: 'user2@example.com', password: 'password123' }))
+
+    // Verify isRateLimited was called with IP-scoped keys
+    expect(mockIsRateLimited).toHaveBeenCalledWith('signup:1.2.3.4', 5, 10 * 60 * 1_000)
+    expect(mockIsRateLimited).toHaveBeenCalledWith('signup:5.6.7.8', 5, 10 * 60 * 1_000)
+  })
 })

@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 
 const SIGNUP_LIMIT = 5
-const SIGNUP_WINDOW_MS = 15 * 60 * 1_000
+const SIGNUP_WINDOW_MS = 10 * 60 * 1_000
 
 const schema = z.object({
   email: z.string().email(),
