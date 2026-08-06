@@ -160,4 +160,78 @@ describe('POST /api/tickets/checkout', () => {
     expect(mockAdminGetUser).toHaveBeenCalledWith('expired-or-invalid-token')
     expect(mockCreateSession).not.toHaveBeenCalled()
   })
+
+  it('uses the quicapp:// deep link when platform is omitted (mobile backward compat)', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => ({
+          eq: () => ({
+            single: () =>
+              Promise.resolve({
+                data: { id: TICKET_TYPE_ID, name: 'Normal', price_cents: 2000, currency: 'eur', event_id: 'event-1' },
+                error: null,
+              }),
+          }),
+        }),
+      }),
+    })
+    mockCreateSession.mockResolvedValue({ url: 'https://checkout.stripe.com/session-x' })
+
+    const { POST } = await import('@/app/api/tickets/checkout/route')
+    await POST(makeRequest({ ticketTypeId: TICKET_TYPE_ID, quantity: 1 }))
+
+    const callArgs = mockCreateSession.mock.calls[0][0] as { success_url: string; cancel_url: string }
+    expect(callArgs.success_url).toBe('quicapp://tickets/success?session_id={CHECKOUT_SESSION_ID}')
+    expect(callArgs.cancel_url).toBe('quicapp://tickets/cancel')
+  })
+
+  it('uses the quicapp:// deep link when platform is "mobile"', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => ({
+          eq: () => ({
+            single: () =>
+              Promise.resolve({
+                data: { id: TICKET_TYPE_ID, name: 'Normal', price_cents: 2000, currency: 'eur', event_id: 'event-1' },
+                error: null,
+              }),
+          }),
+        }),
+      }),
+    })
+    mockCreateSession.mockResolvedValue({ url: 'https://checkout.stripe.com/session-x' })
+
+    const { POST } = await import('@/app/api/tickets/checkout/route')
+    await POST(makeRequest({ ticketTypeId: TICKET_TYPE_ID, quantity: 1, platform: 'mobile' }))
+
+    const callArgs = mockCreateSession.mock.calls[0][0] as { success_url: string; cancel_url: string }
+    expect(callArgs.success_url).toBe('quicapp://tickets/success?session_id={CHECKOUT_SESSION_ID}')
+  })
+
+  it('uses a same-origin web URL when platform is "web"', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => ({
+          eq: () => ({
+            single: () =>
+              Promise.resolve({
+                data: { id: TICKET_TYPE_ID, name: 'Normal', price_cents: 2000, currency: 'eur', event_id: TICKET_TYPE_ID },
+                error: null,
+              }),
+          }),
+        }),
+      }),
+    })
+    mockCreateSession.mockResolvedValue({ url: 'https://checkout.stripe.com/session-x' })
+
+    const { POST } = await import('@/app/api/tickets/checkout/route')
+    await POST(makeRequest({ ticketTypeId: TICKET_TYPE_ID, quantity: 1, platform: 'web' }))
+
+    const callArgs = mockCreateSession.mock.calls[0][0] as { success_url: string; cancel_url: string }
+    expect(callArgs.success_url).toBe('https://app.quic.pt/tickets/success?session_id={CHECKOUT_SESSION_ID}')
+    expect(callArgs.cancel_url).toBe(`https://app.quic.pt/tickets/${TICKET_TYPE_ID}`)
+  })
 })
