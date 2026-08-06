@@ -51,11 +51,11 @@ const styles = StyleSheet.create({
   name: { fontSize: 20, fontWeight: '700', color: '#ffffff' },
   ticketButton: {
     marginTop: 8,
-    backgroundColor: '#ffffff',
+    backgroundColor: QUIC_MAGENTA,
     borderRadius: 20,
     paddingVertical: 6,
     paddingHorizontal: 14,
     alignSelf: 'flex-start',
   },
-  ticketButtonText: { color: QUIC_MAGENTA, fontSize: 12, fontWeight: '700' },
+  ticketButtonText: { color: '#ffffff', fontSize: 12, fontWeight: '700' },
 })
