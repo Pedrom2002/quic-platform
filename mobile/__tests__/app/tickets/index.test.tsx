@@ -10,6 +10,9 @@ jest.mock('../../../lib/tickets', () => ({
 }))
 jest.mock('../../../lib/supabase', () => ({ supabase: {} }))
 jest.mock('react-native-qrcode-svg', () => 'QRCode')
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}))
 
 beforeEach(() => {
   mockFetchMyTickets.mockReset()
