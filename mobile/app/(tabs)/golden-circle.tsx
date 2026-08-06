@@ -1,5 +1,5 @@
 // mobile/app/(tabs)/golden-circle.tsx
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { useFocusEffect } from 'expo-router'
@@ -7,6 +7,7 @@ import { BannerHeader } from '../../components/BannerHeader'
 import { colors } from '../../lib/theme'
 
 export default function GoldenCircleScreen() {
+  const [controlsVisible, setControlsVisible] = useState(false)
   const player = useVideoPlayer(require('../../assets/videos/golden-circle.mp4'), p => {
     p.loop = false
     p.muted = false
@@ -31,12 +32,19 @@ export default function GoldenCircleScreen() {
       <View style={styles.body}>
         <Text style={styles.title}>O que é o Golden Circle?</Text>
 
-        <VideoView
-          style={styles.video}
-          player={player}
-          nativeControls
-          contentFit="cover"
-        />
+        <Pressable
+          onPress={() => setControlsVisible(true)}
+          style={styles.videoWrapper}
+          accessibilityRole="button"
+          accessibilityLabel="Mostrar controlos do vídeo"
+        >
+          <VideoView
+            style={styles.video}
+            player={player}
+            nativeControls={controlsVisible}
+            contentFit="cover"
+          />
+        </Pressable>
 
         <Pressable style={styles.cta} accessibilityRole="button">
           <Text style={styles.ctaText}>Junta-te ao Golden Circle</Text>
@@ -50,6 +58,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   body: { padding: 16, alignItems: 'center', gap: 20 },
   title: { color: colors.gray900, fontSize: 20, fontWeight: 'bold', textAlign: 'center' },
+  videoWrapper: { width: '100%' },
   video: { width: '100%', aspectRatio: 16 / 9, borderRadius: 8, backgroundColor: colors.gray100 },
   cta: {
     backgroundColor: '#D4AF37',
