@@ -341,7 +341,7 @@ export default function PortalScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   center: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
-  nameBlock: { paddingHorizontal: 24, paddingVertical: 20, alignItems: 'center' },
+  nameBlock: { paddingHorizontal: 24, paddingVertical: 24, marginTop: -8, alignItems: 'center' },
   name: { color: '#1c1917', fontSize: 26, fontWeight: 'bold', textAlign: 'center' },
   restricted: { color: colors.gray600, fontSize: 14, textAlign: 'center' },
   tabBar: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#e7e5e4' },
