@@ -68,6 +68,14 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="ellipsis-horizontal-outline" size={size} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="golden-circle"
+        options={{
+          title: 'Gold',
+          tabBarAccessibilityLabel: 'Golden Circle',
+          tabBarIcon: ({ color, size }) => <Ionicons name="star-outline" size={size} color={color} />,
+        }}
+      />
     </Tabs>
   )
 }
