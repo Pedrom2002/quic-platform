@@ -125,7 +125,7 @@ jobs:
         run: npm ci
 
       - working-directory: mobile
-        run: npm test -- --ci
+        run: npm test -- --ci --maxWorkers=2
 
   # Applies every migration in supabase/migrations/ in order against a real
   # Postgres (the supabase/postgres image, not vanilla postgres, because ~17

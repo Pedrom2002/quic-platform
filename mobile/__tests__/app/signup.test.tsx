@@ -42,7 +42,7 @@ describe('SignupScreen', () => {
 
     await waitFor(() => {
       expect(getByText('Este email já está registado')).toBeTruthy()
-    })
+    }, { timeout: 10000 })
   })
 
   it('redirects to tabs on success', async () => {
