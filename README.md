@@ -165,6 +165,10 @@ App companion em Expo/React Native (Expo Router, iOS + Android), autenticação 
 
 Scripts próprios em `mobile/package.json` (`npm start`, `npm run android`, `npm run ios`, `npm test`, `npm run typecheck`) — projeto Expo independente, não faz parte do build/deploy Next.js.
 
+> **TODO antes do primeiro build de produção** (`mobile/app.json`):
+> 1. Correr `eas init` para obter um project ID Expo real, depois adicionar `extra.eas.projectId` e `owner` a `mobile/app.json`, e substituir o placeholder `updates.url` (atualmente `https://u.expo.dev/PLACEHOLDER_PROJECT_ID`) pelo valor real.
+> 2. Definir o valor real de `EXPO_PUBLIC_SENTRY_DSN` como EAS secret antes do primeiro build de produção (mesmo DSN do `SENTRY_DSN` do backend).
+
 ---
 
 ## Arquitetura

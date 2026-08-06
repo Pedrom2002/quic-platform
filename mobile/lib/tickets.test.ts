@@ -1,12 +1,14 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals'
-import { fetchTicketTypes, fetchMyTickets, createCheckoutSession } from './tickets'
+import { fetchTicketTypes, fetchMyTickets, createCheckoutSession, type TicketType, type MyTicket } from './tickets'
 
 describe('fetchTicketTypes', () => {
   it('queries active ticket types for an event', async () => {
-    const order = jest.fn().mockResolvedValue({
-      data: [{ id: 'tt1', name: 'Normal', price_cents: 2000, quantity_total: 100, quantity_sold: 10 }],
-      error: null,
-    })
+    const order = jest
+      .fn<() => Promise<{ data: TicketType[] | null; error: { message: string } | null }>>()
+      .mockResolvedValue({
+        data: [{ id: 'tt1', name: 'Normal', price_cents: 2000, quantity_total: 100, quantity_sold: 10 }],
+        error: null,
+      })
     const eq2 = jest.fn(() => ({ order }))
     const eq1 = jest.fn(() => ({ eq: eq2 }))
     const select = jest.fn(() => ({ eq: eq1 }))
@@ -20,7 +22,9 @@ describe('fetchTicketTypes', () => {
   })
 
   it('returns empty array on error', async () => {
-    const order = jest.fn().mockResolvedValue({ data: null, error: { message: 'boom' } })
+    const order = jest
+      .fn<() => Promise<{ data: TicketType[] | null; error: { message: string } | null }>>()
+      .mockResolvedValue({ data: null, error: { message: 'boom' } })
     const eq2 = jest.fn(() => ({ order }))
     const eq1 = jest.fn(() => ({ eq: eq2 }))
     const select = jest.fn(() => ({ eq: eq1 }))
@@ -33,13 +37,17 @@ describe('fetchTicketTypes', () => {
 
 describe('fetchMyTickets', () => {
   it('queries tickets for the current buyer', async () => {
-    const order = jest.fn().mockResolvedValue({
-      data: [{ id: 't1', qr_code: 'qr-1', status: 'valid', event_id: 'event-1' }],
-      error: null,
-    })
+    const order = jest
+      .fn<() => Promise<{ data: MyTicket[] | null; error: { message: string } | null }>>()
+      .mockResolvedValue({
+        data: [{ id: 't1', qr_code: 'qr-1', status: 'valid', event_id: 'event-1' }],
+        error: null,
+      })
     const eq = jest.fn(() => ({ order }))
     const select = jest.fn(() => ({ eq }))
-    const getUser = jest.fn().mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    const getUser = jest
+      .fn<() => Promise<{ data: { user: { id: string } | null } }>>()
+      .mockResolvedValue({ data: { user: { id: 'user-1' } } })
     const supabase = { from: jest.fn(() => ({ select })), auth: { getUser } } as never
 
     const result = await fetchMyTickets(supabase)
@@ -49,8 +57,10 @@ describe('fetchMyTickets', () => {
   })
 
   it('returns empty array when there is no session', async () => {
-    const getUser = jest.fn().mockResolvedValue({ data: { user: null } })
-    const supabase = { from: jest.fn(), auth: { getUser } } as never
+    const getUser = jest
+      .fn<() => Promise<{ data: { user: { id: string } | null } }>>()
+      .mockResolvedValue({ data: { user: null } })
+    const supabase = { from: jest.fn<() => never>(), auth: { getUser } } as never
 
     const result = await fetchMyTickets(supabase)
     expect(result).toEqual([])
@@ -65,10 +75,12 @@ describe('createCheckoutSession', () => {
   })
 
   it('returns the checkout url on a successful response', async () => {
-    const fetchMock = jest.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ url: 'https://checkout.example.com/session-123' }),
-    })
+    const fetchMock = jest
+      .fn<() => Promise<{ ok: boolean; json: () => Promise<{ url: string }> }>>()
+      .mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ url: 'https://checkout.example.com/session-123' }),
+      })
     global.fetch = fetchMock as never
 
     const result = await createCheckoutSession('https://app.example.com', 'tt1', 2, 'token-abc')
@@ -82,10 +94,12 @@ describe('createCheckoutSession', () => {
   })
 
   it('returns null when the response is not ok', async () => {
-    const fetchMock = jest.fn().mockResolvedValue({
-      ok: false,
-      json: () => Promise.resolve({}),
-    })
+    const fetchMock = jest
+      .fn<() => Promise<{ ok: boolean; json: () => Promise<Record<string, never>> }>>()
+      .mockResolvedValue({
+        ok: false,
+        json: () => Promise.resolve({}),
+      })
     global.fetch = fetchMock as never
 
     const result = await createCheckoutSession('https://app.example.com', 'tt1', 2, 'token-abc')
@@ -93,7 +107,7 @@ describe('createCheckoutSession', () => {
   })
 
   it('returns null when fetch throws', async () => {
-    const fetchMock = jest.fn().mockRejectedValue(new Error('network error'))
+    const fetchMock = jest.fn<() => Promise<never>>().mockRejectedValue(new Error('network error'))
     global.fetch = fetchMock as never
 
     const result = await createCheckoutSession('https://app.example.com', 'tt1', 2, 'token-abc')

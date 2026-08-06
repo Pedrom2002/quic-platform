@@ -5,6 +5,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useSession } from '../hooks/useSession'
 import { CartProvider } from '../hooks/useCart'
 import { registerPushNotificationTapHandler } from '../lib/pushNavigation'
+import { initSentry } from '../lib/sentry'
+
+initSentry()
 
 if (Platform.OS !== 'web') {
   Appearance.setColorScheme('light')

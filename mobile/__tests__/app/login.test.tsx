@@ -12,7 +12,9 @@ jest.mock('expo-linear-gradient', () => ({
 }))
 import LoginScreen from '../../app/login'
 
-const mockSignInWithPassword = jest.fn()
+const mockSignInWithPassword = jest.fn<
+  (...args: unknown[]) => Promise<{ error: { message: string } | null }>
+>()
 const mockReplace = jest.fn()
 
 jest.mock('../../lib/supabase', () => ({

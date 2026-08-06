@@ -7,9 +7,10 @@ jest.mock('react-native-safe-area-context', () => ({
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, waitFor } from '@testing-library/react-native'
 import CatalogoScreen from '../../../app/(tabs)/catalogo'
+import type { StockCategory, CatalogMaterial } from '../../../lib/catalog'
 
-const mockFetchCategories = jest.fn()
-const mockFetchCatalogMaterials = jest.fn()
+const mockFetchCategories = jest.fn<(...args: unknown[]) => Promise<StockCategory[]>>()
+const mockFetchCatalogMaterials = jest.fn<(...args: unknown[]) => Promise<CatalogMaterial[]>>()
 
 jest.mock('../../../lib/catalog', () => ({
   fetchCategories: (...args: unknown[]) => mockFetchCategories(...args),

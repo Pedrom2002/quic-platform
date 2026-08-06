@@ -91,6 +91,42 @@ jobs:
 
       - run: npm audit --omit=dev --audit-level=high
 
+  mobile-typecheck:
+    name: Mobile Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - working-directory: mobile
+        run: npm ci
+
+      - working-directory: mobile
+        run: npm run typecheck
+
+  mobile-test:
+    name: Mobile Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - working-directory: mobile
+        run: npm ci
+
+      - working-directory: mobile
+        run: npm test -- --ci --maxWorkers=2
+
   # Applies every migration in supabase/migrations/ in order against a real
   # Postgres (the supabase/postgres image, not vanilla postgres, because ~17
   # migrations reference the auth.*/storage.* schemas Supabase pre-creates

@@ -25,10 +25,12 @@ describe('fetchPortalData', () => {
         { id: 'file-1', file_name: 'planta.pdf', file_size: 51200, mime_type: 'application/pdf', blob_url: 'https://blob.example.com/planta.pdf' },
       ],
     }
-    const fetchMock = jest.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(payload),
-    })
+    const fetchMock = jest
+      .fn<() => Promise<{ ok: boolean; json: () => Promise<typeof payload> }>>()
+      .mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(payload),
+      })
     global.fetch = fetchMock as never
 
     const result = await fetchPortalData('https://app.example.com', 'token-abc')
@@ -38,10 +40,12 @@ describe('fetchPortalData', () => {
   })
 
   it('returns null when the response is not ok', async () => {
-    const fetchMock = jest.fn().mockResolvedValue({
-      ok: false,
-      json: () => Promise.resolve({ error: 'Link inválido ou expirado' }),
-    })
+    const fetchMock = jest
+      .fn<() => Promise<{ ok: boolean; json: () => Promise<{ error: string }> }>>()
+      .mockResolvedValue({
+        ok: false,
+        json: () => Promise.resolve({ error: 'Link inválido ou expirado' }),
+      })
     global.fetch = fetchMock as never
 
     const result = await fetchPortalData('https://app.example.com', 'bad-token')
@@ -49,7 +53,7 @@ describe('fetchPortalData', () => {
   })
 
   it('returns null when fetch throws', async () => {
-    const fetchMock = jest.fn().mockRejectedValue(new Error('network error'))
+    const fetchMock = jest.fn<() => Promise<never>>().mockRejectedValue(new Error('network error'))
     global.fetch = fetchMock as never
 
     const result = await fetchPortalData('https://app.example.com', 'token-abc')

@@ -6,6 +6,11 @@
     "scheme": "quicapp",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E6F4FE"
+    },
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
@@ -24,6 +29,12 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/PLACEHOLDER_PROJECT_ID"
+    },
     "plugins": [
       "expo-router",
       "expo-status-bar",
@@ -37,7 +48,8 @@
           "microphonePermission": "Esta app não grava áudio. A permissão é pedida pela biblioteca de câmara mas nunca é usada."
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "@sentry/react-native/expo"
     ]
   }
 }

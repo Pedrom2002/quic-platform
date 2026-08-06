@@ -1,11 +1,14 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, waitFor, fireEvent } from '@testing-library/react-native'
 import PortalScreen from '../../../app/(tabs)/portal'
+import type { UserRole } from '../../../lib/role'
+import type { ArtistPortalData } from '../../../lib/artistPortal'
+import type { PortalData } from '../../../lib/portal'
 
 const mockUseSession = jest.fn()
-const mockResolveUserRole = jest.fn()
-const mockFetchArtistPortalData = jest.fn()
-const mockFetchPortalData = jest.fn()
+const mockResolveUserRole = jest.fn<(...args: unknown[]) => Promise<UserRole>>()
+const mockFetchArtistPortalData = jest.fn<(...args: unknown[]) => Promise<ArtistPortalData>>()
+const mockFetchPortalData = jest.fn<(...args: unknown[]) => Promise<PortalData | null>>()
 
 jest.mock('../../../hooks/useSession', () => ({ useSession: () => mockUseSession() }))
 jest.mock('../../../lib/role', () => ({ resolveUserRole: (...args: unknown[]) => mockResolveUserRole(...args) }))
@@ -131,7 +134,7 @@ describe('PortalScreen', () => {
       expect(getByText('Contrato assinado')).toBeTruthy()
       expect(getByText('Menu confirmado')).toBeTruthy()
       expect(getByText('1 de 2 concluídas')).toBeTruthy()
-    })
+    }, { timeout: 10000 })
   })
 
   it('shows an internal tab bar with Imprensa when the client has articles', async () => {

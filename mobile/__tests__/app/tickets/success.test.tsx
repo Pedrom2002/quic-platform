@@ -10,8 +10,9 @@ jest.mock('../../../lib/supabase', () => ({ supabase: {} }))
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, waitFor, fireEvent } from '@testing-library/react-native'
 import TicketPurchaseSuccessScreen from '../../../app/tickets/success'
+import type { SessionTicketsResult } from '../../../lib/tickets'
 
-const mockFetchTicketsBySession = jest.fn()
+const mockFetchTicketsBySession = jest.fn<(...args: unknown[]) => Promise<SessionTicketsResult>>()
 const mockReplace = jest.fn()
 const mockSearchParams = jest.fn()
 

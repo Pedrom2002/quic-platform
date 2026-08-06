@@ -1,26 +1,31 @@
 import { describe, it, expect, jest } from '@jest/globals'
 import { resolveUserRole } from './role'
 
+type MaybeSingle<T> = () => Promise<{ data: T | null; error: { message: string } | null }>
+
 describe('resolveUserRole', () => {
   it('returns client role when no session', async () => {
-    const supabase = { from: jest.fn() } as never
+    const supabase = { from: jest.fn<() => never>() } as never
     const result = await resolveUserRole(supabase, null)
     expect(result).toEqual({ role: 'guest' })
   })
 
   it('returns artist role when artists row found', async () => {
-    const single = jest.fn().mockResolvedValue({
-      data: { id: 'artist-1', name: 'Maria', photo_url: null, bio: null },
-      error: null,
-    })
+    const single = jest
+      .fn<MaybeSingle<{ id: string; name: string; photo_url: string | null; bio: string | null }>>()
+      .mockResolvedValue({
+        data: { id: 'artist-1', name: 'Maria', photo_url: null, bio: null },
+        error: null,
+      })
     const eq = jest.fn(() => ({ single }))
     const select = jest.fn(() => ({ eq }))
-    const supabase = { from: jest.fn(() => ({ select })) } as never
+    const from = jest.fn(() => ({ select }))
+    const supabase = { from } as never
 
     const session = { user: { id: 'auth-user-1', email: 'maria@example.com' } } as never
     const result = await resolveUserRole(supabase, session)
 
-    expect(supabase.from).toHaveBeenCalledWith('artists')
+    expect(from).toHaveBeenCalledWith('artists')
     expect(select).toHaveBeenCalledWith('id, name, photo_url, bio')
     expect(eq).toHaveBeenCalledWith('auth_user_id', 'auth-user-1')
     expect(result).toEqual({
@@ -30,14 +35,18 @@ describe('resolveUserRole', () => {
   })
 
   it('returns staff role when team_members row found (and no artist row)', async () => {
-    const artistSingle = jest.fn().mockResolvedValue({ data: null, error: null })
+    const artistSingle = jest
+      .fn<MaybeSingle<{ id: string; name: string; photo_url: string | null; bio: string | null }>>()
+      .mockResolvedValue({ data: null, error: null })
     const artistEq = jest.fn(() => ({ single: artistSingle }))
     const artistSelect = jest.fn(() => ({ eq: artistEq }))
 
-    const staffSingle = jest.fn().mockResolvedValue({
-      data: { id: 'member-1', full_name: 'João Staff', role: 'manager' },
-      error: null,
-    })
+    const staffSingle = jest
+      .fn<MaybeSingle<{ id: string; full_name: string; role: string }>>()
+      .mockResolvedValue({
+        data: { id: 'member-1', full_name: 'João Staff', role: 'manager' },
+        error: null,
+      })
     const staffEqActive = jest.fn(() => ({ single: staffSingle }))
     const staffEq = jest.fn(() => ({ eq: staffEqActive }))
     const staffSelect = jest.fn(() => ({ eq: staffEq }))
@@ -63,11 +72,15 @@ describe('resolveUserRole', () => {
   })
 
   it('returns client role without token when session has no email', async () => {
-    const artistSingle = jest.fn().mockResolvedValue({ data: null, error: null })
+    const artistSingle = jest
+      .fn<MaybeSingle<{ id: string; name: string; photo_url: string | null; bio: string | null }>>()
+      .mockResolvedValue({ data: null, error: null })
     const artistEq = jest.fn(() => ({ single: artistSingle }))
     const artistSelect = jest.fn(() => ({ eq: artistEq }))
 
-    const staffSingle = jest.fn().mockResolvedValue({ data: null, error: null })
+    const staffSingle = jest
+      .fn<MaybeSingle<{ id: string; full_name: string; role: string }>>()
+      .mockResolvedValue({ data: null, error: null })
     const staffEqActive = jest.fn(() => ({ single: staffSingle }))
     const staffEq = jest.fn(() => ({ eq: staffEqActive }))
     const staffSelect = jest.fn(() => ({ eq: staffEq }))
@@ -87,16 +100,22 @@ describe('resolveUserRole', () => {
   })
 
   it('returns client role without token when no clients row matches email', async () => {
-    const artistSingle = jest.fn().mockResolvedValue({ data: null, error: null })
+    const artistSingle = jest
+      .fn<MaybeSingle<{ id: string; name: string; photo_url: string | null; bio: string | null }>>()
+      .mockResolvedValue({ data: null, error: null })
     const artistEq = jest.fn(() => ({ single: artistSingle }))
     const artistSelect = jest.fn(() => ({ eq: artistEq }))
 
-    const staffSingle = jest.fn().mockResolvedValue({ data: null, error: null })
+    const staffSingle = jest
+      .fn<MaybeSingle<{ id: string; full_name: string; role: string }>>()
+      .mockResolvedValue({ data: null, error: null })
     const staffEqActive = jest.fn(() => ({ single: staffSingle }))
     const staffEq = jest.fn(() => ({ eq: staffEqActive }))
     const staffSelect = jest.fn(() => ({ eq: staffEq }))
 
-    const clientMaybeSingle = jest.fn().mockResolvedValue({ data: null, error: null })
+    const clientMaybeSingle = jest
+      .fn<MaybeSingle<{ id: string }>>()
+      .mockResolvedValue({ data: null, error: null })
     const clientEq = jest.fn(() => ({ maybeSingle: clientMaybeSingle }))
     const clientSelect = jest.fn(() => ({ eq: clientEq }))
 
@@ -118,26 +137,41 @@ describe('resolveUserRole', () => {
   })
 
   it('returns client role with the nearest event portal token', async () => {
-    const artistSingle = jest.fn().mockResolvedValue({ data: null, error: null })
+    const artistSingle = jest
+      .fn<MaybeSingle<{ id: string; name: string; photo_url: string | null; bio: string | null }>>()
+      .mockResolvedValue({ data: null, error: null })
     const artistEq = jest.fn(() => ({ single: artistSingle }))
     const artistSelect = jest.fn(() => ({ eq: artistEq }))
 
-    const staffSingle = jest.fn().mockResolvedValue({ data: null, error: null })
+    const staffSingle = jest
+      .fn<MaybeSingle<{ id: string; full_name: string; role: string }>>()
+      .mockResolvedValue({ data: null, error: null })
     const staffEqActive = jest.fn(() => ({ single: staffSingle }))
     const staffEq = jest.fn(() => ({ eq: staffEqActive }))
     const staffSelect = jest.fn(() => ({ eq: staffEq }))
 
-    const clientMaybeSingle = jest.fn().mockResolvedValue({ data: { id: 'client-1' }, error: null })
+    const clientMaybeSingle = jest
+      .fn<MaybeSingle<{ id: string }>>()
+      .mockResolvedValue({ data: { id: 'client-1' }, error: null })
     const clientEq = jest.fn(() => ({ maybeSingle: clientMaybeSingle }))
     const clientSelect = jest.fn(() => ({ eq: clientEq }))
 
-    const eventClientsLimit = jest.fn().mockResolvedValue({
-      data: [
-        { events: { portal_token: 'token-newest', portal_token_expires_at: null, start_datetime: '2026-09-01T00:00:00.000Z' } },
-        { events: { portal_token: 'token-older', portal_token_expires_at: null, start_datetime: '2026-01-01T00:00:00.000Z' } },
-      ],
-      error: null,
-    })
+    const eventClientsLimit = jest
+      .fn<
+        () => Promise<{
+          data:
+            | { events: { portal_token: string; portal_token_expires_at: string | null; start_datetime: string } }[]
+            | null
+          error: { message: string } | null
+        }>
+      >()
+      .mockResolvedValue({
+        data: [
+          { events: { portal_token: 'token-newest', portal_token_expires_at: null, start_datetime: '2026-09-01T00:00:00.000Z' } },
+          { events: { portal_token: 'token-older', portal_token_expires_at: null, start_datetime: '2026-01-01T00:00:00.000Z' } },
+        ],
+        error: null,
+      })
     const eventClientsOrder = jest.fn(() => ({ limit: eventClientsLimit }))
     const eventClientsNotNull = jest.fn(() => ({ order: eventClientsOrder }))
     const eventClientsEq = jest.fn(() => ({ not: eventClientsNotNull }))
@@ -165,38 +199,53 @@ describe('resolveUserRole', () => {
   })
 
   it('skips an expired portal token and falls back to the next valid one', async () => {
-    const artistSingle = jest.fn().mockResolvedValue({ data: null, error: null })
+    const artistSingle = jest
+      .fn<MaybeSingle<{ id: string; name: string; photo_url: string | null; bio: string | null }>>()
+      .mockResolvedValue({ data: null, error: null })
     const artistEq = jest.fn(() => ({ single: artistSingle }))
     const artistSelect = jest.fn(() => ({ eq: artistEq }))
 
-    const staffSingle = jest.fn().mockResolvedValue({ data: null, error: null })
+    const staffSingle = jest
+      .fn<MaybeSingle<{ id: string; full_name: string; role: string }>>()
+      .mockResolvedValue({ data: null, error: null })
     const staffEqActive = jest.fn(() => ({ single: staffSingle }))
     const staffEq = jest.fn(() => ({ eq: staffEqActive }))
     const staffSelect = jest.fn(() => ({ eq: staffEq }))
 
-    const clientMaybeSingle = jest.fn().mockResolvedValue({ data: { id: 'client-1' }, error: null })
+    const clientMaybeSingle = jest
+      .fn<MaybeSingle<{ id: string }>>()
+      .mockResolvedValue({ data: { id: 'client-1' }, error: null })
     const clientEq = jest.fn(() => ({ maybeSingle: clientMaybeSingle }))
     const clientSelect = jest.fn(() => ({ eq: clientEq }))
 
-    const eventClientsLimit = jest.fn().mockResolvedValue({
-      data: [
-        {
-          events: {
-            portal_token: 'token-expired',
-            portal_token_expires_at: '2020-01-01T00:00:00.000Z',
-            start_datetime: '2026-09-01T00:00:00.000Z',
+    const eventClientsLimit = jest
+      .fn<
+        () => Promise<{
+          data:
+            | { events: { portal_token: string; portal_token_expires_at: string | null; start_datetime: string } }[]
+            | null
+          error: { message: string } | null
+        }>
+      >()
+      .mockResolvedValue({
+        data: [
+          {
+            events: {
+              portal_token: 'token-expired',
+              portal_token_expires_at: '2020-01-01T00:00:00.000Z',
+              start_datetime: '2026-09-01T00:00:00.000Z',
+            },
           },
-        },
-        {
-          events: {
-            portal_token: 'token-valid-older',
-            portal_token_expires_at: null,
-            start_datetime: '2026-01-01T00:00:00.000Z',
+          {
+            events: {
+              portal_token: 'token-valid-older',
+              portal_token_expires_at: null,
+              start_datetime: '2026-01-01T00:00:00.000Z',
+            },
           },
-        },
-      ],
-      error: null,
-    })
+        ],
+        error: null,
+      })
     const eventClientsOrder = jest.fn(() => ({ limit: eventClientsLimit }))
     const eventClientsNotNull = jest.fn(() => ({ order: eventClientsOrder }))
     const eventClientsEq = jest.fn(() => ({ not: eventClientsNotNull }))

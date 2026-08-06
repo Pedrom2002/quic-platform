@@ -31,7 +31,7 @@ describe('validateQuote', () => {
 
 describe('submitQuote', () => {
   it('calls stock_submit_quote with mapped params and returns success', async () => {
-    const rpc = jest.fn().mockResolvedValue({ data: 'req-1', error: null })
+    const rpc = jest.fn<() => Promise<{ data: string | null; error: { message: string } | null }>>().mockResolvedValue({ data: 'req-1', error: null })
     const supabase = { rpc } as never
 
     const result = await submitQuote(
@@ -52,7 +52,7 @@ describe('submitQuote', () => {
   })
 
   it('passes optional fields through when present', async () => {
-    const rpc = jest.fn().mockResolvedValue({ data: 'req-1', error: null })
+    const rpc = jest.fn<() => Promise<{ data: string | null; error: { message: string } | null }>>().mockResolvedValue({ data: 'req-1', error: null })
     const supabase = { rpc } as never
 
     await submitQuote(
@@ -72,28 +72,28 @@ describe('submitQuote', () => {
   })
 
   it('maps a rate_limit error to a friendly message', async () => {
-    const rpc = jest.fn().mockResolvedValue({ data: null, error: { message: 'rate_limit' } })
+    const rpc = jest.fn<() => Promise<{ data: string | null; error: { message: string } | null }>>().mockResolvedValue({ data: null, error: { message: 'rate_limit' } })
     const supabase = { rpc } as never
     const result = await submitQuote(supabase, validForm, items)
     expect(result).toEqual({ success: false, error: 'Demasiados pedidos. Tente novamente mais tarde.' })
   })
 
   it('maps an invalid_items error to a friendly message', async () => {
-    const rpc = jest.fn().mockResolvedValue({ data: null, error: { message: 'invalid_items' } })
+    const rpc = jest.fn<() => Promise<{ data: string | null; error: { message: string } | null }>>().mockResolvedValue({ data: null, error: { message: 'invalid_items' } })
     const supabase = { rpc } as never
     const result = await submitQuote(supabase, validForm, items)
     expect(result).toEqual({ success: false, error: 'Pedido inválido.' })
   })
 
   it('maps any other error to the generic message', async () => {
-    const rpc = jest.fn().mockResolvedValue({ data: null, error: { message: 'boom' } })
+    const rpc = jest.fn<() => Promise<{ data: string | null; error: { message: string } | null }>>().mockResolvedValue({ data: null, error: { message: 'boom' } })
     const supabase = { rpc } as never
     const result = await submitQuote(supabase, validForm, items)
     expect(result).toEqual({ success: false, error: 'Não foi possível submeter o pedido. Tente novamente.' })
   })
 
   it('never throws when the rpc call rejects', async () => {
-    const rpc = jest.fn().mockRejectedValue(new Error('network down'))
+    const rpc = jest.fn<() => Promise<{ data: string | null; error: { message: string } | null }>>().mockRejectedValue(new Error('network down'))
     const supabase = { rpc } as never
     const result = await submitQuote(supabase, validForm, items)
     expect(result).toEqual({ success: false, error: 'Não foi possível submeter o pedido. Tente novamente.' })

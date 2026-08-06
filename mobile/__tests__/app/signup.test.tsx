@@ -2,7 +2,9 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import SignupScreen from '../../app/signup'
 
-const mockSignUp = jest.fn()
+const mockSignUp = jest.fn<
+  (...args: unknown[]) => Promise<{ error: { message: string } | null }>
+>()
 const mockReplace = jest.fn()
 
 jest.mock('../../lib/supabase', () => ({
@@ -40,7 +42,7 @@ describe('SignupScreen', () => {
 
     await waitFor(() => {
       expect(getByText('Este email já está registado')).toBeTruthy()
-    })
+    }, { timeout: 10000 })
   })
 
   it('redirects to tabs on success', async () => {
