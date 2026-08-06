@@ -4,7 +4,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { Calendar, Users, LayoutDashboard, Settings, LogOut, Mail, CreditCard, Package, MicVocal } from 'lucide-react'
+import { Calendar, Users, LayoutDashboard, Settings, LogOut, Mail, CreditCard, Package, MicVocal, Crown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 
@@ -16,6 +16,7 @@ const navItems = [
   { href: '/dashboard/marketing', label: 'Marketing', icon: Mail },
   { href: '/dashboard/cards', label: 'Cards', icon: CreditCard },
   { href: '/dashboard/stock', label: 'Stock', icon: Package },
+  { href: '/dashboard/golden-circle', label: 'Golden Circle', icon: Crown },
 ]
 
 interface SidebarProps {
