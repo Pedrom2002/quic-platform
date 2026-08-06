@@ -20,7 +20,7 @@ export default function GoldenCirclePage() {
           controls
           playsInline
           preload="metadata"
-          src="/V5%20Golden%20Circle.mov"
+          src="/golden-circle.mp4"
           className="w-full max-w-3xl rounded-lg shadow-md"
         >
           O teu navegador não suporta reprodução de vídeo.
