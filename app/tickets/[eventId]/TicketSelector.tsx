@@ -35,7 +35,7 @@ export function TicketSelector({ eventId, ticketTypes }: { eventId: string; tick
   }
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-5" data-event-id={eventId}>
+    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-5">
       <div className="space-y-3">
         {ticketTypes.map(tt => (
           <label
