@@ -1,12 +1,13 @@
 // __tests__/tickets-checkout-route.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockCreateSession, mockGetUser, mockFrom, mockAdminGetUser, mockAdminFrom } = vi.hoisted(() => ({
+const { mockCreateSession, mockGetUser, mockFrom, mockAdminGetUser, mockAdminFrom, mockGetEnv } = vi.hoisted(() => ({
   mockCreateSession: vi.fn(),
   mockGetUser: vi.fn(),
   mockFrom: vi.fn(),
   mockAdminGetUser: vi.fn(),
   mockAdminFrom: vi.fn(),
+  mockGetEnv: vi.fn(() => ({ STRIPE_SECRET_KEY: 'sk_test_x', NEXT_PUBLIC_APP_URL: 'https://app.quic.pt' })),
 }))
 
 vi.mock('stripe', () => ({
@@ -27,7 +28,7 @@ vi.mock('@/lib/supabase/admin', () => ({
   }),
 }))
 vi.mock('@/lib/env', () => ({
-  getEnv: () => ({ STRIPE_SECRET_KEY: 'sk_test_x', NEXT_PUBLIC_APP_URL: 'https://app.quic.pt' }),
+  getEnv: () => mockGetEnv(),
 }))
 
 function makeRequest(body: unknown, headers?: Record<string, string>) {
@@ -46,6 +47,8 @@ beforeEach(() => {
   mockFrom.mockReset()
   mockAdminGetUser.mockReset()
   mockAdminFrom.mockReset()
+  mockGetEnv.mockReset()
+  mockGetEnv.mockReturnValue({ STRIPE_SECRET_KEY: 'sk_test_x', NEXT_PUBLIC_APP_URL: 'https://app.quic.pt' })
 })
 
 describe('POST /api/tickets/checkout', () => {
@@ -233,5 +236,33 @@ describe('POST /api/tickets/checkout', () => {
     const callArgs = mockCreateSession.mock.calls[0][0] as { success_url: string; cancel_url: string }
     expect(callArgs.success_url).toBe('https://app.quic.pt/tickets/success?session_id={CHECKOUT_SESSION_ID}')
     expect(callArgs.cancel_url).toBe(`https://app.quic.pt/tickets/${TICKET_TYPE_ID}`)
+  })
+
+  it('does not produce a double slash when NEXT_PUBLIC_APP_URL has a trailing slash', async () => {
+    mockGetEnv.mockReturnValue({ STRIPE_SECRET_KEY: 'sk_test_x', NEXT_PUBLIC_APP_URL: 'https://app.quic.pt/' })
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => ({
+          eq: () => ({
+            single: () =>
+              Promise.resolve({
+                data: { id: TICKET_TYPE_ID, name: 'Normal', price_cents: 2000, currency: 'eur', event_id: TICKET_TYPE_ID },
+                error: null,
+              }),
+          }),
+        }),
+      }),
+    })
+    mockCreateSession.mockResolvedValue({ url: 'https://checkout.stripe.com/session-x' })
+
+    const { POST } = await import('@/app/api/tickets/checkout/route')
+    await POST(makeRequest({ ticketTypeId: TICKET_TYPE_ID, quantity: 1, platform: 'web' }))
+
+    const callArgs = mockCreateSession.mock.calls[0][0] as { success_url: string; cancel_url: string }
+    expect(callArgs.success_url).toBe('https://app.quic.pt/tickets/success?session_id={CHECKOUT_SESSION_ID}')
+    expect(callArgs.cancel_url).toBe(`https://app.quic.pt/tickets/${TICKET_TYPE_ID}`)
+    expect(callArgs.success_url).not.toContain('//tickets')
+    expect(callArgs.cancel_url).not.toContain('//tickets')
   })
 })

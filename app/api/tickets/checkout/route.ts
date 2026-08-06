@@ -66,16 +66,17 @@ export async function POST(request: Request) {
 
   const { STRIPE_SECRET_KEY, NEXT_PUBLIC_APP_URL } = getEnv()
   const stripe = new Stripe(STRIPE_SECRET_KEY)
+  const appUrl = (NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
 
   // A app mobile usa sempre o deep link. Para callers web (platform: 'web'),
   // o redirect aponta para as rotas web dedicadas em vez do esquema quicapp://.
   const successUrl =
     parsed.data.platform === 'web'
-      ? `${NEXT_PUBLIC_APP_URL}/tickets/success?session_id={CHECKOUT_SESSION_ID}`
+      ? `${appUrl}/tickets/success?session_id={CHECKOUT_SESSION_ID}`
       : 'quicapp://tickets/success?session_id={CHECKOUT_SESSION_ID}'
   const cancelUrl =
     parsed.data.platform === 'web'
-      ? `${NEXT_PUBLIC_APP_URL}/tickets/${ticketType.event_id}`
+      ? `${appUrl}/tickets/${ticketType.event_id}`
       : 'quicapp://tickets/cancel'
 
   const session = await stripe.checkout.sessions.create({
