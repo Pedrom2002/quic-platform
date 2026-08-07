@@ -2,6 +2,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { TicketType } from '@/lib/tickets/tickets'
 
@@ -10,9 +11,11 @@ export function TicketSelector({ eventId, ticketTypes }: { eventId: string; tick
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [needsLogin, setNeedsLogin] = useState(false)
 
   async function handleCheckout() {
     setError(null)
+    setNeedsLogin(false)
     setLoading(true)
     try {
       const res = await fetch('/api/tickets/checkout', {
@@ -23,6 +26,7 @@ export function TicketSelector({ eventId, ticketTypes }: { eventId: string; tick
       if (!res.ok) {
         const body = await res.json().catch(() => null)
         setError(body?.error ?? 'Não foi possível iniciar o pagamento.')
+        if (res.status === 401) setNeedsLogin(true)
         setLoading(false)
         return
       }
@@ -70,7 +74,21 @@ export function TicketSelector({ eventId, ticketTypes }: { eventId: string; tick
         />
       </div>
 
-      {error && <p className="text-red-400 text-sm mt-4">{error}</p>}
+      {error && (
+        <div className="mt-4">
+          <p className="text-red-400 text-sm">{error}</p>
+          {needsLogin && (
+            <p className="text-sm mt-1">
+              <Link
+                href={`/tickets/login?returnTo=${encodeURIComponent(`/tickets/${eventId}`)}`}
+                className="text-zinc-300 underline hover:text-zinc-200"
+              >
+                Entrar para continuar
+              </Link>
+            </p>
+          )}
+        </div>
+      )}
 
       <Button onClick={handleCheckout} disabled={loading || !selectedId} className="w-full mt-5">
         {loading ? 'A processar...' : 'Comprar bilhetes'}

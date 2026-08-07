@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 export default function TicketsLoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get('returnTo') || '/tickets'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -34,7 +36,7 @@ export default function TicketsLoginPage() {
         return
       }
 
-      router.push('/tickets')
+      router.push(returnTo)
       router.refresh()
     } catch {
       setError('Erro de ligação. Tenta novamente.')
@@ -91,7 +93,13 @@ export default function TicketsLoginPage() {
               </Button>
 
               <p className="text-zinc-500 text-sm text-center">
-                Não tens conta? <Link href="/tickets/signup" className="text-zinc-300 underline hover:text-zinc-200">Criar conta</Link>
+                Não tens conta?{' '}
+                <Link
+                  href={`/tickets/signup?returnTo=${encodeURIComponent(returnTo)}`}
+                  className="text-zinc-300 underline hover:text-zinc-200"
+                >
+                  Criar conta
+                </Link>
               </p>
             </form>
           </CardContent>

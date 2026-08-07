@@ -17,10 +17,12 @@ const EVENT_COLUMNS =
   'id, name, description, venue_name, venue_address, start_datetime, end_datetime, cover_image_url'
 
 export async function fetchPublicEvents(supabase: SupabaseClient): Promise<PublicEvent[]> {
+  // anon has no SELECT on `events` (revoked in 0062, events.portal_token is a
+  // bearer secret): logged-out visitors must read through the narrow
+  // `public_events_listing` view, which already filters is_public_listed = true.
   const { data, error } = await supabase
-    .from('events')
+    .from('public_events_listing')
     .select(EVENT_COLUMNS)
-    .eq('is_public_listed', true)
     .order('start_datetime', { ascending: true })
 
   if (error || !data) return []
@@ -46,8 +48,10 @@ export async function fetchPublicEvents(supabase: SupabaseClient): Promise<Publi
 }
 
 export async function fetchEventById(supabase: SupabaseClient, id: string): Promise<PublicEvent | null> {
+  // Same reasoning as fetchPublicEvents: read through public_events_listing so
+  // logged-out (anon) visitors on /tickets/[eventId] don't hit a permission error.
   const { data } = await supabase
-    .from('events')
+    .from('public_events_listing')
     .select(EVENT_COLUMNS)
     .eq('id', id)
     .single()

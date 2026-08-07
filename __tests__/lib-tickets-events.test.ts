@@ -8,19 +8,18 @@ describe('fetchPublicEvents', () => {
     ticketTypesResult?: { data: unknown; error: unknown }
   ) {
     const order = vi.fn().mockResolvedValue(eventsResult)
-    const eventsEq = vi.fn(() => ({ order }))
-    const eventsSelect = vi.fn(() => ({ eq: eventsEq }))
+    const eventsSelect = vi.fn(() => ({ order }))
 
     const inFn = vi.fn().mockResolvedValue(ticketTypesResult ?? { data: [], error: null })
     const ticketTypesEq = vi.fn(() => ({ in: inFn }))
     const ticketTypesSelect = vi.fn(() => ({ eq: ticketTypesEq }))
 
     const from = vi.fn((table: string) => {
-      if (table === 'events') return { select: eventsSelect }
+      if (table === 'public_events_listing') return { select: eventsSelect }
       if (table === 'ticket_types') return { select: ticketTypesSelect }
       throw new Error(`unexpected table ${table}`)
     })
-    return { from, eventsSelect, eventsEq, order, ticketTypesSelect, ticketTypesEq, inFn }
+    return { from, eventsSelect, order, ticketTypesSelect, ticketTypesEq, inFn }
   }
 
   it('computes the minimum ticket price from active ticket types', async () => {
@@ -52,8 +51,15 @@ describe('fetchPublicEvents', () => {
 
     const result = await fetchPublicEvents(supabase)
 
-    expect(mocks.from).toHaveBeenCalledWith('events')
-    expect(mocks.eventsEq).toHaveBeenCalledWith('is_public_listed', true)
+    // Regression guard for C1: anon has no SELECT on `events` (0062 revoked it
+    // because events.portal_token is a bearer secret): logged-out visitors on
+    // /tickets must read through the public_events_listing view, which already
+    // filters is_public_listed = true internally. Querying `events` directly
+    // (as the mobile port originally did) silently breaks the public storefront
+    // for anon users, since the resulting permission error is swallowed by
+    // `if (error || !data) return []`.
+    expect(mocks.from).toHaveBeenCalledWith('public_events_listing')
+    expect(mocks.from).not.toHaveBeenCalledWith('events')
     expect(mocks.order).toHaveBeenCalledWith('start_datetime', { ascending: true })
     expect(mocks.from).toHaveBeenCalledWith('ticket_types')
     expect(mocks.ticketTypesEq).toHaveBeenCalledWith('is_active', true)
@@ -88,10 +94,14 @@ describe('fetchEventById', () => {
     })
     const eq = vi.fn(() => ({ single }))
     const select = vi.fn(() => ({ eq }))
-    const supabase = { from: vi.fn(() => ({ select })) } as never
+    const from = vi.fn(() => ({ select }))
+    const supabase = { from } as never
 
     const result = await fetchEventById(supabase, 'e1')
 
+    // Regression guard for C1: see note in fetchPublicEvents above.
+    expect(from).toHaveBeenCalledWith('public_events_listing')
+    expect(from).not.toHaveBeenCalledWith('events')
     expect(eq).toHaveBeenCalledWith('id', 'e1')
     expect(result?.name).toBe('Show X')
   })
