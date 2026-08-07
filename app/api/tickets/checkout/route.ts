@@ -9,6 +9,7 @@ import { getEnv } from '@/lib/env'
 const bodySchema = z.object({
   ticketTypeId: z.uuid(),
   quantity: z.number().int().min(1).max(10),
+  platform: z.enum(['web', 'mobile']).optional().default('mobile'),
 })
 
 export async function POST(request: Request) {
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
 
   const { data: ticketType, error: ticketTypeError } = await supabase
     .from('ticket_types')
-    .select('id, name, price_cents, currency')
+    .select('id, name, price_cents, currency, event_id')
     .eq('id', parsed.data.ticketTypeId)
     .eq('is_active', true)
     .single()
@@ -63,14 +64,21 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Tipo de bilhete não encontrado' }, { status: 404 })
   }
 
-  const { STRIPE_SECRET_KEY } = getEnv()
+  const { STRIPE_SECRET_KEY, NEXT_PUBLIC_APP_URL } = getEnv()
   const stripe = new Stripe(STRIPE_SECRET_KEY)
+  const appUrl = (NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
 
-  // Só a app mobile compra bilhetes hoje (ver spec), por isso o redirect é
-  // sempre o deep link. Se um caller web (sessão por cookie) alguma vez
-  // comprar por aqui, precisa de um destino web dedicado — não construído
-  // agora porque não há consumidor real, evita apontar para uma rota que
-  // não existe.
+  // A app mobile usa sempre o deep link. Para callers web (platform: 'web'),
+  // o redirect aponta para as rotas web dedicadas em vez do esquema quicapp://.
+  const successUrl =
+    parsed.data.platform === 'web'
+      ? `${appUrl}/tickets/success?session_id={CHECKOUT_SESSION_ID}`
+      : 'quicapp://tickets/success?session_id={CHECKOUT_SESSION_ID}'
+  const cancelUrl =
+    parsed.data.platform === 'web'
+      ? `${appUrl}/tickets/${ticketType.event_id}`
+      : 'quicapp://tickets/cancel'
+
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     line_items: [
@@ -88,8 +96,8 @@ export async function POST(request: Request) {
       buyer_auth_user_id: userId,
       quantity: String(parsed.data.quantity),
     },
-    success_url: 'quicapp://tickets/success?session_id={CHECKOUT_SESSION_ID}',
-    cancel_url: 'quicapp://tickets/cancel',
+    success_url: successUrl,
+    cancel_url: cancelUrl,
   })
 
   if (!session.url) {
