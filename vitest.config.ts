@@ -18,9 +18,9 @@ export default defineConfig({
       ],
       reporter: ['text', 'lcov', 'html'],
       // Per-area *ratchet* thresholds = current measured floor; raise as tests
-      // are added, never lower. Backfill 2026-07: rotas portugal/goalfest/ai/
-      // marketing e Server Actions (stock, eventos, contactos, ficheiros,
-      // artistas) ganharam testes de entry point; pisos subidos em conformidade.
+      // are added, never lower. Backfill 2026-07: rotas ai/marketing e Server
+      // Actions (stock, eventos, contactos, ficheiros, artistas) ganharam
+      // testes de entry point; pisos subidos em conformidade.
       // schemas stay at the full bar.
       thresholds: {
         'lib/**/*.ts': { lines: 80, functions: 79, branches: 66, statements: 80 },

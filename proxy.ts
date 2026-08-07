@@ -12,16 +12,12 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 const PORTAL_RATE_LIMIT   = 60  // req per minute per IP
 const AUTH_RATE_LIMIT     = 10  // req per minute per IP
-// Portugal/Goalfest admin endpoints use a short numeric password — keep the
-// limit tight to blunt brute-force of the /portugal admin/scan token.
-const PORTUGAL_RATE_LIMIT = 15  // req per minute per IP
 const RATE_WINDOW_S       = 60
 const RATE_WINDOW_MS      = RATE_WINDOW_S * 1_000
 
 // In-process fallback maps (per serverless instance)
 const portalHits   = new Map<string, number[]>()
 const authHits     = new Map<string, number[]>()
-const portugalHits = new Map<string, number[]>()
 
 function inProcessLimited(map: Map<string, number[]>, ip: string, limit: number): boolean {
   const now    = Date.now()
@@ -73,14 +69,6 @@ async function isAuthRateLimited(ip: string): Promise<boolean> {
     return upstashLimited(`auth:${ip}`, AUTH_RATE_LIMIT)
   }
   return inProcessLimited(authHits, ip, AUTH_RATE_LIMIT)
-}
-
-async function isPortugalRateLimited(ip: string): Promise<boolean> {
-  const upstashConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
-  if (upstashConfigured) {
-    return upstashLimited(`portugal:${ip}`, PORTUGAL_RATE_LIMIT)
-  }
-  return inProcessLimited(portugalHits, ip, PORTUGAL_RATE_LIMIT)
 }
 
 // On Vercel the real client IP is the LAST entry in x-forwarded-for;
@@ -186,23 +174,6 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Admin endpoints for the Portugal campaign (password-protected via
-  // x-admin-token). The register endpoints are public form submissions and
-  // are intentionally not throttled here.
-  if (
-    pathname.startsWith('/api/portugal/draw') ||
-    pathname.startsWith('/api/portugal/validate') ||
-    pathname.startsWith('/api/portugal/count') ||
-    pathname.startsWith('/api/portugal/registrations')
-  ) {
-    if (await isPortugalRateLimited(ip)) {
-      return NextResponse.json({ error: 'Too Many Requests' }, {
-        status: 429,
-        headers: { 'Retry-After': '60' },
-      })
-    }
-  }
-
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -232,10 +203,6 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/artista/') ||
     pathname.startsWith('/auth/') ||
     pathname.startsWith('/api/auth/') ||
-    pathname.startsWith('/portugal') ||
-    pathname.startsWith('/api/portugal/') ||
-    pathname.startsWith('/goalfest') ||
-    pathname.startsWith('/api/goalfest/') ||
     pathname.startsWith('/rentals') ||
     pathname.startsWith('/api/rentals/') ||
     pathname.startsWith('/api/portal/') ||

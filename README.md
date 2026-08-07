@@ -129,18 +129,6 @@ Migrado de um repositório standalone anterior (Stock-Plat) em 3 sub-projetos: m
 
 Venda de bilhetes por evento (`/dashboard/events/[eventId]/tickets`), com tipos de bilhete configuráveis (nome, preço, quantidade). Checkout público via Stripe (`POST /api/tickets/checkout`), confirmação de pagamento por webhook (`POST /api/webhooks/stripe`, assinatura verificada com `stripe.webhooks.constructEvent`, idempotente). Cada bilhete gera um QR code único (`qr_code`), validado à entrada do evento pela função SQL `check_in_ticket` (RPC `SECURITY DEFINER`, scoped à organização do staff autenticado).
 
-### Portugal / Goalfest (giveaways públicos)
-
-Duas landing pages públicas de passatempo/giveaway ligadas a campanhas de ativação de marca (`/portugal`, `/goalfest`):
-
-- **Registo público**: formulário com nome/email/telefone e consentimento (`POST /api/portugal/register`, `POST /api/goalfest/register`)
-- **Contagem em tempo real**: número de participantes (`GET /api/portugal/count`)
-- **Sorteio**: seleção aleatória de vencedores (Fisher-Yates) com lock atómico anti-repetição, envio de SMS com QR code individual a cada vencedor (`POST /api/portugal/draw`)
-- **Validação no bar**: staff lê o QR do vencedor para resgatar o prémio (`app/portugal/scan`, `POST /api/portugal/validate`), update atómico condicionado a `redeemed_at IS NULL`
-- **Admin**: listagem de registos e painel de contagem (`app/portugal/admin`, `GET /api/portugal/registrations`)
-
-Acesso admin protegido por password partilhada (`x-admin-token`, `lib/portugal-auth.ts`, comparação constant-time) com rate limiting por IP em todos os endpoints admin.
-
 ### Artistas agenciados
 
 Gestão de artistas agenciados (`/dashboard/artists`) com portal privado por artista (`/artista/[token]`, acesso por token URL-safe, mesmo padrão do portal de eventos). Substitui o envio manual de emails com agenda, imprensa e ficheiros.
@@ -273,19 +261,15 @@ Código consumidor: `app/rentals/*` (catálogo público), `app/dashboard/stock/*
 app/
   [slug]/            Card público de membro
   artista/[token]/   Portal público do artista (acesso por token)
-  goalfest/          Landing page pública do giveaway Goalfest
   guia-cliente/      Página de boas-vindas para clientes
-  portugal/          Landing page pública do giveaway Portugal (registo, admin, scan/validação)
   stock/             Catálogo público de materiais + pedido de orçamento
   api/
     ai/              Endpoints Gemini (resumo, tarefas, risco, insights, geração email)
     cron/            Cron handlers (process-scheduled, marketing-maintenance, marketing-retry)
     events/          Checklist items, ficheiros
     artist-portal/   Download de ficheiros do portal do artista
-    goalfest/        Registo público do giveaway Goalfest
     marketing/       Send worker, tracking, bounce-poll, reply-poll, unsubscribe, importação
     portal/          Download de ficheiros do portal
-    portugal/        Registo, contagem, sorteio, validação e admin do giveaway Portugal
     tickets/         Checkout Stripe de bilhetes
     webhooks/        Webhooks Resend (entrega de email) e Stripe (pagamentos)
     workers/         Worker QStash de notificações

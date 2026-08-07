@@ -8,7 +8,6 @@ const defaults: Record<string, string> = {
   NEXT_PUBLIC_APP_URL: 'https://app.example.com',
   BLOB_READ_WRITE_TOKEN: 'vercel_blob_rw_test_token',
   GEMINI_API_KEY: 'test-gemini-api-key',
-  PORTUGAL_ADMIN_PASSWORD: 'test-portugal-admin-password',
   STRIPE_SECRET_KEY: 'sk_test_dummy_key_for_tests',
   STRIPE_WEBHOOK_SECRET: 'whsec_test_dummy_secret_for_tests',
 }
