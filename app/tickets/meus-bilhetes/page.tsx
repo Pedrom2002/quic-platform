@@ -8,7 +8,7 @@ import { fetchMyTickets, type MyTicket } from '@/lib/tickets/tickets'
 const STATUS_LABELS: Record<string, string> = {
   valid: 'Válido',
   used: 'Utilizado',
-  cancelled: 'Cancelado',
+  refunded: 'Reembolsado',
 }
 
 async function ticketQrDataUrl(ticket: MyTicket): Promise<string> {
