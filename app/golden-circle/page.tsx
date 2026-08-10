@@ -76,7 +76,7 @@ function SideNav({ active }: { active: SectionId }) {
               aria-current={active === section.id ? 'true' : undefined}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm rounded-lg text-left transition-colors ${
                 active === section.id
-                  ? 'bg-stone-900 text-white font-medium'
+                  ? 'bg-[#951b81] text-white font-medium'
                   : 'text-stone-500 hover:bg-stone-50 hover:text-stone-900'
               }`}
             >
@@ -294,7 +294,7 @@ export default function GoldenCirclePublicPage() {
               </p>
               <a
                 href="mailto:goldencircle@quic.pt"
-                className="inline-flex items-center gap-2 rounded-full bg-stone-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-stone-800"
+                className="inline-flex items-center gap-2 rounded-full bg-[#951b81] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#7a1669]"
               >
                 <Mail className="w-4 h-4" />
                 goldencircle@quic.pt
