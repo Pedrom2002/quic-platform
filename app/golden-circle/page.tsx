@@ -74,7 +74,7 @@ function SideNav({ active }: { active: SectionId }) {
               aria-current={active === section.id ? 'true' : undefined}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm rounded-lg text-left transition-colors ${
                 active === section.id
-                  ? 'bg-[#951b81] text-white font-medium'
+                  ? 'bg-[var(--quic-magenta)] text-white font-medium'
                   : 'text-stone-500 hover:bg-stone-50 hover:text-stone-900'
               }`}
             >
@@ -213,7 +213,7 @@ export default function GoldenCirclePublicPage() {
                 { num: '04', title: 'Novas oportunidades', body: 'Novas produções são adicionadas regularmente. Investidores Golden Circle têm acesso antecipado.' },
               ].map((card, i) => (
                 <div key={i} className="bg-white p-6">
-                  <span className="text-[10px] text-[#951b81] tabular-nums tracking-wider block mb-3 font-semibold">{card.num}</span>
+                  <span className="text-[10px] text-[var(--quic-magenta)] tabular-nums tracking-wider block mb-3 font-semibold">{card.num}</span>
                   <p className="text-base font-medium tracking-tight text-stone-900 mb-2">{card.title}</p>
                   <p className="text-sm text-stone-500 leading-relaxed">{card.body}</p>
                 </div>
@@ -228,7 +228,7 @@ export default function GoldenCirclePublicPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-stone-100 rounded-xl overflow-hidden border border-stone-100 mb-8">
               {TRACK_RECORD_STATS.map((stat, i) => (
                 <div key={i} className="bg-white p-6 text-center">
-                  <p className="text-5xl sm:text-6xl font-bold tracking-tight text-[#951b81] mb-1">{stat.value}</p>
+                  <p className="text-5xl sm:text-6xl font-bold tracking-tight text-[var(--quic-magenta)] mb-1">{stat.value}</p>
                   <p className="text-xs text-stone-500">{stat.label}</p>
                 </div>
               ))}
@@ -295,7 +295,7 @@ export default function GoldenCirclePublicPage() {
               </p>
               <a
                 href="mailto:goldencircle@quic.pt"
-                className="inline-flex items-center gap-2 rounded-full bg-[#951b81] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#7a1669]"
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--quic-magenta)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--quic-magenta-hover)]"
               >
                 <Mail className="w-4 h-4" />
                 goldencircle@quic.pt
