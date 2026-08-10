@@ -170,9 +170,6 @@ export default function GoldenCirclePublicPage() {
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
               <h2 className="text-2xl font-bold tracking-tight text-stone-900">Golden Circle</h2>
             </div>
-            <div className="relative w-full aspect-[2000/1414] max-h-[420px] overflow-hidden rounded-xl mb-8">
-              <Image src="/golden.png" alt="Golden Circle" fill priority className="object-cover" />
-            </div>
             <p className="text-sm text-stone-500 leading-relaxed mb-6 max-w-2xl">
               O Golden Circle é o círculo restrito de investidores e parceiros estratégicos da Quic. Damos acesso
               privilegiado a oportunidades de investimento em produções de eventos e concertos de grande escala,
