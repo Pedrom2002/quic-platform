@@ -57,20 +57,15 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
   )
 }
 
-function GoldenCircleSection() {
-  const [controlsVisible, setControlsVisible] = useState(false)
-  const player = useVideoPlayer(require('../../assets/videos/golden-circle.mp4'), p => {
-    p.loop = false
-    p.muted = false
-  })
-
-  useFocusEffect(
-    useCallback(() => {
-      player.play()
-      return () => player.pause()
-    }, [player])
-  )
-
+function GoldenCircleSection({
+  player,
+  controlsVisible,
+  onShowControls,
+}: {
+  player: ReturnType<typeof useVideoPlayer>
+  controlsVisible: boolean
+  onShowControls: () => void
+}) {
   return (
     <View style={styles.section}>
       <Text style={styles.title}>O que é o Golden Circle?</Text>
@@ -80,7 +75,7 @@ function GoldenCircleSection() {
       </Text>
 
       <Pressable
-        onPress={() => setControlsVisible(true)}
+        onPress={onShowControls}
         style={styles.videoWrapper}
         accessibilityRole="button"
         accessibilityLabel="Mostrar controlos do vídeo"
@@ -228,6 +223,18 @@ function InvestorLoginSection() {
 
 export default function GoldenCircleScreen() {
   const [activeTab, setActiveTab] = useState<Tab>('golden-circle')
+  const [controlsVisible, setControlsVisible] = useState(false)
+  const player = useVideoPlayer(require('../../assets/videos/golden-circle.mp4'), p => {
+    p.loop = false
+    p.muted = false
+  })
+
+  useFocusEffect(
+    useCallback(() => {
+      player.play()
+      return () => player.pause()
+    }, [player])
+  )
 
   return (
     <View style={styles.container}>
@@ -235,7 +242,13 @@ export default function GoldenCircleScreen() {
       <TabBar active={activeTab} onChange={setActiveTab} />
 
       <ScrollView contentContainerStyle={styles.scrollBody}>
-        {activeTab === 'golden-circle' && <GoldenCircleSection />}
+        {activeTab === 'golden-circle' && (
+          <GoldenCircleSection
+            player={player}
+            controlsVisible={controlsVisible}
+            onShowControls={() => setControlsVisible(true)}
+          />
+        )}
         {activeTab === 'opportunities' && <OpportunitiesSection />}
         {activeTab === 'how-it-works' && <HowItWorksSection />}
         {activeTab === 'track-record' && <TrackRecordSection />}
