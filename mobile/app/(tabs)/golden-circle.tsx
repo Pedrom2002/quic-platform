@@ -231,15 +231,26 @@ export default function GoldenCircleScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      player.play()
+      if (activeTab === 'golden-circle') player.play()
       return () => player.pause()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [player])
   )
+
+  // Pausa o video sempre que o utilizador troca de sub-tab, para nao continuar
+  // a tocar com som fora de vista (o player e agora top-level e nunca desmonta,
+  // ver commit 60fac30 — sem isto, so o pause do useFocusEffect corria, que so
+  // dispara ao sair do ecra inteiro, nao ao trocar de tab dentro dele).
+  const handleTabChange = (tab: Tab) => {
+    if (tab !== 'golden-circle') player.pause()
+    else player.play()
+    setActiveTab(tab)
+  }
 
   return (
     <View style={styles.container}>
       <BannerHeader source={require('../../assets/banners/golden-circle.png')} />
-      <TabBar active={activeTab} onChange={setActiveTab} />
+      <TabBar active={activeTab} onChange={handleTabChange} />
 
       <ScrollView contentContainerStyle={styles.scrollBody}>
         {activeTab === 'golden-circle' && (
