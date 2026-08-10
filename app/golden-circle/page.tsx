@@ -3,24 +3,22 @@
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import {
-  Star, TrendingUp, Layers, BarChart3, Brain, Info, KeyRound, Mail,
+  Star, TrendingUp, Layers, BarChart3, Info, KeyRound, Mail,
 } from 'lucide-react'
 
 type SectionId =
   | 'golden-circle'
   | 'opportunities'
-  | 'how-it-works'
   | 'track-record'
-  | 'intelligence'
+  | 'how-it-works'
   | 'about'
   | 'investor-login'
 
 const SECTIONS: { id: SectionId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'golden-circle', label: 'Golden Circle', icon: Star },
   { id: 'opportunities', label: 'Opportunities', icon: TrendingUp },
-  { id: 'how-it-works', label: 'How It Works', icon: Layers },
   { id: 'track-record', label: 'Track Record', icon: BarChart3 },
-  { id: 'intelligence', label: 'Intelligence', icon: Brain },
+  { id: 'how-it-works', label: 'How It Works', icon: Layers },
   { id: 'about', label: 'About', icon: Info },
   { id: 'investor-login', label: 'Investor Login', icon: KeyRound },
 ]
@@ -114,22 +112,49 @@ function TopNav({ active }: { active: SectionId }) {
   )
 }
 
+const HERO_STATS = [
+  { value: '40+', label: 'Concertos produzidos' },
+  { value: '250k+', label: 'Bilhetes vendidos' },
+]
+
+const TRACK_RECORD_STATS = [
+  { value: '40+', label: 'Concertos produzidos' },
+  { value: '250k+', label: 'Bilhetes vendidos' },
+  { value: '15', label: 'Artistas geridos' },
+  { value: '8', label: 'Anos de atividade' },
+]
+
 export default function GoldenCirclePublicPage() {
   const active = useScrollSpy(SECTIONS.map(s => s.id))
 
   return (
     <div className="min-h-screen bg-white">
-      {/* ── Compact hero ── */}
+      {/* ── Editorial hero ── */}
       <header
         className="relative"
         style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}
       >
-        <div className="max-w-6xl mx-auto px-6 md:px-12 py-5 flex items-center justify-between">
-          <Image src="/logo-branco.png" alt="Quic" width={110} height={44} priority />
-          <span className="text-sm font-semibold text-white">Golden Circle</span>
-          <span className="text-[10px] tracking-[0.3em] uppercase text-white/40 hidden sm:block">
-            Investor Relations
-          </span>
+        <div className="max-w-6xl mx-auto px-6 md:px-12 pt-6 pb-12 md:pt-8 md:pb-16">
+          <div className="flex items-center justify-between mb-10">
+            <Image src="/logo-branco.png" alt="Quic" width={110} height={44} priority />
+            <span className="text-[10px] tracking-[0.3em] uppercase text-white/40 hidden sm:block">
+              Investor Relations
+            </span>
+          </div>
+          <p className="text-[10px] font-medium tracking-[0.4em] uppercase text-[#d18cc5] mb-4">
+            Golden Circle
+          </p>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl mb-8">
+            O futuro dos concertos em Portugal.
+          </h1>
+          <div className="flex gap-8 sm:gap-12">
+            {HERO_STATS.map(stat => (
+              <div key={stat.label}>
+                <p className="text-3xl sm:text-4xl font-bold tracking-tight text-white">{stat.value}</p>
+                <p className="text-xs text-white/40 mt-1">{stat.label}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -143,7 +168,7 @@ export default function GoldenCirclePublicPage() {
 
           <section id="golden-circle">
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-              <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">Golden Circle</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-stone-900">Golden Circle</h2>
             </div>
             <div className="relative w-full aspect-[2000/1414] max-h-[420px] overflow-hidden rounded-xl mb-8">
               <Image src="/golden.png" alt="Golden Circle" fill priority className="object-cover" />
@@ -157,6 +182,7 @@ export default function GoldenCirclePublicPage() {
               controls
               playsInline
               preload="metadata"
+              poster="/golden.png"
               src="/golden-circle.mp4"
               className="w-full max-w-3xl rounded-lg shadow-md mb-8"
             >
@@ -172,7 +198,7 @@ export default function GoldenCirclePublicPage() {
 
           <section id="opportunities">
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-              <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">Opportunities</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-stone-900">Opportunities</h2>
             </div>
             <p className="text-sm text-stone-500 leading-relaxed mb-8 max-w-2xl">
               Cada oportunidade de investimento corresponde a um concerto ou produção de evento em preparação,
@@ -187,7 +213,7 @@ export default function GoldenCirclePublicPage() {
                 { num: '04', title: 'Novas oportunidades', body: 'Novas produções são adicionadas regularmente. Investidores Golden Circle têm acesso antecipado.' },
               ].map((card, i) => (
                 <div key={i} className="bg-white p-6">
-                  <span className="text-[10px] text-stone-400 tabular-nums tracking-wider block mb-3">{card.num}</span>
+                  <span className="text-[10px] text-[#951b81] tabular-nums tracking-wider block mb-3 font-semibold">{card.num}</span>
                   <p className="text-base font-medium tracking-tight text-stone-900 mb-2">{card.title}</p>
                   <p className="text-sm text-stone-500 leading-relaxed">{card.body}</p>
                 </div>
@@ -195,9 +221,27 @@ export default function GoldenCirclePublicPage() {
             </div>
           </section>
 
+          <section id="track-record">
+            <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
+              <h2 className="text-2xl font-bold tracking-tight text-stone-900">Track Record</h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-stone-100 rounded-xl overflow-hidden border border-stone-100 mb-8">
+              {TRACK_RECORD_STATS.map((stat, i) => (
+                <div key={i} className="bg-white p-6 text-center">
+                  <p className="text-5xl sm:text-6xl font-bold tracking-tight text-[#951b81] mb-1">{stat.value}</p>
+                  <p className="text-xs text-stone-500">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-sm text-stone-500 leading-relaxed max-w-2xl">
+              Números indicativos do histórico de produção da Quic. Dados detalhados por produção disponíveis
+              para membros Golden Circle mediante pedido.
+            </p>
+          </section>
+
           <section id="how-it-works">
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-              <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">How It Works</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-stone-900">How It Works</h2>
             </div>
             <ul>
               {[
@@ -219,69 +263,26 @@ export default function GoldenCirclePublicPage() {
             </ul>
           </section>
 
-          <section id="track-record">
-            <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-              <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">Track Record</h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-stone-100 rounded-xl overflow-hidden border border-stone-100 mb-8">
-              {[
-                { value: '40+', label: 'Concertos produzidos' },
-                { value: '250k+', label: 'Bilhetes vendidos' },
-                { value: '15', label: 'Artistas geridos' },
-                { value: '8', label: 'Anos de atividade' },
-              ].map((stat, i) => (
-                <div key={i} className="bg-white p-6 text-center">
-                  <p className="text-3xl font-bold tracking-tight text-stone-900 mb-1">{stat.value}</p>
-                  <p className="text-xs text-stone-500">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-            <p className="text-sm text-stone-500 leading-relaxed max-w-2xl">
-              Números indicativos do histórico de produção da Quic. Dados detalhados por produção disponíveis
-              para membros Golden Circle mediante pedido.
-            </p>
-          </section>
-
-          <section id="intelligence">
-            <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-              <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">Intelligence</h2>
-            </div>
-            <p className="text-sm text-stone-500 leading-relaxed mb-8 max-w-2xl">
-              Análises e tendências da indústria de eventos ao vivo em Portugal, recolhidas pela equipa Quic a
-              partir da experiência direta na produção e gestão de concertos.
-            </p>
-            <div className="divide-y divide-stone-100">
-              {[
-                { title: 'Crescimento do setor de eventos ao vivo', desc: 'O mercado português de concertos e eventos ao vivo tem vindo a expandir-se de forma consistente nos últimos anos.' },
-                { title: 'Procura por experiências premium', desc: 'Segmentos VIP e experiências exclusivas representam uma fatia crescente da receita por evento.' },
-                { title: 'Digitalização da bilhética', desc: 'A adoção de plataformas próprias de venda de bilhetes reduz dependência de intermediários e melhora margens.' },
-              ].map((item, i) => (
-                <div key={i} className="py-5">
-                  <p className="text-base font-medium tracking-tight text-stone-900 mb-1.5">{item.title}</p>
-                  <p className="text-sm text-stone-500 leading-relaxed">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
           <section id="about">
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-              <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">About</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-stone-900">About</h2>
             </div>
             <p className="text-sm text-stone-500 leading-relaxed mb-6 max-w-2xl">
               A Quic é uma plataforma de gestão e produção de eventos ao vivo, cobrindo bilhética, aluguer de
-              equipamento, gestão de artistas agenciados e coordenação completa de produções de concertos.
-              O Golden Circle nasce da vontade de partilhar o crescimento da empresa com um grupo restrito de
-              parceiros e investidores alinhados com a visão de longo prazo da marca.
+              equipamento, gestão de artistas agenciados e coordenação completa de produções de concertos. O
+              mercado português de concertos e eventos ao vivo tem vindo a expandir-se de forma consistente
+              nos últimos anos.
             </p>
             <p className="text-sm text-stone-500 leading-relaxed max-w-2xl">
-              Para mais informações sobre a equipa fundadora e a missão da Quic, contacte-nos diretamente.
+              O Golden Circle nasce da vontade de partilhar o crescimento da empresa com um grupo restrito de
+              parceiros e investidores alinhados com a visão de longo prazo da marca. Para mais informações
+              sobre a equipa fundadora e a missão da Quic, contacte-nos diretamente.
             </p>
           </section>
 
           <section id="investor-login">
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-              <h2 className="text-xs font-medium tracking-widest uppercase text-stone-900">Investor Login</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-stone-900">Investor Login</h2>
             </div>
             <div className="bg-stone-50 rounded-xl p-8 border border-stone-200 text-center">
               <KeyRound className="w-6 h-6 text-stone-400 mx-auto mb-4" />
@@ -303,6 +304,24 @@ export default function GoldenCirclePublicPage() {
           </section>
 
         </main>
+      </div>
+
+      {/* ── Closing CTA ── */}
+      <div className="bg-[#faf5f9] border-t border-stone-100">
+        <div className="max-w-6xl mx-auto px-6 md:px-12 py-16 text-center">
+          <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 mb-4">
+            Pronto para te juntares ao Golden Circle?
+          </h3>
+          <p className="text-sm text-stone-500 max-w-md mx-auto mb-8">
+            Contacta a equipa Quic para saberes mais sobre as oportunidades de investimento disponíveis.
+          </p>
+          <a
+            href="mailto:goldencircle@quic.pt"
+            className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-8 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-amber-600"
+          >
+            Junta-te em Gold
+          </a>
+        </div>
       </div>
 
       {/* ── Footer ── */}
