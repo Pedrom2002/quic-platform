@@ -199,6 +199,7 @@ export async function proxy(request: NextRequest) {
 
   const isPublic =
     pathname === '/app' ||
+    pathname.startsWith('/golden-circle') ||
     pathname.startsWith('/portal/') ||
     pathname.startsWith('/artista/') ||
     pathname.startsWith('/auth/') ||
