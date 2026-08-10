@@ -100,6 +100,7 @@ function OpportunitiesSection() {
     { title: 'Concerto Sala Tejo — Nov 2026', body: 'Produção de médio porte, capacidade 4.000 lugares. Ronda em preparação.' },
     { title: 'Digressão Nacional — Q1 2027', body: 'Digressão de 6 datas em 4 cidades. Investimento por data ou pacote completo.' },
     { title: 'Festival de Verão — 2027', body: 'Produção de grande escala, múltiplos palcos. Em fase de estruturação.' },
+    { title: 'Novas oportunidades', body: 'Novas produções são adicionadas regularmente. Investidores Golden Circle têm acesso antecipado.' },
   ]
   return (
     <View style={styles.section}>
