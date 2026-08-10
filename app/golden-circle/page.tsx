@@ -73,6 +73,7 @@ function SideNav({ active }: { active: SectionId }) {
           <li key={section.id}>
             <button
               onClick={() => scrollToSection(section.id)}
+              aria-current={active === section.id ? 'true' : undefined}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm rounded-lg text-left transition-colors ${
                 active === section.id
                   ? 'bg-stone-900 text-white font-medium'
@@ -97,6 +98,7 @@ function TopNav({ active }: { active: SectionId }) {
           <button
             key={section.id}
             onClick={() => scrollToSection(section.id)}
+            aria-current={active === section.id ? 'true' : undefined}
             className={`flex items-center gap-1.5 px-3 py-3 text-xs whitespace-nowrap border-b-2 transition-colors ${
               active === section.id
                 ? 'border-amber-400 text-stone-900 font-medium'
