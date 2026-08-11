@@ -65,7 +65,8 @@ function scrollToSection(id: SectionId) {
 
 function SideNav({ active }: { active: SectionId }) {
   return (
-    <nav className="hidden md:block md:sticky md:top-24 md:self-start md:w-48 shrink-0">
+    <nav className="hidden md:block md:sticky md:top-8 md:self-start md:w-48 shrink-0">
+      <Image src="/logo-preto.png" alt="Quic" width={90} height={36} className="mb-6" />
       <ul className="space-y-1">
         {SECTIONS.map(section => (
           <li key={section.id}>
@@ -91,6 +92,9 @@ function SideNav({ active }: { active: SectionId }) {
 function TopNav({ active }: { active: SectionId }) {
   return (
     <div className="md:hidden sticky top-0 z-20 bg-white border-b border-stone-100">
+      <div className="px-4 pt-4 pb-2">
+        <Image src="/logo-preto.png" alt="Quic" width={80} height={32} />
+      </div>
       <nav className="flex overflow-x-auto px-4" style={{ scrollbarWidth: 'none' }}>
         {SECTIONS.map(section => (
           <button
@@ -124,16 +128,6 @@ export default function GoldenCirclePublicPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* ── Header ── */}
-      <header
-        className="relative"
-        style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}
-      >
-        <div className="max-w-6xl mx-auto px-6 md:px-12 py-5">
-          <Image src="/logo-branco.png" alt="Quic" width={110} height={44} priority />
-        </div>
-      </header>
-
       <TopNav active={active} />
 
       {/* ── Content ── */}
