@@ -135,11 +135,8 @@ export default function GoldenCirclePublicPage() {
         style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}
       >
         <div className="max-w-6xl mx-auto px-6 md:px-12 pt-6 pb-12 md:pt-8 md:pb-16">
-          <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center mb-10">
             <Image src="/logo-branco.png" alt="Quic" width={110} height={44} priority />
-            <span className="text-[10px] tracking-[0.3em] uppercase text-white/40 hidden sm:block">
-              Investor Relations
-            </span>
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl mb-8">
             O futuro dos concertos em Portugal.
