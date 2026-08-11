@@ -141,9 +141,6 @@ export default function GoldenCirclePublicPage() {
               Investor Relations
             </span>
           </div>
-          <p className="text-[10px] font-medium tracking-[0.4em] uppercase text-[#d18cc5] mb-4">
-            Golden Circle
-          </p>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl mb-8">
             O futuro dos concertos em Portugal.
           </h1>
@@ -185,12 +182,6 @@ export default function GoldenCirclePublicPage() {
             >
               O seu navegador não suporta reprodução de vídeo.
             </video>
-            <button
-              type="button"
-              className="rounded-full bg-amber-500 px-8 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-amber-600"
-            >
-              Junta-te em Gold
-            </button>
           </section>
 
           <section id="opportunities">
@@ -301,24 +292,6 @@ export default function GoldenCirclePublicPage() {
           </section>
 
         </main>
-      </div>
-
-      {/* ── Closing CTA ── */}
-      <div className="bg-[#faf5f9] border-t border-stone-100">
-        <div className="max-w-6xl mx-auto px-6 md:px-12 py-16 text-center">
-          <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 mb-4">
-            Pronto para te juntares ao Golden Circle?
-          </h3>
-          <p className="text-sm text-stone-500 max-w-md mx-auto mb-8">
-            Contacta a equipa Quic para saberes mais sobre as oportunidades de investimento disponíveis.
-          </p>
-          <a
-            href="mailto:goldencircle@quic.pt"
-            className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-8 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-amber-600"
-          >
-            Junta-te em Gold
-          </a>
-        </div>
       </div>
 
       {/* ── Footer ── */}
