@@ -112,11 +112,6 @@ function TopNav({ active }: { active: SectionId }) {
   )
 }
 
-const HERO_STATS = [
-  { value: '40+', label: 'Concertos produzidos' },
-  { value: '250k+', label: 'Bilhetes vendidos' },
-]
-
 const TRACK_RECORD_STATS = [
   { value: '40+', label: 'Concertos produzidos' },
   { value: '250k+', label: 'Bilhetes vendidos' },
@@ -129,26 +124,13 @@ export default function GoldenCirclePublicPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* ── Editorial hero ── */}
+      {/* ── Header ── */}
       <header
         className="relative"
         style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}
       >
-        <div className="max-w-6xl mx-auto px-6 md:px-12 pt-6 pb-12 md:pt-8 md:pb-16">
-          <div className="flex items-center mb-10">
-            <Image src="/logo-branco.png" alt="Quic" width={110} height={44} priority />
-          </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl mb-8">
-            O futuro dos concertos em Portugal.
-          </h1>
-          <div className="flex gap-8 sm:gap-12">
-            {HERO_STATS.map(stat => (
-              <div key={stat.label}>
-                <p className="text-3xl sm:text-4xl font-bold tracking-tight text-white">{stat.value}</p>
-                <p className="text-xs text-white/40 mt-1">{stat.label}</p>
-              </div>
-            ))}
-          </div>
+        <div className="max-w-6xl mx-auto px-6 md:px-12 py-5">
+          <Image src="/logo-branco.png" alt="Quic" width={110} height={44} priority />
         </div>
       </header>
 
