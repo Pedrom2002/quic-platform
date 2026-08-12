@@ -17,10 +17,10 @@ type SectionId =
 const SECTIONS: { id: SectionId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'golden-circle', label: 'Golden Circle', icon: Star },
   { id: 'opportunities', label: 'Opportunities', icon: TrendingUp },
-  { id: 'track-record', label: 'Track Record', icon: BarChart3 },
   { id: 'how-it-works', label: 'How It Works', icon: Layers },
   { id: 'about', label: 'About', icon: Info },
   { id: 'investor-login', label: 'Investor Login', icon: KeyRound },
+  { id: 'track-record', label: 'Track Record', icon: BarChart3 },
 ]
 
 function useScrollSpy(ids: SectionId[]): SectionId {
@@ -237,7 +237,7 @@ export default function GoldenCirclePublicPage() {
   const title = useTypewriterLoop(HERO_PHRASES)
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-clip">
       {/* ── Hero ── */}
       <style>{`
         @keyframes golden-circle-sweep {
