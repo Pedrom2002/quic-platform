@@ -97,17 +97,18 @@ function useCountUp(target: number, active: boolean): number {
     if (prefersReducedMotion()) return
     const duration = 1200
     const start = performance.now()
+    let frameId: number
 
     function tick(now: number) {
       const elapsed = now - start
       const progress = Math.min(elapsed / duration, 1)
       const eased = 1 - (1 - progress) * (1 - progress)
       setValue(Math.round(target * eased))
-      if (progress < 1) requestAnimationFrame(tick)
+      if (progress < 1) frameId = requestAnimationFrame(tick)
     }
 
-    const frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
+    frameId = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frameId)
   }, [active, target])
 
   return value
@@ -224,7 +225,8 @@ export default function GoldenCirclePublicPage() {
             Golden Circle
           </p>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl mb-8 min-h-[1.1em] md:min-h-[2.2em]">
-            {title}
+            <span aria-hidden="true">{title}</span>
+            <span className="sr-only">O futuro dos concertos em Portugal.</span>
           </h1>
           <div>
             <p className="text-4xl sm:text-5xl font-bold tracking-tight text-white">{ticketCount}k+</p>
