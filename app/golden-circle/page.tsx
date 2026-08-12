@@ -223,7 +223,7 @@ export default function GoldenCirclePublicPage() {
           <p className="text-sm md:text-base font-semibold tracking-[0.3em] uppercase text-[#d18cc5] mb-4">
             Golden Circle
           </p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl min-h-[1.1em] md:min-h-[2.2em]">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl min-h-[2.2em] transition-[min-height] duration-200">
             <span aria-hidden="true">{title}</span>
             <span className="sr-only">{HERO_PHRASES.join(' ')}</span>
           </h1>
