@@ -114,7 +114,7 @@ CREATE POLICY "investor_sees_own_profile" ON investors
 
 CREATE POLICY "investor_updates_own_profile" ON investors
   FOR UPDATE USING (auth_user_id = auth.uid())
-  WITH CHECK (auth_user_id = auth.uid() AND status = (SELECT status FROM investors WHERE auth_user_id = auth.uid()));
+  WITH CHECK (auth_user_id = auth.uid());
 
 CREATE POLICY "anyone_can_register" ON investors
   FOR INSERT WITH CHECK (auth_user_id = auth.uid() AND status = 'pending');
@@ -122,6 +122,42 @@ CREATE POLICY "anyone_can_register" ON investors
 CREATE POLICY "team_manages_investors" ON investors
   FOR ALL USING (organization_id = get_user_org_id())
   WITH CHECK (organization_id = get_user_org_id());
+
+-- RLS policies nao tem acesso a OLD/NEW (isso so existe em corpos de trigger),
+-- por isso um WITH CHECK que compara "status = (SELECT status FROM investors
+-- WHERE ...)" le sempre o valor JA ATUALIZADO pela propria UPDATE em curso,
+-- tornando a comparacao sempre verdadeira (status = status) e permitindo que
+-- um investidor se auto-aprove. O bloqueio real de campos sensiveis (status,
+-- organization_id, approved_at, approved_by_team_member_id) tem de ser feito
+-- num trigger BEFORE UPDATE, que tem acesso real a OLD/NEW.
+CREATE OR REPLACE FUNCTION investors_block_self_privilege_escalation()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  -- team_members (via a policy team_manages_investors, que corre no mesmo
+  -- role "authenticated") precisam de poder mudar estes campos; distinguimos
+  -- pelo pedido vir ou nao de um auth_user_id que corresponde ao proprio
+  -- investidor a ser alterado — se corresponder, e um self-update e os campos
+  -- sensiveis ficam bloqueados.
+  IF auth.uid() = OLD.auth_user_id THEN
+    NEW.status := OLD.status;
+    NEW.organization_id := OLD.organization_id;
+    NEW.approved_at := OLD.approved_at;
+    NEW.approved_by_team_member_id := OLD.approved_by_team_member_id;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION investors_block_self_privilege_escalation() FROM public;
+
+CREATE TRIGGER trg_investors_block_self_privilege_escalation
+  BEFORE UPDATE ON investors
+  FOR EACH ROW
+  EXECUTE FUNCTION investors_block_self_privilege_escalation();
 
 -- RLS: investment_projects
 ALTER TABLE investment_projects ENABLE ROW LEVEL SECURITY;
