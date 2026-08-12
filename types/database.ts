@@ -1792,6 +1792,206 @@ export type Database = {
         }
         Relationships: []
       }
+      // Adicionadas manualmente: existem em producao desde a migration 0066
+      // mas o types/database.ts nao foi regenerado desde entao (migracoes
+      // sao aplicadas manualmente, nao via `supabase db push`).
+      investment_projects: {
+        Row: {
+          actual_revenue_cents: number | null
+          attendance: number | null
+          capacity: number | null
+          created_at: string
+          description: string | null
+          funding_goal_cents: number
+          id: string
+          investment_deadline: string | null
+          name: string
+          organization_id: string
+          status: string
+        }
+        Insert: {
+          actual_revenue_cents?: number | null
+          attendance?: number | null
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          funding_goal_cents: number
+          id?: string
+          investment_deadline?: string | null
+          name: string
+          organization_id: string
+          status?: string
+        }
+        Update: {
+          actual_revenue_cents?: number | null
+          attendance?: number | null
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          funding_goal_cents?: number
+          id?: string
+          investment_deadline?: string | null
+          name?: string
+          organization_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_projects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investments: {
+        Row: {
+          amount_cents: number
+          id: string
+          invested_at: string
+          investor_id: string
+          project_id: string
+          projected_return_cents: number | null
+          realized_return_cents: number | null
+          status: string
+        }
+        Insert: {
+          amount_cents: number
+          id?: string
+          invested_at?: string
+          investor_id: string
+          project_id: string
+          projected_return_cents?: number | null
+          realized_return_cents?: number | null
+          status?: string
+        }
+        Update: {
+          amount_cents?: number
+          id?: string
+          invested_at?: string
+          investor_id?: string
+          project_id?: string
+          projected_return_cents?: number | null
+          realized_return_cents?: number | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investments_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "investment_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investor_documents: {
+        Row: {
+          file_url: string
+          id: string
+          investor_id: string | null
+          project_id: string | null
+          title: string
+          type: string
+          uploaded_at: string
+        }
+        Insert: {
+          file_url: string
+          id?: string
+          investor_id?: string | null
+          project_id?: string | null
+          title: string
+          type: string
+          uploaded_at?: string
+        }
+        Update: {
+          file_url?: string
+          id?: string
+          investor_id?: string | null
+          project_id?: string | null
+          title?: string
+          type?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_documents_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "investment_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investors: {
+        Row: {
+          approved_at: string | null
+          approved_by_team_member_id: string | null
+          auth_user_id: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          organization_id: string
+          phone: string | null
+          status: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by_team_member_id?: string | null
+          auth_user_id: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          organization_id: string
+          phone?: string | null
+          status?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by_team_member_id?: string | null
+          auth_user_id?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          organization_id?: string
+          phone?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investors_approved_by_team_member_id_fkey"
+            columns: ["approved_by_team_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketing_campaigns: {
         Row: {
           ai_objective: string | null
