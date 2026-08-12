@@ -65,6 +65,9 @@ function prefersReducedMotion(): boolean {
 }
 
 function useTypewriterLoop(phrases: string[]): string {
+  // `reduced` e lido uma vez no mount (nao dentro do efeito), por isso um
+  // toggle do reduced-motion do SO a meio da sessao nao para a animacao ja
+  // em curso — tradeoff aceitavel para o alcance desta pagina.
   const reduced = prefersReducedMotion()
   const [display, setDisplay] = useState(reduced ? phrases[0] : '')
 
