@@ -68,10 +68,11 @@ function useTypewriter(text: string): string {
   const [visibleChars, setVisibleChars] = useState(prefersReducedMotion() ? text.length : 0)
 
   useEffect(() => {
-    if (prefersReducedMotion()) {
-      setVisibleChars(text.length)
-      return
-    }
+    if (prefersReducedMotion()) return
+    // Reinicia a animacao sempre que `text` mudar (nao acontece nesta pagina,
+    // mas o hook e generico): sem isto, texto mais curto que o anterior
+    // ficaria com `visibleChars` acima do comprimento real.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisibleChars(0)
     const interval = setInterval(() => {
       setVisibleChars(prev => {
@@ -93,10 +94,7 @@ function useCountUp(target: number, active: boolean): number {
 
   useEffect(() => {
     if (!active) return
-    if (prefersReducedMotion()) {
-      setValue(target)
-      return
-    }
+    if (prefersReducedMotion()) return
     const duration = 1200
     const start = performance.now()
 
