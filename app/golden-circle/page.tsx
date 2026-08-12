@@ -59,6 +59,85 @@ function useScrollSpy(ids: SectionId[]): SectionId {
   return active
 }
 
+function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function useTypewriter(text: string): string {
+  const [visibleChars, setVisibleChars] = useState(prefersReducedMotion() ? text.length : 0)
+
+  useEffect(() => {
+    if (prefersReducedMotion()) {
+      setVisibleChars(text.length)
+      return
+    }
+    setVisibleChars(0)
+    const interval = setInterval(() => {
+      setVisibleChars(prev => {
+        if (prev >= text.length) {
+          clearInterval(interval)
+          return prev
+        }
+        return prev + 1
+      })
+    }, 35)
+    return () => clearInterval(interval)
+  }, [text])
+
+  return text.slice(0, visibleChars)
+}
+
+function useCountUp(target: number, active: boolean): number {
+  const [value, setValue] = useState(prefersReducedMotion() ? target : 0)
+
+  useEffect(() => {
+    if (!active) return
+    if (prefersReducedMotion()) {
+      setValue(target)
+      return
+    }
+    const duration = 1200
+    const start = performance.now()
+
+    function tick(now: number) {
+      const elapsed = now - start
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - (1 - progress) * (1 - progress)
+      setValue(Math.round(target * eased))
+      if (progress < 1) requestAnimationFrame(tick)
+    }
+
+    const frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [active, target])
+
+  return value
+}
+
+function useInView(): [React.RefObject<HTMLDivElement | null>, boolean] {
+  const ref = useRef<HTMLDivElement>(null)
+  const [inView, setInView] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  return [ref, inView]
+}
+
 function scrollToSection(id: SectionId) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
@@ -66,7 +145,6 @@ function scrollToSection(id: SectionId) {
 function SideNav({ active }: { active: SectionId }) {
   return (
     <nav className="hidden md:block md:sticky md:top-8 md:self-start md:w-48 shrink-0">
-      <Image src="/logo-preto.png" alt="Quic" width={90} height={36} className="mb-6" />
       <ul className="space-y-1">
         {SECTIONS.map(section => (
           <li key={section.id}>
@@ -92,9 +170,6 @@ function SideNav({ active }: { active: SectionId }) {
 function TopNav({ active }: { active: SectionId }) {
   return (
     <div className="md:hidden sticky top-0 z-20 bg-white border-b border-stone-100">
-      <div className="px-4 pt-4 pb-2">
-        <Image src="/logo-preto.png" alt="Quic" width={80} height={32} />
-      </div>
       <nav className="flex overflow-x-auto px-4" style={{ scrollbarWidth: 'none' }}>
         {SECTIONS.map(section => (
           <button
@@ -125,9 +200,41 @@ const TRACK_RECORD_STATS = [
 
 export default function GoldenCirclePublicPage() {
   const active = useScrollSpy(SECTIONS.map(s => s.id))
+  const title = useTypewriter('O futuro dos concertos em Portugal.')
+  const [statRef, statInView] = useInView()
+  const ticketCount = useCountUp(250, statInView)
 
   return (
     <div className="min-h-screen bg-white">
+      {/* ── Hero ── */}
+      <header
+        ref={statRef}
+        className="relative overflow-hidden"
+        style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}
+      >
+        <div
+          className="absolute inset-0 opacity-60"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(149,27,129,.15) 1px, transparent 1px), linear-gradient(90deg, rgba(149,27,129,.15) 1px, transparent 1px)',
+            backgroundSize: '24px 24px',
+          }}
+        />
+        <div className="relative max-w-6xl mx-auto px-6 md:px-12 py-14 md:py-20">
+          <Image src="/logo-branco.png" alt="Quic" width={110} height={44} priority className="mb-10" />
+          <p className="text-[10px] font-medium tracking-[0.4em] uppercase text-[#d18cc5] mb-4">
+            Golden Circle
+          </p>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl mb-8 min-h-[1.1em] md:min-h-[2.2em]">
+            {title}
+          </h1>
+          <div>
+            <p className="text-4xl sm:text-5xl font-bold tracking-tight text-white">{ticketCount}k+</p>
+            <p className="text-xs text-white/40 mt-1">Bilhetes vendidos</p>
+          </div>
+        </div>
+      </header>
+
       <TopNav active={active} />
 
       {/* ── Content ── */}
