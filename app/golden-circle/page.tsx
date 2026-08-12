@@ -59,6 +59,45 @@ function useScrollSpy(ids: SectionId[]): SectionId {
   return active
 }
 
+function useRevealOnScroll(ids: SectionId[]): Set<SectionId> {
+  // Lido uma vez no mount (mesmo padrao do useTypewriterLoop acima), para
+  // decidir already-revealed sem um setState sincrono dentro do efeito.
+  const reduced = prefersReducedMotion()
+  const [revealed, setRevealed] = useState<Set<SectionId>>(() => (reduced ? new Set(ids) : new Set()))
+
+  useEffect(() => {
+    if (reduced) return
+
+    const observer = new IntersectionObserver(
+      entries => {
+        setRevealed(prev => {
+          const next = new Set(prev)
+          let changed = false
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              next.add(entry.target.id as SectionId)
+              changed = true
+              observer.unobserve(entry.target)
+            }
+          }
+          return changed ? next : prev
+        })
+      },
+      { threshold: 0.15 }
+    )
+
+    for (const id of ids) {
+      const el = document.getElementById(id)
+      if (el) observer.observe(el)
+    }
+
+    return () => observer.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return revealed
+}
+
 function prefersReducedMotion(): boolean {
   if (typeof window === 'undefined') return false
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -120,6 +159,12 @@ function useTypewriterLoop(phrases: string[]): string {
 
 function scrollToSection(id: SectionId) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function revealClass(revealed: boolean): string {
+  return revealed
+    ? 'opacity-100 translate-y-0'
+    : 'opacity-0 translate-y-4'
 }
 
 function SideNav({ active }: { active: SectionId }) {
@@ -188,6 +233,7 @@ const LONGEST_HERO_PHRASE = HERO_PHRASES.reduce((a, b) => (b.length > a.length ?
 
 export default function GoldenCirclePublicPage() {
   const active = useScrollSpy(SECTIONS.map(s => s.id))
+  const revealed = useRevealOnScroll(SECTIONS.map(s => s.id))
   const title = useTypewriterLoop(HERO_PHRASES)
 
   return (
@@ -245,7 +291,10 @@ export default function GoldenCirclePublicPage() {
 
         <main className="flex-1 min-w-0 space-y-20">
 
-          <section id="golden-circle">
+          <section
+            id="golden-circle"
+            className={`transition-all duration-700 ${revealClass(revealed.has('golden-circle'))}`}
+          >
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
               <h2 className="text-2xl font-bold tracking-tight text-stone-900">Golden Circle</h2>
             </div>
@@ -266,7 +315,10 @@ export default function GoldenCirclePublicPage() {
             </video>
           </section>
 
-          <section id="opportunities">
+          <section
+            id="opportunities"
+            className={`transition-all duration-700 ${revealClass(revealed.has('opportunities'))}`}
+          >
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
               <h2 className="text-2xl font-bold tracking-tight text-stone-900">Opportunities</h2>
             </div>
@@ -282,34 +334,29 @@ export default function GoldenCirclePublicPage() {
                 { num: '03', title: 'Festival de Verão — 2027', body: 'Produção de grande escala, múltiplos palcos. Oportunidade em fase de estruturação.' },
                 { num: '04', title: 'Novas oportunidades', body: 'Novas produções são adicionadas regularmente. Investidores Golden Circle têm acesso antecipado.' },
               ].map((card, i) => (
-                <div key={i} className="bg-white p-6">
-                  <span className="text-[10px] text-[var(--quic-magenta)] tabular-nums tracking-wider block mb-3 font-semibold">{card.num}</span>
-                  <p className="text-base font-medium tracking-tight text-stone-900 mb-2">{card.title}</p>
-                  <p className="text-sm text-stone-500 leading-relaxed">{card.body}</p>
+                <div key={i} className="bg-white">
+                  <div className="relative w-full aspect-video">
+                    <Image
+                      src="/01_Sofia_ConcertoValeSilencio_0609_16x9.jpg"
+                      alt=""
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <span className="text-[10px] text-[var(--quic-magenta)] tabular-nums tracking-wider block mb-3 font-semibold">{card.num}</span>
+                    <p className="text-base font-medium tracking-tight text-stone-900 mb-2">{card.title}</p>
+                    <p className="text-sm text-stone-500 leading-relaxed">{card.body}</p>
+                  </div>
                 </div>
               ))}
             </div>
           </section>
 
-          <section id="track-record">
-            <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-              <h2 className="text-2xl font-bold tracking-tight text-stone-900">Track Record</h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-stone-100 rounded-xl overflow-hidden border border-stone-100 mb-8">
-              {TRACK_RECORD_STATS.map((stat, i) => (
-                <div key={i} className="bg-white p-6 text-center">
-                  <p className="text-5xl sm:text-6xl font-bold tracking-tight text-[var(--quic-magenta)] mb-1">{stat.value}</p>
-                  <p className="text-xs text-stone-500">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-            <p className="text-sm text-stone-500 leading-relaxed max-w-2xl">
-              Números indicativos do histórico de produção da Quic. Dados detalhados por produção disponíveis
-              para membros Golden Circle mediante pedido.
-            </p>
-          </section>
-
-          <section id="how-it-works">
+          <section
+            id="how-it-works"
+            className={`transition-all duration-700 ${revealClass(revealed.has('how-it-works'))}`}
+          >
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
               <h2 className="text-2xl font-bold tracking-tight text-stone-900">How It Works</h2>
             </div>
@@ -333,7 +380,10 @@ export default function GoldenCirclePublicPage() {
             </ul>
           </section>
 
-          <section id="about">
+          <section
+            id="about"
+            className={`transition-all duration-700 ${revealClass(revealed.has('about'))}`}
+          >
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
               <h2 className="text-2xl font-bold tracking-tight text-stone-900">About</h2>
             </div>
@@ -350,7 +400,10 @@ export default function GoldenCirclePublicPage() {
             </p>
           </section>
 
-          <section id="investor-login">
+          <section
+            id="investor-login"
+            className={`transition-all duration-700 ${revealClass(revealed.has('investor-login'))}`}
+          >
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
               <h2 className="text-2xl font-bold tracking-tight text-stone-900">Investor Login</h2>
             </div>
@@ -375,6 +428,31 @@ export default function GoldenCirclePublicPage() {
 
         </main>
       </div>
+
+      {/* ── Track Record (full-bleed, dark) ── */}
+      <section
+        id="track-record"
+        className={`relative left-1/2 right-1/2 -mx-[50vw] w-screen transition-all duration-700 ${revealClass(revealed.has('track-record'))}`}
+        style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}
+      >
+        <div className="max-w-6xl mx-auto px-6 md:px-12 py-16 md:py-20">
+          <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-white/10">
+            <h2 className="text-2xl font-bold tracking-tight text-white">Track Record</h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/10 rounded-xl overflow-hidden mb-8">
+            {TRACK_RECORD_STATS.map((stat, i) => (
+              <div key={i} className="p-6 text-center" style={{ background: '#141318' }}>
+                <p className="text-5xl sm:text-6xl font-bold tracking-tight text-[var(--quic-magenta)] mb-1">{stat.value}</p>
+                <p className="text-xs text-white/50">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-sm text-white/50 leading-relaxed max-w-2xl">
+            Números indicativos do histórico de produção da Quic. Dados detalhados por produção disponíveis
+            para membros Golden Circle mediante pedido.
+          </p>
+        </div>
+      </section>
 
       {/* ── Footer ── */}
       <footer style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}>
