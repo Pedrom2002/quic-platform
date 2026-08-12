@@ -64,77 +64,55 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-function useTypewriter(text: string): string {
-  const [visibleChars, setVisibleChars] = useState(prefersReducedMotion() ? text.length : 0)
+function useTypewriterLoop(phrases: string[]): string {
+  const reduced = prefersReducedMotion()
+  const [display, setDisplay] = useState(reduced ? phrases[0] : '')
 
   useEffect(() => {
-    if (prefersReducedMotion()) return
-    // Reinicia a animacao sempre que `text` mudar (nao acontece nesta pagina,
-    // mas o hook e generico): sem isto, texto mais curto que o anterior
-    // ficaria com `visibleChars` acima do comprimento real.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setVisibleChars(0)
-    const interval = setInterval(() => {
-      setVisibleChars(prev => {
-        if (prev >= text.length) {
-          clearInterval(interval)
-          return prev
+    if (reduced) return
+
+    let phraseIndex = 0
+    let charIndex = 0
+    let mode: 'typing' | 'pausing' | 'deleting' = 'typing'
+    let timeoutId: number
+
+    function step() {
+      const current = phrases[phraseIndex]
+
+      if (mode === 'typing') {
+        charIndex++
+        setDisplay(current.slice(0, charIndex))
+        if (charIndex >= current.length) {
+          mode = 'pausing'
+          timeoutId = window.setTimeout(step, 1500)
+          return
         }
-        return prev + 1
-      })
-    }, 35)
-    return () => clearInterval(interval)
-  }, [text])
+        timeoutId = window.setTimeout(step, 35)
+        return
+      }
 
-  return text.slice(0, visibleChars)
-}
+      if (mode === 'pausing') {
+        mode = 'deleting'
+        timeoutId = window.setTimeout(step, 35)
+        return
+      }
 
-function useCountUp(target: number, active: boolean): number {
-  const [value, setValue] = useState(prefersReducedMotion() ? target : 0)
-
-  useEffect(() => {
-    if (!active) return
-    if (prefersReducedMotion()) return
-    const duration = 1200
-    const start = performance.now()
-    let frameId: number
-
-    function tick(now: number) {
-      const elapsed = now - start
-      const progress = Math.min(elapsed / duration, 1)
-      const eased = 1 - (1 - progress) * (1 - progress)
-      setValue(Math.round(target * eased))
-      if (progress < 1) frameId = requestAnimationFrame(tick)
+      // deleting
+      charIndex--
+      setDisplay(current.slice(0, charIndex))
+      if (charIndex <= 0) {
+        phraseIndex = (phraseIndex + 1) % phrases.length
+        mode = 'typing'
+      }
+      timeoutId = window.setTimeout(step, 25)
     }
 
-    frameId = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frameId)
-  }, [active, target])
-
-  return value
-}
-
-function useInView(): [React.RefObject<HTMLDivElement | null>, boolean] {
-  const ref = useRef<HTMLDivElement>(null)
-  const [inView, setInView] = useState(false)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.3 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
+    timeoutId = window.setTimeout(step, 35)
+    return () => window.clearTimeout(timeoutId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  return [ref, inView]
+  return display
 }
 
 function scrollToSection(id: SectionId) {
@@ -197,41 +175,55 @@ const TRACK_RECORD_STATS = [
   { value: '8', label: 'Anos de atividade' },
 ]
 
+const HERO_PHRASES = [
+  'O futuro dos concertos em Portugal.',
+  'Investe em produções reais.',
+  'Junta-te ao Golden Circle.',
+]
+
 export default function GoldenCirclePublicPage() {
   const active = useScrollSpy(SECTIONS.map(s => s.id))
-  const title = useTypewriter('O futuro dos concertos em Portugal.')
-  const [statRef, statInView] = useInView()
-  const ticketCount = useCountUp(250, statInView)
+  const title = useTypewriterLoop(HERO_PHRASES)
 
   return (
     <div className="min-h-screen bg-white">
       {/* ── Hero ── */}
+      <style>{`
+        @keyframes golden-circle-sweep {
+          0% { background-position: -50% -50%; }
+          100% { background-position: 150% 150%; }
+        }
+      `}</style>
       <header
-        ref={statRef}
         className="relative overflow-hidden"
         style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}
       >
         <div
-          className="absolute inset-0 opacity-60"
+          className="absolute inset-0"
           style={{
             backgroundImage:
-              'linear-gradient(rgba(149,27,129,.15) 1px, transparent 1px), linear-gradient(90deg, rgba(149,27,129,.15) 1px, transparent 1px)',
+              'linear-gradient(rgba(149,27,129,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(149,27,129,.3) 1px, transparent 1px)',
             backgroundSize: '24px 24px',
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              'linear-gradient(115deg, transparent 40%, rgba(149,27,129,.4) 50%, transparent 60%)',
+            backgroundSize: '250% 250%',
+            animation: prefersReducedMotion() ? 'none' : 'golden-circle-sweep 7s linear infinite',
           }}
         />
         <div className="relative max-w-6xl mx-auto px-6 md:px-12 py-14 md:py-20">
           <Image src="/logo-branco.png" alt="Quic" width={110} height={44} priority className="mb-10" />
-          <p className="text-[10px] font-medium tracking-[0.4em] uppercase text-[#d18cc5] mb-4">
+          <p className="text-sm md:text-base font-semibold tracking-[0.3em] uppercase text-[#d18cc5] mb-4">
             Golden Circle
           </p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl mb-8 min-h-[1.1em] md:min-h-[2.2em]">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl min-h-[1.1em] md:min-h-[2.2em]">
             <span aria-hidden="true">{title}</span>
-            <span className="sr-only">O futuro dos concertos em Portugal.</span>
+            <span className="sr-only">{HERO_PHRASES.join(' ')}</span>
           </h1>
-          <div>
-            <p className="text-4xl sm:text-5xl font-bold tracking-tight text-white">{ticketCount}k+</p>
-            <p className="text-xs text-white/40 mt-1">Bilhetes vendidos</p>
-          </div>
         </div>
       </header>
 
