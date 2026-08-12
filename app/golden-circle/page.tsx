@@ -184,6 +184,8 @@ const HERO_PHRASES = [
   'Junta-te ao Golden Circle.',
 ]
 
+const LONGEST_HERO_PHRASE = HERO_PHRASES.reduce((a, b) => (b.length > a.length ? b : a))
+
 export default function GoldenCirclePublicPage() {
   const active = useScrollSpy(SECTIONS.map(s => s.id))
   const title = useTypewriterLoop(HERO_PHRASES)
@@ -223,8 +225,13 @@ export default function GoldenCirclePublicPage() {
           <p className="text-sm md:text-base font-semibold tracking-[0.3em] uppercase text-[#d18cc5] mb-4">
             Golden Circle
           </p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl min-h-[2.2em] transition-[min-height] duration-200">
-            <span aria-hidden="true">{title}</span>
+          <h1 className="grid text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl">
+            {/* Reserva sempre o espaco da frase mais longa, para nenhuma
+                palavra "saltar" de linha a meio da animacao de escrita. */}
+            <span aria-hidden="true" className="invisible [grid-area:1/1]">
+              {LONGEST_HERO_PHRASE}
+            </span>
+            <span aria-hidden="true" className="[grid-area:1/1]">{title}</span>
             <span className="sr-only">{HERO_PHRASES.join(' ')}</span>
           </h1>
         </div>
