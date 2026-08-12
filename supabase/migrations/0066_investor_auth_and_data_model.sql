@@ -143,6 +143,7 @@ BEGIN
   -- investidor a ser alterado — se corresponder, e um self-update e os campos
   -- sensiveis ficam bloqueados.
   IF auth.uid() = OLD.auth_user_id THEN
+    NEW.auth_user_id := OLD.auth_user_id;
     NEW.status := OLD.status;
     NEW.organization_id := OLD.organization_id;
     NEW.approved_at := OLD.approved_at;
