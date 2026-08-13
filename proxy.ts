@@ -224,7 +224,8 @@ export async function proxy(request: NextRequest) {
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    return NextResponse.redirect(new URL('/auth/login', request.url))
+    const loginPath = pathname.startsWith('/investors/') ? '/investors/login' : '/auth/login'
+    return NextResponse.redirect(new URL(loginPath, request.url))
   }
 
   if (user && pathname.startsWith('/auth/')) {

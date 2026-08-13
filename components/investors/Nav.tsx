@@ -31,10 +31,7 @@ export function Nav({ userName }: { userName: string }) {
                 {item.label}
               </Link>
             ) : (
-              <span
-                className="block px-3 py-2 rounded-md text-sm font-medium text-zinc-500 cursor-not-allowed flex items-center justify-between"
-                aria-disabled="true"
-              >
+              <span className="flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-zinc-500 cursor-not-allowed">
                 {item.label}
                 <span className="text-[10px] uppercase border border-zinc-700 rounded px-1.5 py-0.5">Em breve</span>
               </span>
