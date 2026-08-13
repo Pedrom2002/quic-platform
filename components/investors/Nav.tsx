@@ -6,7 +6,6 @@ import type { Route } from 'next'
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/investors/dashboard', active: true },
   { label: 'Opportunities', href: '#', active: false },
-  { label: 'Coming Soon', href: '#', active: false },
   { label: 'Track Record', href: '#', active: false },
   { label: 'Portfolio', href: '#', active: false },
   { label: 'Documents', href: '#', active: false },
