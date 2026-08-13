@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+import { hasValidMxRecord } from '@/lib/email-validation'
 import { FIXED_ORG_ID } from '@/lib/investors/constants'
 
 const SIGNUP_LIMIT = 5
@@ -25,21 +26,49 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Dados inválidos. Verifica o formulário.' }, { status: 400 })
   }
 
+  if (!(await hasValidMxRecord(parsed.data.email))) {
+    return NextResponse.json({ error: 'Dados inválidos. Verifica o formulário.' }, { status: 400 })
+  }
+
   const supabase = await createClient()
   const { data, error: signUpError } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
   })
 
-  if (signUpError || !data.user) {
-    return NextResponse.json(
-      { error: 'Não foi possível criar a conta. Verifica os dados ou tenta iniciar sessão.' },
-      { status: 400 }
-    )
+  let userId = data.user?.id
+
+  if (signUpError || !userId) {
+    // A conta pode já existir órfã: um signup anterior criou o utilizador
+    // Auth mas falhou antes (ou durante) o insert em `investors`. Se as
+    // credenciais batem, recupera-se o registo em vez de bloquear o utilizador.
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email: parsed.data.email,
+      password: parsed.data.password,
+    })
+
+    if (signInError || !signInData.user) {
+      return NextResponse.json(
+        { error: 'Não foi possível criar a conta. Verifica os dados ou tenta iniciar sessão.' },
+        { status: 400 }
+      )
+    }
+
+    userId = signInData.user.id
+  }
+
+  const { data: existingInvestor } = await supabase
+    .from('investors')
+    .select('id')
+    .eq('auth_user_id', userId)
+    .maybeSingle()
+
+  if (existingInvestor) {
+    return NextResponse.json({ ok: true })
   }
 
   const { error: insertError } = await supabase.from('investors').insert({
-    auth_user_id: data.user.id,
+    auth_user_id: userId,
     organization_id: FIXED_ORG_ID,
     full_name: parsed.data.fullName,
     email: parsed.data.email,
