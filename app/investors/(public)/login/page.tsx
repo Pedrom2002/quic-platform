@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import type { Route } from 'next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -35,7 +36,7 @@ export default function InvestorLoginPage() {
         return
       }
 
-      router.push('/investors/dashboard' as any)
+      router.push('/investors/dashboard' as Route)
       router.refresh()
     } catch {
       setError('Erro de ligação. Tenta novamente.')

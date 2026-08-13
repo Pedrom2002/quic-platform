@@ -204,6 +204,9 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/artista/') ||
     pathname.startsWith('/auth/') ||
     pathname.startsWith('/api/auth/') ||
+    pathname.startsWith('/investors/login') ||
+    pathname.startsWith('/investors/signup') ||
+    pathname.startsWith('/api/investors/') ||
     pathname.startsWith('/rentals') ||
     pathname.startsWith('/api/rentals/') ||
     pathname.startsWith('/api/portal/') ||
