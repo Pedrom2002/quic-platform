@@ -1,59 +1,47 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockGetUser, mockSelect, mockCreateClient, mockRedirect } = vi.hoisted(() => ({
-  mockGetUser: vi.fn(),
-  mockSelect: vi.fn(),
-  mockCreateClient: vi.fn(),
+const { mockGetInvestorProfile, mockRedirect } = vi.hoisted(() => ({
+  mockGetInvestorProfile: vi.fn(),
   mockRedirect: vi.fn((path: string) => {
     throw new Error(`REDIRECT:${path}`)
   }),
 }))
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: mockCreateClient,
+vi.mock('@/lib/investors/get-profile', () => ({
+  getInvestorProfile: mockGetInvestorProfile,
 }))
 vi.mock('next/navigation', () => ({
   redirect: mockRedirect,
 }))
 
-function makeSelectChain(data: unknown) {
-  return {
-    eq: vi.fn().mockReturnValue({
-      single: vi.fn().mockResolvedValue({ data, error: null }),
-    }),
-  }
-}
-
 beforeEach(() => {
-  mockGetUser.mockReset()
-  mockSelect.mockReset()
-  mockCreateClient.mockReset()
+  mockGetInvestorProfile.mockReset()
   mockRedirect.mockClear()
-  mockCreateClient.mockResolvedValue({
-    auth: { getUser: mockGetUser },
-    from: vi.fn().mockReturnValue({ select: mockSelect }),
-  })
 })
 
 describe('InvestorPendingPage', () => {
   it('redirects to /investors/login when there is no session', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: null } })
+    mockGetInvestorProfile.mockResolvedValue({ authenticated: false })
     const { default: InvestorPendingPage } = await import('@/app/investors/(public)/pending/page')
 
     await expect(InvestorPendingPage()).rejects.toThrow('REDIRECT:/investors/login')
   })
 
   it('redirects to /investors/dashboard when the investor is already approved', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-    mockSelect.mockReturnValue(makeSelectChain({ status: 'approved' }))
+    mockGetInvestorProfile.mockResolvedValue({
+      authenticated: true,
+      profile: { userId: 'user-1', fullName: 'Maria Silva', status: 'approved' },
+    })
     const { default: InvestorPendingPage } = await import('@/app/investors/(public)/pending/page')
 
     await expect(InvestorPendingPage()).rejects.toThrow('REDIRECT:/investors/dashboard')
   })
 
   it('renders the pending message (not the rejected message) when status is pending', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-    mockSelect.mockReturnValue(makeSelectChain({ status: 'pending' }))
+    mockGetInvestorProfile.mockResolvedValue({
+      authenticated: true,
+      profile: { userId: 'user-1', fullName: 'Maria Silva', status: 'pending' },
+    })
     const { default: InvestorPendingPage } = await import('@/app/investors/(public)/pending/page')
 
     const result = await InvestorPendingPage()
@@ -63,8 +51,10 @@ describe('InvestorPendingPage', () => {
   })
 
   it('renders the rejected message when status is rejected', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-    mockSelect.mockReturnValue(makeSelectChain({ status: 'rejected' }))
+    mockGetInvestorProfile.mockResolvedValue({
+      authenticated: true,
+      profile: { userId: 'user-1', fullName: 'Maria Silva', status: 'rejected' },
+    })
     const { default: InvestorPendingPage } = await import('@/app/investors/(public)/pending/page')
 
     const result = await InvestorPendingPage()

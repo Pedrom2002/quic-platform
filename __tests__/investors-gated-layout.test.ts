@@ -1,16 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockGetUser, mockSelect, mockCreateClient, mockRedirect } = vi.hoisted(() => ({
-  mockGetUser: vi.fn(),
-  mockSelect: vi.fn(),
-  mockCreateClient: vi.fn(),
+const { mockGetInvestorProfile, mockRedirect } = vi.hoisted(() => ({
+  mockGetInvestorProfile: vi.fn(),
   mockRedirect: vi.fn((path: string) => {
     throw new Error(`REDIRECT:${path}`)
   }),
 }))
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: mockCreateClient,
+vi.mock('@/lib/investors/get-profile', () => ({
+  getInvestorProfile: mockGetInvestorProfile,
 }))
 vi.mock('next/navigation', () => ({
   redirect: mockRedirect,
@@ -19,28 +17,14 @@ vi.mock('@/components/investors/Nav', () => ({
   Nav: ({ userName }: { userName: string }) => `Nav(${userName})`,
 }))
 
-function makeSelectChain(data: unknown) {
-  return {
-    eq: vi.fn().mockReturnValue({
-      single: vi.fn().mockResolvedValue({ data, error: null }),
-    }),
-  }
-}
-
 beforeEach(() => {
-  mockGetUser.mockReset()
-  mockSelect.mockReset()
-  mockCreateClient.mockReset()
+  mockGetInvestorProfile.mockReset()
   mockRedirect.mockClear()
-  mockCreateClient.mockResolvedValue({
-    auth: { getUser: mockGetUser },
-    from: vi.fn().mockReturnValue({ select: mockSelect }),
-  })
 })
 
 describe('InvestorsGatedLayout', () => {
   it('redirects to /investors/login when there is no session', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: null } })
+    mockGetInvestorProfile.mockResolvedValue({ authenticated: false })
     const { default: InvestorsGatedLayout } = await import('@/app/investors/(gated)/layout')
 
     await expect(
@@ -49,8 +33,10 @@ describe('InvestorsGatedLayout', () => {
   })
 
   it('redirects to /investors/pending when the investor is pending', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-    mockSelect.mockReturnValue(makeSelectChain({ full_name: 'Maria Silva', status: 'pending' }))
+    mockGetInvestorProfile.mockResolvedValue({
+      authenticated: true,
+      profile: { userId: 'user-1', fullName: 'Maria Silva', status: 'pending' },
+    })
     const { default: InvestorsGatedLayout } = await import('@/app/investors/(gated)/layout')
 
     await expect(
@@ -59,8 +45,7 @@ describe('InvestorsGatedLayout', () => {
   })
 
   it('redirects to /investors/pending when there is no investors row at all', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-    mockSelect.mockReturnValue(makeSelectChain(null))
+    mockGetInvestorProfile.mockResolvedValue({ authenticated: true, profile: null })
     const { default: InvestorsGatedLayout } = await import('@/app/investors/(gated)/layout')
 
     await expect(
@@ -69,8 +54,10 @@ describe('InvestorsGatedLayout', () => {
   })
 
   it('renders Nav and children when the investor is approved', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-    mockSelect.mockReturnValue(makeSelectChain({ full_name: 'Maria Silva', status: 'approved' }))
+    mockGetInvestorProfile.mockResolvedValue({
+      authenticated: true,
+      profile: { userId: 'user-1', fullName: 'Maria Silva', status: 'approved' },
+    })
     const { default: InvestorsGatedLayout } = await import('@/app/investors/(gated)/layout')
 
     const result = await InvestorsGatedLayout({ children: 'CHILDREN' as unknown as React.ReactNode })

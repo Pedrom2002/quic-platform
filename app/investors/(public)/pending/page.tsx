@@ -1,23 +1,16 @@
-// app/investors/(gated)/pending/page.tsx
+// app/investors/(public)/pending/page.tsx
 import Image from 'next/image'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getInvestorProfile } from '@/lib/investors/get-profile'
 import type { Route } from 'next'
 
 export default async function InvestorPendingPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/investors/login')
+  const session = await getInvestorProfile()
+  if (!session.authenticated) redirect('/investors/login')
 
-  const { data: investor } = await supabase
-    .from('investors')
-    .select('status')
-    .eq('auth_user_id', user.id)
-    .single()
+  if (session.profile?.status === 'approved') redirect('/investors/dashboard' as Route)
 
-  if (investor?.status === 'approved') redirect('/investors/dashboard' as Route)
-
-  const rejected = investor?.status === 'rejected'
+  const rejected = session.profile?.status === 'rejected'
 
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
