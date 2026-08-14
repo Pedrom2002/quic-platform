@@ -35,7 +35,7 @@ describe('InvestorsGatedLayout', () => {
   it('redirects to /investors/pending when the investor is pending', async () => {
     mockGetInvestorProfile.mockResolvedValue({
       authenticated: true,
-      profile: { userId: 'user-1', fullName: 'Maria Silva', status: 'pending' },
+      profile: { userId: 'user-1', fullName: 'Maria Silva', phone: null, email: 'maria@example.com', status: 'pending' },
     })
     const { default: InvestorsGatedLayout } = await import('@/app/investors/(gated)/layout')
 
@@ -56,7 +56,7 @@ describe('InvestorsGatedLayout', () => {
   it('renders Nav and children when the investor is approved', async () => {
     mockGetInvestorProfile.mockResolvedValue({
       authenticated: true,
-      profile: { userId: 'user-1', fullName: 'Maria Silva', status: 'approved' },
+      profile: { userId: 'user-1', fullName: 'Maria Silva', phone: null, email: 'maria@example.com', status: 'approved' },
     })
     const { default: InvestorsGatedLayout } = await import('@/app/investors/(gated)/layout')
 

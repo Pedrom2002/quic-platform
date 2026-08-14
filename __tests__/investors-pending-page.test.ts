@@ -30,7 +30,7 @@ describe('InvestorPendingPage', () => {
   it('redirects to /investors/dashboard when the investor is already approved', async () => {
     mockGetInvestorProfile.mockResolvedValue({
       authenticated: true,
-      profile: { userId: 'user-1', fullName: 'Maria Silva', status: 'approved' },
+      profile: { userId: 'user-1', fullName: 'Maria Silva', phone: null, email: 'maria@example.com', status: 'approved' },
     })
     const { default: InvestorPendingPage } = await import('@/app/investors/(public)/pending/page')
 
@@ -40,7 +40,7 @@ describe('InvestorPendingPage', () => {
   it('renders the pending message (not the rejected message) when status is pending', async () => {
     mockGetInvestorProfile.mockResolvedValue({
       authenticated: true,
-      profile: { userId: 'user-1', fullName: 'Maria Silva', status: 'pending' },
+      profile: { userId: 'user-1', fullName: 'Maria Silva', phone: null, email: 'maria@example.com', status: 'pending' },
     })
     const { default: InvestorPendingPage } = await import('@/app/investors/(public)/pending/page')
 
@@ -53,7 +53,7 @@ describe('InvestorPendingPage', () => {
   it('renders the rejected message when status is rejected', async () => {
     mockGetInvestorProfile.mockResolvedValue({
       authenticated: true,
-      profile: { userId: 'user-1', fullName: 'Maria Silva', status: 'rejected' },
+      profile: { userId: 'user-1', fullName: 'Maria Silva', phone: null, email: 'maria@example.com', status: 'rejected' },
     })
     const { default: InvestorPendingPage } = await import('@/app/investors/(public)/pending/page')
 

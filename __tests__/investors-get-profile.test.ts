@@ -46,7 +46,7 @@ describe('getInvestorProfile', () => {
 
   it('returns the profile when the investor row exists', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-    mockSelect.mockReturnValue(makeSelectChain({ full_name: 'Maria Silva', status: 'pending' }))
+    mockSelect.mockReturnValue(makeSelectChain({ full_name: 'Maria Silva', phone: '912345678', email: 'maria@example.com', status: 'pending' }))
     const { getInvestorProfile } = await import('@/lib/investors/get-profile')
 
     expect(await getInvestorProfile()).toEqual({
@@ -54,6 +54,8 @@ describe('getInvestorProfile', () => {
       profile: {
         userId: 'user-1',
         fullName: 'Maria Silva',
+        phone: '912345678',
+        email: 'maria@example.com',
         status: 'pending',
       },
     })

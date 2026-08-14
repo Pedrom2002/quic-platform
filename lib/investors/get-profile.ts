@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 export type InvestorProfile = {
   userId: string
   fullName: string
+  phone: string | null
+  email: string
   status: 'pending' | 'approved' | 'rejected'
 }
 
@@ -17,7 +19,7 @@ export async function getInvestorProfile(): Promise<InvestorSession> {
 
   const { data: investor } = await supabase
     .from('investors')
-    .select('full_name, status')
+    .select('full_name, phone, email, status')
     .eq('auth_user_id', user.id)
     .single()
 
@@ -28,6 +30,8 @@ export async function getInvestorProfile(): Promise<InvestorSession> {
     profile: {
       userId: user.id,
       fullName: investor.full_name,
+      phone: investor.phone,
+      email: investor.email,
       status: investor.status as InvestorProfile['status'],
     },
   }
