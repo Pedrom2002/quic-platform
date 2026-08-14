@@ -9,7 +9,7 @@ import type { Route } from 'next'
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/investors/dashboard', enabled: true },
   { label: 'Opportunities', href: '/investors/opportunities', enabled: true },
-  { label: 'Track Record', href: '#', enabled: false },
+  { label: 'Track Record', href: '/investors/track-record', enabled: true },
   { label: 'Portfolio', href: '/investors/portfolio', enabled: true },
   { label: 'Documents', href: '/investors/documents', enabled: true },
   { label: 'Insights', href: '#', enabled: false },
