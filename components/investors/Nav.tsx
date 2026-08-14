@@ -11,7 +11,7 @@ const NAV_ITEMS = [
   { label: 'Opportunities', href: '/investors/opportunities', enabled: true },
   { label: 'Track Record', href: '#', enabled: false },
   { label: 'Portfolio', href: '/investors/portfolio', enabled: true },
-  { label: 'Documents', href: '#', enabled: false },
+  { label: 'Documents', href: '/investors/documents', enabled: true },
   { label: 'Insights', href: '#', enabled: false },
   { label: 'Profile / KYC', href: '#', enabled: false },
 ]
