@@ -76,7 +76,7 @@ describe('InvestorPortfolioPage', () => {
     expect(html).toContain('Ainda não tens investimentos.')
   })
 
-  it('renders distinct status labels for active, returned and written_off', async () => {
+  it('renders distinct status labels and classes for active, returned and written_off', async () => {
     mockOrder.mockResolvedValue({
       data: [
         { id: 'inv-1', amount_cents: 10000, invested_at: '2026-01-01T00:00:00Z', status: 'active', investment_projects: { name: 'Projeto A' } },
@@ -91,7 +91,26 @@ describe('InvestorPortfolioPage', () => {
     const html = JSON.stringify(result)
 
     expect(html).toContain('Ativo')
+    expect(html).toContain('text-emerald-400')
     expect(html).toContain('Devolvido')
+    expect(html).toContain('text-sky-400')
     expect(html).toContain('Perdido')
+    expect(html).toContain('text-red-400')
+  })
+
+  it('falls back to the raw status and neutral classes for an unmapped status', async () => {
+    mockOrder.mockResolvedValue({
+      data: [
+        { id: 'inv-1', amount_cents: 10000, invested_at: '2026-01-01T00:00:00Z', status: 'pending_review', investment_projects: { name: 'Projeto D' } },
+      ],
+      error: null,
+    })
+    const { default: InvestorPortfolioPage } = await import('@/app/investors/(gated)/portfolio/page')
+
+    const result = await InvestorPortfolioPage()
+    const html = JSON.stringify(result)
+
+    expect(html).toContain('pending_review')
+    expect(html).toContain('text-zinc-400')
   })
 })
