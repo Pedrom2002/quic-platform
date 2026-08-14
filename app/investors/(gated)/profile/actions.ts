@@ -25,15 +25,16 @@ export async function updateProfile(formData: FormData): Promise<{ error?: strin
     return { error: 'Não foi possível guardar as alterações. Tenta novamente.' }
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('investors')
     .update({
       full_name: parsed.data.fullName,
       phone: parsed.data.phone ?? null,
     })
     .eq('auth_user_id', user.id)
+    .select('id')
 
-  if (error) {
+  if (error || !data || data.length === 0) {
     return { error: 'Não foi possível guardar as alterações. Tenta novamente.' }
   }
 

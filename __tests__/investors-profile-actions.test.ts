@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockUpdate, mockEq, mockCreateClient } = vi.hoisted(() => ({
+const { mockSelect, mockUpdate, mockEq, mockCreateClient } = vi.hoisted(() => ({
+  mockSelect: vi.fn(),
   mockUpdate: vi.fn(),
   mockEq: vi.fn(),
   mockCreateClient: vi.fn(),
@@ -20,9 +21,11 @@ function makeFormData(fields: Record<string, string>): FormData {
 }
 
 beforeEach(() => {
+  mockSelect.mockReset()
   mockUpdate.mockReset()
   mockEq.mockReset()
   mockCreateClient.mockReset()
+  mockEq.mockReturnValue({ select: mockSelect })
   mockUpdate.mockReturnValue({ eq: mockEq })
   mockCreateClient.mockResolvedValue({
     auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1' } } }) },
@@ -32,7 +35,7 @@ beforeEach(() => {
 
 describe('updateProfile', () => {
   it('updates full_name and phone, and nothing else, on valid input', async () => {
-    mockEq.mockResolvedValue({ error: null })
+    mockSelect.mockResolvedValue({ data: [{ id: 'investor-1' }], error: null })
     const { updateProfile } = await import('@/app/investors/(gated)/profile/actions')
 
     const result = await updateProfile(makeFormData({ fullName: 'Maria Silva', phone: '912345678' }))
@@ -45,7 +48,7 @@ describe('updateProfile', () => {
   })
 
   it('allows phone to be omitted (optional field)', async () => {
-    mockEq.mockResolvedValue({ error: null })
+    mockSelect.mockResolvedValue({ data: [{ id: 'investor-1' }], error: null })
     const { updateProfile } = await import('@/app/investors/(gated)/profile/actions')
 
     const result = await updateProfile(makeFormData({ fullName: 'Maria Silva' }))
@@ -64,7 +67,16 @@ describe('updateProfile', () => {
   })
 
   it('returns a generic error when the Supabase update fails', async () => {
-    mockEq.mockResolvedValue({ error: { message: 'update failed' } })
+    mockSelect.mockResolvedValue({ data: null, error: { message: 'update failed' } })
+    const { updateProfile } = await import('@/app/investors/(gated)/profile/actions')
+
+    const result = await updateProfile(makeFormData({ fullName: 'Maria Silva', phone: '912345678' }))
+
+    expect(result.error).toBe('Não foi possível guardar as alterações. Tenta novamente.')
+  })
+
+  it('returns a generic error when the update matches zero rows', async () => {
+    mockSelect.mockResolvedValue({ data: [], error: null })
     const { updateProfile } = await import('@/app/investors/(gated)/profile/actions')
 
     const result = await updateProfile(makeFormData({ fullName: 'Maria Silva', phone: '912345678' }))

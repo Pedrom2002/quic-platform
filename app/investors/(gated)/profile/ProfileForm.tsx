@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +14,7 @@ export function ProfileForm({
   initialFullName: string
   initialPhone: string
 }) {
+  const router = useRouter()
   const [fullName, setFullName] = useState(initialFullName)
   const [phone, setPhone] = useState(initialPhone)
   const [error, setError] = useState<string | null>(null)
@@ -35,6 +37,7 @@ export function ProfileForm({
       setError(result.error)
     } else {
       setSuccess(true)
+      router.refresh()
     }
     setLoading(false)
   }
