@@ -13,7 +13,7 @@ const NAV_ITEMS = [
   { label: 'Portfolio', href: '/investors/portfolio', enabled: true },
   { label: 'Documents', href: '/investors/documents', enabled: true },
   { label: 'Insights', href: '#', enabled: false },
-  { label: 'Profile / KYC', href: '#', enabled: false },
+  { label: 'Profile / KYC', href: '/investors/profile', enabled: true },
 ]
 
 export function Nav({ userName }: { userName: string }) {
