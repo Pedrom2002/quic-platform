@@ -3,7 +3,7 @@ import type { Route } from 'next'
 import { createClient } from '@/lib/supabase/server'
 
 const currencyFormatter = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' })
-const dateFormatter = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' })
+const dateFormatter = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })
 
 function formatCents(cents: number): string {
   return currencyFormatter.format(cents / 100)
@@ -15,6 +15,7 @@ export default async function InvestorOpportunitiesPage() {
     .from('investment_projects')
     .select('id, name, description, funding_goal_cents, investment_deadline')
     .eq('status', 'open')
+    .order('investment_deadline', { ascending: true, nullsFirst: false })
 
   const projects = data ?? []
 

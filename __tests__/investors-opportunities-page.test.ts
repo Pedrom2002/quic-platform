@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockEq, mockSelect, mockCreateClient } = vi.hoisted(() => ({
+const { mockOrder, mockEq, mockSelect, mockCreateClient } = vi.hoisted(() => ({
+  mockOrder: vi.fn(),
   mockEq: vi.fn(),
   mockSelect: vi.fn(),
   mockCreateClient: vi.fn(),
@@ -15,9 +16,11 @@ vi.mock('next/link', () => ({
 }))
 
 beforeEach(() => {
+  mockOrder.mockReset()
   mockEq.mockReset()
   mockSelect.mockReset()
   mockCreateClient.mockReset()
+  mockEq.mockReturnValue({ order: mockOrder })
   mockSelect.mockReturnValue({ eq: mockEq })
   mockCreateClient.mockResolvedValue({
     from: vi.fn().mockReturnValue({ select: mockSelect }),
@@ -26,7 +29,7 @@ beforeEach(() => {
 
 describe('InvestorOpportunitiesPage', () => {
   it('renders only open projects with formatted funding goal', async () => {
-    mockEq.mockResolvedValue({
+    mockOrder.mockResolvedValue({
       data: [
         {
           id: 'proj-1',
@@ -50,7 +53,7 @@ describe('InvestorOpportunitiesPage', () => {
   })
 
   it('shows an empty-state message when there are no open projects', async () => {
-    mockEq.mockResolvedValue({ data: [], error: null })
+    mockOrder.mockResolvedValue({ data: [], error: null })
     const { default: InvestorOpportunitiesPage } = await import('@/app/investors/(gated)/opportunities/page')
 
     const result = await InvestorOpportunitiesPage()
@@ -60,7 +63,7 @@ describe('InvestorOpportunitiesPage', () => {
   })
 
   it('shows an empty-state message when the query returns null data', async () => {
-    mockEq.mockResolvedValue({ data: null, error: null })
+    mockOrder.mockResolvedValue({ data: null, error: null })
     const { default: InvestorOpportunitiesPage } = await import('@/app/investors/(gated)/opportunities/page')
 
     const result = await InvestorOpportunitiesPage()
