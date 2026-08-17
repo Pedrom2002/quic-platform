@@ -22,15 +22,35 @@ jest.mock('expo-router', () => ({
 }))
 
 describe('GoldenCircleScreen', () => {
-  it('shows the Junta-te ao Golden Circle button', () => {
-    const { getByText } = render(<GoldenCircleScreen />)
-
-    expect(getByText('Junta-te ao Golden Circle')).toBeTruthy()
-  })
-
   it('renders the banner header image', () => {
     const { getByTestId } = render(<GoldenCircleScreen />)
 
     expect(getByTestId('banner-header-image')).toBeTruthy()
+  })
+
+  it('renders every section on a single continuous scroll, not swapped by tabs', () => {
+    const { getAllByText } = render(<GoldenCircleScreen />)
+
+    // Todas as seccoes tem de estar montadas em simultaneo (scroll unico),
+    // nao trocadas por uma tab ativa como na versao anterior. Cada label
+    // aparece 2x: uma vez no TopNav e uma vez como titulo da seccao.
+    expect(getAllByText('Opportunities').length).toBeGreaterThanOrEqual(2)
+    expect(getAllByText('How It Works').length).toBeGreaterThanOrEqual(2)
+    expect(getAllByText('About').length).toBeGreaterThanOrEqual(2)
+    expect(getAllByText('Investor Login').length).toBeGreaterThanOrEqual(2)
+    expect(getAllByText('Track Record').length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('renders the opportunities list', () => {
+    const { getByText } = render(<GoldenCircleScreen />)
+
+    expect(getByText('Concerto Sala Tejo — Nov 2026')).toBeTruthy()
+  })
+
+  it('renders the track record stats', () => {
+    const { getByText } = render(<GoldenCircleScreen />)
+
+    expect(getByText('40+')).toBeTruthy()
+    expect(getByText('Concertos produzidos')).toBeTruthy()
   })
 })

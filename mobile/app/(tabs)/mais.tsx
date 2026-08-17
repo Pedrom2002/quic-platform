@@ -1,6 +1,6 @@
 // mobile/app/(tabs)/mais.tsx
 import { useEffect, useState } from 'react'
-import { View, Text, ActivityIndicator, Pressable, Alert, StyleSheet } from 'react-native'
+import { View, Text, ActivityIndicator, Pressable, Alert, StyleSheet, ScrollView } from 'react-native'
 import Constants from 'expo-constants'
 import { useRouter } from 'expo-router'
 import { useSession } from '../../hooks/useSession'
@@ -47,7 +47,7 @@ function MaisContent({ role, email }: { role: UserRole; email: string }) {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <BannerHeader source={require('../../assets/banners/mais.png')} />
       <View style={styles.nameBlock}>
         <View style={styles.avatar}>
@@ -88,7 +88,7 @@ function MaisContent({ role, email }: { role: UserRole; email: string }) {
           <Text style={styles.logoutText}>Terminar sessão</Text>
         </Pressable>
       </View>
-    </View>
+    </ScrollView>
   )
 }
 
@@ -113,6 +113,7 @@ export default function MaisScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
+  scrollContent: { flexGrow: 1 },
   center: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
   nameBlock: { paddingHorizontal: 24, paddingVertical: 20 },
   avatar: {

@@ -1,55 +1,53 @@
 // mobile/app/(tabs)/golden-circle.tsx
-import { useCallback, useState } from 'react'
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native'
+import { useCallback, useRef, useState } from 'react'
+import { View, Text, Pressable, StyleSheet, ScrollView, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { useFocusEffect } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { BannerHeader } from '../../components/BannerHeader'
 import { colors } from '../../lib/theme'
 
-type Tab =
+type SectionId =
   | 'golden-circle'
   | 'opportunities'
   | 'how-it-works'
-  | 'track-record'
-  | 'intelligence'
   | 'about'
   | 'investor-login'
+  | 'track-record'
 
-const TABS: { id: Tab; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+const SECTIONS: { id: SectionId; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { id: 'golden-circle', label: 'Golden Circle', icon: 'star-outline' },
   { id: 'opportunities', label: 'Opportunities', icon: 'trending-up-outline' },
   { id: 'how-it-works', label: 'How It Works', icon: 'layers-outline' },
-  { id: 'track-record', label: 'Track Record', icon: 'bar-chart-outline' },
-  { id: 'intelligence', label: 'Intelligence', icon: 'bulb-outline' },
   { id: 'about', label: 'About', icon: 'information-circle-outline' },
   { id: 'investor-login', label: 'Investor Login', icon: 'key-outline' },
+  { id: 'track-record', label: 'Track Record', icon: 'bar-chart-outline' },
 ]
 
 const GOLD = '#D4AF37'
 
-function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
+function TopNav({ active, onPress }: { active: SectionId; onPress: (id: SectionId) => void }) {
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={tabBarStyles.container}
+      contentContainerStyle={topNavStyles.container}
     >
-      {TABS.map(tab => (
+      {SECTIONS.map(section => (
         <Pressable
-          key={tab.id}
-          onPress={() => onChange(tab.id)}
-          style={[tabBarStyles.tab, active === tab.id && tabBarStyles.tabActive]}
+          key={section.id}
+          onPress={() => onPress(section.id)}
+          style={[topNavStyles.tab, active === section.id && topNavStyles.tabActive]}
           accessibilityRole="button"
-          accessibilityLabel={tab.label}
+          accessibilityLabel={section.label}
         >
           <Ionicons
-            name={tab.icon}
+            name={section.icon}
             size={14}
-            color={active === tab.id ? GOLD : colors.gray400}
+            color={active === section.id ? GOLD : colors.gray400}
           />
-          <Text style={[tabBarStyles.tabText, active === tab.id && tabBarStyles.tabTextActive]}>
-            {tab.label}
+          <Text style={[topNavStyles.tabText, active === section.id && topNavStyles.tabTextActive]}>
+            {section.label}
           </Text>
         </Pressable>
       ))}
@@ -57,174 +55,41 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
   )
 }
 
-function GoldenCircleSection({
-  player,
-  controlsVisible,
-  onShowControls,
-}: {
-  player: ReturnType<typeof useVideoPlayer>
-  controlsVisible: boolean
-  onShowControls: () => void
-}) {
+const OPPORTUNITIES = [
+  { num: '01', title: 'Concerto Sala Tejo — Nov 2026', body: 'Produção de médio porte, capacidade 4.000 lugares. Ronda de investimento em preparação.' },
+  { num: '02', title: 'Digressão Nacional — Q1 2027', body: 'Digressão de 6 datas em 4 cidades. Estrutura de investimento por data ou pacote completo.' },
+  { num: '03', title: 'Festival de Verão — 2027', body: 'Produção de grande escala, múltiplos palcos. Oportunidade em fase de estruturação.' },
+  { num: '04', title: 'Novas oportunidades', body: 'Novas produções são adicionadas regularmente. Investidores Golden Circle têm acesso antecipado.' },
+]
+
+const HOW_IT_WORKS_STEPS = [
+  { num: '01', title: 'Torna-te membro Golden Circle', desc: 'Após aprovação, tens acesso à lista de oportunidades de investimento ativas e ao histórico de produções anteriores.' },
+  { num: '02', title: 'Escolhes a oportunidade', desc: 'Cada produção tem orçamento, capacidade e retorno estimado definidos. Investes no valor e na produção que preferires.' },
+  { num: '03', title: 'Acompanhamento em tempo real', desc: 'Recebes atualizações sobre a produção: vendas de bilhetes, custos, e progresso até ao dia do evento.' },
+  { num: '04', title: 'Retorno após o evento', desc: 'Após a produção e o encerramento de contas, o retorno é distribuído aos investidores dessa oportunidade específica.' },
+]
+
+const TRACK_RECORD_STATS = [
+  { value: '40+', label: 'Concertos produzidos' },
+  { value: '250k+', label: 'Bilhetes vendidos' },
+  { value: '15', label: 'Artistas geridos' },
+  { value: '8', label: 'Anos de atividade' },
+]
+
+function SectionHeading({ title, dark }: { title: string; dark?: boolean }) {
   return (
-    <View style={styles.section}>
-      <Text style={styles.title}>O que é o Golden Circle?</Text>
-      <Text style={styles.paragraph}>
-        O Golden Circle é o círculo restrito de investidores e parceiros estratégicos da Quic, com acesso
-        privilegiado a oportunidades de investimento em produções de eventos e concertos.
-      </Text>
-
-      <Pressable
-        onPress={onShowControls}
-        style={styles.videoWrapper}
-        accessibilityRole="button"
-        accessibilityLabel="Mostrar controlos do vídeo"
-      >
-        <VideoView
-          style={styles.video}
-          player={player}
-          nativeControls={controlsVisible}
-          contentFit="cover"
-        />
-      </Pressable>
-
-      <Pressable style={styles.cta} accessibilityRole="button">
-        <Text style={styles.ctaText}>Junta-te ao Golden Circle</Text>
-      </Pressable>
-    </View>
-  )
-}
-
-function OpportunitiesSection() {
-  const items = [
-    { title: 'Concerto Sala Tejo — Nov 2026', body: 'Produção de médio porte, capacidade 4.000 lugares. Ronda em preparação.' },
-    { title: 'Digressão Nacional — Q1 2027', body: 'Digressão de 6 datas em 4 cidades. Investimento por data ou pacote completo.' },
-    { title: 'Festival de Verão — 2027', body: 'Produção de grande escala, múltiplos palcos. Em fase de estruturação.' },
-    { title: 'Novas oportunidades', body: 'Novas produções são adicionadas regularmente. Investidores Golden Circle têm acesso antecipado.' },
-  ]
-  return (
-    <View style={styles.section}>
-      <Text style={styles.title}>Opportunities</Text>
-      <Text style={styles.paragraph}>
-        Cada oportunidade corresponde a um concerto ou produção em preparação, com orçamento e retorno
-        estimado definidos antes da abertura a investidores.
-      </Text>
-      {items.map((item, i) => (
-        <View key={i} style={styles.card}>
-          <Text style={styles.cardTitle}>{item.title}</Text>
-          <Text style={styles.cardBody}>{item.body}</Text>
-        </View>
-      ))}
-    </View>
-  )
-}
-
-function HowItWorksSection() {
-  const steps = [
-    { num: '01', title: 'Torna-te membro Golden Circle', desc: 'Após aprovação, acedes à lista de oportunidades ativas e ao histórico de produções.' },
-    { num: '02', title: 'Escolhes a oportunidade', desc: 'Investes no valor e na produção que preferires.' },
-    { num: '03', title: 'Acompanhamento em tempo real', desc: 'Recebes atualizações sobre vendas, custos e progresso.' },
-    { num: '04', title: 'Retorno após o evento', desc: 'O retorno é distribuído após o encerramento de contas da produção.' },
-  ]
-  return (
-    <View style={styles.section}>
-      <Text style={styles.title}>How It Works</Text>
-      {steps.map(step => (
-        <View key={step.num} style={styles.stepRow}>
-          <Text style={styles.stepNum}>{step.num}</Text>
-          <View style={styles.stepBody}>
-            <Text style={styles.cardTitle}>{step.title}</Text>
-            <Text style={styles.cardBody}>{step.desc}</Text>
-          </View>
-        </View>
-      ))}
-    </View>
-  )
-}
-
-function TrackRecordSection() {
-  const stats = [
-    { value: '40+', label: 'Concertos produzidos' },
-    { value: '250k+', label: 'Bilhetes vendidos' },
-    { value: '15', label: 'Artistas geridos' },
-    { value: '8', label: 'Anos de atividade' },
-  ]
-  return (
-    <View style={styles.section}>
-      <Text style={styles.title}>Track Record</Text>
-      <View style={styles.statsGrid}>
-        {stats.map(stat => (
-          <View key={stat.label} style={styles.statBox}>
-            <Text style={styles.statValue}>{stat.value}</Text>
-            <Text style={styles.statLabel}>{stat.label}</Text>
-          </View>
-        ))}
-      </View>
-      <Text style={styles.paragraph}>
-        Números indicativos do histórico de produção da Quic. Dados detalhados disponíveis para membros
-        Golden Circle mediante pedido.
-      </Text>
-    </View>
-  )
-}
-
-function IntelligenceSection() {
-  const items = [
-    { title: 'Crescimento do setor de eventos ao vivo', desc: 'O mercado português de concertos tem-se expandido de forma consistente.' },
-    { title: 'Procura por experiências premium', desc: 'Segmentos VIP representam uma fatia crescente da receita por evento.' },
-    { title: 'Digitalização da bilhética', desc: 'Plataformas próprias de venda reduzem dependência de intermediários.' },
-  ]
-  return (
-    <View style={styles.section}>
-      <Text style={styles.title}>Intelligence</Text>
-      <Text style={styles.paragraph}>
-        Análises e tendências da indústria de eventos ao vivo em Portugal, recolhidas pela equipa Quic.
-      </Text>
-      {items.map((item, i) => (
-        <View key={i} style={styles.plainItem}>
-          <Text style={styles.cardTitle}>{item.title}</Text>
-          <Text style={styles.cardBody}>{item.desc}</Text>
-        </View>
-      ))}
-    </View>
-  )
-}
-
-function AboutSection() {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.title}>About</Text>
-      <Text style={styles.paragraph}>
-        A Quic é uma plataforma de gestão e produção de eventos ao vivo, cobrindo bilhética, aluguer de
-        equipamento, gestão de artistas agenciados e coordenação completa de produções de concertos.
-      </Text>
-      <Text style={styles.paragraph}>
-        O Golden Circle nasce da vontade de partilhar o crescimento da empresa com um grupo restrito de
-        parceiros e investidores alinhados com a visão de longo prazo da marca.
-      </Text>
-    </View>
-  )
-}
-
-function InvestorLoginSection() {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.title}>Investor Login</Text>
-      <View style={styles.loginBox}>
-        <Ionicons name="key-outline" size={22} color={colors.gray400} />
-        <Text style={styles.cardTitle}>Área de investidor brevemente disponível</Text>
-        <Text style={styles.cardBody}>
-          Estamos a preparar uma área dedicada para membros Golden Circle. Entretanto, contacte-nos
-          diretamente em goldencircle@quic.pt.
-        </Text>
-      </View>
+    <View style={[styles.sectionHeadingRow, dark && styles.sectionHeadingRowDark]}>
+      <Text style={[styles.sectionTitle, dark && styles.sectionTitleDark]}>{title}</Text>
     </View>
   )
 }
 
 export default function GoldenCircleScreen() {
-  const [activeTab, setActiveTab] = useState<Tab>('golden-circle')
+  const [active, setActive] = useState<SectionId>('golden-circle')
   const [controlsVisible, setControlsVisible] = useState(false)
+  const scrollRef = useRef<ScrollView>(null)
+  const offsets = useRef<Map<SectionId, number>>(new Map())
+
   const player = useVideoPlayer(require('../../assets/videos/golden-circle.mp4'), p => {
     p.loop = false
     p.muted = false
@@ -232,47 +97,147 @@ export default function GoldenCircleScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (activeTab === 'golden-circle') player.play()
+      player.play()
       return () => player.pause()
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [player])
   )
 
-  // Pausa o video sempre que o utilizador troca de sub-tab, para nao continuar
-  // a tocar com som fora de vista (o player e agora top-level e nunca desmonta,
-  // ver commit 60fac30 — sem isto, so o pause do useFocusEffect corria, que so
-  // dispara ao sair do ecra inteiro, nao ao trocar de tab dentro dele).
-  const handleTabChange = (tab: Tab) => {
-    if (tab !== 'golden-circle') player.pause()
-    else player.play()
-    setActiveTab(tab)
+  function handleSectionLayout(id: SectionId, e: LayoutChangeEvent) {
+    offsets.current.set(id, e.nativeEvent.layout.y)
+  }
+
+  function scrollToSection(id: SectionId) {
+    const y = offsets.current.get(id)
+    if (y != null) scrollRef.current?.scrollTo({ y: y - 8, animated: true })
+  }
+
+  function handleScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
+    const scrollY = e.nativeEvent.contentOffset.y
+    let bestId: SectionId = SECTIONS[0].id
+    let bestOffset = -Infinity
+    for (const section of SECTIONS) {
+      const y = offsets.current.get(section.id)
+      if (y != null && y - 80 <= scrollY && y > bestOffset) {
+        bestOffset = y
+        bestId = section.id
+      }
+    }
+    if (bestId !== active) setActive(bestId)
   }
 
   return (
     <View style={styles.container}>
       <BannerHeader source={require('../../assets/banners/golden-circle.png')} />
-      <TabBar active={activeTab} onChange={handleTabChange} />
+      <TopNav active={active} onPress={scrollToSection} />
 
-      <ScrollView contentContainerStyle={styles.scrollBody}>
-        {activeTab === 'golden-circle' && (
-          <GoldenCircleSection
-            player={player}
-            controlsVisible={controlsVisible}
-            onShowControls={() => setControlsVisible(true)}
-          />
-        )}
-        {activeTab === 'opportunities' && <OpportunitiesSection />}
-        {activeTab === 'how-it-works' && <HowItWorksSection />}
-        {activeTab === 'track-record' && <TrackRecordSection />}
-        {activeTab === 'intelligence' && <IntelligenceSection />}
-        {activeTab === 'about' && <AboutSection />}
-        {activeTab === 'investor-login' && <InvestorLoginSection />}
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.scrollBody}
+        onScroll={handleScroll}
+        scrollEventThrottle={32}
+      >
+        <View onLayout={e => handleSectionLayout('golden-circle', e)} style={styles.section}>
+          <SectionHeading title="Golden Circle" />
+          <Text style={styles.paragraph}>
+            O Golden Circle é o círculo restrito de investidores e parceiros estratégicos da Quic, com acesso
+            privilegiado a oportunidades de investimento em produções de eventos e concertos de grande escala,
+            com relatórios de desempenho transparentes e acompanhamento direto da equipa fundadora.
+          </Text>
+          <Pressable
+            onPress={() => setControlsVisible(true)}
+            style={styles.videoWrapper}
+            accessibilityRole="button"
+            accessibilityLabel="Mostrar controlos do vídeo"
+          >
+            <VideoView
+              style={styles.video}
+              player={player}
+              nativeControls={controlsVisible}
+              contentFit="cover"
+            />
+          </Pressable>
+        </View>
+
+        <View onLayout={e => handleSectionLayout('opportunities', e)} style={styles.section}>
+          <SectionHeading title="Opportunities" />
+          <Text style={styles.paragraph}>
+            Cada oportunidade de investimento corresponde a um concerto ou produção de evento em preparação,
+            com orçamento, capacidade de sala e estimativa de retorno definidos antes da abertura a
+            investidores do Golden Circle.
+          </Text>
+          {OPPORTUNITIES.map(item => (
+            <View key={item.num} style={styles.card}>
+              <Text style={styles.cardNum}>{item.num}</Text>
+              <Text style={styles.cardTitle}>{item.title}</Text>
+              <Text style={styles.cardBody}>{item.body}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View onLayout={e => handleSectionLayout('how-it-works', e)} style={styles.section}>
+          <SectionHeading title="How It Works" />
+          {HOW_IT_WORKS_STEPS.map(step => (
+            <View key={step.num} style={styles.stepRow}>
+              <Text style={styles.stepNum}>{step.num}</Text>
+              <View style={styles.stepBody}>
+                <Text style={styles.cardTitle}>{step.title}</Text>
+                <Text style={styles.cardBody}>{step.desc}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        <View onLayout={e => handleSectionLayout('about', e)} style={styles.section}>
+          <SectionHeading title="About" />
+          <Text style={styles.paragraph}>
+            A Quic é uma plataforma de gestão e produção de eventos ao vivo, cobrindo bilhética, aluguer de
+            equipamento, gestão de artistas agenciados e coordenação completa de produções de concertos. O
+            mercado português de concertos e eventos ao vivo tem vindo a expandir-se de forma consistente
+            nos últimos anos.
+          </Text>
+          <Text style={styles.paragraph}>
+            O Golden Circle nasce da vontade de partilhar o crescimento da empresa com um grupo restrito de
+            parceiros e investidores alinhados com a visão de longo prazo da marca.
+          </Text>
+        </View>
+
+        <View onLayout={e => handleSectionLayout('investor-login', e)} style={styles.section}>
+          <SectionHeading title="Investor Login" />
+          <View style={styles.loginBox}>
+            <Ionicons name="key-outline" size={22} color={colors.gray400} />
+            <Text style={styles.cardTitle}>Área de investidor brevemente disponível</Text>
+            <Text style={styles.cardBody}>
+              Estamos a preparar uma área dedicada para membros Golden Circle. Entretanto, contacte-nos
+              diretamente em goldencircle@quic.pt.
+            </Text>
+          </View>
+        </View>
+
+        <View
+          onLayout={e => handleSectionLayout('track-record', e)}
+          style={[styles.section, styles.trackRecordSection]}
+        >
+          <SectionHeading title="Track Record" dark />
+          <View style={styles.statsGrid}>
+            {TRACK_RECORD_STATS.map(stat => (
+              <View key={stat.label} style={styles.statBox}>
+                <Text style={styles.statValue}>{stat.value}</Text>
+                <Text style={styles.statLabel}>{stat.label}</Text>
+              </View>
+            ))}
+          </View>
+          <Text style={styles.paragraphDark}>
+            Números indicativos do histórico de produção da Quic. Dados detalhados disponíveis para membros
+            Golden Circle mediante pedido.
+          </Text>
+        </View>
       </ScrollView>
     </View>
   )
 }
 
-const tabBarStyles = StyleSheet.create({
+const topNavStyles = StyleSheet.create({
   container: { paddingHorizontal: 16, gap: 8, borderBottomWidth: 1, borderBottomColor: colors.gray200 },
   tab: {
     flexDirection: 'row',
@@ -292,18 +257,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   scrollBody: { paddingBottom: 32 },
   section: { padding: 16, gap: 16 },
-  title: { color: colors.gray900, fontSize: 20, fontWeight: 'bold' },
+  sectionHeadingRow: { borderBottomWidth: 1, borderBottomColor: colors.gray900, paddingBottom: 12, marginBottom: 4 },
+  sectionHeadingRowDark: { borderBottomColor: 'rgba(255,255,255,0.1)' },
+  sectionTitle: { color: colors.gray900, fontSize: 20, fontWeight: 'bold' },
+  sectionTitleDark: { color: '#ffffff' },
   paragraph: { color: colors.gray500, fontSize: 13, lineHeight: 20 },
+  paragraphDark: { color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 20 },
   videoWrapper: { width: '100%' },
   video: { width: '100%', aspectRatio: 16 / 9, borderRadius: 8, backgroundColor: colors.gray100 },
-  cta: {
-    backgroundColor: GOLD,
-    borderRadius: 999,
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    alignSelf: 'center',
-  },
-  ctaText: { color: '#ffffff', fontSize: 14, fontWeight: '600' },
   card: {
     backgroundColor: colors.gray50,
     borderRadius: 12,
@@ -312,25 +273,12 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 4,
   },
+  cardNum: { color: colors.brand, fontSize: 10, fontWeight: '700', letterSpacing: 1 },
   cardTitle: { color: colors.gray900, fontSize: 14, fontWeight: '600' },
   cardBody: { color: colors.gray500, fontSize: 12, lineHeight: 18 },
   stepRow: { flexDirection: 'row', gap: 12 },
   stepNum: { color: colors.gray400, fontSize: 11, fontWeight: '600', width: 20 },
   stepBody: { flex: 1, gap: 4 },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  statBox: {
-    flexBasis: '47%',
-    backgroundColor: colors.gray50,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.gray200,
-    padding: 16,
-    alignItems: 'center',
-    gap: 4,
-  },
-  statValue: { color: colors.gray900, fontSize: 22, fontWeight: 'bold' },
-  statLabel: { color: colors.gray500, fontSize: 11, textAlign: 'center' },
-  plainItem: { gap: 4 },
   loginBox: {
     backgroundColor: colors.gray50,
     borderRadius: 12,
@@ -340,4 +288,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  trackRecordSection: {
+    backgroundColor: '#0d0c0d',
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 32,
+    marginTop: 8,
+  },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  statBox: {
+    flexBasis: '47%',
+    backgroundColor: '#141318',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    gap: 4,
+  },
+  statValue: { color: colors.brand, fontSize: 22, fontWeight: 'bold' },
+  statLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, textAlign: 'center' },
 })

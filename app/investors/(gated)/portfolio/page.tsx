@@ -42,8 +42,8 @@ export default async function InvestorPortfolioPage() {
       {investments.length === 0 ? (
         <p className="text-zinc-500">Ainda não tens investimentos.</p>
       ) : (
-        <div className="border border-zinc-200 rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="border border-zinc-200 rounded-lg overflow-x-auto">
+          <table className="w-full text-sm min-w-[36rem]">
             <thead className="bg-zinc-50 text-zinc-500">
               <tr>
                 <th className="text-left px-4 py-3 font-medium">Projeto</th>
