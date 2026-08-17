@@ -24,20 +24,29 @@ export default async function InvestorOpportunityDetailPage({
   if (!project || project.status !== 'open') notFound()
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-8 max-w-3xl">
       <h1 className="text-2xl font-semibold text-zinc-900 mb-4">{project.name}</h1>
       {project.description && (
-        <p className="text-zinc-700 mb-6 whitespace-pre-wrap">{project.description}</p>
+        <p className="text-zinc-700 mb-6 whitespace-pre-wrap leading-relaxed">{project.description}</p>
       )}
-      <div className="border border-zinc-200 bg-zinc-50 rounded-lg p-5 space-y-2">
-        <p className="text-sm text-zinc-700">Meta de financiamento: {formatCents(project.funding_goal_cents)}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="border border-zinc-200 bg-zinc-50 rounded-lg p-5">
+          <p className="text-sm text-zinc-500 mb-1">Meta de financiamento</p>
+          <p className="text-xl font-semibold text-zinc-900">{formatCents(project.funding_goal_cents)}</p>
+        </div>
         {project.capacity != null && (
-          <p className="text-sm text-zinc-700">Capacidade: {project.capacity}</p>
+          <div className="border border-zinc-200 bg-zinc-50 rounded-lg p-5">
+            <p className="text-sm text-zinc-500 mb-1">Capacidade</p>
+            <p className="text-xl font-semibold text-zinc-900">{project.capacity}</p>
+          </div>
         )}
         {project.investment_deadline && (
-          <p className="text-sm text-zinc-700">
-            Prazo: {dateFormatter.format(new Date(project.investment_deadline))}
-          </p>
+          <div className="border border-zinc-200 bg-zinc-50 rounded-lg p-5">
+            <p className="text-sm text-zinc-500 mb-1">Prazo</p>
+            <p className="text-xl font-semibold text-zinc-900">
+              {dateFormatter.format(new Date(project.investment_deadline))}
+            </p>
+          </div>
         )}
       </div>
     </div>

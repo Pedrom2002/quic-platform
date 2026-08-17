@@ -66,12 +66,12 @@ export function ProfileForm({
       </div>
 
       {error && (
-        <p role="alert" className="text-sm text-red-400 bg-red-950/30 border border-red-900 rounded-md px-3 py-2">
+        <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
           {error}
         </p>
       )}
       {success && (
-        <p className="text-sm text-emerald-400 bg-emerald-950/30 border border-emerald-900 rounded-md px-3 py-2">
+        <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
           Alterações guardadas.
         </p>
       )}

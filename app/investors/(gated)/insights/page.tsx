@@ -25,12 +25,22 @@ const STATUS_CLASSES: Record<string, string> = {
   written_off: 'bg-red-50 text-red-700 border-red-200',
 }
 
+const STATUS_BAR_CLASSES: Record<string, string> = {
+  active: 'bg-emerald-500',
+  returned: 'bg-sky-500',
+  written_off: 'bg-red-500',
+}
+
 function statusLabel(status: string): string {
   return STATUS_LABELS[status] ?? status
 }
 
 function statusClasses(status: string): string {
   return STATUS_CLASSES[status] ?? 'bg-zinc-100 text-zinc-600 border-zinc-200'
+}
+
+function statusBarClasses(status: string): string {
+  return STATUS_BAR_CLASSES[status] ?? 'bg-zinc-400'
 }
 
 type StatusBreakdown = {
@@ -83,7 +93,13 @@ export default async function InvestorInsightsPage() {
                 {`${breakdown.count} investimento${breakdown.count === 1 ? '' : 's'}`}
               </p>
               <p className="text-xl font-semibold text-zinc-900 mt-1">{formatCents(breakdown.totalCents)}</p>
-              <p className="text-sm text-zinc-500 mt-1">{`${formatPercentage(breakdown.percentage)}%`}</p>
+              <p className="text-sm text-zinc-500 mt-1 mb-2">{`${formatPercentage(breakdown.percentage)}%`}</p>
+              <div className="h-1.5 w-full bg-zinc-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${statusBarClasses(breakdown.status)}`}
+                  style={{ width: `${Math.min(breakdown.percentage, 100)}%` }}
+                />
+              </div>
             </div>
           ))}
         </div>

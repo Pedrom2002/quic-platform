@@ -36,10 +36,13 @@ export default async function InvestorProfilePage() {
   return (
     <div className="p-8 max-w-lg">
       <h1 className="text-2xl font-semibold text-zinc-900 mb-6">Profile / KYC</h1>
-      <div className="border border-zinc-200 bg-zinc-50 rounded-lg p-5 mb-6 space-y-2">
-        <p className="text-sm text-zinc-700">Email: {profile.email}</p>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-zinc-700">Estado:</span>
+      <div className="border border-zinc-200 bg-zinc-50 rounded-lg p-5 mb-6 grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-xs text-zinc-500 mb-1">Email</p>
+          <p className="text-sm font-medium text-zinc-900 truncate">{profile.email}</p>
+        </div>
+        <div>
+          <p className="text-xs text-zinc-500 mb-1">Estado</p>
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${statusClasses(profile.status)}`}>
             {statusLabel(profile.status)}
           </span>

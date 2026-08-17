@@ -39,43 +39,49 @@ export default async function InvestorDocumentsPage() {
       {documents.length === 0 ? (
         <p className="text-zinc-500">Ainda não tens documentos disponíveis.</p>
       ) : (
-        <div className="border border-zinc-200 rounded-lg overflow-x-auto">
-          <table className="w-full text-sm min-w-[36rem]">
-            <thead className="bg-zinc-50 text-zinc-500">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium">Título</th>
-                <th className="text-left px-4 py-3 font-medium">Tipo</th>
-                <th className="text-left px-4 py-3 font-medium">Data</th>
-                <th className="text-left px-4 py-3 font-medium">Download</th>
-              </tr>
-            </thead>
-            <tbody>
-              {documents.map(doc => (
-                <tr key={doc.id} className="border-t border-zinc-200">
-                  <td className="px-4 py-3 text-zinc-900">{doc.title}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${documentTypeClasses(doc.type)}`}>
-                      {documentTypeLabel(doc.type)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-zinc-700">
-                    {dateFormatter.format(new Date(doc.uploaded_at))}
-                  </td>
-                  <td className="px-4 py-3">
-                    <a
-                      href={doc.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[var(--quic-magenta)] hover:underline"
-                    >
-                      Descarregar
-                    </a>
-                  </td>
+        <>
+          <p className="text-sm text-zinc-500 mb-6">
+            {`${documents.length} documento${documents.length === 1 ? '' : 's'} disponíve${documents.length === 1 ? 'l' : 'is'}`}
+          </p>
+
+          <div className="border border-zinc-200 rounded-lg overflow-x-auto">
+            <table className="w-full text-sm min-w-[36rem]">
+              <thead className="bg-zinc-50 text-zinc-500">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium">Título</th>
+                  <th className="text-left px-4 py-3 font-medium">Tipo</th>
+                  <th className="text-left px-4 py-3 font-medium">Data</th>
+                  <th className="text-left px-4 py-3 font-medium">Download</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {documents.map(doc => (
+                  <tr key={doc.id} className="border-t border-zinc-200 hover:bg-zinc-50">
+                    <td className="px-4 py-3 text-zinc-900">{doc.title}</td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${documentTypeClasses(doc.type)}`}>
+                        {documentTypeLabel(doc.type)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-zinc-700">
+                      {dateFormatter.format(new Date(doc.uploaded_at))}
+                    </td>
+                    <td className="px-4 py-3">
+                      <a
+                        href={doc.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[var(--quic-magenta)] hover:underline font-medium"
+                      >
+                        Descarregar
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   )

@@ -35,6 +35,8 @@ export default async function InvestorPortfolioPage() {
     .order('invested_at', { ascending: false })
 
   const investments = data ?? []
+  const totalCents = investments.reduce((sum, inv) => sum + inv.amount_cents, 0)
+  const activeCount = investments.filter(inv => inv.status === 'active').length
 
   return (
     <div className="p-8">
@@ -42,34 +44,51 @@ export default async function InvestorPortfolioPage() {
       {investments.length === 0 ? (
         <p className="text-zinc-500">Ainda não tens investimentos.</p>
       ) : (
-        <div className="border border-zinc-200 rounded-lg overflow-x-auto">
-          <table className="w-full text-sm min-w-[36rem]">
-            <thead className="bg-zinc-50 text-zinc-500">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium">Projeto</th>
-                <th className="text-left px-4 py-3 font-medium">Valor</th>
-                <th className="text-left px-4 py-3 font-medium">Data</th>
-                <th className="text-left px-4 py-3 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {investments.map(investment => (
-                <tr key={investment.id} className="border-t border-zinc-200">
-                  <td className="px-4 py-3 text-zinc-900">{investment.investment_projects?.name ?? '—'}</td>
-                  <td className="px-4 py-3 text-zinc-700">{formatCents(investment.amount_cents)}</td>
-                  <td className="px-4 py-3 text-zinc-700">
-                    {dateFormatter.format(new Date(investment.invested_at))}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${statusBadgeClasses(investment.status)}`}>
-                      {statusBadgeLabel(investment.status)}
-                    </span>
-                  </td>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div className="border border-zinc-200 bg-zinc-50 rounded-lg p-5">
+              <p className="text-sm text-zinc-500 mb-1">Total investido</p>
+              <p className="text-2xl font-semibold text-zinc-900">{formatCents(totalCents)}</p>
+            </div>
+            <div className="border border-zinc-200 bg-zinc-50 rounded-lg p-5">
+              <p className="text-sm text-zinc-500 mb-1">Investimentos</p>
+              <p className="text-2xl font-semibold text-zinc-900">{investments.length}</p>
+            </div>
+            <div className="border border-zinc-200 bg-zinc-50 rounded-lg p-5">
+              <p className="text-sm text-zinc-500 mb-1">Ativos</p>
+              <p className="text-2xl font-semibold text-zinc-900">{activeCount}</p>
+            </div>
+          </div>
+
+          <div className="border border-zinc-200 rounded-lg overflow-x-auto">
+            <table className="w-full text-sm min-w-[36rem]">
+              <thead className="bg-zinc-50 text-zinc-500">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium">Projeto</th>
+                  <th className="text-left px-4 py-3 font-medium">Valor</th>
+                  <th className="text-left px-4 py-3 font-medium">Data</th>
+                  <th className="text-left px-4 py-3 font-medium">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {investments.map(investment => (
+                  <tr key={investment.id} className="border-t border-zinc-200 hover:bg-zinc-50">
+                    <td className="px-4 py-3 text-zinc-900">{investment.investment_projects?.name ?? '—'}</td>
+                    <td className="px-4 py-3 text-zinc-700">{formatCents(investment.amount_cents)}</td>
+                    <td className="px-4 py-3 text-zinc-700">
+                      {dateFormatter.format(new Date(investment.invested_at))}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${statusBadgeClasses(investment.status)}`}>
+                        {statusBadgeLabel(investment.status)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   )
