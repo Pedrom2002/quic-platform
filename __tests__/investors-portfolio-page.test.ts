@@ -91,11 +91,11 @@ describe('InvestorPortfolioPage', () => {
     const html = JSON.stringify(result)
 
     expect(html).toContain('Ativo')
-    expect(html).toContain('text-emerald-400')
+    expect(html).toContain('text-emerald-700')
     expect(html).toContain('Devolvido')
-    expect(html).toContain('text-sky-400')
+    expect(html).toContain('text-sky-700')
     expect(html).toContain('Perdido')
-    expect(html).toContain('text-red-400')
+    expect(html).toContain('text-red-700')
   })
 
   it('falls back to the raw status and neutral classes for an unmapped status', async () => {
@@ -111,6 +111,6 @@ describe('InvestorPortfolioPage', () => {
     const html = JSON.stringify(result)
 
     expect(html).toContain('pending_review')
-    expect(html).toContain('text-zinc-400')
+    expect(html).toContain('text-zinc-600')
   })
 })

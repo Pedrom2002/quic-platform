@@ -21,22 +21,22 @@ export default async function InvestorOpportunitiesPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-semibold text-white mb-6">Opportunities</h1>
+      <h1 className="text-2xl font-semibold text-zinc-900 mb-6">Opportunities</h1>
       {projects.length === 0 ? (
-        <p className="text-zinc-400">Sem oportunidades disponíveis de momento.</p>
+        <p className="text-zinc-500">Sem oportunidades disponíveis de momento.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map(project => (
             <Link
               key={project.id}
               href={`/investors/opportunities/${project.id}` as Route}
-              className="block border border-zinc-800 bg-zinc-900 rounded-lg p-5 hover:border-zinc-700"
+              className="block border border-zinc-200 bg-zinc-50 rounded-lg p-5 hover:border-zinc-300"
             >
-              <h2 className="text-lg font-semibold text-white mb-2">{project.name}</h2>
+              <h2 className="text-lg font-semibold text-zinc-900 mb-2">{project.name}</h2>
               {project.description && (
-                <p className="text-sm text-zinc-400 mb-3 line-clamp-2">{project.description}</p>
+                <p className="text-sm text-zinc-500 mb-3 line-clamp-2">{project.description}</p>
               )}
-              <p className="text-sm text-zinc-300">Meta: {formatCents(project.funding_goal_cents)}</p>
+              <p className="text-sm text-zinc-700">Meta: {formatCents(project.funding_goal_cents)}</p>
               {project.investment_deadline && (
                 <p className="text-sm text-zinc-500">
                   Prazo: {dateFormatter.format(new Date(project.investment_deadline))}

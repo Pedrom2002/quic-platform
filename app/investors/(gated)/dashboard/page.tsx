@@ -18,12 +18,12 @@ export default async function InvestorDashboardPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-semibold text-white mb-6">Dashboard</h1>
+      <h1 className="text-2xl font-semibold text-zinc-900 mb-6">Dashboard</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map(card => (
-          <div key={card.label} className="border border-zinc-800 bg-zinc-900 rounded-lg p-5">
-            <p className="text-sm text-zinc-400 mb-1">{card.label}</p>
-            <p className="text-2xl font-semibold text-white">{card.value}</p>
+          <div key={card.label} className="border border-zinc-200 bg-zinc-50 rounded-lg p-5">
+            <p className="text-sm text-zinc-500 mb-1">{card.label}</p>
+            <p className="text-2xl font-semibold text-zinc-900">{card.value}</p>
           </div>
         ))}
       </div>

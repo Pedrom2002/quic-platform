@@ -92,13 +92,13 @@ describe('InvestorDocumentsPage', () => {
     const html = JSON.stringify(result)
 
     expect(html).toContain('Contrato')
-    expect(html).toContain('text-sky-400')
+    expect(html).toContain('text-sky-700')
     expect(html).toContain('Relatório')
-    expect(html).toContain('text-emerald-400')
+    expect(html).toContain('text-emerald-700')
     expect(html).toContain('Fiscal')
-    expect(html).toContain('text-amber-400')
+    expect(html).toContain('text-amber-700')
     expect(html).toContain('Apresentação')
-    expect(html).toContain('text-violet-400')
+    expect(html).toContain('text-violet-700')
   })
 
   it('falls back to the raw type and neutral classes for an unmapped type', async () => {
@@ -114,6 +114,6 @@ describe('InvestorDocumentsPage', () => {
     const html = JSON.stringify(result)
 
     expect(html).toContain('legal_notice')
-    expect(html).toContain('text-zinc-400')
+    expect(html).toContain('text-zinc-600')
   })
 })

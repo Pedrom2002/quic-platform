@@ -10,7 +10,7 @@ export default async function InvestorsGatedLayout({ children }: { children: Rea
   if (!session.profile || session.profile.status !== 'approved') redirect('/investors/pending')
 
   return (
-    <div className="flex min-h-screen bg-zinc-950">
+    <div className="flex min-h-screen bg-white">
       <Nav userName={session.profile.fullName} />
       <main className="flex-1 overflow-auto">{children}</main>
     </div>

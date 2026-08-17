@@ -14,9 +14,9 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_CLASSES: Record<string, string> = {
-  active: 'bg-emerald-950/40 text-emerald-400 border-emerald-900',
-  returned: 'bg-sky-950/40 text-sky-400 border-sky-900',
-  written_off: 'bg-red-950/40 text-red-400 border-red-900',
+  active: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  returned: 'bg-sky-50 text-sky-700 border-sky-200',
+  written_off: 'bg-red-50 text-red-700 border-red-200',
 }
 
 function statusBadgeLabel(status: string): string {
@@ -24,7 +24,7 @@ function statusBadgeLabel(status: string): string {
 }
 
 function statusBadgeClasses(status: string): string {
-  return STATUS_CLASSES[status] ?? 'bg-zinc-800 text-zinc-400 border-zinc-700'
+  return STATUS_CLASSES[status] ?? 'bg-zinc-100 text-zinc-600 border-zinc-200'
 }
 
 export default async function InvestorPortfolioPage() {
@@ -38,13 +38,13 @@ export default async function InvestorPortfolioPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-semibold text-white mb-6">Portfolio</h1>
+      <h1 className="text-2xl font-semibold text-zinc-900 mb-6">Portfolio</h1>
       {investments.length === 0 ? (
-        <p className="text-zinc-400">Ainda não tens investimentos.</p>
+        <p className="text-zinc-500">Ainda não tens investimentos.</p>
       ) : (
-        <div className="border border-zinc-800 rounded-lg overflow-hidden">
+        <div className="border border-zinc-200 rounded-lg overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-zinc-900 text-zinc-400">
+            <thead className="bg-zinc-50 text-zinc-500">
               <tr>
                 <th className="text-left px-4 py-3 font-medium">Projeto</th>
                 <th className="text-left px-4 py-3 font-medium">Valor</th>
@@ -54,10 +54,10 @@ export default async function InvestorPortfolioPage() {
             </thead>
             <tbody>
               {investments.map(investment => (
-                <tr key={investment.id} className="border-t border-zinc-800">
-                  <td className="px-4 py-3 text-white">{investment.investment_projects?.name ?? '—'}</td>
-                  <td className="px-4 py-3 text-zinc-300">{formatCents(investment.amount_cents)}</td>
-                  <td className="px-4 py-3 text-zinc-300">
+                <tr key={investment.id} className="border-t border-zinc-200">
+                  <td className="px-4 py-3 text-zinc-900">{investment.investment_projects?.name ?? '—'}</td>
+                  <td className="px-4 py-3 text-zinc-700">{formatCents(investment.amount_cents)}</td>
+                  <td className="px-4 py-3 text-zinc-700">
                     {dateFormatter.format(new Date(investment.invested_at))}
                   </td>
                   <td className="px-4 py-3">

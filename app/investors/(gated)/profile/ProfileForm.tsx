@@ -45,23 +45,23 @@ export function ProfileForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1.5">
-        <Label htmlFor="fullName" className="text-zinc-300">Nome completo</Label>
+        <Label htmlFor="fullName" className="text-zinc-700">Nome completo</Label>
         <Input
           id="fullName"
           value={fullName}
           onChange={e => setFullName(e.target.value)}
           required
-          className="bg-zinc-800 border-zinc-700 text-white"
+          className="bg-white border-zinc-300 text-zinc-900"
         />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="phone" className="text-zinc-300">Telefone</Label>
+        <Label htmlFor="phone" className="text-zinc-700">Telefone</Label>
         <Input
           id="phone"
           value={phone}
           onChange={e => setPhone(e.target.value)}
-          className="bg-zinc-800 border-zinc-700 text-white"
+          className="bg-white border-zinc-300 text-zinc-900"
         />
       </div>
 

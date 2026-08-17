@@ -20,9 +20,9 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_CLASSES: Record<string, string> = {
-  active: 'bg-emerald-950/40 text-emerald-400 border-emerald-900',
-  returned: 'bg-sky-950/40 text-sky-400 border-sky-900',
-  written_off: 'bg-red-950/40 text-red-400 border-red-900',
+  active: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  returned: 'bg-sky-50 text-sky-700 border-sky-200',
+  written_off: 'bg-red-50 text-red-700 border-red-200',
 }
 
 function statusLabel(status: string): string {
@@ -30,7 +30,7 @@ function statusLabel(status: string): string {
 }
 
 function statusClasses(status: string): string {
-  return STATUS_CLASSES[status] ?? 'bg-zinc-800 text-zinc-400 border-zinc-700'
+  return STATUS_CLASSES[status] ?? 'bg-zinc-100 text-zinc-600 border-zinc-200'
 }
 
 type StatusBreakdown = {
@@ -69,21 +69,21 @@ export default async function InvestorInsightsPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-semibold text-white mb-6">Insights</h1>
+      <h1 className="text-2xl font-semibold text-zinc-900 mb-6">Insights</h1>
       {investments.length === 0 ? (
-        <p className="text-zinc-400">Ainda não tens investimentos para analisar.</p>
+        <p className="text-zinc-500">Ainda não tens investimentos para analisar.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {aggregateByStatus(investments).map(breakdown => (
-            <div key={breakdown.status} className="border border-zinc-800 bg-zinc-900 rounded-lg p-5">
+            <div key={breakdown.status} className="border border-zinc-200 bg-zinc-50 rounded-lg p-5">
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${statusClasses(breakdown.status)}`}>
                 {statusLabel(breakdown.status)}
               </span>
-              <p className="text-sm text-zinc-400 mt-3">
+              <p className="text-sm text-zinc-500 mt-3">
                 {`${breakdown.count} investimento${breakdown.count === 1 ? '' : 's'}`}
               </p>
-              <p className="text-xl font-semibold text-white mt-1">{formatCents(breakdown.totalCents)}</p>
-              <p className="text-sm text-zinc-400 mt-1">{`${formatPercentage(breakdown.percentage)}%`}</p>
+              <p className="text-xl font-semibold text-zinc-900 mt-1">{formatCents(breakdown.totalCents)}</p>
+              <p className="text-sm text-zinc-500 mt-1">{`${formatPercentage(breakdown.percentage)}%`}</p>
             </div>
           ))}
         </div>

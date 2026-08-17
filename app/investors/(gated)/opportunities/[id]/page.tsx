@@ -25,17 +25,17 @@ export default async function InvestorOpportunityDetailPage({
 
   return (
     <div className="p-8 max-w-2xl">
-      <h1 className="text-2xl font-semibold text-white mb-4">{project.name}</h1>
+      <h1 className="text-2xl font-semibold text-zinc-900 mb-4">{project.name}</h1>
       {project.description && (
-        <p className="text-zinc-300 mb-6 whitespace-pre-wrap">{project.description}</p>
+        <p className="text-zinc-700 mb-6 whitespace-pre-wrap">{project.description}</p>
       )}
-      <div className="border border-zinc-800 bg-zinc-900 rounded-lg p-5 space-y-2">
-        <p className="text-sm text-zinc-300">Meta de financiamento: {formatCents(project.funding_goal_cents)}</p>
+      <div className="border border-zinc-200 bg-zinc-50 rounded-lg p-5 space-y-2">
+        <p className="text-sm text-zinc-700">Meta de financiamento: {formatCents(project.funding_goal_cents)}</p>
         {project.capacity != null && (
-          <p className="text-sm text-zinc-300">Capacidade: {project.capacity}</p>
+          <p className="text-sm text-zinc-700">Capacidade: {project.capacity}</p>
         )}
         {project.investment_deadline && (
-          <p className="text-sm text-zinc-300">
+          <p className="text-sm text-zinc-700">
             Prazo: {dateFormatter.format(new Date(project.investment_deadline))}
           </p>
         )}

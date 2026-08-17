@@ -18,13 +18,13 @@ export default async function InvestorTrackRecordPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-semibold text-white mb-6">Track Record</h1>
+      <h1 className="text-2xl font-semibold text-zinc-900 mb-6">Track Record</h1>
       {projects.length === 0 ? (
-        <p className="text-zinc-400">Ainda não há projetos concluídos para mostrar.</p>
+        <p className="text-zinc-500">Ainda não há projetos concluídos para mostrar.</p>
       ) : (
-        <div className="border border-zinc-800 rounded-lg overflow-hidden">
+        <div className="border border-zinc-200 rounded-lg overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-zinc-900 text-zinc-400">
+            <thead className="bg-zinc-50 text-zinc-500">
               <tr>
                 <th className="text-left px-4 py-3 font-medium">Projeto</th>
                 <th className="text-left px-4 py-3 font-medium">Meta</th>
@@ -34,13 +34,13 @@ export default async function InvestorTrackRecordPage() {
             </thead>
             <tbody>
               {projects.map(project => (
-                <tr key={project.id} className="border-t border-zinc-800">
-                  <td className="px-4 py-3 text-white">{project.name}</td>
-                  <td className="px-4 py-3 text-zinc-300">{formatCents(project.funding_goal_cents)}</td>
-                  <td className="px-4 py-3 text-zinc-300">
+                <tr key={project.id} className="border-t border-zinc-200">
+                  <td className="px-4 py-3 text-zinc-900">{project.name}</td>
+                  <td className="px-4 py-3 text-zinc-700">{formatCents(project.funding_goal_cents)}</td>
+                  <td className="px-4 py-3 text-zinc-700">
                     {project.actual_revenue_cents != null ? formatCents(project.actual_revenue_cents) : '—'}
                   </td>
-                  <td className="px-4 py-3 text-zinc-300">
+                  <td className="px-4 py-3 text-zinc-700">
                     {project.attendance != null ? project.attendance : '—'}
                   </td>
                 </tr>
