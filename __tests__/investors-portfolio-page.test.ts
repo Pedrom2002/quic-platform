@@ -161,4 +161,21 @@ describe('InvestorPortfolioPage', () => {
     expect(html).toContain('1500,00')
     expect(html).toContain('Total investido')
   })
+
+  it('maps project status to a sales status label for the summary footer', async () => {
+    mockOrder.mockResolvedValue({
+      data: [
+        { id: 'inv-1', amount_cents: 10000, status: 'active', projected_return_cents: null, investment_projects: { name: 'P1', status: 'open' } },
+        { id: 'inv-2', amount_cents: 10000, status: 'active', projected_return_cents: null, investment_projects: { name: 'P2', status: 'closed' } },
+      ],
+      error: null,
+    })
+    const { default: InvestorPortfolioPage } = await import('@/app/investors/(gated)/portfolio/page')
+
+    const result = await InvestorPortfolioPage()
+    const html = JSON.stringify(result)
+
+    expect(html).toContain('Vendas abertas')
+    expect(html).toContain('Em produção')
+  })
 })

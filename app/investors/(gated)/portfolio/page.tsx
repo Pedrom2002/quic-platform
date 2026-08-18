@@ -28,6 +28,13 @@ const NEXT_MILESTONE: Record<string, string> = {
   completed: 'Distribuição',
 }
 
+const SALES_STATUS_LABELS: Record<string, string> = {
+  coming_soon: 'Brevemente disponível',
+  open: 'Vendas abertas',
+  closed: 'Em produção',
+  completed: 'Concluído',
+}
+
 function phaseLabel(projectStatus: string | undefined): string {
   return PHASE_LABELS[projectStatus ?? ''] ?? 'Sem fase'
 }
@@ -38,6 +45,10 @@ function phaseClasses(projectStatus: string | undefined): string {
 
 function nextMilestone(projectStatus: string | undefined): string {
   return NEXT_MILESTONE[projectStatus ?? ''] ?? '—'
+}
+
+function salesStatusLabel(projectStatus: string | undefined): string {
+  return SALES_STATUS_LABELS[projectStatus ?? ''] ?? 'Sem estado'
 }
 
 export default async function InvestorPortfolioPage() {
@@ -56,6 +67,7 @@ export default async function InvestorPortfolioPage() {
     projectName: inv.investment_projects?.name ?? 'Projeto sem nome',
     phaseLabel: phaseLabel(inv.investment_projects?.status),
     phaseClasses: phaseClasses(inv.investment_projects?.status),
+    salesStatusLabel: salesStatusLabel(inv.investment_projects?.status),
     amountCents: inv.amount_cents,
     returnPercentage:
       inv.projected_return_cents != null && inv.amount_cents > 0
