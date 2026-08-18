@@ -18,8 +18,8 @@ export function EvolutionChart({ data }: { data: { month: string; valueCents: nu
         <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="evolutionFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#eab308" stopOpacity={0.25} />
-              <stop offset="100%" stopColor="#eab308" stopOpacity={0} />
+              <stop offset="0%" stopColor="#951b81" stopOpacity={0.25} />
+              <stop offset="100%" stopColor="#951b81" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" vertical={false} />
@@ -35,10 +35,10 @@ export function EvolutionChart({ data }: { data: { month: string; valueCents: nu
           <Area
             type="monotone"
             dataKey="valueCents"
-            stroke="#eab308"
+            stroke="#951b81"
             strokeWidth={2}
             fill="url(#evolutionFill)"
-            dot={{ r: 3, stroke: '#eab308', fill: '#ffffff', strokeWidth: 2 }}
+            dot={{ r: 3, stroke: '#951b81', fill: '#ffffff', strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>
