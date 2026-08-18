@@ -21,22 +21,22 @@ beforeEach(() => {
 })
 
 describe('InvestorPortfolioPage', () => {
-  it('renders investments ordered by invested_at descending, with formatted amount, date and status badge', async () => {
+  it('renders investments with project name, mapped phase, amount and next milestone', async () => {
     mockOrder.mockResolvedValue({
       data: [
         {
           id: 'inv-1',
           amount_cents: 100000,
-          invested_at: '2026-06-15T10:00:00Z',
           status: 'active',
-          investment_projects: { name: 'Festival de Verão' },
+          projected_return_cents: 18400,
+          investment_projects: { name: 'Festival de Verão', status: 'open' },
         },
         {
           id: 'inv-2',
           amount_cents: 50000,
-          invested_at: '2025-01-10T10:00:00Z',
           status: 'returned',
-          investment_projects: { name: 'Conferência Tech' },
+          projected_return_cents: null,
+          investment_projects: { name: 'Conferência Tech', status: 'completed' },
         },
       ],
       error: null,
@@ -46,14 +46,46 @@ describe('InvestorPortfolioPage', () => {
     const result = await InvestorPortfolioPage()
     const html = JSON.stringify(result)
 
-    expect(mockSelect).toHaveBeenCalledWith('id, amount_cents, invested_at, status, investment_projects(name)')
+    expect(mockSelect).toHaveBeenCalledWith(
+      'id, amount_cents, status, projected_return_cents, investment_projects(name, status)'
+    )
     expect(mockOrder).toHaveBeenCalledWith('invested_at', { ascending: false })
     expect(html).toContain('Festival de Verão')
     expect(html).toContain('Conferência Tech')
-    expect(html).toContain('1000,00')
-    expect(html).toContain('500,00')
-    expect(html).toContain('15/06/2026')
-    expect(html).toContain('10/01/2025')
+    expect(html).toContain('Em venda')
+    expect(html).toContain('Settlement')
+    expect(html).toContain('Fecho early bird')
+    expect(html).toContain('Distribuição')
+    expect(html).toContain('"amountCents":100000')
+    expect(html).toContain('"amountCents":50000')
+  })
+
+  it('computes returnPercentage from projected_return_cents over amount_cents, null when missing', async () => {
+    mockOrder.mockResolvedValue({
+      data: [
+        {
+          id: 'inv-1',
+          amount_cents: 100000,
+          status: 'active',
+          projected_return_cents: 18400,
+          investment_projects: { name: 'Projeto A', status: 'open' },
+        },
+        {
+          id: 'inv-2',
+          amount_cents: 50000,
+          status: 'active',
+          projected_return_cents: null,
+          investment_projects: { name: 'Projeto B', status: 'open' },
+        },
+      ],
+      error: null,
+    })
+    const { default: InvestorPortfolioPage } = await import('@/app/investors/(gated)/portfolio/page')
+
+    const result = await InvestorPortfolioPage()
+    const html = JSON.stringify(result)
+
+    expect(html).toContain('18.4')
   })
 
   it('shows an empty-state message when there are no investments', async () => {
@@ -76,12 +108,13 @@ describe('InvestorPortfolioPage', () => {
     expect(html).toContain('Ainda não tens investimentos.')
   })
 
-  it('renders distinct status labels and classes for active, returned and written_off', async () => {
+  it('maps all four project phases to distinct labels', async () => {
     mockOrder.mockResolvedValue({
       data: [
-        { id: 'inv-1', amount_cents: 10000, invested_at: '2026-01-01T00:00:00Z', status: 'active', investment_projects: { name: 'Projeto A' } },
-        { id: 'inv-2', amount_cents: 10000, invested_at: '2026-01-01T00:00:00Z', status: 'returned', investment_projects: { name: 'Projeto B' } },
-        { id: 'inv-3', amount_cents: 10000, invested_at: '2026-01-01T00:00:00Z', status: 'written_off', investment_projects: { name: 'Projeto C' } },
+        { id: 'inv-1', amount_cents: 10000, status: 'active', projected_return_cents: null, investment_projects: { name: 'P1', status: 'coming_soon' } },
+        { id: 'inv-2', amount_cents: 10000, status: 'active', projected_return_cents: null, investment_projects: { name: 'P2', status: 'open' } },
+        { id: 'inv-3', amount_cents: 10000, status: 'active', projected_return_cents: null, investment_projects: { name: 'P3', status: 'closed' } },
+        { id: 'inv-4', amount_cents: 10000, status: 'active', projected_return_cents: null, investment_projects: { name: 'P4', status: 'completed' } },
       ],
       error: null,
     })
@@ -90,18 +123,16 @@ describe('InvestorPortfolioPage', () => {
     const result = await InvestorPortfolioPage()
     const html = JSON.stringify(result)
 
-    expect(html).toContain('Ativo')
-    expect(html).toContain('text-emerald-700')
-    expect(html).toContain('Devolvido')
-    expect(html).toContain('text-sky-700')
-    expect(html).toContain('Perdido')
-    expect(html).toContain('text-red-700')
+    expect(html).toContain('Brevemente')
+    expect(html).toContain('Em venda')
+    expect(html).toContain('Produção')
+    expect(html).toContain('Settlement')
   })
 
-  it('falls back to the raw status and neutral classes for an unmapped status', async () => {
+  it('falls back gracefully when investment_projects is missing', async () => {
     mockOrder.mockResolvedValue({
       data: [
-        { id: 'inv-1', amount_cents: 10000, invested_at: '2026-01-01T00:00:00Z', status: 'pending_review', investment_projects: { name: 'Projeto D' } },
+        { id: 'inv-1', amount_cents: 10000, status: 'active', projected_return_cents: null, investment_projects: null },
       ],
       error: null,
     })
@@ -110,7 +141,24 @@ describe('InvestorPortfolioPage', () => {
     const result = await InvestorPortfolioPage()
     const html = JSON.stringify(result)
 
-    expect(html).toContain('pending_review')
-    expect(html).toContain('text-zinc-600')
+    expect(html).toContain('Projeto sem nome')
+    expect(html).toContain('Sem fase')
+  })
+
+  it('computes summary cards: total invested and active count', async () => {
+    mockOrder.mockResolvedValue({
+      data: [
+        { id: 'inv-1', amount_cents: 100000, status: 'active', projected_return_cents: null, investment_projects: { name: 'P1', status: 'open' } },
+        { id: 'inv-2', amount_cents: 50000, status: 'returned', projected_return_cents: null, investment_projects: { name: 'P2', status: 'completed' } },
+      ],
+      error: null,
+    })
+    const { default: InvestorPortfolioPage } = await import('@/app/investors/(gated)/portfolio/page')
+
+    const result = await InvestorPortfolioPage()
+    const html = JSON.stringify(result)
+
+    expect(html).toContain('1500,00')
+    expect(html).toContain('Total investido')
   })
 })

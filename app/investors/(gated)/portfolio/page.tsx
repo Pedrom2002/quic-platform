@@ -1,42 +1,69 @@
 import { createClient } from '@/lib/supabase/server'
+import { PortfolioTable, type PortfolioRow } from './PortfolioTable'
 
 const currencyFormatter = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' })
-const dateFormatter = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })
 
 function formatCents(cents: number): string {
   return currencyFormatter.format(cents / 100)
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  active: 'Ativo',
-  returned: 'Devolvido',
-  written_off: 'Perdido',
+const PHASE_LABELS: Record<string, string> = {
+  coming_soon: 'Brevemente',
+  open: 'Em venda',
+  closed: 'Produção',
+  completed: 'Settlement',
 }
 
-const STATUS_CLASSES: Record<string, string> = {
-  active: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  returned: 'bg-sky-50 text-sky-700 border-sky-200',
-  written_off: 'bg-red-50 text-red-700 border-red-200',
+const PHASE_CLASSES: Record<string, string> = {
+  coming_soon: 'bg-zinc-100 text-zinc-600',
+  open: 'bg-sky-50 text-sky-700',
+  closed: 'bg-amber-50 text-amber-700',
+  completed: 'bg-emerald-50 text-emerald-700',
 }
 
-function statusBadgeLabel(status: string): string {
-  return STATUS_LABELS[status] ?? status
+const NEXT_MILESTONE: Record<string, string> = {
+  coming_soon: 'Abertura brevemente',
+  open: 'Fecho early bird',
+  closed: 'Fecho de patrocinadores',
+  completed: 'Distribuição',
 }
 
-function statusBadgeClasses(status: string): string {
-  return STATUS_CLASSES[status] ?? 'bg-zinc-100 text-zinc-600 border-zinc-200'
+function phaseLabel(projectStatus: string | undefined): string {
+  return PHASE_LABELS[projectStatus ?? ''] ?? 'Sem fase'
+}
+
+function phaseClasses(projectStatus: string | undefined): string {
+  return PHASE_CLASSES[projectStatus ?? ''] ?? 'bg-zinc-100 text-zinc-600'
+}
+
+function nextMilestone(projectStatus: string | undefined): string {
+  return NEXT_MILESTONE[projectStatus ?? ''] ?? '—'
 }
 
 export default async function InvestorPortfolioPage() {
   const supabase = await createClient()
   const { data } = await supabase
     .from('investments')
-    .select('id, amount_cents, invested_at, status, investment_projects(name)')
+    .select('id, amount_cents, status, projected_return_cents, investment_projects(name, status)')
     .order('invested_at', { ascending: false })
 
   const investments = data ?? []
   const totalCents = investments.reduce((sum, inv) => sum + inv.amount_cents, 0)
   const activeCount = investments.filter(inv => inv.status === 'active').length
+
+  const rows: PortfolioRow[] = investments.map(inv => ({
+    id: inv.id,
+    projectName: inv.investment_projects?.name ?? 'Projeto sem nome',
+    phaseLabel: phaseLabel(inv.investment_projects?.status),
+    phaseClasses: phaseClasses(inv.investment_projects?.status),
+    amountCents: inv.amount_cents,
+    returnPercentage:
+      inv.projected_return_cents != null && inv.amount_cents > 0
+        ? (inv.projected_return_cents / inv.amount_cents) * 100
+        : null,
+    nextMilestone: nextMilestone(inv.investment_projects?.status),
+    investmentStatus: inv.status,
+  }))
 
   return (
     <div className="p-8">
@@ -60,34 +87,7 @@ export default async function InvestorPortfolioPage() {
             </div>
           </div>
 
-          <div className="border border-zinc-200 rounded-lg overflow-x-auto">
-            <table className="w-full text-sm min-w-[36rem]">
-              <thead className="bg-zinc-50 text-zinc-500">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium">Projeto</th>
-                  <th className="text-left px-4 py-3 font-medium">Valor</th>
-                  <th className="text-left px-4 py-3 font-medium">Data</th>
-                  <th className="text-left px-4 py-3 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {investments.map(investment => (
-                  <tr key={investment.id} className="border-t border-zinc-200 hover:bg-zinc-50">
-                    <td className="px-4 py-3 text-zinc-900">{investment.investment_projects?.name ?? '—'}</td>
-                    <td className="px-4 py-3 text-zinc-700">{formatCents(investment.amount_cents)}</td>
-                    <td className="px-4 py-3 text-zinc-700">
-                      {dateFormatter.format(new Date(investment.invested_at))}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${statusBadgeClasses(investment.status)}`}>
-                        {statusBadgeLabel(investment.status)}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PortfolioTable investments={rows} />
         </>
       )}
     </div>
