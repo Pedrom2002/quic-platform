@@ -19,6 +19,11 @@ type SectionId =
   | 'about'
   | 'track-record'
 
+type DashboardFetchState =
+  | { status: 'loading' }
+  | { status: 'loaded'; stats: InvestorDashboardStats }
+  | { status: 'error' }
+
 const SECTIONS: { id: SectionId; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { id: 'golden-circle', label: 'Golden Circle', icon: 'star-outline' },
   { id: 'opportunities', label: 'Opportunities', icon: 'trending-up-outline' },
@@ -95,15 +100,24 @@ export default function GoldenCircleScreen() {
 
   const { session } = useSession()
   const [role, setRole] = useState<UserRole | null>(null)
-  const [dashboardStats, setDashboardStats] = useState<InvestorDashboardStats | null>(null)
+  const [dashboardFetch, setDashboardFetch] = useState<DashboardFetchState>({ status: 'loading' })
 
   useEffect(() => {
-    resolveUserRole(supabase, session).then(setRole)
+    let cancelled = false
+    resolveUserRole(supabase, session)
+      .then(r => { if (!cancelled) setRole(r) })
+      .catch(() => { if (!cancelled) setRole({ role: 'guest' }) })
+    return () => { cancelled = true }
   }, [session])
 
   useEffect(() => {
     if (role?.role === 'investor' && role.investor.status === 'approved') {
-      fetchInvestorDashboardStats(supabase, role.investor.id).then(setDashboardStats)
+      let cancelled = false
+      setDashboardFetch({ status: 'loading' })
+      fetchInvestorDashboardStats(supabase, role.investor.id)
+        .then(stats => { if (!cancelled) setDashboardFetch({ status: 'loaded', stats }) })
+        .catch(() => { if (!cancelled) setDashboardFetch({ status: 'error' }) })
+      return () => { cancelled = true }
     }
   }, [role])
 
@@ -173,11 +187,19 @@ export default function GoldenCircleScreen() {
     return (
       <View style={styles.container}>
         <BannerHeader source={require('../../assets/banners/golden-circle.png')} />
-        {dashboardStats ? (
-          <InvestorDashboard stats={dashboardStats} />
-        ) : (
+        {dashboardFetch.status === 'loaded' && (
+          <InvestorDashboard stats={dashboardFetch.stats} />
+        )}
+        {dashboardFetch.status === 'loading' && (
           <View style={styles.investorStateContainer}>
             <Text style={styles.investorStateBody}>A carregar...</Text>
+          </View>
+        )}
+        {dashboardFetch.status === 'error' && (
+          <View style={styles.investorStateContainer}>
+            <Text style={styles.investorStateBody}>
+              Não foi possível carregar os teus dados. Tenta novamente mais tarde.
+            </Text>
           </View>
         )}
       </View>

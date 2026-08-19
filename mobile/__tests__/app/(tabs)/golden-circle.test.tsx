@@ -126,4 +126,41 @@ describe('GoldenCircleScreen — investor role', () => {
     expect(await findByText('Capital investido')).toBeTruthy()
     expect(mockFetchInvestorDashboardStats).toHaveBeenCalledWith({}, 'inv-1')
   })
+
+  it('renders the loading message while the dashboard stats fetch is still pending', async () => {
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({
+      role: 'investor',
+      investor: { id: 'inv-1', fullName: 'Carlos Aprovado', status: 'approved' },
+    })
+    // Never-resolving promise: the fetch stays pending for the lifetime of this test,
+    // so the screen stays on 'loading' and we never mount the chart-bearing loaded view.
+    mockFetchInvestorDashboardStats.mockReturnValue(new Promise(() => {}))
+
+    const { findByText, unmount } = render(<GoldenCircleScreen />)
+
+    expect(await findByText('A carregar...')).toBeTruthy()
+
+    unmount()
+  })
+
+  it('renders the empty-portfolio state when all dashboard stats are zero', async () => {
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({
+      role: 'investor',
+      investor: { id: 'inv-1', fullName: 'Nova Investidora', status: 'approved' },
+    })
+    mockFetchInvestorDashboardStats.mockResolvedValue({
+      investedCents: 0,
+      activeProjects: 0,
+      realizedReturnCents: 0,
+      projectedReturnCents: 0,
+      estimatedValueCents: 0,
+      distribution: [],
+    })
+
+    const { findByText } = render(<GoldenCircleScreen />)
+
+    expect(await findByText('Ainda não tens investimentos ativos.')).toBeTruthy()
+  })
 })
