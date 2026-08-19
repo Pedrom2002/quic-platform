@@ -1,26 +1,34 @@
 // mobile/app/(tabs)/golden-circle.tsx
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, Pressable, StyleSheet, ScrollView, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { useFocusEffect } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { BannerHeader } from '../../components/BannerHeader'
 import { colors } from '../../lib/theme'
+import { useSession } from '../../hooks/useSession'
+import { resolveUserRole, type UserRole } from '../../lib/role'
+import { supabase } from '../../lib/supabase'
+import { fetchInvestorDashboardStats, type InvestorDashboardStats } from '../../lib/investorDashboard'
+import { InvestorDashboard } from '../../components/InvestorDashboard'
 
 type SectionId =
   | 'golden-circle'
   | 'opportunities'
   | 'how-it-works'
   | 'about'
-  | 'investor-login'
   | 'track-record'
+
+type DashboardFetchState =
+  | { status: 'loading' }
+  | { status: 'loaded'; stats: InvestorDashboardStats }
+  | { status: 'error' }
 
 const SECTIONS: { id: SectionId; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { id: 'golden-circle', label: 'Golden Circle', icon: 'star-outline' },
   { id: 'opportunities', label: 'Opportunities', icon: 'trending-up-outline' },
   { id: 'how-it-works', label: 'How It Works', icon: 'layers-outline' },
   { id: 'about', label: 'About', icon: 'information-circle-outline' },
-  { id: 'investor-login', label: 'Investor Login', icon: 'key-outline' },
   { id: 'track-record', label: 'Track Record', icon: 'bar-chart-outline' },
 ]
 
@@ -90,6 +98,29 @@ export default function GoldenCircleScreen() {
   const scrollRef = useRef<ScrollView>(null)
   const offsets = useRef<Map<SectionId, number>>(new Map())
 
+  const { session } = useSession()
+  const [role, setRole] = useState<UserRole | null>(null)
+  const [dashboardFetch, setDashboardFetch] = useState<DashboardFetchState>({ status: 'loading' })
+
+  useEffect(() => {
+    let cancelled = false
+    resolveUserRole(supabase, session)
+      .then(r => { if (!cancelled) setRole(r) })
+      .catch(() => { if (!cancelled) setRole({ role: 'guest' }) })
+    return () => { cancelled = true }
+  }, [session])
+
+  useEffect(() => {
+    if (role?.role === 'investor' && role.investor.status === 'approved') {
+      let cancelled = false
+      setDashboardFetch({ status: 'loading' })
+      fetchInvestorDashboardStats(supabase, role.investor.id)
+        .then(stats => { if (!cancelled) setDashboardFetch({ status: 'loaded', stats }) })
+        .catch(() => { if (!cancelled) setDashboardFetch({ status: 'error' }) })
+      return () => { cancelled = true }
+    }
+  }, [role])
+
   const player = useVideoPlayer(require('../../assets/videos/golden-circle.mp4'), p => {
     p.loop = false
     p.muted = false
@@ -124,6 +155,55 @@ export default function GoldenCircleScreen() {
       }
     }
     if (bestId !== active) setActive(bestId)
+  }
+
+  if (role?.role === 'investor' && role.investor.status === 'pending') {
+    return (
+      <View style={styles.investorStateContainer}>
+        <Ionicons name="time-outline" size={32} color={colors.gray400} />
+        <Text style={styles.investorStateTitle}>A tua candidatura está em análise</Text>
+        <Text style={styles.investorStateBody}>
+          A nossa equipa vai rever o teu pedido de acesso ao Golden Circle. Entramos em contacto assim que
+          houver uma decisão.
+        </Text>
+      </View>
+    )
+  }
+
+  if (role?.role === 'investor' && role.investor.status === 'rejected') {
+    return (
+      <View style={styles.investorStateContainer}>
+        <Ionicons name="close-circle-outline" size={32} color={colors.gray400} />
+        <Text style={styles.investorStateTitle}>Candidatura não foi aprovada</Text>
+        <Text style={styles.investorStateBody}>
+          A tua candidatura ao Golden Circle não foi aprovada desta vez. Para mais informações, contacta-nos em
+          goldencircle@quic.pt.
+        </Text>
+      </View>
+    )
+  }
+
+  if (role?.role === 'investor' && role.investor.status === 'approved') {
+    return (
+      <View style={styles.container}>
+        <BannerHeader source={require('../../assets/banners/golden-circle.png')} />
+        {dashboardFetch.status === 'loaded' && (
+          <InvestorDashboard stats={dashboardFetch.stats} />
+        )}
+        {dashboardFetch.status === 'loading' && (
+          <View style={styles.investorStateContainer}>
+            <Text style={styles.investorStateBody}>A carregar...</Text>
+          </View>
+        )}
+        {dashboardFetch.status === 'error' && (
+          <View style={styles.investorStateContainer}>
+            <Text style={styles.investorStateBody}>
+              Não foi possível carregar os teus dados. Tenta novamente mais tarde.
+            </Text>
+          </View>
+        )}
+      </View>
+    )
   }
 
   return (
@@ -200,18 +280,6 @@ export default function GoldenCircleScreen() {
             O Golden Circle nasce da vontade de partilhar o crescimento da empresa com um grupo restrito de
             parceiros e investidores alinhados com a visão de longo prazo da marca.
           </Text>
-        </View>
-
-        <View onLayout={e => handleSectionLayout('investor-login', e)} style={styles.section}>
-          <SectionHeading title="Investor Login" />
-          <View style={styles.loginBox}>
-            <Ionicons name="key-outline" size={22} color={colors.gray400} />
-            <Text style={styles.cardTitle}>Área de investidor brevemente disponível</Text>
-            <Text style={styles.cardBody}>
-              Estamos a preparar uma área dedicada para membros Golden Circle. Entretanto, contacte-nos
-              diretamente em goldencircle@quic.pt.
-            </Text>
-          </View>
         </View>
 
         <View
@@ -307,4 +375,7 @@ const styles = StyleSheet.create({
   },
   statValue: { color: colors.brand, fontSize: 22, fontWeight: 'bold' },
   statLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, textAlign: 'center' },
+  investorStateContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
+  investorStateTitle: { color: colors.gray900, fontSize: 16, fontWeight: '700', textAlign: 'center' },
+  investorStateBody: { color: colors.gray500, fontSize: 13, textAlign: 'center', lineHeight: 20 },
 })

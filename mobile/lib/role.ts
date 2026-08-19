@@ -4,6 +4,7 @@ export type UserRole =
   | { role: 'guest' }
   | { role: 'client'; portalToken: string | null }
   | { role: 'artist'; artist: { id: string; name: string; photo_url: string | null; bio: string | null } }
+  | { role: 'investor'; investor: { id: string; fullName: string; status: 'pending' | 'approved' | 'rejected' } }
   | { role: 'staff'; member: { id: string; full_name: string; role: string } }
 
 interface EventPortalRow {
@@ -63,6 +64,23 @@ export async function resolveUserRole(
     .single()
 
   if (data) return { role: 'artist', artist: data }
+
+  const { data: investorData } = await supabase
+    .from('investors')
+    .select('id, full_name, status')
+    .eq('auth_user_id', session.user.id)
+    .single()
+
+  if (investorData) {
+    return {
+      role: 'investor',
+      investor: {
+        id: investorData.id,
+        fullName: investorData.full_name,
+        status: investorData.status as 'pending' | 'approved' | 'rejected',
+      },
+    }
+  }
 
   const { data: staffData } = await supabase
     .from('team_members')
