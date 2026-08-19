@@ -182,7 +182,7 @@ export default function GoldenCircleScreen() {
     return (
       <View style={styles.container}>
         <BannerHeader source={require('../../assets/banners/golden-circle.png')} />
-        <InvestorArea dashboardFetch={dashboardFetch} investorId={role.investor.id} />
+        <InvestorArea dashboardFetch={dashboardFetch} investorId={role.investor.id} email={session?.user.email ?? ''} />
       </View>
     )
   }

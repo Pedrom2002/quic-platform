@@ -7,6 +7,7 @@ import { InvestorDashboard } from './InvestorDashboard'
 import { OpportunitiesTab } from './OpportunitiesTab'
 import { PortfolioTab } from './PortfolioTab'
 import { DocumentsTab } from './DocumentsTab'
+import { ProfileTab } from './ProfileTab'
 
 export type InvestorAreaTab =
   | 'dashboard'
@@ -58,7 +59,7 @@ function DashboardTab({ dashboardFetch }: { dashboardFetch: DashboardFetchState 
   )
 }
 
-export function InvestorArea({ dashboardFetch, investorId }: { dashboardFetch: DashboardFetchState; investorId: string }) {
+export function InvestorArea({ dashboardFetch, investorId, email }: { dashboardFetch: DashboardFetchState; investorId: string; email: string }) {
   const [activeTab, setActiveTab] = useState<InvestorAreaTab>('dashboard')
 
   return (
@@ -87,7 +88,7 @@ export function InvestorArea({ dashboardFetch, investorId }: { dashboardFetch: D
       {activeTab === 'opportunities' && <OpportunitiesTab />}
       {activeTab === 'portfolio' && <PortfolioTab investorId={investorId} />}
       {activeTab === 'documents' && <DocumentsTab />}
-      {activeTab === 'profile' && <PlaceholderTab label="Profile" />}
+      {activeTab === 'profile' && <ProfileTab investorId={investorId} email={email} status="approved" />}
       {activeTab === 'track-record' && <PlaceholderTab label="Track Record" />}
       {activeTab === 'insights' && <PlaceholderTab label="Insights" />}
     </View>
