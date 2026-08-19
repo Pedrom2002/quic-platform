@@ -4,6 +4,7 @@ import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native'
 import { colors } from '../lib/theme'
 import type { DashboardFetchState } from '../lib/investorDashboard'
 import { InvestorDashboard } from './InvestorDashboard'
+import { OpportunitiesTab } from './OpportunitiesTab'
 
 export type InvestorAreaTab =
   | 'dashboard'
@@ -81,7 +82,7 @@ export function InvestorArea({ dashboardFetch }: { dashboardFetch: DashboardFetc
       </ScrollView>
 
       {activeTab === 'dashboard' && <DashboardTab dashboardFetch={dashboardFetch} />}
-      {activeTab === 'opportunities' && <PlaceholderTab label="Opportunities" />}
+      {activeTab === 'opportunities' && <OpportunitiesTab />}
       {activeTab === 'portfolio' && <PlaceholderTab label="Portfolio" />}
       {activeTab === 'documents' && <PlaceholderTab label="Documents" />}
       {activeTab === 'profile' && <PlaceholderTab label="Profile" />}
