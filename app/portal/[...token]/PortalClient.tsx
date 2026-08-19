@@ -289,6 +289,11 @@ function ItemRow({
                 {item.files.map(file => <FileRow key={file.id} file={file} portalToken={portalToken} />)}
               </div>
             )}
+            {item.completed_at && (
+              <p className="text-black/25 text-xs">
+                Concluído a {format(new Date(item.completed_at), "d MMM · HH'h'mm", { locale: pt })}
+              </p>
+            )}
           </div>
         )}
       </div>

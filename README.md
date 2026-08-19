@@ -149,13 +149,12 @@ App companion em Expo/React Native (Expo Router, iOS + Android), autenticação 
 - **Bilhetes**: consulta de bilhetes comprados e leitura de QR code na entrada (`expo-camera`) para check-in, chamando a mesma RPC `check_in_ticket` do backend
 - **Catálogo de stock**: navegação pelo catálogo de materiais e submissão de pedidos de orçamento (espelha `/rentals` da web)
 - **Eventos e artistas**: consulta de eventos e portal de artistas a partir do telemóvel
-- **Notificações push**: registo de push token (`expo-notifications`), consumido por `/api/portal/push-token`
+- **Notificações push**: desativadas temporariamente (`expo-notifications` removido — faltava config Firebase/`google-services.json` para builds standalone Android, causava crash no arranque); `mobile/lib/pushNavigation.ts` e `mobile/lib/pushNotifications.ts` ficam como stubs no-op até serem reintroduzidas
 
 Scripts próprios em `mobile/package.json` (`npm start`, `npm run android`, `npm run ios`, `npm test`, `npm run typecheck`) — projeto Expo independente, não faz parte do build/deploy Next.js.
 
 > **TODO antes do primeiro build de produção** (`mobile/app.json`):
-> 1. Correr `eas init` para obter um project ID Expo real, depois adicionar `extra.eas.projectId` e `owner` a `mobile/app.json`, e substituir o placeholder `updates.url` (atualmente `https://u.expo.dev/PLACEHOLDER_PROJECT_ID`) pelo valor real.
-> 2. Definir o valor real de `EXPO_PUBLIC_SENTRY_DSN` como EAS secret antes do primeiro build de produção (mesmo DSN do `SENTRY_DSN` do backend).
+> 1. Definir o valor real de `EXPO_PUBLIC_SENTRY_DSN` como EAS secret antes do primeiro build de produção (mesmo DSN do `SENTRY_DSN` do backend).
 
 ---
 
