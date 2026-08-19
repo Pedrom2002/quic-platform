@@ -14,7 +14,7 @@ describe('fetchInvestorDashboardStats', () => {
     const eq = jest.fn<() => Promise<{ data: unknown; error: unknown }>>().mockResolvedValue({ data: rows, error: null })
     const select = jest.fn(() => ({ eq }))
     const from = jest.fn(() => ({ select }))
-    return { from, select, eq } as any
+    return { from } as never
   }
 
   it('returns zeroed stats and empty distribution when investor has no investments', async () => {
@@ -94,13 +94,17 @@ describe('fetchInvestorDashboardStats', () => {
   })
 
   it('queries investments filtered by investor_id', async () => {
-    const supabase = makeSupabase([])
+    const eq = jest.fn<() => Promise<{ data: unknown; error: unknown }>>().mockResolvedValue({ data: [], error: null })
+    const select = jest.fn(() => ({ eq }))
+    const from = jest.fn(() => ({ select }))
+    const supabase = { from } as never
+
     await fetchInvestorDashboardStats(supabase, 'investor-42')
 
-    expect(supabase.from).toHaveBeenCalledWith('investments')
-    expect(supabase.select).toHaveBeenCalledWith(
+    expect(from).toHaveBeenCalledWith('investments')
+    expect(select).toHaveBeenCalledWith(
       'amount_cents, project_id, status, realized_return_cents, projected_return_cents, investment_projects(name)'
     )
-    expect(supabase.eq).toHaveBeenCalledWith('investor_id', 'investor-42')
+    expect(eq).toHaveBeenCalledWith('investor_id', 'investor-42')
   })
 })
