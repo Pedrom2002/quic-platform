@@ -34,12 +34,86 @@ describe('resolveUserRole', () => {
     })
   })
 
+  it('returns investor role when investors row found (and no artist row)', async () => {
+    const artistSingle = jest
+      .fn<MaybeSingle<{ id: string; name: string; photo_url: string | null; bio: string | null }>>()
+      .mockResolvedValue({ data: null, error: null })
+    const artistEq = jest.fn(() => ({ single: artistSingle }))
+    const artistSelect = jest.fn(() => ({ eq: artistEq }))
+
+    const investorSingle = jest
+      .fn<MaybeSingle<{ id: string; full_name: string; status: string }>>()
+      .mockResolvedValue({
+        data: { id: 'investor-1', full_name: 'Carlos Investidor', status: 'approved' },
+        error: null,
+      })
+    const investorEq = jest.fn(() => ({ single: investorSingle }))
+    const investorSelect = jest.fn(() => ({ eq: investorEq }))
+
+    const supabase = {
+      from: jest.fn((table: string) => {
+        if (table === 'artists') return { select: artistSelect }
+        if (table === 'investors') return { select: investorSelect }
+        throw new Error(`unexpected table ${table}`)
+      }),
+    } as never
+
+    const session = { user: { id: 'auth-user-2', email: 'carlos@example.com' } } as never
+    const result = await resolveUserRole(supabase, session)
+
+    expect(investorSelect).toHaveBeenCalledWith('id, full_name, status')
+    expect(investorEq).toHaveBeenCalledWith('auth_user_id', 'auth-user-2')
+    expect(result).toEqual({
+      role: 'investor',
+      investor: { id: 'investor-1', fullName: 'Carlos Investidor', status: 'approved' },
+    })
+  })
+
+  it('returns investor role with pending status', async () => {
+    const artistSingle = jest
+      .fn<MaybeSingle<{ id: string; name: string; photo_url: string | null; bio: string | null }>>()
+      .mockResolvedValue({ data: null, error: null })
+    const artistEq = jest.fn(() => ({ single: artistSingle }))
+    const artistSelect = jest.fn(() => ({ eq: artistEq }))
+
+    const investorSingle = jest
+      .fn<MaybeSingle<{ id: string; full_name: string; status: string }>>()
+      .mockResolvedValue({
+        data: { id: 'investor-2', full_name: 'Nova Candidata', status: 'pending' },
+        error: null,
+      })
+    const investorEq = jest.fn(() => ({ single: investorSingle }))
+    const investorSelect = jest.fn(() => ({ eq: investorEq }))
+
+    const supabase = {
+      from: jest.fn((table: string) => {
+        if (table === 'artists') return { select: artistSelect }
+        if (table === 'investors') return { select: investorSelect }
+        throw new Error(`unexpected table ${table}`)
+      }),
+    } as never
+
+    const session = { user: { id: 'auth-user-9', email: 'nova@example.com' } } as never
+    const result = await resolveUserRole(supabase, session)
+
+    expect(result).toEqual({
+      role: 'investor',
+      investor: { id: 'investor-2', fullName: 'Nova Candidata', status: 'pending' },
+    })
+  })
+
   it('returns staff role when team_members row found (and no artist row)', async () => {
     const artistSingle = jest
       .fn<MaybeSingle<{ id: string; name: string; photo_url: string | null; bio: string | null }>>()
       .mockResolvedValue({ data: null, error: null })
     const artistEq = jest.fn(() => ({ single: artistSingle }))
     const artistSelect = jest.fn(() => ({ eq: artistEq }))
+
+    const investorSingle = jest
+      .fn<MaybeSingle<{ id: string; full_name: string; status: string }>>()
+      .mockResolvedValue({ data: null, error: null })
+    const investorEq = jest.fn(() => ({ single: investorSingle }))
+    const investorSelect = jest.fn(() => ({ eq: investorEq }))
 
     const staffSingle = jest
       .fn<MaybeSingle<{ id: string; full_name: string; role: string }>>()
@@ -54,6 +128,7 @@ describe('resolveUserRole', () => {
     const supabase = {
       from: jest.fn((table: string) => {
         if (table === 'artists') return { select: artistSelect }
+        if (table === 'investors') return { select: investorSelect }
         if (table === 'team_members') return { select: staffSelect }
         throw new Error(`unexpected table ${table}`)
       }),
@@ -78,6 +153,12 @@ describe('resolveUserRole', () => {
     const artistEq = jest.fn(() => ({ single: artistSingle }))
     const artistSelect = jest.fn(() => ({ eq: artistEq }))
 
+    const investorSingle = jest
+      .fn<MaybeSingle<{ id: string; full_name: string; status: string }>>()
+      .mockResolvedValue({ data: null, error: null })
+    const investorEq = jest.fn(() => ({ single: investorSingle }))
+    const investorSelect = jest.fn(() => ({ eq: investorEq }))
+
     const staffSingle = jest
       .fn<MaybeSingle<{ id: string; full_name: string; role: string }>>()
       .mockResolvedValue({ data: null, error: null })
@@ -88,6 +169,7 @@ describe('resolveUserRole', () => {
     const supabase = {
       from: jest.fn((table: string) => {
         if (table === 'artists') return { select: artistSelect }
+        if (table === 'investors') return { select: investorSelect }
         if (table === 'team_members') return { select: staffSelect }
         throw new Error(`unexpected table ${table}`)
       }),
@@ -106,6 +188,12 @@ describe('resolveUserRole', () => {
     const artistEq = jest.fn(() => ({ single: artistSingle }))
     const artistSelect = jest.fn(() => ({ eq: artistEq }))
 
+    const investorSingle = jest
+      .fn<MaybeSingle<{ id: string; full_name: string; status: string }>>()
+      .mockResolvedValue({ data: null, error: null })
+    const investorEq = jest.fn(() => ({ single: investorSingle }))
+    const investorSelect = jest.fn(() => ({ eq: investorEq }))
+
     const staffSingle = jest
       .fn<MaybeSingle<{ id: string; full_name: string; role: string }>>()
       .mockResolvedValue({ data: null, error: null })
@@ -122,6 +210,7 @@ describe('resolveUserRole', () => {
     const supabase = {
       from: jest.fn((table: string) => {
         if (table === 'artists') return { select: artistSelect }
+        if (table === 'investors') return { select: investorSelect }
         if (table === 'team_members') return { select: staffSelect }
         if (table === 'clients') return { select: clientSelect }
         throw new Error(`unexpected table ${table}`)
@@ -142,6 +231,12 @@ describe('resolveUserRole', () => {
       .mockResolvedValue({ data: null, error: null })
     const artistEq = jest.fn(() => ({ single: artistSingle }))
     const artistSelect = jest.fn(() => ({ eq: artistEq }))
+
+    const investorSingle = jest
+      .fn<MaybeSingle<{ id: string; full_name: string; status: string }>>()
+      .mockResolvedValue({ data: null, error: null })
+    const investorEq = jest.fn(() => ({ single: investorSingle }))
+    const investorSelect = jest.fn(() => ({ eq: investorEq }))
 
     const staffSingle = jest
       .fn<MaybeSingle<{ id: string; full_name: string; role: string }>>()
@@ -180,6 +275,7 @@ describe('resolveUserRole', () => {
     const supabase = {
       from: jest.fn((table: string) => {
         if (table === 'artists') return { select: artistSelect }
+        if (table === 'investors') return { select: investorSelect }
         if (table === 'team_members') return { select: staffSelect }
         if (table === 'clients') return { select: clientSelect }
         if (table === 'event_clients') return { select: eventClientsSelect }
@@ -204,6 +300,12 @@ describe('resolveUserRole', () => {
       .mockResolvedValue({ data: null, error: null })
     const artistEq = jest.fn(() => ({ single: artistSingle }))
     const artistSelect = jest.fn(() => ({ eq: artistEq }))
+
+    const investorSingle = jest
+      .fn<MaybeSingle<{ id: string; full_name: string; status: string }>>()
+      .mockResolvedValue({ data: null, error: null })
+    const investorEq = jest.fn(() => ({ single: investorSingle }))
+    const investorSelect = jest.fn(() => ({ eq: investorEq }))
 
     const staffSingle = jest
       .fn<MaybeSingle<{ id: string; full_name: string; role: string }>>()
@@ -254,6 +356,7 @@ describe('resolveUserRole', () => {
     const supabase = {
       from: jest.fn((table: string) => {
         if (table === 'artists') return { select: artistSelect }
+        if (table === 'investors') return { select: investorSelect }
         if (table === 'team_members') return { select: staffSelect }
         if (table === 'clients') return { select: clientSelect }
         if (table === 'event_clients') return { select: eventClientsSelect }
