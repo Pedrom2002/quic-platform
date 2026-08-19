@@ -31,6 +31,10 @@ jest.mock('../../lib/investorTrackRecord', () => ({
   fetchInvestorTrackRecord: () => new Promise(() => {}),
 }))
 
+jest.mock('../../lib/investorInsights', () => ({
+  fetchInvestorInsights: () => new Promise(() => {}),
+}))
+
 const LOADED_STATE: DashboardFetchState = {
   status: 'loaded',
   stats: {
@@ -62,12 +66,12 @@ describe('InvestorArea', () => {
     expect(getByText('Capital investido')).toBeTruthy()
   })
 
-  it('shows a placeholder with the area name when a non-dashboard tab is pressed', () => {
+  it('shows the insights tab loading state when a non-dashboard tab is pressed', () => {
     const { getByText, queryByText } = render(<InvestorArea dashboardFetch={LOADED_STATE} investorId="inv-1" email="investor@example.com" />)
 
     fireEvent.press(getByText('Insights'))
 
-    expect(getByText('Esta área estará disponível em breve.')).toBeTruthy()
+    expect(getByText('A carregar...')).toBeTruthy()
     expect(queryByText('Capital investido')).toBeNull()
   })
 
