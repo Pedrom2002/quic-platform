@@ -12,6 +12,8 @@ jest.mock('react-native-gifted-charts', () => {
   }
 })
 
+jest.mock('../../lib/supabase', () => ({ supabase: {} }))
+
 const LOADED_STATE: DashboardFetchState = {
   status: 'loaded',
   stats: {
