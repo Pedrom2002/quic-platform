@@ -8,6 +8,7 @@ import { OpportunitiesTab } from './OpportunitiesTab'
 import { PortfolioTab } from './PortfolioTab'
 import { DocumentsTab } from './DocumentsTab'
 import { ProfileTab } from './ProfileTab'
+import { TrackRecordTab } from './TrackRecordTab'
 
 export type InvestorAreaTab =
   | 'dashboard'
@@ -89,7 +90,7 @@ export function InvestorArea({ dashboardFetch, investorId, email }: { dashboardF
       {activeTab === 'portfolio' && <PortfolioTab investorId={investorId} />}
       {activeTab === 'documents' && <DocumentsTab />}
       {activeTab === 'profile' && <ProfileTab investorId={investorId} email={email} status="approved" />}
-      {activeTab === 'track-record' && <PlaceholderTab label="Track Record" />}
+      {activeTab === 'track-record' && <TrackRecordTab />}
       {activeTab === 'insights' && <PlaceholderTab label="Insights" />}
     </View>
   )
