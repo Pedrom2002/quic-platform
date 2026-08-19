@@ -49,7 +49,7 @@ function matchesFilter(row: InvestorPortfolioRow, filter: FilterKey): boolean {
 const currencyFormatter = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' })
 
 function formatCents(cents: number): string {
-  return currencyFormatter.format(cents)
+  return currencyFormatter.format(cents / 100)
 }
 
 function MetricCard({ label, value }: { label: string; value: string }) {

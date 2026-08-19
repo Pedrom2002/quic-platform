@@ -49,7 +49,7 @@ describe('PortfolioTab', () => {
 
     const { findByText } = render(<PortfolioTab investorId="investor-1" />)
 
-    expect(await findByText('180 000,00 €')).toBeTruthy()
+    expect(await findByText('1800,00 €')).toBeTruthy()
     expect(await findByText('3')).toBeTruthy()
     expect(await findByText('2')).toBeTruthy()
   })
@@ -61,7 +61,7 @@ describe('PortfolioTab', () => {
 
     expect(await findByText('Concerto Sala Tejo')).toBeTruthy()
     expect(await findByText('Em venda')).toBeTruthy()
-    expect(await findByText('100 000,00 €')).toBeTruthy()
+    expect(await findByText('1000,00 €')).toBeTruthy()
     expect(await findByText('+15.0%')).toBeTruthy()
     expect(await findByText('Fecho early bird')).toBeTruthy()
   })
