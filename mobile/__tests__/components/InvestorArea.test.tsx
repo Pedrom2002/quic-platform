@@ -14,6 +14,10 @@ jest.mock('react-native-gifted-charts', () => {
 
 jest.mock('../../lib/supabase', () => ({ supabase: {} }))
 
+jest.mock('../../lib/investorPortfolio', () => ({
+  fetchInvestorPortfolio: () => new Promise(() => {}),
+}))
+
 const LOADED_STATE: DashboardFetchState = {
   status: 'loaded',
   stats: {
@@ -28,7 +32,7 @@ const LOADED_STATE: DashboardFetchState = {
 
 describe('InvestorArea', () => {
   it('renders all 7 tabs', () => {
-    const { getByText } = render(<InvestorArea dashboardFetch={LOADED_STATE} />)
+    const { getByText } = render(<InvestorArea dashboardFetch={LOADED_STATE} investorId="inv-1" />)
 
     expect(getByText('Dashboard')).toBeTruthy()
     expect(getByText('Opportunities')).toBeTruthy()
@@ -40,22 +44,22 @@ describe('InvestorArea', () => {
   })
 
   it('shows the dashboard tab by default', () => {
-    const { getByText } = render(<InvestorArea dashboardFetch={LOADED_STATE} />)
+    const { getByText } = render(<InvestorArea dashboardFetch={LOADED_STATE} investorId="inv-1" />)
 
     expect(getByText('Capital investido')).toBeTruthy()
   })
 
   it('shows a placeholder with the area name when a non-dashboard tab is pressed', () => {
-    const { getByText, queryByText } = render(<InvestorArea dashboardFetch={LOADED_STATE} />)
+    const { getByText, queryByText } = render(<InvestorArea dashboardFetch={LOADED_STATE} investorId="inv-1" />)
 
-    fireEvent.press(getByText('Portfolio'))
+    fireEvent.press(getByText('Documents'))
 
     expect(getByText('Esta área estará disponível em breve.')).toBeTruthy()
     expect(queryByText('Capital investido')).toBeNull()
   })
 
   it('unmounts the previous tab content when switching tabs', () => {
-    const { getByText, queryByTestId } = render(<InvestorArea dashboardFetch={LOADED_STATE} />)
+    const { getByText, queryByTestId } = render(<InvestorArea dashboardFetch={LOADED_STATE} investorId="inv-1" />)
 
     expect(queryByTestId('mock-line-chart')).toBeTruthy()
 
@@ -65,7 +69,7 @@ describe('InvestorArea', () => {
   })
 
   it('switching back to dashboard shows the dashboard content again', () => {
-    const { getByText, queryByText } = render(<InvestorArea dashboardFetch={LOADED_STATE} />)
+    const { getByText, queryByText } = render(<InvestorArea dashboardFetch={LOADED_STATE} investorId="inv-1" />)
 
     fireEvent.press(getByText('Documents'))
     expect(queryByText('Capital investido')).toBeNull()
@@ -75,13 +79,13 @@ describe('InvestorArea', () => {
   })
 
   it('shows the loading message on the dashboard tab while stats are pending', () => {
-    const { getByText } = render(<InvestorArea dashboardFetch={{ status: 'loading' }} />)
+    const { getByText } = render(<InvestorArea dashboardFetch={{ status: 'loading' }} investorId="inv-1" />)
 
     expect(getByText('A carregar...')).toBeTruthy()
   })
 
   it('shows the error message on the dashboard tab when the fetch failed', () => {
-    const { getByText } = render(<InvestorArea dashboardFetch={{ status: 'error' }} />)
+    const { getByText } = render(<InvestorArea dashboardFetch={{ status: 'error' }} investorId="inv-1" />)
 
     expect(getByText('Não foi possível carregar os teus dados. Tenta novamente mais tarde.')).toBeTruthy()
   })

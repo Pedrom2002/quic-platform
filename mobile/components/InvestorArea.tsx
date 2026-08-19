@@ -5,6 +5,7 @@ import { colors } from '../lib/theme'
 import type { DashboardFetchState } from '../lib/investorDashboard'
 import { InvestorDashboard } from './InvestorDashboard'
 import { OpportunitiesTab } from './OpportunitiesTab'
+import { PortfolioTab } from './PortfolioTab'
 
 export type InvestorAreaTab =
   | 'dashboard'
@@ -56,7 +57,7 @@ function DashboardTab({ dashboardFetch }: { dashboardFetch: DashboardFetchState 
   )
 }
 
-export function InvestorArea({ dashboardFetch }: { dashboardFetch: DashboardFetchState }) {
+export function InvestorArea({ dashboardFetch, investorId }: { dashboardFetch: DashboardFetchState; investorId: string }) {
   const [activeTab, setActiveTab] = useState<InvestorAreaTab>('dashboard')
 
   return (
@@ -83,7 +84,7 @@ export function InvestorArea({ dashboardFetch }: { dashboardFetch: DashboardFetc
 
       {activeTab === 'dashboard' && <DashboardTab dashboardFetch={dashboardFetch} />}
       {activeTab === 'opportunities' && <OpportunitiesTab />}
-      {activeTab === 'portfolio' && <PlaceholderTab label="Portfolio" />}
+      {activeTab === 'portfolio' && <PortfolioTab investorId={investorId} />}
       {activeTab === 'documents' && <PlaceholderTab label="Documents" />}
       {activeTab === 'profile' && <PlaceholderTab label="Profile" />}
       {activeTab === 'track-record' && <PlaceholderTab label="Track Record" />}
