@@ -9,7 +9,7 @@ import { colors } from '../../lib/theme'
 import { useSession } from '../../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
-import { fetchInvestorDashboardStats, type InvestorDashboardStats } from '../../lib/investorDashboard'
+import { fetchInvestorDashboardStats, type DashboardFetchState, type InvestorDashboardStats } from '../../lib/investorDashboard'
 import { InvestorDashboard } from '../../components/InvestorDashboard'
 
 type SectionId =
@@ -18,11 +18,6 @@ type SectionId =
   | 'how-it-works'
   | 'about'
   | 'track-record'
-
-type DashboardFetchState =
-  | { status: 'loading' }
-  | { status: 'loaded'; stats: InvestorDashboardStats }
-  | { status: 'error' }
 
 const SECTIONS: { id: SectionId; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { id: 'golden-circle', label: 'Golden Circle', icon: 'star-outline' },

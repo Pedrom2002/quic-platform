@@ -68,3 +68,8 @@ export async function fetchInvestorDashboardStats(
     distribution,
   }
 }
+
+export type DashboardFetchState =
+  | { status: 'loading' }
+  | { status: 'loaded'; stats: InvestorDashboardStats }
+  | { status: 'error' }
