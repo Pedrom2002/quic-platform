@@ -81,7 +81,7 @@ describe('approveInvestor', () => {
 })
 
 describe('rejectInvestor', () => {
-  it('sets status rejected', async () => {
+  it('sets status rejected and clears approved_at / approved_by_team_member_id', async () => {
     const { supabase, calls } = makeSupabase()
     authAs(supabase)
     const { rejectInvestor } = await import('@/app/dashboard/golden-circle/investidores/actions')
@@ -89,6 +89,8 @@ describe('rejectInvestor', () => {
     expect(result.error).toBeUndefined()
     const updated = calls.update[0] as Record<string, unknown>
     expect(updated.status).toBe('rejected')
+    expect(updated.approved_at).toBeNull()
+    expect(updated.approved_by_team_member_id).toBeNull()
     expect(mockRevalidate).toHaveBeenCalledWith('/dashboard/golden-circle/investidores')
   })
 })

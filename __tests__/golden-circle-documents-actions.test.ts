@@ -52,14 +52,32 @@ describe('createDocument', () => {
     expect(result.error).toBe('Seleciona um ficheiro')
   })
 
-  it('rejects when file content does not match a supported type', async () => {
+  it('rejects when file content does not match the declared type', async () => {
     const { supabase } = makeSupabase()
     authAs(supabase)
-    mockDetectMime.mockResolvedValue(null)
+    // A .txt file dishonestly declared as PDF: magic bytes detect as PDF's own
+    // signature is absent, but here it's detected as something else entirely
+    // (e.g. a JPEG signature), which is a genuine mismatch against the declared PDF type.
+    mockDetectMime.mockResolvedValue('image/jpeg')
     const file = new File(['plain text'], 'doc.txt', { type: 'application/pdf' })
     const { createDocument } = await import('@/app/dashboard/golden-circle/documentos/actions')
     const result = await createDocument(fd({ title: 'Contrato', type: 'contract', investor_id: INVESTOR_UUID, file }))
-    expect(result.error).toBe('Tipo de ficheiro não suportado')
+    expect(result.error).toBe('O conteúdo do ficheiro não corresponde ao tipo declarado')
+  })
+
+  it('accepts a .docx file whose magic bytes detect as application/zip', async () => {
+    const { supabase, calls } = makeSupabase()
+    authAs(supabase)
+    mockDetectMime.mockResolvedValue('application/zip')
+    mockPut.mockResolvedValue({ url: 'https://blob.example.com/contrato.docx' })
+    const file = new File([new Uint8Array([0x50, 0x4b, 0x03, 0x04])], 'contrato.docx', {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    })
+    const { createDocument } = await import('@/app/dashboard/golden-circle/documentos/actions')
+    const result = await createDocument(fd({ title: 'Contrato', type: 'contract', investor_id: INVESTOR_UUID, file }))
+    expect(result.error).toBeUndefined()
+    const inserted = calls.insert[0] as Record<string, unknown>
+    expect(inserted.file_url).toBe('https://blob.example.com/contrato.docx')
   })
 
   it('uploads and inserts document linked to investor', async () => {

@@ -22,13 +22,13 @@ async function setInvestorStatus(formData: FormData, status: 'approved' | 'rejec
   const id = z.uuid().safeParse(formData.get('id'))
   if (!id.success) return { error: 'Investidor inválido' }
 
+  const payload = status === 'approved'
+    ? { status, approved_at: new Date().toISOString(), approved_by_team_member_id: auth.member.id }
+    : { status, approved_at: null, approved_by_team_member_id: null }
+
   const { error } = await auth.supabase
     .from('investors')
-    .update({
-      status,
-      approved_at: new Date().toISOString(),
-      approved_by_team_member_id: auth.member.id,
-    })
+    .update(payload)
     .eq('id', id.data)
     .eq('organization_id', auth.member.organization_id)
 

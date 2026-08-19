@@ -8,15 +8,23 @@ const { mockRequireOrgAuth, mockRevalidate } = vi.hoisted(() => ({
 vi.mock('@/lib/supabase/actions', () => ({ requireOrgAuth: mockRequireOrgAuth }))
 vi.mock('next/cache', () => ({ revalidatePath: mockRevalidate }))
 
-function makeSupabase(investorLookup: { data: unknown }) {
+function makeSupabase(
+  investorLookup: { data: unknown },
+  projectLookup: { data: unknown } = { data: { id: PROJECT_UUID } }
+) {
   const calls: Record<string, unknown[]> = { insert: [] }
   const investorsChain = { eq: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue(investorLookup) }) }) }) }
+  const projectsChain = { eq: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue(projectLookup) }) }) }
   const investmentsChain = {
     insert: vi.fn((payload: unknown) => { calls.insert.push(payload); return Promise.resolve({ error: null }) }),
   }
   return {
     supabase: {
-      from: vi.fn((table: string) => (table === 'investors' ? { select: vi.fn().mockReturnValue(investorsChain) } : investmentsChain)),
+      from: vi.fn((table: string) => {
+        if (table === 'investors') return { select: vi.fn().mockReturnValue(investorsChain) }
+        if (table === 'investment_projects') return { select: vi.fn().mockReturnValue(projectsChain) }
+        return investmentsChain
+      }),
     },
     calls,
   }
@@ -41,6 +49,14 @@ beforeEach(() => {
 })
 
 describe('createInvestment', () => {
+  it('rejects when project does not belong to org', async () => {
+    const { supabase } = makeSupabase({ data: { id: INVESTOR_UUID } }, { data: null })
+    authAs(supabase)
+    const { createInvestment } = await import('@/app/dashboard/golden-circle/projetos/[projectId]/investment-actions')
+    const result = await createInvestment(PROJECT_UUID, fd({ investor_id: INVESTOR_UUID, amount_cents: '100000', invested_at: '2026-08-19' }))
+    expect(result.error).toBe('Projeto inválido')
+  })
+
   it('rejects when investor is not approved (or does not belong to org)', async () => {
     const { supabase } = makeSupabase({ data: null })
     authAs(supabase)

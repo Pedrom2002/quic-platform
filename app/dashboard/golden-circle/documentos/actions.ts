@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 
 import { requireOrgAuth } from '@/lib/supabase/actions'
 import { documentSchema } from '@/lib/golden-circle/validation'
-import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE, detectMimeFromMagic, safeBlobPathname } from '@/schemas/file.schema'
+import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE, detectMimeFromMagic, isMimeMismatch, safeBlobPathname } from '@/schemas/file.schema'
 import { getEnv } from '@/lib/env'
 import { put } from '@vercel/blob'
 
@@ -41,7 +41,9 @@ export async function createDocument(formData: FormData): Promise<ActionResult> 
   if (!ALLOWED_MIME_TYPES.has(file.type)) return { error: 'Tipo de ficheiro não suportado' }
 
   const detected = await detectMimeFromMagic(file)
-  if (!detected || detected !== file.type) return { error: 'Tipo de ficheiro não suportado' }
+  if (isMimeMismatch(file.type, detected)) {
+    return { error: 'O conteúdo do ficheiro não corresponde ao tipo declarado' }
+  }
 
   const token = getEnv().BLOB_READ_WRITE_TOKEN
   if (!token) return { error: 'Upload de ficheiros não configurado' }

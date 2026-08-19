@@ -7,8 +7,8 @@ export const projectSchema = z.object({
   name: z.string({ error: 'Nome obrigatório' }).trim().min(1, { error: 'Nome obrigatório' }),
   description: z.string().trim().nullable().optional(),
   status: z.enum(PROJECT_STATUSES, { error: 'Estado inválido' }),
-  funding_goal_cents: z.number({ error: 'Meta de financiamento obrigatória' }).int().min(0, {
-    error: 'Meta de financiamento não pode ser negativa',
+  funding_goal_cents: z.number({ error: 'Meta de financiamento obrigatória' }).int().min(1, {
+    error: 'Meta de financiamento não pode ser negativa ou zero',
   }),
   capacity: z.number().int().min(0).nullable().optional(),
   investment_deadline: z.iso.date({ error: 'Prazo inválido' }).nullable().optional(),

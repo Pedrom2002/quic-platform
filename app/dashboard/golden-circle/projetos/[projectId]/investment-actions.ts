@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import * as z from 'zod'
 
 import { requireOrgAuth } from '@/lib/supabase/actions'
 import { investmentSchema } from '@/lib/golden-circle/validation'
@@ -26,6 +27,17 @@ export async function createInvestment(projectId: string, formData: FormData): P
   const auth = await getOrgClient()
   if (!auth) return { error: 'Sem permissões' }
 
+  const projectIdParsed = z.uuid().safeParse(projectId)
+  if (!projectIdParsed.success) return { error: 'Projeto inválido' }
+
+  const { data: project } = await auth.supabase
+    .from('investment_projects')
+    .select('id')
+    .eq('id', projectIdParsed.data)
+    .eq('organization_id', auth.member.organization_id)
+    .single()
+  if (!project) return { error: 'Projeto inválido' }
+
   const parsed = investmentSchema.safeParse({
     investor_id: formData.get('investor_id'),
     amount_cents: Number(formData.get('amount_cents')),
@@ -48,7 +60,7 @@ export async function createInvestment(projectId: string, formData: FormData): P
 
   const { error } = await auth.supabase.from('investments').insert({
     investor_id: parsed.data.investor_id,
-    project_id: projectId,
+    project_id: projectIdParsed.data,
     amount_cents: parsed.data.amount_cents,
     invested_at: parsed.data.invested_at,
     projected_return_cents: parsed.data.projected_return_cents,
@@ -56,6 +68,6 @@ export async function createInvestment(projectId: string, formData: FormData): P
   })
   if (error) return { error: 'Erro ao registar investimento' }
 
-  revalidatePath(`/dashboard/golden-circle/projetos/${projectId}`)
+  revalidatePath(`/dashboard/golden-circle/projetos/${projectIdParsed.data}`)
   return {}
 }

@@ -34,6 +34,15 @@ describe('projectSchema', () => {
     expect(result.success).toBe(false)
   })
 
+  it('rejects zero funding_goal_cents', () => {
+    const result = projectSchema.safeParse({
+      name: 'Projeto',
+      status: 'coming_soon',
+      funding_goal_cents: 0,
+    })
+    expect(result.success).toBe(false)
+  })
+
   it('rejects invalid status', () => {
     const result = projectSchema.safeParse({
       name: 'Projeto',

@@ -1,4 +1,8 @@
+import Link from 'next/link'
+import type { Route } from 'next'
+
 import { createClient } from '@/lib/supabase/server'
+import { DOCUMENT_TYPES } from '@/lib/golden-circle/validation'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -20,13 +24,24 @@ const TYPE_LABELS: Record<string, string> = {
   presentation: 'Apresentação',
 }
 
-export default async function GoldenCircleDocumentsPage() {
+export default async function GoldenCircleDocumentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string }>
+}) {
+  const { type } = await searchParams
   const supabase = await createClient()
 
-  const { data: documentsData } = await supabase
+  let query = supabase
     .from('investor_documents')
     .select('id, title, type, file_url, uploaded_at, investors(full_name), investment_projects(name)')
     .order('uploaded_at', { ascending: false })
+
+  if (type && type !== 'all') {
+    query = query.eq('type', type)
+  }
+
+  const { data: documentsData } = await query
   const documents = documentsData ?? []
 
   const { data: investorsData } = await supabase.from('investors').select('id, full_name').eq('status', 'approved')
@@ -37,7 +52,18 @@ export default async function GoldenCircleDocumentsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap gap-1">
+          {(['all', ...DOCUMENT_TYPES] as const).map((t) => (
+            <Link
+              key={t}
+              href={(t === 'all' ? '/dashboard/golden-circle/documentos' : `/dashboard/golden-circle/documentos?type=${t}`) as Route}
+              className="rounded-full border px-3 py-1 text-sm text-muted-foreground hover:text-foreground"
+            >
+              {t === 'all' ? 'Todos' : TYPE_LABELS[t]}
+            </Link>
+          ))}
+        </div>
         <DocumentCreateDialog investors={investors} projects={projects} />
       </div>
 
