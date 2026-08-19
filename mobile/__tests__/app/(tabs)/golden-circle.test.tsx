@@ -34,6 +34,13 @@ jest.mock('../../../lib/investorDashboard', () => ({
   fetchInvestorDashboardStats: (...args: unknown[]) => mockFetchInvestorDashboardStats(...args),
 }))
 jest.mock('../../../lib/supabase', () => ({ supabase: {} }))
+jest.mock('react-native-gifted-charts', () => {
+  const { View } = require('react-native')
+  return {
+    LineChart: () => require('react').createElement(View, { testID: 'mock-line-chart' }),
+    PieChart: () => require('react').createElement(View, { testID: 'mock-pie-chart' }),
+  }
+})
 
 describe('GoldenCircleScreen', () => {
   beforeEach(() => {
