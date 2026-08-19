@@ -9,8 +9,8 @@ import { colors } from '../../lib/theme'
 import { useSession } from '../../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
-import { fetchInvestorDashboardStats, type DashboardFetchState, type InvestorDashboardStats } from '../../lib/investorDashboard'
-import { InvestorDashboard } from '../../components/InvestorDashboard'
+import { fetchInvestorDashboardStats, type DashboardFetchState } from '../../lib/investorDashboard'
+import { InvestorArea } from '../../components/InvestorArea'
 
 type SectionId =
   | 'golden-circle'
@@ -182,21 +182,7 @@ export default function GoldenCircleScreen() {
     return (
       <View style={styles.container}>
         <BannerHeader source={require('../../assets/banners/golden-circle.png')} />
-        {dashboardFetch.status === 'loaded' && (
-          <InvestorDashboard stats={dashboardFetch.stats} />
-        )}
-        {dashboardFetch.status === 'loading' && (
-          <View style={styles.investorStateContainer}>
-            <Text style={styles.investorStateBody}>A carregar...</Text>
-          </View>
-        )}
-        {dashboardFetch.status === 'error' && (
-          <View style={styles.investorStateContainer}>
-            <Text style={styles.investorStateBody}>
-              Não foi possível carregar os teus dados. Tenta novamente mais tarde.
-            </Text>
-          </View>
-        )}
+        <InvestorArea dashboardFetch={dashboardFetch} />
       </View>
     )
   }

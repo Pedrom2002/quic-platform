@@ -134,6 +134,28 @@ describe('GoldenCircleScreen — investor role', () => {
     expect(mockFetchInvestorDashboardStats).toHaveBeenCalledWith({}, 'inv-1')
   })
 
+  it('renders the investor area tabs when investor status is approved', async () => {
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({
+      role: 'investor',
+      investor: { id: 'inv-1', fullName: 'Carlos Aprovado', status: 'approved' },
+    })
+    mockFetchInvestorDashboardStats.mockResolvedValue({
+      investedCents: 150000,
+      activeProjects: 2,
+      realizedReturnCents: 0,
+      projectedReturnCents: 7000,
+      estimatedValueCents: 157000,
+      distribution: [{ name: 'Projeto A', amountCents: 150000, percentage: 100 }],
+    })
+
+    const { findByText, getByText } = render(<GoldenCircleScreen />)
+
+    expect(await findByText('Capital investido')).toBeTruthy()
+    expect(getByText('Portfolio')).toBeTruthy()
+    expect(getByText('Insights')).toBeTruthy()
+  })
+
   it('renders the loading message while the dashboard stats fetch is still pending', async () => {
     mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
     mockResolveUserRole.mockResolvedValue({
