@@ -18,6 +18,10 @@ jest.mock('../../lib/investorPortfolio', () => ({
   fetchInvestorPortfolio: () => new Promise(() => {}),
 }))
 
+jest.mock('../../lib/investorDocuments', () => ({
+  fetchInvestorDocuments: () => new Promise(() => {}),
+}))
+
 const LOADED_STATE: DashboardFetchState = {
   status: 'loaded',
   stats: {
@@ -52,7 +56,7 @@ describe('InvestorArea', () => {
   it('shows a placeholder with the area name when a non-dashboard tab is pressed', () => {
     const { getByText, queryByText } = render(<InvestorArea dashboardFetch={LOADED_STATE} investorId="inv-1" />)
 
-    fireEvent.press(getByText('Documents'))
+    fireEvent.press(getByText('Profile'))
 
     expect(getByText('Esta área estará disponível em breve.')).toBeTruthy()
     expect(queryByText('Capital investido')).toBeNull()
@@ -71,7 +75,7 @@ describe('InvestorArea', () => {
   it('switching back to dashboard shows the dashboard content again', () => {
     const { getByText, queryByText } = render(<InvestorArea dashboardFetch={LOADED_STATE} investorId="inv-1" />)
 
-    fireEvent.press(getByText('Documents'))
+    fireEvent.press(getByText('Profile'))
     expect(queryByText('Capital investido')).toBeNull()
 
     fireEvent.press(getByText('Dashboard'))

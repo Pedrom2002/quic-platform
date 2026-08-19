@@ -6,6 +6,7 @@ import type { DashboardFetchState } from '../lib/investorDashboard'
 import { InvestorDashboard } from './InvestorDashboard'
 import { OpportunitiesTab } from './OpportunitiesTab'
 import { PortfolioTab } from './PortfolioTab'
+import { DocumentsTab } from './DocumentsTab'
 
 export type InvestorAreaTab =
   | 'dashboard'
@@ -85,7 +86,7 @@ export function InvestorArea({ dashboardFetch, investorId }: { dashboardFetch: D
       {activeTab === 'dashboard' && <DashboardTab dashboardFetch={dashboardFetch} />}
       {activeTab === 'opportunities' && <OpportunitiesTab />}
       {activeTab === 'portfolio' && <PortfolioTab investorId={investorId} />}
-      {activeTab === 'documents' && <PlaceholderTab label="Documents" />}
+      {activeTab === 'documents' && <DocumentsTab />}
       {activeTab === 'profile' && <PlaceholderTab label="Profile" />}
       {activeTab === 'track-record' && <PlaceholderTab label="Track Record" />}
       {activeTab === 'insights' && <PlaceholderTab label="Insights" />}
