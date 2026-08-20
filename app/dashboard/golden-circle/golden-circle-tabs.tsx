@@ -10,7 +10,7 @@ export function GoldenCircleTabs() {
   const pathname = usePathname()
 
   const tabs = [
-    { href: '/dashboard/golden-circle', label: 'Promo', exact: true },
+    { href: '/dashboard/golden-circle', label: 'Overview', exact: true },
     { href: '/dashboard/golden-circle/investidores', label: 'Investidores' },
     { href: '/dashboard/golden-circle/projetos', label: 'Projetos' },
     { href: '/dashboard/golden-circle/documentos', label: 'Documentos' },
