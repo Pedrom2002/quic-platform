@@ -6,7 +6,10 @@ import type { EventRaffle, EventRaffleEntry, EventRaffleWithEntries } from '@/ty
 export async function loadRafflesAction(eventId: string): Promise<EventRaffleWithEntries[]> {
   const auth = await getOrgAuth()
   if (!auth) return []
-  const { supabase } = auth
+  const { supabase, member } = auth
+
+  const owns = await assertEventOwnership(supabase, eventId, member.organization_id)
+  if (!owns) return []
 
   const { data, error } = await supabase
     .from('event_raffles')

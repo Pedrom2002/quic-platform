@@ -62,6 +62,14 @@ export default async function EventDetailPage({
 
   const event = eventRaw as typeof eventRaw & { event_types: EventTypeJoin | null }
 
+  const { data: { user } } = await userPromise
+  const { data: currentMember } = user
+    ? await supabase.from('team_members').select('id, role, organization_id').eq('auth_user_id', user.id).single()
+    : { data: null }
+  if (!currentMember || currentMember.organization_id !== event.organization_id) notFound()
+  const currentMemberId = currentMember.id
+  const isAdmin = currentMember.role === 'admin'
+
   const total = items?.length ?? 0
   const completed = items?.filter(i => i.status === 'completed').length ?? 0
   const percent = calcProgress(completed, total)
@@ -100,13 +108,6 @@ export default async function EventDetailPage({
   })
 
   const initialTimelineEvents = mergeTimelineEvents(checklistEvents, notifEvents, clientEvents)
-
-  const { data: { user } } = await userPromise
-  const { data: currentMember } = user
-    ? await supabase.from('team_members').select('id, role').eq('auth_user_id', user.id).single()
-    : { data: null }
-  const currentMemberId = currentMember?.id ?? null
-  const isAdmin = currentMember?.role === 'admin'
 
   const portalUrl = `${process.env.NEXT_PUBLIC_PORTAL_URL ?? ''}/portal/${event.portal_token}`
   const et = event.event_types

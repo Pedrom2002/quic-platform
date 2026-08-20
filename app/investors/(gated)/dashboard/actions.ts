@@ -17,8 +17,20 @@ export type DashboardStats = {
   distribution: DashboardDistributionEntry[]
 }
 
+const EMPTY_STATS: DashboardStats = {
+  investedCents: 0,
+  activeProjects: 0,
+  realizedReturnCents: 0,
+  projectedReturnCents: 0,
+  estimatedValueCents: 0,
+  distribution: [],
+}
+
 export async function getInvestorDashboardStats(): Promise<DashboardStats> {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return EMPTY_STATS
+
   const { data } = await supabase
     .from('investments')
     .select('amount_cents, project_id, status, realized_return_cents, projected_return_cents, investment_projects(name)')

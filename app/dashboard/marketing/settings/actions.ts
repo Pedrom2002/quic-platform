@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { getOrgAuth } from '@/lib/supabase/actions'
 import { encryptPassword } from '@/lib/marketing/crypto'
 import { testSmtpConnection } from '@/lib/marketing/smtp'
 
@@ -9,9 +9,9 @@ export async function saveSmtpCredentials(
   _prev: { ok: boolean; message: string } | null,
   formData: FormData
 ): Promise<{ ok: boolean; message: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { ok: false, message: 'Não autenticado' }
+  const auth = await getOrgAuth()
+  if (!auth) return { ok: false, message: 'Não autorizado' }
+  const { supabase, user } = auth
 
   const password = formData.get('password') as string
   const host = formData.get('host') as string
@@ -48,9 +48,9 @@ export async function saveSmtpCredentials(
 }
 
 export async function testSmtpCredentials(): Promise<{ ok: boolean; error?: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Não autenticado' }
+  const auth = await getOrgAuth()
+  if (!auth) return { ok: false, error: 'Não autorizado' }
+  const { supabase, user } = auth
 
   const { data: creds } = await supabase
     .from('team_smtp_credentials')

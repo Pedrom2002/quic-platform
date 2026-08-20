@@ -28,6 +28,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .returns<MemberWithOrg[]>()
     .single()
 
+  if (!member) redirect('/auth/login')
+
   return (
     <div className={`${poppins.variable} flex h-screen bg-slate-50 font-sans`} style={{ fontFamily: 'var(--font-dashboard-sans)' }}>
       <a href="#main-content" className="skip-link">
