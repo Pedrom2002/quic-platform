@@ -1,93 +1,17 @@
 'use client'
 
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, PieChart, Pie, Cell } from 'recharts'
+import dynamic from 'next/dynamic'
 import type { DashboardDistributionEntry } from './actions'
-import { formatCents } from '@/lib/format-money'
 
-const DONUT_COLORS = ['#eab308', '#22c55e', '#f97316', '#0ea5e9', '#a855f7', '#ec4899']
+// recharts é uma dependência pesada e estes gráficos ficam abaixo da dobra
+// do dashboard; carregar via next/dynamic (ssr: false) tira-os do bundle
+// inicial da página, sem mudar a API consumida por page.tsx.
+export const EvolutionChart = dynamic(
+  () => import('./charts-inner').then(mod => mod.EvolutionChart),
+  { ssr: false, loading: () => <div className="h-56 w-full animate-pulse rounded-lg bg-zinc-100" /> }
+) as (props: { data: { month: string; valueCents: number }[] }) => React.JSX.Element
 
-export function EvolutionChart({ data }: { data: { month: string; valueCents: number }[] }) {
-  return (
-    <div className="h-56 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id="evolutionFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#951b81" stopOpacity={0.25} />
-              <stop offset="100%" stopColor="#951b81" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#71717a' }} axisLine={false} tickLine={false} />
-          <YAxis
-            tick={{ fontSize: 11, fill: '#71717a' }}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={v => formatCents(v)}
-            width={70}
-          />
-          <Tooltip formatter={(v) => formatCents(Number(v) || 0)} labelStyle={{ color: '#18181b' }} />
-          <Area
-            type="monotone"
-            dataKey="valueCents"
-            stroke="#951b81"
-            strokeWidth={2}
-            fill="url(#evolutionFill)"
-            dot={{ r: 3, stroke: '#951b81', fill: '#ffffff', strokeWidth: 2 }}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
-
-export function DistributionChart({
-  distribution,
-  totalLabel,
-}: {
-  distribution: DashboardDistributionEntry[]
-  totalLabel: string
-}) {
-  return (
-    <div>
-      <div className="relative h-52 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={distribution}
-              dataKey="amountCents"
-              nameKey="name"
-              innerRadius="62%"
-              outerRadius="90%"
-              paddingAngle={2}
-              stroke="none"
-            >
-              {distribution.map((entry, i) => (
-                <Cell key={entry.name} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip formatter={(v) => formatCents(Number(v) || 0)} />
-          </PieChart>
-        </ResponsiveContainer>
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-lg font-semibold text-zinc-900">{totalLabel}</span>
-          <span className="text-xs text-zinc-500">total</span>
-        </div>
-      </div>
-      <ul className="mt-4 space-y-2">
-        {distribution.map((entry, i) => (
-          <li key={entry.name} className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-zinc-700 truncate">
-              <span
-                className="w-2.5 h-2.5 rounded-full shrink-0"
-                style={{ backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length] }}
-              />
-              <span className="truncate">{entry.name}</span>
-            </span>
-            <span className="text-zinc-900 font-medium shrink-0 ml-2">{entry.percentage}%</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
+export const DistributionChart = dynamic(
+  () => import('./charts-inner').then(mod => mod.DistributionChart),
+  { ssr: false, loading: () => <div className="h-52 w-full animate-pulse rounded-lg bg-zinc-100" /> }
+) as (props: { distribution: DashboardDistributionEntry[]; totalLabel: string }) => React.JSX.Element

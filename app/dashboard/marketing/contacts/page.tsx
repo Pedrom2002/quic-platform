@@ -5,6 +5,14 @@ import { ListContacts } from '@/components/marketing/ListContacts'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
+// Cap por lista: esta pagina carrega TODAS as listas de uma vez (cada uma
+// com a sua propria paginacao/pesquisa client-side dentro de ListContacts),
+// por isso o limite tem de ser por lista, nao um limite global, senao listas
+// no fim da ordenacao ficariam sem contactos nenhuns quando o total geral
+// crescesse. Mostra-se os mais recentes; contact_count (mantido por trigger)
+// indica quando ha mais contactos do que os carregados.
+const CONTACTS_PER_LIST_LIMIT = 500
+
 export default async function MarketingContactsPage() {
   const supabase = await createClient()
   const { data: lists } = await supabase
@@ -24,21 +32,21 @@ export default async function MarketingContactsPage() {
   }
 
   const listIds = (lists ?? []).map(l => l.id)
-  let allContacts: ContactRow[] = []
-  if (listIds.length) {
-    const { data } = await supabase
-      .from('marketing_contacts')
-      .select('id, list_id, email, name, company, role, status, engagement_score')
-      .in('list_id', listIds)
-      .order('created_at', { ascending: false })
-    allContacts = (data ?? []) as ContactRow[]
-  }
-
   const contactsByList = new Map<string, ContactRow[]>()
-  for (const c of allContacts) {
-    const arr = contactsByList.get(c.list_id) ?? []
-    arr.push(c)
-    contactsByList.set(c.list_id, arr)
+  if (listIds.length) {
+    const results = await Promise.all(
+      listIds.map(listId =>
+        supabase
+          .from('marketing_contacts')
+          .select('id, list_id, email, name, company, role, status, engagement_score')
+          .eq('list_id', listId)
+          .order('created_at', { ascending: false })
+          .limit(CONTACTS_PER_LIST_LIMIT)
+      )
+    )
+    results.forEach((result, i) => {
+      contactsByList.set(listIds[i], (result.data ?? []) as ContactRow[])
+    })
   }
 
   return (
@@ -59,6 +67,11 @@ export default async function MarketingContactsPage() {
               <p className="font-medium text-lg">{list.name}</p>
             </div>
             <ListContacts listId={list.id} contacts={contactsByList.get(list.id) ?? []} />
+            {list.contact_count > CONTACTS_PER_LIST_LIMIT && (
+              <p className="text-xs text-amber-600">
+                A mostrar os {CONTACTS_PER_LIST_LIMIT} contactos mais recentes de {list.contact_count}. Usa a pesquisa para encontrar os restantes.
+              </p>
+            )}
             <details className="border-t pt-3">
               <summary className="text-sm text-zinc-600 cursor-pointer hover:text-zinc-900">
                 Importar em massa (CSV / Excel)

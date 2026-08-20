@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockOrder, mockSelect, mockCreateClient } = vi.hoisted(() => ({
+const { mockRange, mockOrder, mockSelect, mockCreateClient } = vi.hoisted(() => ({
+  mockRange: vi.fn(),
   mockOrder: vi.fn(),
   mockSelect: vi.fn(),
   mockCreateClient: vi.fn(),
@@ -13,16 +14,18 @@ vi.mock('next/link', () => ({
 }))
 
 beforeEach(() => {
+  mockRange.mockReset()
   mockOrder.mockReset()
   mockSelect.mockReset()
   mockCreateClient.mockReset()
+  mockOrder.mockReturnValue({ range: mockRange, eq: vi.fn().mockReturnValue({ range: mockRange }) })
   mockSelect.mockReturnValue({ order: mockOrder })
   mockCreateClient.mockResolvedValue({ from: vi.fn().mockReturnValue({ select: mockSelect }) })
 })
 
 describe('GoldenCircleInvestorsPage', () => {
   it('renders investors with formatted status and creation date', async () => {
-    mockOrder.mockResolvedValue({
+    mockRange.mockResolvedValue({
       data: [
         {
           id: 'inv-1',
@@ -33,6 +36,7 @@ describe('GoldenCircleInvestorsPage', () => {
           created_at: '2026-08-01T10:00:00Z',
         },
       ],
+      count: 1,
       error: null,
     })
     const { default: GoldenCircleInvestorsPage } = await import('@/app/dashboard/golden-circle/investidores/page')
@@ -47,7 +51,7 @@ describe('GoldenCircleInvestorsPage', () => {
   })
 
   it('shows an empty-state message when there are no investors', async () => {
-    mockOrder.mockResolvedValue({ data: [], error: null })
+    mockRange.mockResolvedValue({ data: [], count: 0, error: null })
     const { default: GoldenCircleInvestorsPage } = await import('@/app/dashboard/golden-circle/investidores/page')
 
     const result = await GoldenCircleInvestorsPage({ searchParams: Promise.resolve({}) })

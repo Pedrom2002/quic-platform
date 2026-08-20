@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table'
 
 import { approveInvestor, rejectInvestor } from './actions'
+import { PagePagination } from '@/components/ui/page-pagination'
 
 const dateFormatter = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })
 
@@ -30,25 +31,34 @@ const STATUS_VARIANTS: Record<string, 'outline' | 'default' | 'destructive'> = {
   rejected: 'destructive',
 }
 
+const PAGE_SIZE = 30
+
 export default async function GoldenCircleInvestorsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ status?: string; page?: string }>
 }) {
-  const { status } = await searchParams
+  const { status, page: pageParam } = await searchParams
   const supabase = await createClient()
+
+  const requestedPage = Number.parseInt(pageParam ?? '1', 10)
+  const page = Number.isNaN(requestedPage) || requestedPage < 1 ? 1 : requestedPage
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
 
   let query = supabase
     .from('investors')
-    .select('id, full_name, email, phone, status, created_at')
+    .select('id, full_name, email, phone, status, created_at', { count: 'exact' })
     .order('created_at', { ascending: false })
+    .range(from, to)
 
   if (status && status !== 'all') {
     query = query.eq('status', status)
   }
 
-  const { data } = await query
+  const { data, count } = await query
   const investors = (data ?? []) as unknown as Investor[]
+  const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE))
 
   return (
     <div className="flex flex-col gap-6">
@@ -116,6 +126,13 @@ export default async function GoldenCircleInvestorsPage({
           ))}
         </TableBody>
       </Table>
+
+      <PagePagination
+        basePath="/dashboard/golden-circle/investidores"
+        params={{ status: status && status !== 'all' ? status : undefined }}
+        page={page}
+        totalPages={totalPages}
+      />
     </div>
   )
 }
