@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Image from 'next/image'
+import { buildQrCodeSrc } from '@/lib/qr-code'
 
 export const dynamic = 'force-dynamic'
 
@@ -64,7 +65,7 @@ export default async function MemberCardPage({
     .replace(/^-|-$/g, '')
   const cardUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.quic.pt'}/${slug}`
   const vcard = buildVcard(member.full_name, roleLabels[member.role] ?? member.role, member.email, cardUrl)
-  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data=${encodeURIComponent(cardUrl)}`
+  const qrSrc = buildQrCodeSrc(cardUrl)
   const vcfData = `data:text/vcard;charset=utf-8,${encodeURIComponent(vcard)}`
 
   return (

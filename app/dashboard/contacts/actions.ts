@@ -153,10 +153,11 @@ export async function loadContactsPageAction(
 
   // Batch-load groups for this page's contacts (single query, avoids N+1).
   const contactIds = clientRows.map(r => r.id)
-  const { data: memberRows } = await supabase
+  const { data: memberRows, error: groupsError } = await supabase
     .from('contact_group_members')
     .select('contact_id, contact_groups ( id, name, color, admin_only )')
     .in('contact_id', contactIds)
+  if (groupsError) throw new Error(groupsError.message)
 
   type GroupRef = { id: string; name: string; color: string | null; admin_only: boolean }
   const groupsByContact = new Map<string, GroupRef[]>()
@@ -315,7 +316,8 @@ export async function syncContactGroupsAction(
   if (!contactCheck) throw new Error('Contacto não encontrado')
 
   // Delete all existing memberships then re-insert
-  await supabase.from('contact_group_members').delete().eq('contact_id', contactId)
+  const { error: deleteError } = await supabase.from('contact_group_members').delete().eq('contact_id', contactId)
+  if (deleteError) throw new Error(deleteError.message)
 
   if (groupIds.length > 0) {
     const { error } = await supabase

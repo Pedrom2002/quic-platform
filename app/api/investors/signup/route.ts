@@ -4,14 +4,13 @@ import { createClient } from '@/lib/supabase/server'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
 import { hasValidMxRecord } from '@/lib/email-validation'
 import { FIXED_ORG_ID } from '@/lib/investors/constants'
+import { signupSchema } from '@/lib/login-schemas'
 
 const SIGNUP_LIMIT = 5
 const SIGNUP_WINDOW_MS = 10 * 60 * 1_000
 
-const schema = z.object({
+const schema = signupSchema.extend({
   fullName: z.string().min(1),
-  email: z.string().email(),
-  password: z.string().min(6),
   phone: z.string().optional(),
 })
 

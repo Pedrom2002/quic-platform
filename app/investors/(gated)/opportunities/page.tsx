@@ -1,13 +1,9 @@
 import Link from 'next/link'
 import type { Route } from 'next'
 import { createClient } from '@/lib/supabase/server'
+import { formatCents } from '@/lib/format-money'
 
-const currencyFormatter = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' })
 const dateFormatter = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })
-
-function formatCents(cents: number): string {
-  return currencyFormatter.format(cents / 100)
-}
 
 export default async function InvestorOpportunitiesPage() {
   const supabase = await createClient()

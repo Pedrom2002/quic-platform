@@ -1,11 +1,6 @@
 import { getInvestorDashboardStats } from './actions'
 import { EvolutionChart, DistributionChart } from './charts'
-
-const currencyFormatter = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' })
-
-function formatCents(cents: number): string {
-  return currencyFormatter.format(cents / 100)
-}
+import { formatCents } from '@/lib/format-money'
 
 // Sem historico real de valor por mes na BD (investments so guarda o estado
 // atual, nao uma serie temporal). Por decisao do utilizador, esta curva usa

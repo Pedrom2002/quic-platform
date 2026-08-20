@@ -1,11 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
+import { formatCents } from '@/lib/format-money'
 
-const currencyFormatter = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' })
 const percentFormatter = new Intl.NumberFormat('pt-PT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
-
-function formatCents(cents: number): string {
-  return currencyFormatter.format(cents / 100)
-}
 
 function formatPercentage(percentage: number): string {
   return percentFormatter.format(percentage)

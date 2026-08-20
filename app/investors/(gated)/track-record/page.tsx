@@ -1,10 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-
-const currencyFormatter = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' })
-
-function formatCents(cents: number): string {
-  return currencyFormatter.format(cents / 100)
-}
+import { formatCents } from '@/lib/format-money'
 
 export default async function InvestorTrackRecordPage() {
   const supabase = await createClient()

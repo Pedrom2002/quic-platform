@@ -2,12 +2,7 @@
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, PieChart, Pie, Cell } from 'recharts'
 import type { DashboardDistributionEntry } from './actions'
-
-const currencyFormatter = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' })
-
-function formatCents(cents: number): string {
-  return currencyFormatter.format(cents / 100)
-}
+import { formatCents } from '@/lib/format-money'
 
 const DONUT_COLORS = ['#eab308', '#22c55e', '#f97316', '#0ea5e9', '#a855f7', '#ec4899']
 

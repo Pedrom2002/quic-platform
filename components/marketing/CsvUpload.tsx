@@ -97,7 +97,7 @@ export function CsvUpload({ listId, onImported }: Props) {
 
   return (
     <div className="space-y-3">
-      <input type="file" accept=".csv,.xlsx,.xls" onChange={handleFile} className="text-sm" />
+      <input type="file" aria-label="Carregar ficheiro de contactos" accept=".csv,.xlsx,.xls" onChange={handleFile} className="text-sm" />
       {summary && (
         <div className="text-xs px-3 py-2 rounded bg-blue-50 border border-blue-200 text-blue-800">
           {summary}

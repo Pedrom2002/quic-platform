@@ -1,11 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { PortfolioTable, type PortfolioRow } from './PortfolioTable'
-
-const currencyFormatter = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' })
-
-function formatCents(cents: number): string {
-  return currencyFormatter.format(cents / 100)
-}
+import { formatCents } from '@/lib/format-money'
 
 const PHASE_LABELS: Record<string, string> = {
   coming_soon: 'Brevemente',

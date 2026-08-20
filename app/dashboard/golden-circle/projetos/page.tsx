@@ -14,13 +14,9 @@ import {
 } from '@/components/ui/table'
 
 import { ProjectCreateDialog } from './project-create-dialog'
+import { formatCents } from '@/lib/format-money'
 
-const currencyFormatter = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' })
 const dateFormatter = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })
-
-function formatCents(cents: number): string {
-  return currencyFormatter.format(cents / 100)
-}
 
 const STATUS_LABELS: Record<string, string> = {
   coming_soon: 'Brevemente',

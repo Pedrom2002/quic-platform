@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { formatCents } from '@/lib/format-money'
 
 export type PortfolioRow = {
   id: string
@@ -12,12 +13,6 @@ export type PortfolioRow = {
   returnPercentage: number | null
   nextMilestone: string
   investmentStatus: 'active' | 'returned' | 'written_off' | string
-}
-
-const currencyFormatter = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' })
-
-function formatCents(cents: number): string {
-  return currencyFormatter.format(cents / 100)
 }
 
 type FilterKey = 'all' | 'active' | 'completed'

@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { buildQrCodeSrc } from '@/lib/qr-code'
 import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
@@ -85,7 +86,7 @@ export default async function PublicCardPage({
   const cardUrl = `${appUrl}/${slug}`
   const vcard = buildVcard(member.full_name, roleLabels[member.role] ?? member.role, member.email, cardUrl)
   const vcfData = `data:text/vcard;charset=utf-8,${encodeURIComponent(vcard)}`
-  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data=${encodeURIComponent(cardUrl)}`
+  const qrSrc = buildQrCodeSrc(cardUrl)
 
   return (
     <div className="min-h-screen bg-[#0d0c0d] flex items-center justify-center p-8">

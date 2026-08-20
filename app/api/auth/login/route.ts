@@ -1,15 +1,10 @@
 import { NextResponse } from 'next/server'
-import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+import { loginSchema as schema } from '@/lib/login-schemas'
 
 const LOGIN_LIMIT = 10
 const LOGIN_WINDOW_MS = 15 * 60 * 1_000
-
-const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-})
 
 export async function POST(request: Request) {
   const ip = getClientIp(request)

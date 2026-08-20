@@ -39,12 +39,16 @@ export async function POST(request: Request) {
         const candidates = [reply.inReplyTo, ...reply.references].filter(Boolean)
         if (!candidates.length) continue
 
-        const { data: send } = await supabase
+        const { data: send, error: sendError } = await supabase
           .from('marketing_sends')
           .select('id, contact_id, replied_at')
           .in('message_id', candidates)
           .maybeSingle()
 
+        if (sendError) {
+          console.error(`[reply-poll] lookup error for user ${userId}:`, sendError.message)
+          continue
+        }
         if (!send || send.replied_at) continue
 
         await supabase.from('marketing_sends').update({

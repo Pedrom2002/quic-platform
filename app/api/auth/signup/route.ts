@@ -1,15 +1,11 @@
 import { NextResponse } from 'next/server'
-import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+import { hasValidMxRecord } from '@/lib/email-validation'
+import { signupSchema as schema } from '@/lib/login-schemas'
 
 const SIGNUP_LIMIT = 5
 const SIGNUP_WINDOW_MS = 10 * 60 * 1_000
-
-const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-})
 
 export async function POST(request: Request) {
   const ip = getClientIp(request)
@@ -19,6 +15,10 @@ export async function POST(request: Request) {
 
   const parsed = schema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) {
+    return NextResponse.json({ error: 'Email ou password inválidos.' }, { status: 400 })
+  }
+
+  if (!(await hasValidMxRecord(parsed.data.email))) {
     return NextResponse.json({ error: 'Email ou password inválidos.' }, { status: 400 })
   }
 

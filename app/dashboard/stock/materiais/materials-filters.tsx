@@ -55,6 +55,7 @@ export function MaterialsFilters({
     >
       <Input
         name="q"
+        aria-label="Pesquisar por nome"
         placeholder="Pesquisar por nome..."
         defaultValue={currentSearch}
         className="w-full max-w-xs"

@@ -95,7 +95,7 @@ export function CsvImportDialog({ eventId, open, onOpenChange, onImported }: Csv
             <Upload className="w-8 h-8 text-slate-300 mx-auto mb-3" />
             <p className="text-sm text-slate-500">Clique ou arraste um ficheiro .csv</p>
             <p className="text-xs text-slate-400 mt-1">Cabeçalho esperado: nome, email, telefone, empresa</p>
-            <input ref={inputRef} type="file" accept=".csv" className="hidden"
+            <input ref={inputRef} type="file" aria-label="Carregar ficheiro CSV de clientes" accept=".csv" className="hidden"
               onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
           </div>
         )}
