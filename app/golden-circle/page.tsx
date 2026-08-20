@@ -286,13 +286,24 @@ export default function GoldenCirclePublicPage() {
       <style>{`
         @keyframes golden-circle-sweep {
           0% { background-position: -50% -50%; }
-          100% { background-position: 150% 150%; }
+          50% { background-position: 150% 150%; }
+          100% { background-position: -50% -50%; }
         }
       `}</style>
       <header
         className="relative overflow-hidden"
         style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}
       >
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          src="/pb_pedro.mp4"
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
+        />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, rgba(13,12,13,0.7) 0%, rgba(26,26,26,0.6) 50%, rgba(13,12,13,0.7) 100%)' }} />
         <div
           className="absolute inset-0"
           style={{
@@ -307,7 +318,7 @@ export default function GoldenCirclePublicPage() {
             backgroundImage:
               'linear-gradient(115deg, transparent 40%, rgba(149,27,129,.4) 50%, transparent 60%)',
             backgroundSize: '250% 250%',
-            animation: prefersReducedMotion() ? 'none' : 'golden-circle-sweep 7s linear infinite',
+            animation: prefersReducedMotion() ? 'none' : 'golden-circle-sweep 12s ease-in-out infinite',
           }}
         />
         <div
