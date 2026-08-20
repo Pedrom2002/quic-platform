@@ -180,15 +180,17 @@ describe('deleteContact', () => {
 
 describe('saveSmtpCredentials', () => {
   // Form-action signature: (prevState, formData) → { ok, message } (never throws).
-  it('returns not-authenticated message when no user', async () => {
-    mockGetUser.mockResolvedValueOnce({ data: { user: null } })
+  // saveSmtpCredentials/testSmtpCredentials use getOrgAuth() (staff-only), not a bare auth.getUser() check.
+  it('returns not-authorized message when there is no org member', async () => {
+    mockGetOrgAuth.mockResolvedValueOnce(null)
     const { saveSmtpCredentials } = await import('@/app/dashboard/marketing/settings/actions')
-    expect(await saveSmtpCredentials(null, fd({ password: 'x' }))).toEqual({ ok: false, message: 'Não autenticado' })
+    expect(await saveSmtpCredentials(null, fd({ password: 'x' }))).toEqual({ ok: false, message: 'Não autorizado' })
   })
 
   it('encrypts the password, upserts by user_id and verifies', async () => {
     const upsert = vi.fn().mockResolvedValue({ error: null })
-    mockFrom.mockReturnValue({ upsert, update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }) })
+    const from = vi.fn().mockReturnValue({ upsert, update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }) })
+    authAll({ from })
     mockTestSmtp.mockResolvedValueOnce(undefined)
     const { saveSmtpCredentials } = await import('@/app/dashboard/marketing/settings/actions')
     const res = await saveSmtpCredentials(null, fd({ host: 'smtp.x.com', port: '587', username: 'u', password: 'secret', from_name: 'S' }))
@@ -201,7 +203,8 @@ describe('saveSmtpCredentials', () => {
   })
 
   it('returns ok with a warning when verification fails', async () => {
-    mockFrom.mockReturnValue({ upsert: vi.fn().mockResolvedValue({ error: null }), update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }) })
+    const from = vi.fn().mockReturnValue({ upsert: vi.fn().mockResolvedValue({ error: null }), update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }) })
+    authAll({ from })
     mockTestSmtp.mockRejectedValueOnce(new Error('auth failed'))
     const { saveSmtpCredentials } = await import('@/app/dashboard/marketing/settings/actions')
     const res = await saveSmtpCredentials(null, fd({ host: 'h', port: '587', username: 'u', password: 'p', from_name: 'S' }))
@@ -210,7 +213,8 @@ describe('saveSmtpCredentials', () => {
   })
 
   it('returns error when upsert fails', async () => {
-    mockFrom.mockReturnValue({ upsert: vi.fn().mockResolvedValue({ error: { message: 'db down' } }) })
+    const from = vi.fn().mockReturnValue({ upsert: vi.fn().mockResolvedValue({ error: { message: 'db down' } }) })
+    authAll({ from })
     const { saveSmtpCredentials } = await import('@/app/dashboard/marketing/settings/actions')
     const res = await saveSmtpCredentials(null, fd({ host: 'h', port: '587', username: 'u', password: 'p', from_name: 'S' }))
     expect(res.ok).toBe(false)
@@ -219,28 +223,30 @@ describe('saveSmtpCredentials', () => {
 })
 
 describe('testSmtpCredentials', () => {
-  it('returns not-authenticated error when no user', async () => {
-    mockGetUser.mockResolvedValueOnce({ data: { user: null } })
+  it('returns not-authorized error when there is no org member', async () => {
+    mockGetOrgAuth.mockResolvedValueOnce(null)
     const { testSmtpCredentials } = await import('@/app/dashboard/marketing/settings/actions')
-    expect(await testSmtpCredentials()).toEqual({ ok: false, error: 'Não autenticado' })
+    expect(await testSmtpCredentials()).toEqual({ ok: false, error: 'Não autorizado' })
   })
 
   it('returns error when no stored credentials', async () => {
-    mockFrom.mockReturnValue({
+    const from = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({ data: null }),
     })
+    authAll({ from })
     const { testSmtpCredentials } = await import('@/app/dashboard/marketing/settings/actions')
     expect(await testSmtpCredentials()).toEqual({ ok: false, error: 'Credenciais não guardadas' })
   })
 
   it('verifies connection and marks verified_at on success', async () => {
     const updateEq = vi.fn().mockResolvedValue({ error: null })
-    mockFrom.mockReturnValue({
+    const from = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({ data: { host: 'h', username: 'u', password_enc: 'e' } }),
       update: vi.fn().mockReturnValue({ eq: updateEq }),
     })
+    authAll({ from })
     mockTestSmtp.mockResolvedValueOnce(undefined)
     const { testSmtpCredentials } = await import('@/app/dashboard/marketing/settings/actions')
     expect(await testSmtpCredentials()).toEqual({ ok: true })
@@ -248,10 +254,11 @@ describe('testSmtpCredentials', () => {
   })
 
   it('returns error when connection test throws', async () => {
-    mockFrom.mockReturnValue({
+    const from = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({ data: { host: 'h', username: 'u', password_enc: 'e' } }),
     })
+    authAll({ from })
     mockTestSmtp.mockRejectedValueOnce(new Error('auth failed'))
     const { testSmtpCredentials } = await import('@/app/dashboard/marketing/settings/actions')
     expect(await testSmtpCredentials()).toEqual({ ok: false, error: 'auth failed' })

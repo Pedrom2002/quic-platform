@@ -18,6 +18,7 @@ function makeSupabaseStub(rows: Array<{
   investment_projects: { name: string } | null
 }>) {
   return {
+    auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'investor-user-1' } } }) },
     from: vi.fn().mockReturnValue({
       select: mockSelect.mockResolvedValue({ data: rows, error: null }),
     }),
@@ -30,6 +31,24 @@ beforeEach(() => {
 })
 
 describe('getInvestorDashboardStats', () => {
+  it('returns zeroed stats without querying investments when there is no authenticated user', async () => {
+    mockCreateClient.mockResolvedValue({
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) },
+      from: vi.fn(),
+    })
+    const { getInvestorDashboardStats } = await import('@/app/investors/(gated)/dashboard/actions')
+    const stats = await getInvestorDashboardStats()
+
+    expect(stats).toEqual({
+      investedCents: 0,
+      activeProjects: 0,
+      realizedReturnCents: 0,
+      projectedReturnCents: 0,
+      estimatedValueCents: 0,
+      distribution: [],
+    })
+  })
+
   it('returns zeroed stats and empty distribution when investor has no investments', async () => {
     mockCreateClient.mockResolvedValue(makeSupabaseStub([]))
     const { getInvestorDashboardStats } = await import('@/app/investors/(gated)/dashboard/actions')
