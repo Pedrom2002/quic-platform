@@ -6,7 +6,7 @@ import { fetchTicketTypes } from '@/lib/tickets/tickets'
 import { TicketSelector } from './TicketSelector'
 
 function formatEventDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })
+  return new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' })
 }
 
 export default async function EventDetailPage({ params }: { params: Promise<{ eventId: string }> }) {

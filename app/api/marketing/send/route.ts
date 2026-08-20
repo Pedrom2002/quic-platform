@@ -31,6 +31,24 @@ export async function POST(request: Request) {
   const supabase = createAdminClient()
   const appUrl = getEnv().NEXT_PUBLIC_APP_URL
 
+  // QStash garante at-least-once delivery: um retry depois do envio ja ter
+  // tido sucesso (mas antes deste worker responder 200) reenviaria o mesmo
+  // email ao contacto. Gate atomico sem nova coluna/estado: sent_at so e
+  // preenchido no fim de um envio bem sucedido, por isso reclamar a linha
+  // marcando-a com um sent_at provisorio (substituido no update final) so
+  // funciona se ainda estiver null.
+  const { data: claimed } = await supabase
+    .from('marketing_sends')
+    .update({ sent_at: new Date().toISOString() })
+    .eq('id', send_id)
+    .is('sent_at', null)
+    .select('id')
+    .maybeSingle()
+
+  if (!claimed) {
+    return NextResponse.json({ success: true, skipped: 'already-processed' })
+  }
+
   try {
     const [{ data: campaign }, { data: contact }, { data: smtpCreds }] = await Promise.all([
       supabase.from('marketing_campaigns').select('*').eq('id', campaign_id).single(),
@@ -93,6 +111,7 @@ export async function POST(request: Request) {
     await supabase.from('marketing_sends').update({
       status: 'failed',
       error: msg,
+      sent_at: null, // liberta a reclamacao (sent_at) para uma retry poder reenviar
     }).eq('id', send_id)
     return NextResponse.json({ error: msg }, { status: 500 })
   }

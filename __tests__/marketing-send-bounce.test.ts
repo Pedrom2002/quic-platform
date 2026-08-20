@@ -71,10 +71,26 @@ function makeSingleChain(data: unknown) {
   }
 }
 
-function makeUpdateChain(error: unknown = null) {
+// Supports both call shapes used against `marketing_sends`:
+//   .update(...).eq(...)                           → final status/error updates, resolves { error }
+//   .update(...).eq(...).is(...).select(...).maybeSingle() → the atomic claim gate, resolves { data }
+function makeUpdateChain(error: unknown = null, claimed: unknown = { id: 'send-1' }) {
   return {
     update: vi.fn().mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ error }),
+      eq: vi.fn().mockImplementation(() => {
+        const chain: {
+          then: (resolve: (v: { error: unknown }) => void) => void
+          is: () => typeof chain
+          select: () => typeof chain
+          maybeSingle: () => Promise<{ data: unknown }>
+        } = {
+          then: (resolve) => resolve({ error }),
+          is: () => chain,
+          select: () => chain,
+          maybeSingle: () => Promise.resolve({ data: claimed }),
+        }
+        return chain
+      }),
     }),
   }
 }
@@ -129,12 +145,14 @@ describe('POST /api/marketing/send', () => {
   })
 
   it('returns 500 when campaign/contact/smtp data is missing', async () => {
-    // Chain must have both single() (for SELECT) and update().eq() (for the catch-block update)
+    // Chain must support: single() (for SELECT), and update().eq() both for the
+    // atomic claim gate (.is().select().maybeSingle()) and the catch-block update.
+    const updateChain = makeUpdateChain()
     const nullChain = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({ data: null }),
-      update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }),
+      update: updateChain.update,
     }
     mockFrom.mockReturnValue(nullChain)
     const { POST } = await import('@/app/api/marketing/send/route')
@@ -190,6 +208,18 @@ describe('POST /api/marketing/send', () => {
     expect((res as { status: number }).status).toBe(200)
     const [callArgs] = mockSendMarketingEmail.mock.calls as [{ subject: string }][]
     expect(callArgs[0].subject).toContain('Maria')
+  })
+
+  it('skips sending when the claim gate finds sent_at already set (duplicate QStash delivery)', async () => {
+    const updateChain = makeUpdateChain(null, null) // maybeSingle() resolves { data: null } → not claimed
+    mockFrom.mockReturnValue(updateChain)
+
+    const { POST } = await import('@/app/api/marketing/send/route')
+    const res = await POST(makeMockRequest(VALID_PAYLOAD))
+
+    expect((res as { status: number; body: unknown }).status).toBe(200)
+    expect((res as { body: { skipped?: string } }).body.skipped).toBe('already-processed')
+    expect(mockSendMarketingEmail).not.toHaveBeenCalled()
   })
 
   it('returns 500 and marks send failed when sendMarketingEmail throws', async () => {

@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { fetchPublicEvents } from '@/lib/tickets/events'
 
 function formatEventDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
+  return new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
 }
 
 function formatPrice(cents: number | null): string {

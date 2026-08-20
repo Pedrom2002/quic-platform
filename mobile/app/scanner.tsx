@@ -14,18 +14,36 @@ export default function ScannerScreen() {
   const [lastResult, setLastResult] = useState<string | null>(null)
   const scanningRef = useRef(false)
 
+  const [roleError, setRoleError] = useState(false)
+
   useEffect(() => {
-    resolveUserRole(supabase, session).then(setRole).catch(() => {
-      // Falha a resolver o papel do utilizador não deve rebentar a app —
-      // ecrã fica em loading (role null) até à próxima mudança de sessão.
-    })
+    let cancelled = false
+    setRoleError(false)
+    resolveUserRole(supabase, session)
+      .then(r => { if (!cancelled) setRole(r) })
+      .catch(() => { if (!cancelled) setRoleError(true) })
+    return () => { cancelled = true }
   }, [session])
 
   useEffect(() => {
     if (permission && !permission.granted) requestPermission()
   }, [permission, requestPermission])
 
-  if (!role) return null
+  if (roleError) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.restricted}>Não foi possível carregar o teu perfil. Tenta novamente mais tarde.</Text>
+      </View>
+    )
+  }
+
+  if (!role) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.restricted}>A carregar...</Text>
+      </View>
+    )
+  }
 
   if (role.role !== 'staff') {
     return (

@@ -13,11 +13,11 @@ import { QUIC_MAGENTA, colors } from '../../lib/theme'
 type TabKey = 'agenda' | 'clipping' | 'contents' | 'documents'
 
 function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
+  return new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
 }
 
 function AgendaItemCard({ item }: { item: ArtistAgendaItem }) {
@@ -153,7 +153,7 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 function formatEventDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })
+  return new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' })
 }
 
 function ChecklistItemRow({ item }: { item: PortalItem }) {
