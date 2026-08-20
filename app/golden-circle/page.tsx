@@ -301,9 +301,9 @@ export default function GoldenCirclePublicPage() {
           playsInline
           preload="auto"
           src="/pb_pedro.mp4"
-          className="absolute inset-0 w-full h-full object-cover opacity-40"
+          className="absolute inset-0 w-full h-full object-cover opacity-60"
         />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, rgba(13,12,13,0.7) 0%, rgba(26,26,26,0.6) 50%, rgba(13,12,13,0.7) 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, rgba(13,12,13,0.55) 0%, rgba(26,26,26,0.45) 50%, rgba(13,12,13,0.55) 100%)' }} />
         <div
           className="absolute inset-0"
           style={{
