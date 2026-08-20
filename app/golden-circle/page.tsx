@@ -103,6 +103,31 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+function useCountUp(target: number, active: boolean, durationMs = 1400): number {
+  const reduced = prefersReducedMotion()
+  const [value, setValue] = useState(reduced ? target : 0)
+
+  useEffect(() => {
+    if (!active || reduced) return
+
+    const start = performance.now()
+    let frameId: number
+
+    function tick(now: number) {
+      const progress = Math.min((now - start) / durationMs, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setValue(Math.round(target * eased))
+      if (progress < 1) frameId = requestAnimationFrame(tick)
+    }
+
+    frameId = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frameId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active])
+
+  return value
+}
+
 function useTypewriterLoop(phrases: string[]): string {
   // `reduced` e lido uma vez no mount (nao dentro do efeito), por isso um
   // toggle do reduced-motion do SO a meio da sessao nao para a animacao ja
@@ -216,11 +241,30 @@ function TopNav({ active }: { active: SectionId }) {
   )
 }
 
+function TrackRecordStat({ target, suffix, label, active }: { target: number; suffix: string; label: string; active: boolean }) {
+  const value = useCountUp(target, active)
+  return (
+    <div className="p-6 text-center" style={{ background: '#141318' }}>
+      <p className="text-5xl sm:text-6xl font-bold tracking-tight text-[var(--quic-magenta)] mb-1 tabular-nums">
+        {value}{suffix}
+      </p>
+      <p className="text-xs text-white/50">{label}</p>
+    </div>
+  )
+}
+
 const TRACK_RECORD_STATS = [
-  { value: '40+', label: 'Concertos produzidos' },
-  { value: '250k+', label: 'Bilhetes vendidos' },
-  { value: '15', label: 'Artistas geridos' },
-  { value: '8', label: 'Anos de atividade' },
+  { target: 40, suffix: '+', label: 'Concertos produzidos' },
+  { target: 250, suffix: 'k+', label: 'Bilhetes vendidos' },
+  { target: 15, suffix: '', label: 'Artistas geridos' },
+  { target: 8, suffix: '', label: 'Anos de atividade' },
+]
+
+const OPPORTUNITY_CARDS = [
+  { num: '01', title: 'Concerto Sala Tejo — Nov 2026', body: 'Produção de médio porte, capacidade 4.000 lugares. Ronda de investimento em preparação.', status: 'Em preparação' },
+  { num: '02', title: 'Digressão Nacional — Q1 2027', body: 'Digressão de 6 datas em 4 cidades. Estrutura de investimento por data ou pacote completo.', status: 'Em preparação' },
+  { num: '03', title: 'Festival de Verão — 2027', body: 'Produção de grande escala, múltiplos palcos. Oportunidade em fase de estruturação.', status: 'Em estruturação' },
+  { num: '04', title: 'Novas oportunidades', body: 'Novas produções são adicionadas regularmente. Investidores Golden Circle têm acesso antecipado.', status: 'Em breve' },
 ]
 
 const HERO_PHRASES = [
@@ -266,9 +310,15 @@ export default function GoldenCirclePublicPage() {
             animation: prefersReducedMotion() ? 'none' : 'golden-circle-sweep 7s linear infinite',
           }}
         />
+        <div
+          aria-hidden="true"
+          className="absolute -top-1/3 left-1/4 w-[600px] h-[600px] rounded-full blur-3xl opacity-30 pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(149,27,129,0.6) 0%, transparent 70%)' }}
+        />
         <div className="relative max-w-6xl mx-auto px-6 md:px-12 py-14 md:py-20">
           <Image src="/logo-branco.png" alt="Quic" width={110} height={44} priority className="mb-10" />
-          <p className="text-sm md:text-base font-semibold tracking-[0.3em] uppercase text-[#d18cc5] mb-4">
+          <p className="inline-flex items-center gap-2 text-sm md:text-base font-semibold tracking-[0.3em] uppercase text-[#d18cc5] mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#d18cc5]" />
             Golden Circle
           </p>
           <h1 className="grid text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl">
@@ -280,6 +330,13 @@ export default function GoldenCirclePublicPage() {
             <span aria-hidden="true" className="[grid-area:1/1]">{title}</span>
             <span className="sr-only">{HERO_PHRASES.join(' ')}</span>
           </h1>
+          <button
+            onClick={() => scrollToSection('golden-circle')}
+            className="mt-12 flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-white/40 hover:text-white/70 transition-colors"
+          >
+            Descobrir
+            <span className="block w-px h-8 bg-gradient-to-b from-white/40 to-transparent" />
+          </button>
         </div>
       </header>
 
@@ -327,24 +384,31 @@ export default function GoldenCirclePublicPage() {
               com orçamento, capacidade de sala e estimativa de retorno definidos antes da abertura a
               investidores do Golden Circle.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-stone-100 rounded-xl overflow-hidden border border-stone-100">
-              {[
-                { num: '01', title: 'Concerto Sala Tejo — Nov 2026', body: 'Produção de médio porte, capacidade 4.000 lugares. Ronda de investimento em preparação.' },
-                { num: '02', title: 'Digressão Nacional — Q1 2027', body: 'Digressão de 6 datas em 4 cidades. Estrutura de investimento por data ou pacote completo.' },
-                { num: '03', title: 'Festival de Verão — 2027', body: 'Produção de grande escala, múltiplos palcos. Oportunidade em fase de estruturação.' },
-                { num: '04', title: 'Novas oportunidades', body: 'Novas produções são adicionadas regularmente. Investidores Golden Circle têm acesso antecipado.' },
-              ].map((card, i) => (
-                <div key={i} className="bg-white">
-                  <div className="relative w-full aspect-video">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {OPPORTUNITY_CARDS.map((card, i) => (
+                <div
+                  key={i}
+                  className="group bg-white rounded-xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-lg transition-shadow duration-300"
+                >
+                  <div className="relative w-full aspect-video overflow-hidden">
                     <Image
                       src="/01_Sofia_ConcertoValeSilencio_0609_16x9.jpg"
                       alt=""
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
+                    <div
+                      className="absolute inset-0"
+                      style={{ background: 'linear-gradient(180deg, rgba(13,12,13,0) 40%, rgba(13,12,13,0.75) 100%)' }}
+                    />
+                    <span className="absolute top-3 right-3 text-[10px] font-semibold tracking-wider uppercase text-white bg-black/40 backdrop-blur-sm rounded-full px-3 py-1">
+                      {card.status}
+                    </span>
+                    <span className="absolute bottom-3 left-4 text-[10px] text-white/70 tabular-nums tracking-wider font-semibold">
+                      {card.num}
+                    </span>
                   </div>
                   <div className="p-6">
-                    <span className="text-[10px] text-[var(--quic-magenta)] tabular-nums tracking-wider block mb-3 font-semibold">{card.num}</span>
                     <p className="text-base font-medium tracking-tight text-stone-900 mb-2">{card.title}</p>
                     <p className="text-sm text-stone-500 leading-relaxed">{card.body}</p>
                   </div>
@@ -360,15 +424,19 @@ export default function GoldenCirclePublicPage() {
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
               <h2 className="text-2xl font-bold tracking-tight text-stone-900">How It Works</h2>
             </div>
-            <ul>
+            <ul className="relative">
+              <span
+                aria-hidden="true"
+                className="hidden sm:block absolute left-[15px] top-4 bottom-4 w-px bg-stone-200"
+              />
               {[
                 { num: '01', title: 'Torna-te membro Golden Circle', desc: 'Após aprovação, tens acesso à lista de oportunidades de investimento ativas e ao histórico de produções anteriores.' },
                 { num: '02', title: 'Escolhes a oportunidade', desc: 'Cada produção tem orçamento, capacidade e retorno estimado definidos. Investes no valor e na produção que preferires.' },
                 { num: '03', title: 'Acompanhamento em tempo real', desc: 'Recebes atualizações sobre a produção: vendas de bilhetes, custos, e progresso até ao dia do evento.' },
                 { num: '04', title: 'Retorno após o evento', desc: 'Após a produção e o encerramento de contas, o retorno é distribuído aos investidores dessa oportunidade específica.' },
               ].map((step, i) => (
-                <li key={i} className="flex gap-6 md:gap-10 py-6 border-b border-stone-100 last:border-0">
-                  <span className="text-xs text-stone-400 tabular-nums tracking-wider font-medium pt-0.5 shrink-0 w-6">
+                <li key={i} className="relative flex gap-6 md:gap-10 py-6 border-b border-stone-100 last:border-0">
+                  <span className="relative z-10 flex items-center justify-center text-xs text-stone-400 tabular-nums tracking-wider font-semibold shrink-0 w-8 h-8 rounded-full border border-stone-200 bg-white">
                     {step.num}
                   </span>
                   <div>
@@ -393,10 +461,14 @@ export default function GoldenCirclePublicPage() {
               mercado português de concertos e eventos ao vivo tem vindo a expandir-se de forma consistente
               nos últimos anos.
             </p>
+            <blockquote className="border-l-2 border-[var(--quic-magenta)] pl-6 py-1 my-8 max-w-2xl">
+              <p className="text-lg md:text-xl font-medium italic tracking-tight text-stone-800 leading-snug">
+                &ldquo;O Golden Circle nasce da vontade de partilhar o crescimento da empresa com um grupo
+                restrito de parceiros alinhados com a nossa visão de longo prazo.&rdquo;
+              </p>
+            </blockquote>
             <p className="text-sm text-stone-500 leading-relaxed max-w-2xl">
-              O Golden Circle nasce da vontade de partilhar o crescimento da empresa com um grupo restrito de
-              parceiros e investidores alinhados com a visão de longo prazo da marca. Para mais informações
-              sobre a equipa fundadora e a missão da Quic, contacte-nos diretamente.
+              Para mais informações sobre a equipa fundadora e a missão da Quic, contacte-nos diretamente.
             </p>
           </section>
 
@@ -441,10 +513,7 @@ export default function GoldenCirclePublicPage() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/10 rounded-xl overflow-hidden mb-8">
             {TRACK_RECORD_STATS.map((stat, i) => (
-              <div key={i} className="p-6 text-center" style={{ background: '#141318' }}>
-                <p className="text-5xl sm:text-6xl font-bold tracking-tight text-[var(--quic-magenta)] mb-1">{stat.value}</p>
-                <p className="text-xs text-white/50">{stat.label}</p>
-              </div>
+              <TrackRecordStat key={i} target={stat.target} suffix={stat.suffix} label={stat.label} active={revealed.has('track-record')} />
             ))}
           </div>
           <p className="text-sm text-white/50 leading-relaxed max-w-2xl">
