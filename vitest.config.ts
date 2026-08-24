@@ -13,7 +13,7 @@ export default defineConfig({
     // crypto, waitFor loops) competem por CPU e excedem o testTimeout de 5s
     // por pura contencao, nao por bug (confirmado: passam sempre isolados).
     // Limitar workers da mais CPU a cada teste em troca de tempo total maior.
-    maxForks: 8,
+    maxWorkers: 8,
     coverage: {
       provider: 'v8',
       include: [
