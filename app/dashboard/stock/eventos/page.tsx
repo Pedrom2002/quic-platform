@@ -31,7 +31,7 @@ export default async function EventosPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold">Eventos</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-slate-500">
             Eventos com saídas, devoluções e danos de material associados.
           </p>
         </div>
@@ -53,7 +53,7 @@ export default async function EventosPage() {
             <TableRow>
               <TableCell
                 colSpan={5}
-                className="text-center text-muted-foreground"
+                className="text-center text-slate-500"
               >
                 Sem eventos.
               </TableCell>
@@ -71,7 +71,7 @@ export default async function EventosPage() {
               </TableCell>
               <TableCell>
                 {event.client_name ?? (
-                  <span className="text-muted-foreground">-</span>
+                  <span className="text-slate-500">-</span>
                 )}
               </TableCell>
               <TableCell>

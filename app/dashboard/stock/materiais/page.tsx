@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { Package } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/server'
 import type { StockCategory, StockMaterial } from '@/lib/stock/types'
@@ -12,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { EmptyState } from '@/components/ui/empty-state'
 
 import { CatalogPagination } from '@/app/rentals/catalog-pagination'
 import { getInitials } from './get-initials'
@@ -86,7 +88,7 @@ export default async function MateriaisPage({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold">Materiais</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-slate-500">
             Inventário de materiais e disponibilidade atual.
           </p>
         </div>
@@ -114,11 +116,8 @@ export default async function MateriaisPage({
         <TableBody>
           {materials.length === 0 && (
             <TableRow>
-              <TableCell
-                colSpan={9}
-                className="text-center text-muted-foreground"
-              >
-                Sem materiais.
+              <TableCell colSpan={9}>
+                <EmptyState icon={Package} message="Sem materiais." />
               </TableCell>
             </TableRow>
           )}
@@ -140,7 +139,7 @@ export default async function MateriaisPage({
                   ) : (
                     <div
                       aria-label="Sem foto"
-                      className="flex h-10 w-10 items-center justify-center rounded-md border bg-muted text-xs font-medium text-muted-foreground"
+                      className="flex h-10 w-10 items-center justify-center rounded-md border bg-slate-100 text-xs font-medium text-slate-500"
                     >
                       {getInitials(material.name)}
                     </div>
@@ -149,7 +148,7 @@ export default async function MateriaisPage({
                 <TableCell className="font-medium">{material.name}</TableCell>
                 <TableCell>
                   {material.stock_categories?.name ?? (
-                    <span className="text-muted-foreground">Sem categoria</span>
+                    <span className="text-slate-500">Sem categoria</span>
                   )}
                 </TableCell>
                 <TableCell>{material.unit}</TableCell>

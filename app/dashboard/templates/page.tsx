@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from 'sonner'
 import type { MessageTemplate } from '@/types/database'
 import { TEMPLATE_KEYS, type MessageTemplateInput, type TemplateKey } from '@/schemas/template.schema'
+import { EmptyState } from '@/components/ui/empty-state'
 
 const TEMPLATE_KEY_LABEL: Record<TemplateKey, string> = {
   checklist_complete: 'Conclusão de etapa',
@@ -135,7 +136,7 @@ export default function TemplatesPage() {
         {loading ? (
           <p className="text-slate-400 text-sm">A carregar...</p>
         ) : !checklistTemplates.length ? (
-          <p className="text-slate-400 text-sm">Nenhum template de checklist encontrado.</p>
+          <EmptyState icon={CheckSquare} message="Nenhum template de checklist encontrado." />
         ) : (
           <div className="bg-white border border-slate-200 rounded-xl shadow-sm divide-y divide-slate-100">
             {checklistTemplates.map(t => {
@@ -176,7 +177,7 @@ export default function TemplatesPage() {
         {loading ? (
           <p className="text-slate-400 text-sm">A carregar...</p>
         ) : !messageTemplates.length ? (
-          <p className="text-slate-400 text-sm">Nenhum template de mensagem encontrado.</p>
+          <EmptyState icon={FileText} message="Nenhum template de mensagem encontrado." />
         ) : (
           <div className="bg-white border border-slate-200 rounded-xl shadow-sm divide-y divide-slate-100">
             {messageTemplates.map(m => (

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { saveSmtpCredentials } from './actions'
 import { SettingsForm } from './SettingsForm'
 import { checkSenderDns } from '@/lib/marketing/dns-check'
+import { Badge } from '@/components/ui/badge'
 
 export default async function MarketingSettingsPage() {
   const supabase = await createClient()
@@ -68,14 +69,13 @@ async function DnsStatus({ email }: { email: string }) {
         {items.map(i => (
           <div key={i.key} className="flex items-center justify-between text-sm">
             <span className="font-mono text-xs">{i.key}</span>
-            <span className={`text-xs px-2 py-0.5 rounded ${
-              i.state.ok ? 'bg-green-100 text-green-700' :
-              i.state.found ? 'bg-yellow-100 text-yellow-700' :
-              'bg-red-100 text-red-700'
-            }`}>
+            <Badge
+              variant={i.state.ok ? 'subtle' : i.state.found ? 'outline' : 'destructive'}
+              className={i.state.found && !i.state.ok ? 'bg-amber-100 text-amber-700 border-transparent' : undefined}
+            >
               {i.state.ok ? 'OK' : i.state.found ? 'fraco' : 'em falta'}
               {i.extra && ` — ${i.extra}`}
-            </span>
+            </Badge>
           </div>
         ))}
       </div>

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Route } from 'next'
+import { Users } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/server'
 import type { Investor } from '@/types/database'
@@ -13,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { EmptyState } from '@/components/ui/empty-state'
 
 import { approveInvestor, rejectInvestor } from './actions'
 import { PagePagination } from '@/components/ui/page-pagination'
@@ -88,8 +90,8 @@ export default async function GoldenCircleInvestorsPage({
         <TableBody>
           {investors.length === 0 && (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">
-                Sem investidores.
+              <TableCell colSpan={6}>
+                <EmptyState icon={Users} message="Sem investidores." />
               </TableCell>
             </TableRow>
           )}

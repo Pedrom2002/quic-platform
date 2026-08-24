@@ -26,7 +26,7 @@ export default async function CategoriasPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold">Categorias</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-slate-500">
           Categorias usadas para organizar os materiais.
         </p>
       </div>
@@ -46,7 +46,7 @@ export default async function CategoriasPage() {
             <TableRow>
               <TableCell
                 colSpan={3}
-                className="text-center text-muted-foreground"
+                className="text-center text-slate-500"
               >
                 Sem categorias.
               </TableCell>

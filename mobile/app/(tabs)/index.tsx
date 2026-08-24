@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import Animated, { FadeInDown } from 'react-native-reanimated'
+import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '../../lib/supabase'
 import { fetchPublicEvents, type PublicEvent } from '../../lib/events'
 import { EventCard } from '../../components/EventCard'
 import { BannerHeader } from '../../components/BannerHeader'
+import { colors } from '../../lib/theme'
 
 function Header() {
   return (
@@ -30,6 +32,7 @@ export default function InicioScreen() {
     return (
       <View style={styles.empty}>
         <Header />
+        <Ionicons name="calendar-outline" size={48} color={colors.gray200} style={styles.emptyIcon} />
         <Text style={styles.emptyText}>Sem eventos agendados.</Text>
       </View>
     )
@@ -55,6 +58,7 @@ export default function InicioScreen() {
 const styles = StyleSheet.create({
   list: { paddingBottom: 16 },
   empty: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
+  emptyIcon: { marginTop: 24, marginBottom: 8 },
   emptyText: { color: '#78716c', fontSize: 14 },
   sectionTitle: {
     textAlign: 'center',

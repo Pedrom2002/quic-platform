@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Route } from 'next'
+import { Mic2 } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/server'
 import type { Artist } from '@/types/database'
@@ -12,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { EmptyState } from '@/components/ui/empty-state'
 
 import { ArtistCreateDialog } from './artist-create-dialog'
 
@@ -36,8 +38,8 @@ export default async function ArtistsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold">Artistas</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-2xl font-semibold text-slate-900">Artistas</h1>
+          <p className="text-sm text-slate-500">
             Artistas agenciados: agenda, imprensa, conteúdos e documentos partilhados no portal de cada um.
           </p>
         </div>
@@ -58,8 +60,8 @@ export default async function ArtistsPage() {
         <TableBody>
           {artists.length === 0 && (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">
-                Sem artistas. Cria o primeiro.
+              <TableCell colSpan={6}>
+                <EmptyState icon={Mic2} message="Sem artistas. Cria o primeiro." />
               </TableCell>
             </TableRow>
           )}
@@ -78,7 +80,7 @@ export default async function ArtistsPage() {
                       className="h-8 w-8 rounded-full object-cover"
                     />
                   ) : (
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold">
                       {artist.name.slice(0, 2).toUpperCase()}
                     </span>
                   )}
@@ -86,7 +88,7 @@ export default async function ArtistsPage() {
                 </Link>
               </TableCell>
               <TableCell>
-                {artist.email ?? <span className="text-muted-foreground">-</span>}
+                {artist.email ?? <span className="text-slate-500">-</span>}
               </TableCell>
               <TableCell>{countOf(artist.artist_agenda_items)}</TableCell>
               <TableCell>{countOf(artist.artist_clippings)}</TableCell>

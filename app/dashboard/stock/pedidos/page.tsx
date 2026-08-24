@@ -56,7 +56,7 @@ export default async function PedidosPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold">Pedidos</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-slate-500">
           Pedidos de orçamento submetidos através do catálogo público.
         </p>
       </div>
@@ -80,7 +80,7 @@ export default async function PedidosPage({
             <TableRow>
               <TableCell
                 colSpan={7}
-                className="text-center text-muted-foreground"
+                className="text-center text-slate-500"
               >
                 Sem pedidos.
               </TableCell>

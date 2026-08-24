@@ -67,24 +67,38 @@ function MaisContent({ role, email }: { role: UserRole; email: string }) {
         </View>
 
         <Text style={styles.sectionLabel}>Bilhetes</Text>
-        <Pressable style={styles.card} onPress={() => router.push('/tickets')} accessibilityRole="button">
+        <Pressable
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          onPress={() => router.push('/tickets')}
+          accessibilityRole="button"
+        >
           <Text style={styles.cardTitle}>Os meus bilhetes</Text>
         </Pressable>
         {role.role === 'staff' && (
-          <Pressable style={styles.card} onPress={() => router.push('/scanner')} accessibilityRole="button">
+          <Pressable
+            style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+            onPress={() => router.push('/scanner')}
+            accessibilityRole="button"
+          >
             <Text style={styles.cardTitle}>Scanner de check-in</Text>
           </Pressable>
         )}
 
         <Text style={styles.sectionLabel}>Definições</Text>
-        <View style={styles.card}>
+        <View style={[styles.card, styles.cardDisabled]}>
           <View style={styles.rowBetween}>
-            <Text style={styles.cardTitle}>Notificações</Text>
-            <Text style={styles.comingSoon}>Em breve</Text>
+            <Text style={[styles.cardTitle, styles.cardTitleDisabled]}>Notificações</Text>
+            <View style={styles.comingSoonBadge}>
+              <Text style={styles.comingSoonText}>Em breve</Text>
+            </View>
           </View>
         </View>
 
-        <Pressable style={styles.logoutButton} onPress={handleSignOut} accessibilityRole="button">
+        <Pressable
+          style={({ pressed }) => [styles.logoutButton, pressed && styles.logoutButtonPressed]}
+          onPress={handleSignOut}
+          accessibilityRole="button"
+        >
           <Text style={styles.logoutText}>Terminar sessão</Text>
         </Pressable>
       </View>
@@ -131,9 +145,13 @@ const styles = StyleSheet.create({
   body: { padding: 16 },
   sectionLabel: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, color: colors.gray400, marginTop: 16, marginBottom: 6 },
   card: { backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 6, padding: 14, marginBottom: 4 },
+  cardPressed: { backgroundColor: colors.gray100 },
+  cardDisabled: { opacity: 0.6 },
   cardTitle: { fontSize: 14, color: colors.gray900 },
+  cardTitleDisabled: { color: colors.gray400 },
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  comingSoon: { fontSize: 12, color: colors.gray400 },
+  comingSoonBadge: { backgroundColor: colors.gray100, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
+  comingSoonText: { fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, color: colors.gray400 },
   logoutButton: {
     marginTop: 20,
     backgroundColor: '#fef2f2',
@@ -143,5 +161,6 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: 'center',
   },
+  logoutButtonPressed: { backgroundColor: '#fee2e2' },
   logoutText: { color: colors.danger, fontSize: 14, fontWeight: '600' },
 })

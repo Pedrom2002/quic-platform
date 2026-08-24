@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { type Route } from 'next'
+import { Send } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { ButtonLink } from '@/components/ui/button'
 import {
@@ -11,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { EmptyState } from '@/components/ui/empty-state'
 
 export default async function CampaignsPage() {
   const supabase = await createClient()
@@ -71,7 +73,9 @@ export default async function CampaignsPage() {
           ))}
           {!campaigns?.length && (
             <TableRow>
-              <TableCell colSpan={4} className="text-center text-muted-foreground">Nenhuma campanha ainda.</TableCell>
+              <TableCell colSpan={4}>
+                <EmptyState icon={Send} message="Nenhuma campanha ainda." />
+              </TableCell>
             </TableRow>
           )}
         </TableBody>

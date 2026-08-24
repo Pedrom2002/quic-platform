@@ -63,7 +63,7 @@ export default async function DashboardPage() {
   const activeCount = upcomingEvents?.filter(e => e.status === 'active').length ?? 0
 
   return (
-    <div className="min-h-screen" style={{ background: '#f5f5f5' }}>
+    <div className="min-h-screen bg-zinc-100">
 
       {/* Dark header */}
       <header style={{ background: 'linear-gradient(135deg, #111111 0%, #1a1a1a 100%)' }}>

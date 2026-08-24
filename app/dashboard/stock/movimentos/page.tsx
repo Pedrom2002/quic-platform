@@ -110,7 +110,7 @@ export default async function MovimentosPage({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold">Movimentos</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-slate-500">
             Ledger global de saídas, entradas, danos e ajustes.
           </p>
         </div>
@@ -136,7 +136,7 @@ export default async function MovimentosPage({
             <TableRow>
               <TableCell
                 colSpan={7}
-                className="text-center text-muted-foreground"
+                className="text-center text-slate-500"
               >
                 Sem movimentos.
               </TableCell>
@@ -159,17 +159,17 @@ export default async function MovimentosPage({
                     {movement.stock_events.name}
                   </Link>
                 ) : (
-                  <span className="text-muted-foreground">-</span>
+                  <span className="text-slate-500">-</span>
                 )}
               </TableCell>
               <TableCell>
                 <MovementTypeBadge type={movement.type} />
               </TableCell>
               <TableCell className="text-right">{movement.quantity}</TableCell>
-              <TableCell className="text-muted-foreground">
+              <TableCell className="text-slate-500">
                 {authorLabel(movement.created_by)}
               </TableCell>
-              <TableCell className="text-muted-foreground">
+              <TableCell className="text-slate-500">
                 {movement.notes ?? ''}
               </TableCell>
             </TableRow>
@@ -178,7 +178,7 @@ export default async function MovimentosPage({
       </Table>
 
       {movements.length === LIMIT && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-slate-500">
           A mostrar os {LIMIT} movimentos mais recentes. Use os filtros para
           restringir os resultados.
         </p>
