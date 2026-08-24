@@ -16,7 +16,7 @@ describe('BannerHeader', () => {
     expect(image.props.source).toEqual({ uri: 'https://example.com/banner.png' })
   })
 
-  it('applies a fixed 220px height and full width', () => {
+  it('applies full width', () => {
     const { getByTestId } = render(
       <BannerHeader source={{ uri: 'https://example.com/banner.png' }} />
     )
@@ -25,19 +25,18 @@ describe('BannerHeader', () => {
     const flatStyle = Array.isArray(image.props.style)
       ? Object.assign({}, ...image.props.style)
       : image.props.style
-    expect(flatStyle.height).toBe(220)
     expect(flatStyle.width).toBe('100%')
   })
 
-  it('pads the wrapper top by the safe area inset so the banner clears the status bar/notch', () => {
+  it('extends the image height by the safe area inset so it renders edge-to-edge under the status bar/notch', () => {
     const { getByTestId } = render(
       <BannerHeader source={{ uri: 'https://example.com/banner.png' }} />
     )
 
-    const wrapper = getByTestId('banner-header-wrapper')
-    const flatStyle = Array.isArray(wrapper.props.style)
-      ? Object.assign({}, ...wrapper.props.style)
-      : wrapper.props.style
-    expect(flatStyle.paddingTop).toBe(47)
+    const image = getByTestId('banner-header-image')
+    const flatStyle = Array.isArray(image.props.style)
+      ? Object.assign({}, ...image.props.style)
+      : image.props.style
+    expect(flatStyle.height).toBe(220 + 47)
   })
 })

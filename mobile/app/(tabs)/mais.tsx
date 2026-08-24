@@ -50,9 +50,6 @@ function MaisContent({ role, email }: { role: UserRole; email: string }) {
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <BannerHeader source={require('../../assets/banners/mais.png')} />
       <View style={styles.nameBlock}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{name.slice(0, 2).toUpperCase()}</Text>
-        </View>
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.subtitle}>{name === email ? label : `${email} · ${label}`}</Text>
       </View>
@@ -130,16 +127,6 @@ const styles = StyleSheet.create({
   scrollContent: { flexGrow: 1 },
   center: { flex: 1, backgroundColor: colors.white, justifyContent: 'center', alignItems: 'center' },
   nameBlock: { paddingHorizontal: 24, paddingVertical: 20 },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.gray100,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  avatarText: { color: QUIC_MAGENTA, fontSize: 18, fontWeight: '700' },
   name: { color: colors.gray900, fontSize: 20, fontWeight: 'bold' },
   subtitle: { color: colors.gray500, fontSize: 12, marginTop: 2 },
   body: { padding: 16 },

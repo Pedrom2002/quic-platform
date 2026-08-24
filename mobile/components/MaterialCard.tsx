@@ -45,7 +45,6 @@ export function MaterialCard({
       >
         <Ionicons name={justAdded ? 'checkmark' : 'add'} size={18} color={colors.white} />
       </Pressable>
-      <View style={[styles.availabilityStripe, material.available ? styles.stripeAvailable : styles.stripeUnavailable]} />
       <View style={styles.content}>
         <Text style={styles.category}>{categoryName}</Text>
         <Text style={styles.name} numberOfLines={2}>{material.name}</Text>
@@ -75,9 +74,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: { padding: 12, gap: 4 },
-  availabilityStripe: { position: 'absolute', top: 0, left: 0, bottom: 0, width: 3 },
-  stripeAvailable: { backgroundColor: colors.success },
-  stripeUnavailable: { backgroundColor: colors.gray300 },
   category: { fontSize: 10, color: colors.gray500, textTransform: 'uppercase', letterSpacing: 1 },
   name: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
   badge: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, marginTop: 4 },
