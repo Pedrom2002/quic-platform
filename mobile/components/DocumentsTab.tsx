@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { View, Text, Pressable, Linking, StyleSheet } from 'react-native'
-import { colors } from '../lib/theme'
+import { View, Text, Pressable, Linking, StyleSheet, ActivityIndicator } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { colors, QUIC_MAGENTA } from '../lib/theme'
 import { supabase } from '../lib/supabase'
 import { fetchInvestorDocuments, type InvestorDocument } from '../lib/investorDocuments'
 
@@ -37,8 +38,14 @@ function DocumentCard({ document }: { document: InvestorDocument }) {
       </View>
       <View style={styles.cardFooter}>
         <Text style={styles.cardDate}>{dateFormatter.format(new Date(document.uploadedAt))}</Text>
-        <Pressable onPress={() => { Linking.openURL(document.fileUrl) }}>
-          <Text style={styles.downloadLink}>Descarregar</Text>
+        <Pressable
+          onPress={() => { Linking.openURL(document.fileUrl) }}
+          accessibilityRole="link"
+          accessibilityLabel={`Descarregar ${document.title}`}
+        >
+          {({ pressed }) => (
+            <Text style={[styles.downloadLink, pressed && styles.downloadLinkPressed]}>Descarregar</Text>
+          )}
         </Pressable>
       </View>
     </View>
@@ -60,7 +67,7 @@ export function DocumentsTab() {
   if (fetchState.status === 'loading') {
     return (
       <View style={styles.stateContainer}>
-        <Text style={styles.stateBody}>A carregar...</Text>
+        <ActivityIndicator color={QUIC_MAGENTA} />
       </View>
     )
   }
@@ -68,6 +75,7 @@ export function DocumentsTab() {
   if (fetchState.status === 'error') {
     return (
       <View style={styles.stateContainer}>
+        <Ionicons name="alert-circle-outline" size={40} color={colors.gray300} />
         <Text style={styles.stateBody}>Não foi possível carregar os teus documentos. Tenta novamente mais tarde.</Text>
       </View>
     )
@@ -76,6 +84,7 @@ export function DocumentsTab() {
   if (fetchState.documents.length === 0) {
     return (
       <View style={styles.stateContainer}>
+        <Ionicons name="document-text-outline" size={40} color={colors.gray300} />
         <Text style={styles.stateBody}>Ainda não tens documentos disponíveis.</Text>
       </View>
     )
@@ -112,4 +121,5 @@ const styles = StyleSheet.create({
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, borderTopColor: colors.gray200, paddingTop: 8 },
   cardDate: { color: colors.gray500, fontSize: 12 },
   downloadLink: { color: colors.brand, fontSize: 13, fontWeight: '600' },
+  downloadLinkPressed: { opacity: 0.6 },
 })

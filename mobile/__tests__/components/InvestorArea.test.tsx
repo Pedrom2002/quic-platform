@@ -1,6 +1,7 @@
 // mobile/__tests__/components/InvestorArea.test.tsx
 import { describe, it, expect, jest } from '@jest/globals'
 import { render, fireEvent } from '@testing-library/react-native'
+import { ActivityIndicator } from 'react-native'
 import { InvestorArea } from '../../components/InvestorArea'
 import type { DashboardFetchState } from '../../lib/investorDashboard'
 
@@ -67,11 +68,11 @@ describe('InvestorArea', () => {
   })
 
   it('shows the insights tab loading state when a non-dashboard tab is pressed', () => {
-    const { getByText, queryByText } = render(<InvestorArea dashboardFetch={LOADED_STATE} investorId="inv-1" email="investor@example.com" />)
+    const { getByText, queryByText, UNSAFE_getByType } = render(<InvestorArea dashboardFetch={LOADED_STATE} investorId="inv-1" email="investor@example.com" />)
 
     fireEvent.press(getByText('Insights'))
 
-    expect(getByText('A carregar...')).toBeTruthy()
+    expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy()
     expect(queryByText('Capital investido')).toBeNull()
   })
 

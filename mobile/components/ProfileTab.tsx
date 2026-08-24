@@ -1,7 +1,8 @@
 // mobile/components/ProfileTab.tsx
 import { useEffect, useState } from 'react'
-import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
-import { colors } from '../lib/theme'
+import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { colors, QUIC_MAGENTA } from '../lib/theme'
 import { supabase } from '../lib/supabase'
 import { fetchInvestorProfile, updateInvestorProfile, type InvestorProfile } from '../lib/investorProfile'
 
@@ -59,7 +60,7 @@ export function ProfileTab({ investorId, email, status }: { investorId: string; 
   if (fetchState.status === 'loading') {
     return (
       <View style={styles.stateContainer}>
-        <Text style={styles.stateBody}>A carregar...</Text>
+        <ActivityIndicator color={QUIC_MAGENTA} />
       </View>
     )
   }
@@ -67,6 +68,7 @@ export function ProfileTab({ investorId, email, status }: { investorId: string; 
   if (fetchState.status === 'error') {
     return (
       <View style={styles.stateContainer}>
+        <Ionicons name="alert-circle-outline" size={40} color={colors.gray300} />
         <Text style={styles.stateBody}>Não foi possível carregar o teu perfil. Tenta novamente mais tarde.</Text>
       </View>
     )
@@ -113,9 +115,10 @@ export function ProfileTab({ investorId, email, status }: { investorId: string; 
         )}
 
         <Pressable
-          style={styles.saveButton}
+          style={({ pressed }) => [styles.saveButton, pressed && styles.saveButtonPressed]}
           onPress={handleSave}
           disabled={saveState === 'saving'}
+          accessibilityRole="button"
         >
           <Text style={styles.saveButtonText}>{saveState === 'saving' ? 'A guardar...' : 'Guardar'}</Text>
         </Pressable>
@@ -155,12 +158,13 @@ const styles = StyleSheet.create({
     color: colors.gray900,
   },
   errorText: { color: colors.danger, fontSize: 13 },
-  successText: { color: '#047857', fontSize: 13 },
+  successText: { color: colors.success, fontSize: 13 },
   saveButton: {
     backgroundColor: colors.brand,
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
   },
+  saveButtonPressed: { opacity: 0.85 },
   saveButtonText: { color: colors.white, fontSize: 14, fontWeight: '600' },
 })

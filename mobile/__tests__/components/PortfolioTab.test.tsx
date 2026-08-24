@@ -1,6 +1,7 @@
 // mobile/__tests__/components/PortfolioTab.test.tsx
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
-import { render, fireEvent } from '@testing-library/react-native'
+import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { ActivityIndicator } from 'react-native'
 import { PortfolioTab } from '../../components/PortfolioTab'
 
 const mockFetchInvestorPortfolio = jest.fn<(...args: unknown[]) => Promise<unknown>>()
@@ -26,12 +27,12 @@ describe('PortfolioTab', () => {
     mockFetchInvestorPortfolio.mockReset()
   })
 
-  it('shows a loading message while the fetch is pending', async () => {
+  it('shows a loading indicator while the fetch is pending', async () => {
     mockFetchInvestorPortfolio.mockReturnValue(new Promise(() => {}))
 
-    const { findByText, unmount } = render(<PortfolioTab investorId="investor-1" />)
+    const { UNSAFE_getByType, unmount } = render(<PortfolioTab investorId="investor-1" />)
 
-    expect(await findByText('A carregar...')).toBeTruthy()
+    await waitFor(() => expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy())
 
     unmount()
   })
@@ -142,8 +143,8 @@ describe('PortfolioTab', () => {
     let resolveFetch: (value: unknown) => void = () => {}
     mockFetchInvestorPortfolio.mockReturnValue(new Promise(resolve => { resolveFetch = resolve }))
 
-    const { findByText, unmount } = render(<PortfolioTab investorId="investor-1" />)
-    expect(await findByText('A carregar...')).toBeTruthy()
+    const { UNSAFE_getByType, unmount } = render(<PortfolioTab investorId="investor-1" />)
+    await waitFor(() => expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy())
 
     unmount()
     resolveFetch({ totalCents: 0, investmentCount: 0, activeCount: 0, rows: [] })

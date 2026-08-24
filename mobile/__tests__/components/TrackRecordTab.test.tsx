@@ -1,6 +1,7 @@
 // mobile/__tests__/components/TrackRecordTab.test.tsx
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
-import { render } from '@testing-library/react-native'
+import { render, waitFor } from '@testing-library/react-native'
+import { ActivityIndicator } from 'react-native'
 import { TrackRecordTab } from '../../components/TrackRecordTab'
 
 const mockFetchInvestorTrackRecord = jest.fn<(...args: unknown[]) => Promise<unknown>>()
@@ -25,12 +26,12 @@ describe('TrackRecordTab', () => {
     mockFetchInvestorTrackRecord.mockReset()
   })
 
-  it('shows a loading message while the fetch is pending', async () => {
+  it('shows a loading indicator while the fetch is pending', async () => {
     mockFetchInvestorTrackRecord.mockReturnValue(new Promise(() => {}))
 
-    const { findByText, unmount } = render(<TrackRecordTab />)
+    const { UNSAFE_getByType, unmount } = render(<TrackRecordTab />)
 
-    expect(await findByText('A carregar...')).toBeTruthy()
+    await waitFor(() => expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy())
 
     unmount()
   })
@@ -91,8 +92,8 @@ describe('TrackRecordTab', () => {
     let resolveFetch: (value: unknown) => void = () => {}
     mockFetchInvestorTrackRecord.mockReturnValue(new Promise(resolve => { resolveFetch = resolve }))
 
-    const { findByText, unmount } = render(<TrackRecordTab />)
-    expect(await findByText('A carregar...')).toBeTruthy()
+    const { UNSAFE_getByType, unmount } = render(<TrackRecordTab />)
+    await waitFor(() => expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy())
 
     unmount()
     resolveFetch({ completedCount: 0, totalRevenueCents: 0, totalAttendance: 0, projects: [] })

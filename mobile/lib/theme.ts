@@ -19,6 +19,12 @@ export const colors = {
   // dangerOnDark is the lighter tint needed for contrast on the dark auth screens.
   danger: '#b91c1c',
   dangerOnDark: '#FCA5A5',
+  success: '#047857',
+  successBackground: '#dcfce7',
+  successText: '#166534',
+  dangerBackground: '#fef2f2',
+  dangerBorder: '#fee2e2',
+  gold: '#D4AF37',
 
   // Dark "auth" mode used only by login/signup (video background + gradient overlay)
   authScreen: {

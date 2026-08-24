@@ -1,7 +1,8 @@
 // mobile/components/OpportunitiesTab.tsx
 import { useEffect, useState } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
-import { colors } from '../lib/theme'
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { colors, QUIC_MAGENTA } from '../lib/theme'
 import { supabase } from '../lib/supabase'
 import { fetchInvestorOpportunities, type InvestorOpportunity } from '../lib/investorOpportunities'
 
@@ -55,7 +56,7 @@ export function OpportunitiesTab() {
   if (fetchState.status === 'loading') {
     return (
       <View style={styles.stateContainer}>
-        <Text style={styles.stateBody}>A carregar...</Text>
+        <ActivityIndicator color={QUIC_MAGENTA} />
       </View>
     )
   }
@@ -63,6 +64,7 @@ export function OpportunitiesTab() {
   if (fetchState.status === 'error') {
     return (
       <View style={styles.stateContainer}>
+        <Ionicons name="alert-circle-outline" size={40} color={colors.gray300} />
         <Text style={styles.stateBody}>Não foi possível carregar as oportunidades. Tenta novamente mais tarde.</Text>
       </View>
     )
@@ -71,6 +73,7 @@ export function OpportunitiesTab() {
   if (fetchState.opportunities.length === 0) {
     return (
       <View style={styles.stateContainer}>
+        <Ionicons name="trending-up-outline" size={40} color={colors.gray300} />
         <Text style={styles.stateBody}>Sem oportunidades disponíveis de momento.</Text>
       </View>
     )

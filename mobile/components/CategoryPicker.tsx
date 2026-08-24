@@ -32,7 +32,7 @@ export function CategoryPicker({
     <>
       <Pressable
         onPress={() => setVisible(true)}
-        style={styles.trigger}
+        style={({ pressed }) => [styles.trigger, pressed && styles.triggerPressed]}
         accessibilityRole="button"
         accessibilityLabel="Escolher categoria"
       >
@@ -63,7 +63,11 @@ export function CategoryPicker({
                 return (
                   <Pressable
                     onPress={() => handleSelect(item.id)}
-                    style={[styles.gridItem, active && styles.gridItemActive]}
+                    style={({ pressed }) => [
+                      styles.gridItem,
+                      active && styles.gridItemActive,
+                      pressed && !active && styles.gridItemPressed,
+                    ]}
                     accessibilityRole="button"
                   >
                     <Text style={[styles.gridItemText, active && styles.gridItemTextActive]} numberOfLines={1}>
@@ -91,12 +95,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: '#f0efee',
+    backgroundColor: colors.gray100,
   },
+  triggerPressed: { backgroundColor: colors.gray200 },
   triggerText: { fontSize: 13, color: colors.gray700, fontWeight: '600' },
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   sheet: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 16,
@@ -118,10 +123,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 12,
-    backgroundColor: '#f0efee',
+    backgroundColor: colors.gray100,
     paddingHorizontal: 8,
   },
   gridItemActive: { backgroundColor: QUIC_MAGENTA },
+  gridItemPressed: { backgroundColor: colors.gray200 },
   gridItemText: { fontSize: 13, color: colors.gray700, fontWeight: '600' },
-  gridItemTextActive: { color: '#ffffff' },
+  gridItemTextActive: { color: colors.white },
 })

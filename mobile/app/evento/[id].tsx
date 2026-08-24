@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { View, Text, Image, ScrollView, StyleSheet, Pressable, Linking, Alert } from 'react-native'
+import { View, Text, Image, ScrollView, StyleSheet, Pressable, Linking, Alert, ActivityIndicator } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '../../lib/supabase'
 import { fetchEventById, type PublicEvent } from '../../lib/events'
 import { fetchTicketTypes, createCheckoutSession, type TicketType } from '../../lib/tickets'
-import { colors } from '../../lib/theme'
+import { colors, QUIC_MAGENTA } from '../../lib/theme'
 
 function formatEventDateTime(iso: string): string {
   const date = new Date(iso)
@@ -40,11 +41,18 @@ export default function EventDetailScreen() {
     }
   }
 
-  if (event === undefined) return null
+  if (event === undefined) {
+    return (
+      <View style={styles.notFound}>
+        <ActivityIndicator color={QUIC_MAGENTA} />
+      </View>
+    )
+  }
 
   if (event === null) {
     return (
       <View style={styles.notFound}>
+        <Ionicons name="alert-circle-outline" size={48} color={colors.gray200} style={styles.notFoundIcon} />
         <Text style={styles.notFoundText}>Evento não encontrado.</Text>
       </View>
     )
@@ -67,7 +75,12 @@ export default function EventDetailScreen() {
           <View style={styles.ticketsSection}>
             <Text style={styles.ticketsTitle}>Bilhetes</Text>
             {ticketTypes.map(tt => (
-              <Pressable key={tt.id} style={styles.ticketRow} onPress={() => handleBuy(tt.id)}>
+              <Pressable
+                key={tt.id}
+                style={({ pressed }) => [styles.ticketRow, pressed && styles.ticketRowPressed]}
+                onPress={() => handleBuy(tt.id)}
+                accessibilityRole="button"
+              >
                 <Text style={styles.ticketName}>{tt.name}</Text>
                 <Text style={styles.ticketPrice}>{(tt.price_cents / 100).toFixed(2)} €</Text>
               </Pressable>
@@ -80,7 +93,7 @@ export default function EventDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ffffff' },
+  container: { flex: 1, backgroundColor: colors.white },
   hero: { width: '100%', height: 260 },
   heroFallback: { width: '100%', height: 260, backgroundColor: '#111111' },
   body: { padding: 20 },
@@ -89,11 +102,13 @@ const styles = StyleSheet.create({
   venue: { fontSize: 14, color: colors.gray900, fontWeight: '500' },
   address: { fontSize: 13, color: colors.gray400, marginTop: 2 },
   description: { fontSize: 14, color: colors.gray700, marginTop: 16, lineHeight: 20 },
-  notFound: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
+  notFound: { flex: 1, backgroundColor: colors.white, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
+  notFoundIcon: { marginBottom: 8 },
   notFoundText: { color: colors.gray500, fontSize: 14 },
   ticketsSection: { marginTop: 24, gap: 8 },
   ticketsTitle: { fontSize: 16, fontWeight: '700', color: colors.gray900, marginBottom: 4 },
   ticketRow: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 6, padding: 14 },
+  ticketRowPressed: { backgroundColor: colors.gray100 },
   ticketName: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
   ticketPrice: { fontSize: 14, color: colors.gray500 },
 })

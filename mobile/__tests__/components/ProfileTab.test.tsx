@@ -1,6 +1,7 @@
 // mobile/__tests__/components/ProfileTab.test.tsx
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
-import { render, fireEvent } from '@testing-library/react-native'
+import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { ActivityIndicator } from 'react-native'
 import { ProfileTab } from '../../components/ProfileTab'
 
 const mockFetchInvestorProfile = jest.fn<(...args: unknown[]) => Promise<unknown>>()
@@ -18,12 +19,12 @@ describe('ProfileTab', () => {
     mockUpdateInvestorProfile.mockReset()
   })
 
-  it('shows a loading message while the initial fetch is pending', async () => {
+  it('shows a loading indicator while the initial fetch is pending', async () => {
     mockFetchInvestorProfile.mockReturnValue(new Promise(() => {}))
 
-    const { findByText, unmount } = render(<ProfileTab investorId="inv-1" email="ana@example.com" status="approved" />)
+    const { UNSAFE_getByType, unmount } = render(<ProfileTab investorId="inv-1" email="ana@example.com" status="approved" />)
 
-    expect(await findByText('A carregar...')).toBeTruthy()
+    await waitFor(() => expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy())
 
     unmount()
   })
@@ -115,8 +116,8 @@ describe('ProfileTab', () => {
     let resolveFetch: (value: unknown) => void = () => {}
     mockFetchInvestorProfile.mockReturnValue(new Promise(resolve => { resolveFetch = resolve }))
 
-    const { findByText, unmount } = render(<ProfileTab investorId="inv-1" email="ana@example.com" status="approved" />)
-    expect(await findByText('A carregar...')).toBeTruthy()
+    const { UNSAFE_getByType, unmount } = render(<ProfileTab investorId="inv-1" email="ana@example.com" status="approved" />)
+    await waitFor(() => expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy())
 
     unmount()
     resolveFetch({ fullName: 'Ana Silva', phone: null })

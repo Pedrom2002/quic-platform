@@ -1,6 +1,6 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
-import { render, fireEvent } from '@testing-library/react-native'
-import { Linking } from 'react-native'
+import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { Linking, ActivityIndicator } from 'react-native'
 import { DocumentsTab } from '../../components/DocumentsTab'
 
 const mockFetchInvestorDocuments = jest.fn<(...args: unknown[]) => Promise<unknown>>()
@@ -19,12 +19,12 @@ describe('DocumentsTab', () => {
     mockOpenURL.mockResolvedValue(true as never)
   })
 
-  it('shows a loading message while the fetch is pending', async () => {
+  it('shows a loading indicator while the fetch is pending', async () => {
     mockFetchInvestorDocuments.mockReturnValue(new Promise(() => {}))
 
-    const { findByText, unmount } = render(<DocumentsTab />)
+    const { UNSAFE_getByType, unmount } = render(<DocumentsTab />)
 
-    expect(await findByText('A carregar...')).toBeTruthy()
+    await waitFor(() => expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy())
 
     unmount()
   })
@@ -100,8 +100,8 @@ describe('DocumentsTab', () => {
       new Promise(resolve => { resolveFetch = resolve })
     )
 
-    const { findByText, unmount } = render(<DocumentsTab />)
-    expect(await findByText('A carregar...')).toBeTruthy()
+    const { UNSAFE_getByType, unmount } = render(<DocumentsTab />)
+    await waitFor(() => expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy())
 
     unmount()
     resolveFetch([{ id: 'doc-1', title: 'X', type: 'contract', fileUrl: 'https://example.com/x.pdf', uploadedAt: '2026-06-01T10:00:00Z' }])

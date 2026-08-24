@@ -126,9 +126,9 @@ export default function MaisScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ffffff' },
+  container: { flex: 1, backgroundColor: colors.white },
   scrollContent: { flexGrow: 1 },
-  center: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
+  center: { flex: 1, backgroundColor: colors.white, justifyContent: 'center', alignItems: 'center' },
   nameBlock: { paddingHorizontal: 24, paddingVertical: 20 },
   avatar: {
     width: 56,
@@ -154,13 +154,13 @@ const styles = StyleSheet.create({
   comingSoonText: { fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, color: colors.gray400 },
   logoutButton: {
     marginTop: 20,
-    backgroundColor: '#fef2f2',
+    backgroundColor: colors.dangerBackground,
     borderWidth: 1,
-    borderColor: '#fee2e2',
+    borderColor: colors.dangerBorder,
     borderRadius: 6,
     padding: 14,
     alignItems: 'center',
   },
-  logoutButtonPressed: { backgroundColor: '#fee2e2' },
+  logoutButtonPressed: { backgroundColor: colors.dangerBorder },
   logoutText: { color: colors.danger, fontSize: 14, fontWeight: '600' },
 })

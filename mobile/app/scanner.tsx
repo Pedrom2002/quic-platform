@@ -5,7 +5,7 @@ import { useSession } from '../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../lib/role'
 import { supabase } from '../lib/supabase'
 import { checkInTicket } from '../lib/checkin'
-import { QUIC_MAGENTA } from '../lib/theme'
+import { QUIC_MAGENTA, colors } from '../lib/theme'
 
 export default function ScannerScreen() {
   const { session } = useSession()
@@ -86,10 +86,10 @@ export default function ScannerScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000000' },
+  container: { flex: 1, backgroundColor: colors.black },
   camera: { flex: 1 },
-  center: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
+  center: { flex: 1, backgroundColor: colors.white, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
   restricted: { color: '#57534e', fontSize: 14, textAlign: 'center' },
   resultBanner: { position: 'absolute', bottom: 40, left: 24, right: 24, backgroundColor: QUIC_MAGENTA, padding: 16, borderRadius: 6 },
-  resultText: { color: '#ffffff', textAlign: 'center', fontWeight: '600' },
+  resultText: { color: colors.white, textAlign: 'center', fontWeight: '600' },
 })

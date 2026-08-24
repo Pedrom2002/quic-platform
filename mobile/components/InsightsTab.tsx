@@ -1,7 +1,8 @@
 // mobile/components/InsightsTab.tsx
 import { useEffect, useState } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
-import { colors } from '../lib/theme'
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { colors, QUIC_MAGENTA } from '../lib/theme'
 import { supabase } from '../lib/supabase'
 import { fetchInvestorInsights, type InvestorInsightsBreakdown } from '../lib/investorInsights'
 
@@ -81,7 +82,7 @@ export function InsightsTab({ investorId }: { investorId: string }) {
   if (fetchState.status === 'loading') {
     return (
       <View style={styles.stateContainer}>
-        <Text style={styles.stateBody}>A carregar...</Text>
+        <ActivityIndicator color={QUIC_MAGENTA} />
       </View>
     )
   }
@@ -89,6 +90,7 @@ export function InsightsTab({ investorId }: { investorId: string }) {
   if (fetchState.status === 'error') {
     return (
       <View style={styles.stateContainer}>
+        <Ionicons name="alert-circle-outline" size={40} color={colors.gray300} />
         <Text style={styles.stateBody}>Não foi possível carregar os teus insights. Tenta novamente mais tarde.</Text>
       </View>
     )
@@ -100,6 +102,7 @@ export function InsightsTab({ investorId }: { investorId: string }) {
   if (!hasAnyInvestments) {
     return (
       <View style={styles.stateContainer}>
+        <Ionicons name="pie-chart-outline" size={40} color={colors.gray300} />
         <Text style={styles.stateBody}>Ainda não tens investimentos para analisar.</Text>
       </View>
     )

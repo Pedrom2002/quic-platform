@@ -86,7 +86,7 @@ export default function SignupScreen() {
           {error && <Text style={styles.error}>{error}</Text>}
 
           <Pressable
-            style={styles.button}
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
             onPress={handleSignup}
             disabled={loading}
             accessibilityRole="button"
@@ -126,7 +126,8 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 8,
   },
-  buttonText: { color: '#ffffff', fontWeight: '700', fontSize: 15, letterSpacing: 0.3 },
+  buttonPressed: { opacity: 0.8 },
+  buttonText: { color: colors.white, fontWeight: '700', fontSize: 15, letterSpacing: 0.3 },
   link: { marginTop: 22, alignItems: 'center' },
   linkText: { color: colors.authScreen.linkText, fontSize: 13 },
 })

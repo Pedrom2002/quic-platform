@@ -1,7 +1,8 @@
 // mobile/components/TrackRecordTab.tsx
 import { useEffect, useState } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
-import { colors } from '../lib/theme'
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { colors, QUIC_MAGENTA } from '../lib/theme'
 import { supabase } from '../lib/supabase'
 import { fetchInvestorTrackRecord, type InvestorTrackRecordSummary, type InvestorTrackRecordProject } from '../lib/investorTrackRecord'
 
@@ -64,7 +65,7 @@ export function TrackRecordTab() {
   if (fetchState.status === 'loading') {
     return (
       <View style={styles.stateContainer}>
-        <Text style={styles.stateBody}>A carregar...</Text>
+        <ActivityIndicator color={QUIC_MAGENTA} />
       </View>
     )
   }
@@ -72,6 +73,7 @@ export function TrackRecordTab() {
   if (fetchState.status === 'error') {
     return (
       <View style={styles.stateContainer}>
+        <Ionicons name="alert-circle-outline" size={40} color={colors.gray300} />
         <Text style={styles.stateBody}>Não foi possível carregar o histórico. Tenta novamente mais tarde.</Text>
       </View>
     )
@@ -82,6 +84,7 @@ export function TrackRecordTab() {
   if (summary.projects.length === 0) {
     return (
       <View style={styles.stateContainer}>
+        <Ionicons name="bar-chart-outline" size={40} color={colors.gray300} />
         <Text style={styles.stateBody}>Ainda não há projetos concluídos para mostrar.</Text>
       </View>
     )

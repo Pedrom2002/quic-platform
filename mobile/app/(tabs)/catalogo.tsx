@@ -88,6 +88,7 @@ export default function CatalogoScreen() {
         />
       ) : materials.length === 0 ? (
         <View style={styles.empty}>
+          <Ionicons name="cube-outline" size={48} color={colors.gray200} style={styles.emptyIcon} />
           <Text style={styles.emptyText}>Nenhum material encontrado.</Text>
         </View>
       ) : (
@@ -110,7 +111,7 @@ export default function CatalogoScreen() {
 
       {totalQty > 0 && (
         <Pressable
-          style={styles.fab}
+          style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
           onPress={() => router.push('/pedido')}
           accessibilityRole="button"
         >
@@ -122,7 +123,7 @@ export default function CatalogoScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ffffff' },
+  container: { flex: 1, backgroundColor: colors.white },
   sectionTitle: {
     textAlign: 'center',
     fontSize: 24,
@@ -145,6 +146,7 @@ const styles = StyleSheet.create({
   },
   grid: { paddingHorizontal: 10, paddingBottom: 16 },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  emptyIcon: { marginBottom: 8 },
   emptyText: { color: colors.gray500, fontSize: 14 },
   fab: {
     position: 'absolute',
@@ -156,5 +158,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
   },
-  fabText: { color: '#ffffff', fontSize: 15, fontWeight: '700' },
+  fabPressed: { opacity: 0.85 },
+  fabText: { color: colors.white, fontSize: 15, fontWeight: '700' },
 })

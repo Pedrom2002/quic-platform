@@ -1,6 +1,7 @@
 // mobile/__tests__/components/OpportunitiesTab.test.tsx
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
-import { render } from '@testing-library/react-native'
+import { render, waitFor } from '@testing-library/react-native'
+import { ActivityIndicator } from 'react-native'
 import { OpportunitiesTab } from '../../components/OpportunitiesTab'
 
 const mockFetchInvestorOpportunities = jest.fn<(...args: unknown[]) => Promise<unknown>>()
@@ -15,12 +16,12 @@ describe('OpportunitiesTab', () => {
     mockFetchInvestorOpportunities.mockReset()
   })
 
-  it('shows a loading message while the fetch is pending', async () => {
+  it('shows a loading indicator while the fetch is pending', async () => {
     mockFetchInvestorOpportunities.mockReturnValue(new Promise(() => {}))
 
-    const { findByText, unmount } = render(<OpportunitiesTab />)
+    const { UNSAFE_getByType, unmount } = render(<OpportunitiesTab />)
 
-    expect(await findByText('A carregar...')).toBeTruthy()
+    await waitFor(() => expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy())
 
     unmount()
   })
@@ -77,8 +78,8 @@ describe('OpportunitiesTab', () => {
       new Promise(resolve => { resolveFetch = resolve })
     )
 
-    const { findByText, unmount } = render(<OpportunitiesTab />)
-    expect(await findByText('A carregar...')).toBeTruthy()
+    const { UNSAFE_getByType, unmount } = render(<OpportunitiesTab />)
+    await waitFor(() => expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy())
 
     unmount()
     resolveFetch([{ id: 'proj-1', name: 'X', description: null, fundingGoalCents: 100, investmentDeadline: null }])

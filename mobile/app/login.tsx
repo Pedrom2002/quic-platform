@@ -64,7 +64,7 @@ export default function LoginScreen() {
           {error && <Text style={styles.error}>{error}</Text>}
 
           <Pressable
-            style={styles.button}
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
             onPress={handleLogin}
             disabled={loading}
             accessibilityRole="button"
@@ -98,13 +98,16 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 10,
+  },
+  buttonPressed: {
+    opacity: 0.8,
     shadowColor: QUIC_MAGENTA,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
     shadowRadius: 16,
     elevation: 8,
   },
-  buttonText: { color: '#ffffff', fontWeight: '700', fontSize: 15, letterSpacing: 0.3 },
+  buttonText: { color: colors.white, fontWeight: '700', fontSize: 15, letterSpacing: 0.3 },
   link: { marginTop: 22, alignItems: 'center' },
   linkText: { color: colors.authScreen.linkText, fontSize: 13 },
 })

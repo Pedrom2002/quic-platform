@@ -60,12 +60,12 @@ export default function TicketPurchaseSuccessScreen() {
       {state === 'confirmed' && (
         <>
           <View style={styles.iconCircle}>
-            <Ionicons name="checkmark" size={40} color="#ffffff" />
+            <Ionicons name="checkmark" size={40} color={colors.white} />
           </View>
           <Text style={styles.title}>Pagamento confirmado</Text>
           <Text style={styles.subtitle}>O teu bilhete já está disponível.</Text>
           <Pressable
-            style={styles.button}
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
             onPress={() => router.replace('/tickets')}
             accessibilityRole="button"
           >
@@ -77,12 +77,12 @@ export default function TicketPurchaseSuccessScreen() {
       {state === 'pending' && (
         <>
           <View style={[styles.iconCircle, styles.iconCirclePending]}>
-            <Ionicons name="time-outline" size={40} color="#ffffff" />
+            <Ionicons name="time-outline" size={40} color={colors.white} />
           </View>
           <Text style={styles.title}>Ainda a processar</Text>
           <Text style={styles.subtitle}>O pagamento foi recebido, mas o bilhete ainda está a ser criado. Verifica novamente daqui a pouco.</Text>
           <Pressable
-            style={styles.button}
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
             onPress={() => router.replace('/tickets')}
             accessibilityRole="button"
           >
@@ -94,12 +94,12 @@ export default function TicketPurchaseSuccessScreen() {
       {state === 'error' && (
         <>
           <View style={[styles.iconCircle, styles.iconCircleError]}>
-            <Ionicons name="alert" size={40} color="#ffffff" />
+            <Ionicons name="alert" size={40} color={colors.white} />
           </View>
           <Text style={styles.title}>Não foi possível confirmar</Text>
           <Text style={styles.subtitle}>Verifica a tua ligação e consulta os teus bilhetes.</Text>
           <Pressable
-            style={styles.button}
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
             onPress={() => router.replace('/tickets')}
             accessibilityRole="button"
           >
@@ -134,5 +134,6 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: '700', color: colors.gray900 },
   subtitle: { fontSize: 14, color: colors.gray500, textAlign: 'center' },
   button: { marginTop: 16, backgroundColor: QUIC_MAGENTA, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14 },
+  buttonPressed: { opacity: 0.85 },
   buttonText: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
 })

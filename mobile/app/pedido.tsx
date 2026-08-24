@@ -7,6 +7,7 @@ import { useCart } from '../hooks/useCart'
 import { supabase } from '../lib/supabase'
 import { validateQuote, submitQuote } from '../lib/quote'
 import { QUIC_MAGENTA, colors } from '../lib/theme'
+import { Ionicons } from '@expo/vector-icons'
 
 export default function PedidoScreen() {
   const router = useRouter()
@@ -56,9 +57,14 @@ export default function PedidoScreen() {
   if (isReady && items.length === 0) {
     return (
       <View style={styles.emptyContainer}>
+        <Ionicons name="cart-outline" size={48} color={colors.gray200} />
         <Text style={styles.emptyTitle}>O teu pedido está vazio</Text>
         <Text style={styles.emptyText}>Adiciona materiais no catálogo para pedir um orçamento.</Text>
-        <Pressable style={styles.emptyButton} onPress={() => router.replace('/(tabs)/catalogo')} accessibilityRole="button">
+        <Pressable
+          style={({ pressed }) => [styles.emptyButton, pressed && styles.emptyButtonPressed]}
+          onPress={() => router.replace('/(tabs)/catalogo')}
+          accessibilityRole="button"
+        >
           <Text style={styles.emptyButtonText}>Ver catálogo</Text>
         </Pressable>
       </View>
@@ -77,7 +83,7 @@ export default function PedidoScreen() {
             <Text style={styles.itemUnit}>Unidade: {item.unit}</Text>
           </View>
           <Pressable
-            style={styles.qtyButton}
+            style={({ pressed }) => [styles.qtyButton, pressed && styles.qtyButtonPressed]}
             onPress={() => setQty(item.materialId, item.qty - 1)}
             accessibilityRole="button"
             accessibilityLabel={`Diminuir quantidade de ${item.name}`}
@@ -86,7 +92,7 @@ export default function PedidoScreen() {
           </Pressable>
           <Text style={styles.qtyValue}>{item.qty}</Text>
           <Pressable
-            style={styles.qtyButton}
+            style={({ pressed }) => [styles.qtyButton, pressed && styles.qtyButtonPressed]}
             onPress={() => setQty(item.materialId, item.qty + 1)}
             accessibilityRole="button"
             accessibilityLabel={`Aumentar quantidade de ${item.name}`}
@@ -94,7 +100,7 @@ export default function PedidoScreen() {
             <Text style={styles.qtyButtonText}>+</Text>
           </Pressable>
           <Pressable
-            style={styles.removeButton}
+            style={({ pressed }) => [styles.removeButton, pressed && styles.removeButtonPressed]}
             onPress={() => removeItem(item.materialId)}
             accessibilityRole="button"
             accessibilityLabel={`Remover ${item.name}`}
@@ -113,7 +119,12 @@ export default function PedidoScreen() {
 
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <Pressable style={styles.submitButton} onPress={handleSubmit} disabled={submitting} accessibilityRole="button">
+      <Pressable
+        style={({ pressed }) => [styles.submitButton, pressed && styles.submitButtonPressed]}
+        onPress={handleSubmit}
+        disabled={submitting}
+        accessibilityRole="button"
+      >
         <Text style={styles.submitButtonText}>{submitting ? 'A enviar...' : 'Enviar pedido'}</Text>
       </Pressable>
     </ScrollView>
@@ -121,26 +132,30 @@ export default function PedidoScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ffffff' },
+  container: { flex: 1, backgroundColor: colors.white },
   heading: { fontSize: 24, fontWeight: '800', color: colors.gray900, paddingHorizontal: 20, paddingTop: 20 },
   sectionLabel: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, color: colors.gray400, paddingHorizontal: 20, marginTop: 20, marginBottom: 8 },
   itemRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 8 },
   itemInfo: { flex: 1 },
   itemName: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
   itemUnit: { fontSize: 12, color: colors.gray500 },
-  qtyButton: { width: 32, height: 32, borderRadius: 8, backgroundColor: '#f0efee', justifyContent: 'center', alignItems: 'center' },
+  qtyButton: { width: 32, height: 32, borderRadius: 8, backgroundColor: colors.gray100, justifyContent: 'center', alignItems: 'center' },
+  qtyButtonPressed: { backgroundColor: colors.gray200 },
   qtyButtonText: { fontSize: 18, color: colors.gray900, fontWeight: '600' },
   qtyValue: { minWidth: 24, textAlign: 'center', fontSize: 14, color: colors.gray900 },
   removeButton: { paddingHorizontal: 8, paddingVertical: 4 },
+  removeButtonPressed: { opacity: 0.6 },
   removeButtonText: { fontSize: 12, color: colors.danger, fontWeight: '600' },
   input: { marginHorizontal: 20, marginBottom: 10, backgroundColor: colors.gray100, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: colors.gray900 },
   messageInput: { minHeight: 100, textAlignVertical: 'top' },
   error: { color: colors.danger, fontSize: 13, paddingHorizontal: 20, marginBottom: 8 },
   submitButton: { marginHorizontal: 20, marginTop: 8, backgroundColor: QUIC_MAGENTA, borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
-  submitButtonText: { color: '#ffffff', fontSize: 15, fontWeight: '700' },
-  emptyContainer: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24, gap: 8 },
+  submitButtonPressed: { opacity: 0.85 },
+  submitButtonText: { color: colors.white, fontSize: 15, fontWeight: '700' },
+  emptyContainer: { flex: 1, backgroundColor: colors.white, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24, gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: '700', color: colors.gray900 },
   emptyText: { fontSize: 14, color: colors.gray500, textAlign: 'center' },
   emptyButton: { marginTop: 12, backgroundColor: QUIC_MAGENTA, borderRadius: 12, paddingHorizontal: 20, paddingVertical: 12 },
-  emptyButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '600' },
+  emptyButtonPressed: { opacity: 0.85 },
+  emptyButtonText: { color: colors.white, fontSize: 14, fontWeight: '600' },
 })

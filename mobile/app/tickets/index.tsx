@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { View, Text, FlatList, StyleSheet } from 'react-native'
+import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
+import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '../../lib/supabase'
 import { fetchMyTickets, type MyTicket } from '../../lib/tickets'
-import { colors } from '../../lib/theme'
+import { colors, QUIC_MAGENTA } from '../../lib/theme'
 import { BannerHeader } from '../../components/BannerHeader'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -23,12 +24,19 @@ export default function MyTicketsScreen() {
     fetchMyTickets(supabase).then(setTickets)
   }, [])
 
-  if (!tickets) return null
+  if (!tickets) {
+    return (
+      <View style={styles.empty}>
+        <ActivityIndicator color={QUIC_MAGENTA} />
+      </View>
+    )
+  }
 
   if (tickets.length === 0) {
     return (
       <View style={styles.empty}>
         <Header />
+        <Ionicons name="ticket-outline" size={48} color={colors.gray200} style={styles.emptyIcon} />
         <Text style={styles.emptyText}>Ainda não tens bilhetes.</Text>
       </View>
     )
@@ -52,7 +60,8 @@ export default function MyTicketsScreen() {
 
 const styles = StyleSheet.create({
   list: { paddingBottom: 16, gap: 12 },
-  empty: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
+  empty: { flex: 1, backgroundColor: colors.white, justifyContent: 'center', alignItems: 'center' },
+  emptyIcon: { marginTop: 24, marginBottom: 8 },
   emptyText: { color: colors.gray500, fontSize: 14 },
   card: { backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 6, padding: 20, alignItems: 'center', gap: 12, marginHorizontal: 16, marginBottom: 12 },
   status: { fontSize: 12, color: colors.gray500, textTransform: 'uppercase', letterSpacing: 1, fontWeight: '600' },

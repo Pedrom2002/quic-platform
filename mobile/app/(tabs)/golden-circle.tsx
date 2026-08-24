@@ -27,7 +27,7 @@ const SECTIONS: { id: SectionId; label: string; icon: keyof typeof Ionicons.glyp
   { id: 'track-record', label: 'Track Record', icon: 'bar-chart-outline' },
 ]
 
-const GOLD = '#D4AF37'
+const GOLD = colors.gold
 
 function TopNav({ active, onPress }: { active: SectionId; onPress: (id: SectionId) => void }) {
   return (
@@ -40,7 +40,11 @@ function TopNav({ active, onPress }: { active: SectionId; onPress: (id: SectionI
         <Pressable
           key={section.id}
           onPress={() => onPress(section.id)}
-          style={[topNavStyles.tab, active === section.id && topNavStyles.tabActive]}
+          style={({ pressed }) => [
+            topNavStyles.tab,
+            active === section.id && topNavStyles.tabActive,
+            pressed && topNavStyles.tabPressed,
+          ]}
           accessibilityRole="button"
           accessibilityLabel={section.label}
         >
@@ -298,6 +302,7 @@ const topNavStyles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   tabActive: { borderBottomColor: GOLD },
+  tabPressed: { opacity: 0.6 },
   tabText: { fontSize: 12, color: colors.gray400, fontWeight: '500' },
   tabTextActive: { color: colors.gray900 },
 })

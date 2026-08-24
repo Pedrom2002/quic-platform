@@ -39,7 +39,7 @@ export function MaterialCard({
         accessibilityRole="button"
         accessibilityLabel={`Adicionar ${material.name} ao pedido`}
       >
-        <Ionicons name={justAdded ? 'checkmark' : 'add'} size={18} color="#ffffff" />
+        <Ionicons name={justAdded ? 'checkmark' : 'add'} size={18} color={colors.white} />
       </Pressable>
       <View style={styles.content}>
         <Text style={styles.category}>{categoryName}</Text>
@@ -56,7 +56,7 @@ export function MaterialCard({
 
 const styles = StyleSheet.create({
   card: { flex: 1, backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 12, overflow: 'hidden', margin: 6 },
-  image: { width: '100%', height: 120, backgroundColor: '#ffffff' },
+  image: { width: '100%', height: 120, backgroundColor: colors.white },
   addButton: {
     position: 'absolute',
     top: 8,
@@ -72,9 +72,9 @@ const styles = StyleSheet.create({
   category: { fontSize: 10, color: colors.gray400, textTransform: 'uppercase', letterSpacing: 1 },
   name: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
   badge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, marginTop: 4 },
-  badgeAvailable: { backgroundColor: '#dcfce7' },
+  badgeAvailable: { backgroundColor: colors.successBackground },
   badgeUnavailable: { backgroundColor: '#e7e5e4' },
   badgeText: { fontSize: 10, fontWeight: '600' },
-  badgeTextAvailable: { color: '#166534' },
+  badgeTextAvailable: { color: colors.successText },
   badgeTextUnavailable: { color: colors.gray500 },
 })

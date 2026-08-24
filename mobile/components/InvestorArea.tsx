@@ -20,7 +20,7 @@ export type InvestorAreaTab =
   | 'track-record'
   | 'insights'
 
-const GOLD = '#D4AF37'
+const GOLD = colors.gold
 
 const TABS: { id: InvestorAreaTab; label: string }[] = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -75,7 +75,11 @@ export function InvestorArea({ dashboardFetch, investorId, email }: { dashboardF
           <Pressable
             key={tab.id}
             onPress={() => setActiveTab(tab.id)}
-            style={[tabBarStyles.tab, activeTab === tab.id && tabBarStyles.tabActive]}
+            style={({ pressed }) => [
+              tabBarStyles.tab,
+              activeTab === tab.id && tabBarStyles.tabActive,
+              pressed && tabBarStyles.tabPressed,
+            ]}
             accessibilityRole="button"
             accessibilityLabel={tab.label}
           >
@@ -106,6 +110,7 @@ const tabBarStyles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   tabActive: { borderBottomColor: GOLD },
+  tabPressed: { opacity: 0.6 },
   tabText: { fontSize: 12, color: colors.gray400, fontWeight: '500' },
   tabTextActive: { color: colors.gray900 },
 })

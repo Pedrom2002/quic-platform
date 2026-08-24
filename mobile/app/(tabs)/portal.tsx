@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { View, Text, ActivityIndicator, FlatList, Pressable, Linking, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Ionicons } from '@expo/vector-icons'
 import { BannerHeader } from '../../components/BannerHeader'
 import { useSession } from '../../hooks/useSession'
 import { displayArtistName } from '../../lib/artistName'
@@ -20,6 +21,15 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
 }
 
+function EmptyState({ message }: { message: string }) {
+  return (
+    <View style={styles.emptyState}>
+      <Ionicons name="folder-open-outline" size={36} color={colors.gray300} />
+      <Text style={styles.emptyText}>{message}</Text>
+    </View>
+  )
+}
+
 function AgendaItemCard({ item }: { item: ArtistAgendaItem }) {
   return (
     <View style={styles.card}>
@@ -34,19 +44,24 @@ function AgendaTab({ upcoming, past }: { upcoming: ArtistAgendaItem[]; past: Art
   const [showPast, setShowPast] = useState(false)
 
   if (upcoming.length === 0 && past.length === 0) {
-    return <Text style={styles.emptyText}>Sem compromissos agendados.</Text>
+    return <EmptyState message="Sem compromissos agendados." />
   }
   return (
     <View style={styles.tabContent}>
       {upcoming.length === 0 ? (
-        <Text style={styles.emptyText}>Sem compromissos futuros.</Text>
+        <EmptyState message="Sem compromissos futuros." />
       ) : (
         upcoming.map(item => <AgendaItemCard key={item.id} item={item} />)
       )}
 
       {past.length > 0 && (
         <View>
-          <Pressable onPress={() => setShowPast(v => !v)} style={styles.pastToggle}>
+          <Pressable
+            onPress={() => setShowPast(v => !v)}
+            style={({ pressed }) => [styles.pastToggle, pressed && styles.pastTogglePressed]}
+            accessibilityRole="button"
+            accessibilityLabel={showPast ? 'Ocultar compromissos passados' : 'Mostrar compromissos passados'}
+          >
             <Text style={styles.pastToggleText}>Passados {showPast ? '−' : '+'}</Text>
           </Pressable>
           {showPast && past.map(item => <AgendaItemCard key={item.id} item={item} />)}
@@ -65,12 +80,18 @@ interface ClippingLike {
 
 function ClippingTab({ clippings }: { clippings: ClippingLike[] }) {
   if (clippings.length === 0) {
-    return <Text style={styles.emptyText}>Sem imprensa.</Text>
+    return <EmptyState message="Sem imprensa." />
   }
   return (
     <View style={styles.tabContent}>
       {clippings.map(clipping => (
-        <Pressable key={clipping.id} style={styles.card} onPress={() => Linking.openURL(clipping.url)}>
+        <Pressable
+          key={clipping.id}
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          onPress={() => Linking.openURL(clipping.url)}
+          accessibilityRole="link"
+          accessibilityLabel={clipping.title}
+        >
           <Text style={styles.cardTitle}>{clipping.title}</Text>
           {clipping.source && <Text style={styles.cardSubtitle}>{clipping.source}</Text>}
         </Pressable>
@@ -81,18 +102,20 @@ function ClippingTab({ clippings }: { clippings: ClippingLike[] }) {
 
 function AssetListTab({ assets, emptyMessage }: { assets: ArtistAsset[]; emptyMessage: string }) {
   if (assets.length === 0) {
-    return <Text style={styles.emptyText}>{emptyMessage}</Text>
+    return <EmptyState message={emptyMessage} />
   }
   return (
     <View style={styles.tabContent}>
       {assets.map(asset => (
         <Pressable
           key={asset.id}
-          style={styles.card}
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
           onPress={() => {
             const url = asset.external_url ?? asset.blob_url
             if (url) Linking.openURL(url)
           }}
+          accessibilityRole="link"
+          accessibilityLabel={asset.title}
         >
           <Text style={styles.cardTitle}>{asset.title}</Text>
           <Text style={styles.cardSubtitle}>{formatDate(asset.created_at)}</Text>
@@ -122,7 +145,14 @@ function ArtistPortalContent({ artist, data }: { artist: { name: string }; data:
       {tabs.length > 1 && (
         <View style={styles.tabBar}>
           {tabs.map(tab => (
-            <Pressable key={tab.key} onPress={() => setActiveTab(tab.key)} style={styles.tabButton}>
+            <Pressable
+              key={tab.key}
+              onPress={() => setActiveTab(tab.key)}
+              style={({ pressed }) => [styles.tabButton, pressed && styles.tabButtonPressed]}
+              accessibilityRole="button"
+              accessibilityLabel={tab.label}
+              accessibilityState={{ selected: activeTab === tab.key }}
+            >
               <Text style={[styles.tabButtonText, activeTab === tab.key && styles.tabButtonTextActive]}>
                 {tab.label}
               </Text>
@@ -170,18 +200,30 @@ type ClientTabKey = 'checklist' | 'press' | 'documents'
 
 function DocumentsAndReportsTab({ reports, eventFiles }: { reports: PortalReport[]; eventFiles: PortalItemFile[] }) {
   if (reports.length === 0 && eventFiles.length === 0) {
-    return <Text style={styles.emptyText}>Sem documentos.</Text>
+    return <EmptyState message="Sem documentos." />
   }
   return (
     <View style={styles.tabContent}>
       {reports.map(report => (
-        <Pressable key={report.id} style={styles.card} onPress={() => Linking.openURL(report.blob_url)}>
+        <Pressable
+          key={report.id}
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          onPress={() => Linking.openURL(report.blob_url)}
+          accessibilityRole="link"
+          accessibilityLabel={report.title}
+        >
           <Text style={styles.cardTitle}>{report.title}</Text>
           <Text style={styles.cardSubtitle}>{formatDate(report.created_at)}</Text>
         </Pressable>
       ))}
       {eventFiles.map(file => (
-        <Pressable key={file.id} style={styles.card} onPress={() => Linking.openURL(file.blob_url)}>
+        <Pressable
+          key={file.id}
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          onPress={() => Linking.openURL(file.blob_url)}
+          accessibilityRole="link"
+          accessibilityLabel={file.file_name}
+        >
           <Text style={styles.cardTitle}>{file.file_name}</Text>
         </Pressable>
       ))}
@@ -198,7 +240,7 @@ function ChecklistTab({ data }: { data: PortalData }) {
       </View>
       <Text style={styles.progressLabel}>{progress.completed} de {progress.total} concluídas</Text>
       {items.length === 0 ? (
-        <Text style={styles.emptyText}>Sem etapas disponíveis.</Text>
+        <EmptyState message="Sem etapas disponíveis." />
       ) : (
         items.map(item => <ChecklistItemRow key={item.id} item={item} />)
       )}
@@ -229,7 +271,14 @@ function MeuEventoContent({ data }: { data: PortalData }) {
       {tabs.length > 1 && (
         <View style={styles.tabBar}>
           {tabs.map(tab => (
-            <Pressable key={tab.key} onPress={() => setActiveTab(tab.key)} style={styles.tabButton}>
+            <Pressable
+              key={tab.key}
+              onPress={() => setActiveTab(tab.key)}
+              style={({ pressed }) => [styles.tabButton, pressed && styles.tabButtonPressed]}
+              accessibilityRole="button"
+              accessibilityLabel={tab.label}
+              accessibilityState={{ selected: activeTab === tab.key }}
+            >
               <Text style={[styles.tabButtonText, activeTab === tab.key && styles.tabButtonTextActive]}>
                 {tab.label}
               </Text>
@@ -339,28 +388,32 @@ export default function PortalScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ffffff' },
-  center: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
+  container: { flex: 1, backgroundColor: colors.white },
+  center: { flex: 1, backgroundColor: colors.white, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
   nameBlock: { paddingHorizontal: 24, paddingVertical: 24, marginTop: -8, alignItems: 'center' },
-  name: { color: '#1c1917', fontSize: 26, fontWeight: 'bold', textAlign: 'center' },
+  name: { color: colors.gray900, fontSize: 26, fontWeight: 'bold', textAlign: 'center' },
   restricted: { color: colors.gray600, fontSize: 14, textAlign: 'center' },
-  tabBar: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#e7e5e4' },
+  tabBar: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: colors.gray200 },
   tabButton: { flex: 1, paddingHorizontal: 8, paddingVertical: 12, alignItems: 'center' },
+  tabButtonPressed: { backgroundColor: colors.gray50 },
   tabButtonText: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: colors.gray400, fontWeight: '600', textAlign: 'center' },
   tabButtonTextActive: { color: QUIC_MAGENTA },
   body: { padding: 16 },
   tabContent: { gap: 12 },
   pastToggle: { paddingVertical: 8 },
+  pastTogglePressed: { opacity: 0.6 },
   pastToggleText: { fontSize: 12, color: colors.gray400, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1 },
   card: { backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 6, padding: 14 },
+  cardPressed: { backgroundColor: colors.gray100 },
   cardMeta: { fontSize: 11, color: colors.gray400, marginBottom: 4 },
   cardTitle: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
   cardSubtitle: { fontSize: 12, color: colors.gray500, marginTop: 2 },
-  emptyText: { color: colors.gray500, fontSize: 14, padding: 16 },
-  eventName: { color: '#1c1917', fontSize: 26, fontWeight: 'bold', marginBottom: 6 },
-  eventMeta: { color: '#78716c', fontSize: 13 },
+  emptyState: { alignItems: 'center', paddingVertical: 16, gap: 8 },
+  emptyText: { color: colors.gray500, fontSize: 14, textAlign: 'center' },
+  eventName: { color: colors.gray900, fontSize: 26, fontWeight: 'bold', marginBottom: 6 },
+  eventMeta: { color: colors.gray500, fontSize: 13 },
   progressTrack: { height: 6, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 3, marginTop: 18, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: '#ffffff', borderRadius: 3 },
+  progressFill: { height: '100%', backgroundColor: colors.white, borderRadius: 3 },
   progressLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 8 },
   itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.gray100 },
   itemTitle: { fontSize: 14, color: colors.gray900, flex: 1, marginRight: 12 },

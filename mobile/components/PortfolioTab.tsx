@@ -1,7 +1,8 @@
 // mobile/components/PortfolioTab.tsx
 import { useEffect, useState } from 'react'
-import { View, Text, Pressable, StyleSheet } from 'react-native'
-import { colors } from '../lib/theme'
+import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { colors, QUIC_MAGENTA } from '../lib/theme'
 import { supabase } from '../lib/supabase'
 import { fetchInvestorPortfolio, type InvestorPortfolioSummary, type InvestorPortfolioRow } from '../lib/investorPortfolio'
 
@@ -106,7 +107,7 @@ export function PortfolioTab({ investorId }: { investorId: string }) {
   if (fetchState.status === 'loading') {
     return (
       <View style={styles.stateContainer}>
-        <Text style={styles.stateBody}>A carregar...</Text>
+        <ActivityIndicator color={QUIC_MAGENTA} />
       </View>
     )
   }
@@ -114,6 +115,7 @@ export function PortfolioTab({ investorId }: { investorId: string }) {
   if (fetchState.status === 'error') {
     return (
       <View style={styles.stateContainer}>
+        <Ionicons name="alert-circle-outline" size={40} color={colors.gray300} />
         <Text style={styles.stateBody}>Não foi possível carregar o teu portfolio. Tenta novamente mais tarde.</Text>
       </View>
     )
@@ -124,6 +126,7 @@ export function PortfolioTab({ investorId }: { investorId: string }) {
   if (summary.rows.length === 0) {
     return (
       <View style={styles.stateContainer}>
+        <Ionicons name="briefcase-outline" size={40} color={colors.gray300} />
         <Text style={styles.stateBody}>Ainda não tens investimentos.</Text>
       </View>
     )
@@ -144,7 +147,11 @@ export function PortfolioTab({ investorId }: { investorId: string }) {
           <Pressable
             key={f.key}
             onPress={() => setFilter(f.key)}
-            style={[styles.filterPill, filter === f.key && styles.filterPillActive]}
+            style={({ pressed }) => [
+              styles.filterPill,
+              filter === f.key && styles.filterPillActive,
+              pressed && filter !== f.key && styles.filterPillPressed,
+            ]}
           >
             <Text style={[styles.filterPillText, filter === f.key && styles.filterPillTextActive]}>{f.label}</Text>
           </Pressable>
@@ -182,6 +189,7 @@ const styles = StyleSheet.create({
   filterRow: { flexDirection: 'row', gap: 8 },
   filterPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: colors.gray100 },
   filterPillActive: { backgroundColor: colors.gray900 },
+  filterPillPressed: { backgroundColor: colors.gray200 },
   filterPillText: { fontSize: 12, color: colors.gray500, fontWeight: '500' },
   filterPillTextActive: { color: colors.white },
   list: { gap: 12 },
