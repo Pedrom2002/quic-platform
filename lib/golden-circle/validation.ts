@@ -16,6 +16,8 @@ export const projectSchema = z.object({
   attendance: z.number().int().min(0).nullable().optional(),
 })
 
+export const INVESTMENT_STATUSES = ['active', 'returned', 'written_off'] as const
+
 export const investmentSchema = z.object({
   investor_id: z.uuid({ error: 'Investidor inválido' }),
   amount_cents: z.number({ error: 'Montante obrigatório' }).int().min(1, {
@@ -23,6 +25,16 @@ export const investmentSchema = z.object({
   }),
   invested_at: z.iso.date({ error: 'Data inválida' }),
   projected_return_cents: z.number().int().nullable().optional(),
+})
+
+export const investmentUpdateSchema = z.object({
+  amount_cents: z.number({ error: 'Montante obrigatório' }).int().min(1, {
+    error: 'Montante tem de ser maior que zero',
+  }),
+  invested_at: z.iso.date({ error: 'Data inválida' }),
+  status: z.enum(INVESTMENT_STATUSES, { error: 'Estado inválido' }),
+  projected_return_cents: z.number().int().nullable().optional(),
+  realized_return_cents: z.number().int().nullable().optional(),
 })
 
 export const documentSchema = z

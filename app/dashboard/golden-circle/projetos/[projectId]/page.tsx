@@ -14,9 +14,17 @@ import {
 
 import { ProjectForm } from '../project-form'
 import { InvestmentCreateDialog } from './investment-create-dialog'
+import { InvestmentEditDialog } from './investment-edit-dialog'
+import { Badge } from '@/components/ui/badge'
 import { formatCents } from '@/lib/format-money'
 
 const dateFormatter = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })
+
+const INVESTMENT_STATUS_LABELS: Record<string, string> = {
+  active: 'Ativo',
+  returned: 'Devolvido',
+  written_off: 'Anulado',
+}
 
 export default async function GoldenCircleProjectDetailPage({
   params,
@@ -32,7 +40,7 @@ export default async function GoldenCircleProjectDetailPage({
 
   const { data: investmentsData } = await supabase
     .from('investments')
-    .select('id, amount_cents, invested_at, status, projected_return_cents, investors(full_name)')
+    .select('id, amount_cents, invested_at, status, projected_return_cents, realized_return_cents, investors(full_name)')
     .eq('project_id', projectId)
     .order('invested_at', { ascending: false })
   const investments = investmentsData ?? []
@@ -73,12 +81,13 @@ export default async function GoldenCircleProjectDetailPage({
               <TableHead>Montante</TableHead>
               <TableHead>Data</TableHead>
               <TableHead>Estado</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {investments.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="text-center text-muted-foreground">
                   Sem investimentos.
                 </TableCell>
               </TableRow>
@@ -88,7 +97,20 @@ export default async function GoldenCircleProjectDetailPage({
                 <TableCell>{inv.investors?.full_name ?? '-'}</TableCell>
                 <TableCell>{formatCents(inv.amount_cents)}</TableCell>
                 <TableCell>{dateFormatter.format(new Date(inv.invested_at))}</TableCell>
-                <TableCell>{inv.status}</TableCell>
+                <TableCell><Badge>{INVESTMENT_STATUS_LABELS[inv.status] ?? inv.status}</Badge></TableCell>
+                <TableCell className="text-right">
+                  <InvestmentEditDialog
+                    projectId={projectId}
+                    investment={{
+                      id: inv.id,
+                      amount_cents: inv.amount_cents,
+                      invested_at: inv.invested_at,
+                      status: inv.status,
+                      projected_return_cents: inv.projected_return_cents,
+                      realized_return_cents: inv.realized_return_cents,
+                    }}
+                  />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
