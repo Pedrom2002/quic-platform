@@ -13,6 +13,8 @@ export interface MyTicket {
   qr_code: string
   status: string
   event_id: string
+  event_name: string | null
+  event_start_datetime: string | null
 }
 
 export async function fetchTicketTypes(supabase: SupabaseClient, eventId: string): Promise<TicketType[]> {
@@ -33,12 +35,25 @@ export async function fetchMyTickets(supabase: SupabaseClient): Promise<MyTicket
 
   const { data, error } = await supabase
     .from('tickets')
-    .select('id, qr_code, status, event_id')
+    .select('id, qr_code, status, event_id, events(name, start_datetime)')
     .eq('buyer_auth_user_id', userData.user.id)
     .order('created_at', { ascending: false })
 
   if (error || !data) return []
-  return data as unknown as MyTicket[]
+  return (data as unknown as Array<{
+    id: string
+    qr_code: string
+    status: string
+    event_id: string
+    events: { name: string; start_datetime: string } | null
+  }>).map(row => ({
+    id: row.id,
+    qr_code: row.qr_code,
+    status: row.status,
+    event_id: row.event_id,
+    event_name: row.events?.name ?? null,
+    event_start_datetime: row.events?.start_datetime ?? null,
+  }))
 }
 
 export interface SessionTicketsResult {

@@ -1,6 +1,6 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, waitFor, fireEvent } from '@testing-library/react-native'
-import { Linking } from 'react-native'
+import { Linking, Alert } from 'react-native'
 import EventDetailScreen from '../../../app/evento/[id]'
 import type { PublicEvent } from '../../../lib/events'
 import type { TicketType } from '../../../lib/tickets'
@@ -31,6 +31,13 @@ jest.mock('expo-router', () => ({
 
 const mockOpenURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true as never)
 
+// handleBuy agora confirma com Alert.alert antes de abrir o checkout — os
+// testes que compram simulam o utilizador a tocar em "Continuar".
+const mockAlert = jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+  const continueButton = buttons?.find(b => b.text === 'Continuar')
+  continueButton?.onPress?.()
+})
+
 beforeEach(() => {
   mockFetchEventById.mockReset()
   mockUseLocalSearchParams.mockReturnValue({ id: 'e1' })
@@ -41,6 +48,7 @@ beforeEach(() => {
   mockOpenURL.mockResolvedValue(true as never)
   mockGetSession.mockReset()
   mockGetSession.mockResolvedValue({ data: { session: { access_token: 'token-abc' } } })
+  mockAlert.mockClear()
 })
 
 describe('EventDetailScreen', () => {

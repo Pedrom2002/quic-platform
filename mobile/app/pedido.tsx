@@ -1,22 +1,42 @@
 // mobile/app/pedido.tsx
-import { useRef, useState } from 'react'
-import { View, Text, TextInput, Pressable, ScrollView, Alert, StyleSheet } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useCart } from '../hooks/useCart'
+import { useCart, type CartItem } from '../hooks/useCart'
 import { supabase } from '../lib/supabase'
 import { validateQuote, submitQuote } from '../lib/quote'
 import { QUIC_MAGENTA, colors } from '../lib/theme'
 import { Ionicons } from '@expo/vector-icons'
+import { Toast } from '../components/Toast'
 
 export default function PedidoScreen() {
   const router = useRouter()
   const insets = useSafeAreaInsets()
-  const { items, isReady, setQty, removeItem, clear } = useCart()
+  const { items, isReady, setQty, removeItem, addItem, clear } = useCart()
+  const [removedItem, setRemovedItem] = useState<CartItem | null>(null)
+
+  function handleRemove(item: CartItem) {
+    removeItem(item.materialId)
+    setRemovedItem(item)
+  }
+
+  function handleUndoRemove() {
+    if (!removedItem) return
+    addItem({ materialId: removedItem.materialId, name: removedItem.name, unit: removedItem.unit })
+    if (removedItem.qty > 1) setQty(removedItem.materialId, removedItem.qty)
+  }
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const userEmail = data.session?.user.email
+      if (userEmail) setEmail(prev => (prev === '' ? userEmail : prev))
+    })
+  }, [])
   const [eventDate, setEventDate] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -47,8 +67,7 @@ export default function PedidoScreen() {
       }
 
       clear()
-      Alert.alert('Pedido enviado', 'Respondemos com um orçamento sem compromisso.')
-      router.replace('/(tabs)/catalogo')
+      router.replace({ pathname: '/pedido-success', params: { email: form.email.trim() } })
     } finally {
       submittingRef.current = false
     }
@@ -72,62 +91,73 @@ export default function PedidoScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
-      <Text style={styles.heading}>Pedido de orçamento</Text>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
+        <Text style={styles.heading}>Pedido de orçamento</Text>
 
-      <Text style={styles.sectionLabel}>Materiais</Text>
-      {items.map(item => (
-        <View key={item.materialId} style={styles.itemRow}>
-          <View style={styles.itemInfo}>
-            <Text style={styles.itemName}>{item.name}</Text>
-            <Text style={styles.itemUnit}>Unidade: {item.unit}</Text>
+        <Text style={styles.sectionLabel}>Materiais</Text>
+        {items.map(item => (
+          <View key={item.materialId} style={styles.itemRow}>
+            <View style={styles.itemInfo}>
+              <Text style={styles.itemName}>{item.name}</Text>
+              <Text style={styles.itemUnit}>Unidade: {item.unit}</Text>
+            </View>
+            <Pressable
+              style={({ pressed }) => [styles.qtyButton, pressed && styles.qtyButtonPressed]}
+              onPress={() => setQty(item.materialId, item.qty - 1)}
+              accessibilityRole="button"
+              accessibilityLabel={`Diminuir quantidade de ${item.name}`}
+            >
+              <Text style={styles.qtyButtonText}>−</Text>
+            </Pressable>
+            <Text style={styles.qtyValue}>{item.qty}</Text>
+            <Pressable
+              style={({ pressed }) => [styles.qtyButton, pressed && styles.qtyButtonPressed]}
+              onPress={() => setQty(item.materialId, item.qty + 1)}
+              accessibilityRole="button"
+              accessibilityLabel={`Aumentar quantidade de ${item.name}`}
+            >
+              <Text style={styles.qtyButtonText}>+</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [styles.removeButton, pressed && styles.removeButtonPressed]}
+              onPress={() => handleRemove(item)}
+              accessibilityRole="button"
+              accessibilityLabel={`Remover ${item.name}`}
+            >
+              <Text style={styles.removeButtonText}>Remover</Text>
+            </Pressable>
           </View>
-          <Pressable
-            style={({ pressed }) => [styles.qtyButton, pressed && styles.qtyButtonPressed]}
-            onPress={() => setQty(item.materialId, item.qty - 1)}
-            accessibilityRole="button"
-            accessibilityLabel={`Diminuir quantidade de ${item.name}`}
-          >
-            <Text style={styles.qtyButtonText}>−</Text>
-          </Pressable>
-          <Text style={styles.qtyValue}>{item.qty}</Text>
-          <Pressable
-            style={({ pressed }) => [styles.qtyButton, pressed && styles.qtyButtonPressed]}
-            onPress={() => setQty(item.materialId, item.qty + 1)}
-            accessibilityRole="button"
-            accessibilityLabel={`Aumentar quantidade de ${item.name}`}
-          >
-            <Text style={styles.qtyButtonText}>+</Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [styles.removeButton, pressed && styles.removeButtonPressed]}
-            onPress={() => removeItem(item.materialId)}
-            accessibilityRole="button"
-            accessibilityLabel={`Remover ${item.name}`}
-          >
-            <Text style={styles.removeButtonText}>Remover</Text>
-          </Pressable>
-        </View>
-      ))}
+        ))}
 
-      <Text style={styles.sectionLabel}>Os teus dados</Text>
-      <TextInput style={styles.input} placeholder="Nome *" placeholderTextColor={colors.gray400} value={name} onChangeText={setName} />
-      <TextInput style={styles.input} placeholder="Email *" placeholderTextColor={colors.gray400} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-      <TextInput style={styles.input} placeholder="Telefone (opcional)" placeholderTextColor={colors.gray400} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-      <TextInput style={styles.input} placeholder="Data do evento (AAAA-MM-DD, opcional)" placeholderTextColor={colors.gray400} value={eventDate} onChangeText={setEventDate} />
-      <TextInput style={[styles.input, styles.messageInput]} placeholder="Mensagem (opcional)" placeholderTextColor={colors.gray400} value={message} onChangeText={setMessage} multiline />
+        <Text style={styles.sectionLabel}>Os teus dados</Text>
+        <TextInput style={styles.input} placeholder="Nome *" placeholderTextColor={colors.gray400} value={name} onChangeText={setName} />
+        <TextInput style={styles.input} placeholder="Email *" placeholderTextColor={colors.gray400} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+        <TextInput style={styles.input} placeholder="Telefone (opcional)" placeholderTextColor={colors.gray400} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+        <TextInput style={styles.input} placeholder="Data do evento (AAAA-MM-DD, opcional)" placeholderTextColor={colors.gray400} value={eventDate} onChangeText={setEventDate} />
+        <TextInput style={[styles.input, styles.messageInput]} placeholder="Mensagem (opcional)" placeholderTextColor={colors.gray400} value={message} onChangeText={setMessage} multiline />
 
-      {error && <Text style={styles.error}>{error}</Text>}
+        {error && <Text style={styles.error}>{error}</Text>}
 
-      <Pressable
-        style={({ pressed }) => [styles.submitButton, pressed && styles.submitButtonPressed]}
-        onPress={handleSubmit}
-        disabled={submitting}
-        accessibilityRole="button"
-      >
-        <Text style={styles.submitButtonText}>{submitting ? 'A enviar...' : 'Enviar pedido'}</Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable
+          style={({ pressed }) => [styles.submitButton, pressed && styles.submitButtonPressed]}
+          onPress={handleSubmit}
+          disabled={submitting}
+          accessibilityRole="button"
+        >
+          <Text style={styles.submitButtonText}>{submitting ? 'A enviar...' : 'Enviar pedido'}</Text>
+        </Pressable>
+      </ScrollView>
+
+      {removedItem && (
+        <Toast
+          message={`${removedItem.name} removido`}
+          onHide={() => setRemovedItem(null)}
+          actionLabel="Desfazer"
+          onAction={handleUndoRemove}
+        />
+      )}
+    </View>
   )
 }
 

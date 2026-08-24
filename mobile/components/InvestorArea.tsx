@@ -1,6 +1,7 @@
 // mobile/components/InvestorArea.tsx
 import { useState } from 'react'
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import { colors } from '../lib/theme'
 import type { DashboardFetchState } from '../lib/investorDashboard'
 import { InvestorDashboard } from './InvestorDashboard'
@@ -66,29 +67,38 @@ export function InvestorArea({ dashboardFetch, investorId, email }: { dashboardF
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={tabBarStyles.container}
-      >
-        {TABS.map(tab => (
-          <Pressable
-            key={tab.id}
-            onPress={() => setActiveTab(tab.id)}
-            style={({ pressed }) => [
-              tabBarStyles.tab,
-              activeTab === tab.id && tabBarStyles.tabActive,
-              pressed && tabBarStyles.tabPressed,
-            ]}
-            accessibilityRole="button"
-            accessibilityLabel={tab.label}
-          >
-            <Text style={[tabBarStyles.tabText, activeTab === tab.id && tabBarStyles.tabTextActive]}>
-              {tab.label}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
+      <View style={tabBarStyles.wrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={tabBarStyles.container}
+        >
+          {TABS.map(tab => (
+            <Pressable
+              key={tab.id}
+              onPress={() => setActiveTab(tab.id)}
+              style={({ pressed }) => [
+                tabBarStyles.tab,
+                activeTab === tab.id && tabBarStyles.tabActive,
+                pressed && tabBarStyles.tabPressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={tab.label}
+            >
+              <Text style={[tabBarStyles.tabText, activeTab === tab.id && tabBarStyles.tabTextActive]}>
+                {tab.label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+        <LinearGradient
+          colors={['transparent', '#ffffff']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={tabBarStyles.fadeEdge}
+          pointerEvents="none"
+        />
+      </View>
 
       {activeTab === 'dashboard' && <DashboardTab dashboardFetch={dashboardFetch} />}
       {activeTab === 'opportunities' && <OpportunitiesTab />}
@@ -102,6 +112,8 @@ export function InvestorArea({ dashboardFetch, investorId, email }: { dashboardF
 }
 
 const tabBarStyles = StyleSheet.create({
+  wrapper: { position: 'relative' },
+  fadeEdge: { position: 'absolute', top: 0, right: 0, bottom: 0, width: 24 },
   container: { paddingHorizontal: 16, gap: 8, borderBottomWidth: 1, borderBottomColor: colors.gray200 },
   tab: {
     paddingHorizontal: 12,

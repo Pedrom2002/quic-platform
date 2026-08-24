@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { View, Text, Image, ScrollView, StyleSheet, Pressable, Linking, Alert, ActivityIndicator } from 'react-native'
+import { View, Text, Image, ScrollView, StyleSheet, Linking, Alert, ActivityIndicator } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '../../lib/supabase'
 import { fetchEventById, type PublicEvent } from '../../lib/events'
 import { fetchTicketTypes, createCheckoutSession, type TicketType } from '../../lib/tickets'
 import { colors, QUIC_MAGENTA } from '../../lib/theme'
+import { ActionRow } from '../../components/ActionRow'
 
 function formatEventDateTime(iso: string): string {
   const date = new Date(iso)
@@ -25,7 +26,7 @@ export default function EventDetailScreen() {
     if (event) fetchTicketTypes(supabase, event.id).then(setTicketTypes)
   }, [event])
 
-  async function handleBuy(ticketTypeId: string) {
+  async function openCheckout(ticketTypeId: string) {
     const { data: sessionData } = await supabase.auth.getSession()
     const accessToken = sessionData.session?.access_token
     if (!accessToken) return
@@ -39,6 +40,17 @@ export default function EventDetailScreen() {
     } catch {
       Alert.alert('Erro', 'Não foi possível abrir a página de pagamento.')
     }
+  }
+
+  function handleBuy(ticketTypeId: string) {
+    Alert.alert(
+      'Ir para pagamento',
+      'Vais ser redirecionado para o browser para concluir o pagamento. Depois de pagares, volta à app para veres o teu bilhete.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Continuar', onPress: () => openCheckout(ticketTypeId) },
+      ]
+    )
   }
 
   if (event === undefined) {
@@ -75,15 +87,12 @@ export default function EventDetailScreen() {
           <View style={styles.ticketsSection}>
             <Text style={styles.ticketsTitle}>Bilhetes</Text>
             {ticketTypes.map(tt => (
-              <Pressable
+              <ActionRow
                 key={tt.id}
-                style={({ pressed }) => [styles.ticketRow, pressed && styles.ticketRowPressed]}
+                title={tt.name}
                 onPress={() => handleBuy(tt.id)}
-                accessibilityRole="button"
-              >
-                <Text style={styles.ticketName}>{tt.name}</Text>
-                <Text style={styles.ticketPrice}>{(tt.price_cents / 100).toFixed(2)} €</Text>
-              </Pressable>
+                right={<Text style={styles.ticketPrice}>{(tt.price_cents / 100).toFixed(2)} €</Text>}
+              />
             ))}
           </View>
         )}
@@ -107,8 +116,5 @@ const styles = StyleSheet.create({
   notFoundText: { color: colors.gray500, fontSize: 14 },
   ticketsSection: { marginTop: 24, gap: 8 },
   ticketsTitle: { fontSize: 16, fontWeight: '700', color: colors.gray900, marginBottom: 4 },
-  ticketRow: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 6, padding: 14 },
-  ticketRowPressed: { backgroundColor: colors.gray100 },
-  ticketName: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
   ticketPrice: { fontSize: 14, color: colors.gray500 },
 })

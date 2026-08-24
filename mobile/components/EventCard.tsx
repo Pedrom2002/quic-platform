@@ -22,10 +22,17 @@ export function EventCard({ event }: { event: PublicEvent }) {
         style={styles.gradient}
       />
       <View style={styles.content}>
-        <Text style={styles.date} numberOfLines={1}>
-          {formatEventDate(event.start_datetime)}
-          {event.venue_name ? ` · ${event.venue_name}` : ''}
-        </Text>
+        <View style={styles.topRow}>
+          <Text style={styles.date} numberOfLines={1}>
+            {formatEventDate(event.start_datetime)}
+            {event.venue_name ? ` · ${event.venue_name}` : ''}
+          </Text>
+          {event.min_ticket_price_cents !== null && event.min_ticket_price_cents > 0 && (
+            <Text style={styles.price}>
+              Desde {(event.min_ticket_price_cents / 100).toFixed(2)} €
+            </Text>
+          )}
+        </View>
         <Text style={styles.name} numberOfLines={2}>{event.name}</Text>
         {event.min_ticket_price_cents !== null && (
           <View style={styles.ticketButton}>
@@ -47,7 +54,9 @@ const styles = StyleSheet.create({
   placeholder: { ...fill, backgroundColor: '#111111' },
   gradient: { ...fill },
   content: { position: 'absolute', left: 16, right: 16, bottom: 16 },
-  date: { fontSize: 11, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
+  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  date: { flex: 1, fontSize: 11, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 1 },
+  price: { fontSize: 13, fontWeight: '700', color: '#ffffff' },
   name: { fontSize: 20, fontWeight: '700', color: '#ffffff' },
   ticketButton: {
     marginTop: 8,

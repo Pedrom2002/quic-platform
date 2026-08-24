@@ -2,6 +2,8 @@
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }))
+jest.mock('react-native-worklets', () => require('react-native-worklets/lib/module/mock'))
+jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'))
 
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
@@ -19,7 +21,10 @@ jest.mock('../../lib/quote', () => ({
   submitQuote: (...args: unknown[]) => mockSubmitQuote(...args),
   validateQuote: (...args: unknown[]) => mockValidateQuote(...args),
 }))
-jest.mock('../../lib/supabase', () => ({ supabase: {} }))
+const mockGetSession = jest.fn<() => Promise<{ data: { session: { user: { email: string } } | null } }>>()
+jest.mock('../../lib/supabase', () => ({
+  supabase: { auth: { getSession: () => mockGetSession() } },
+}))
 
 const filledItems = [{ materialId: 'm1', name: 'Coluna', unit: 'un', qty: 2 }]
 
@@ -29,6 +34,8 @@ beforeEach(() => {
   mockValidateQuote.mockReset()
   mockValidateQuote.mockReturnValue(null)
   mockSubmitQuote.mockResolvedValue({ success: true })
+  mockGetSession.mockReset()
+  mockGetSession.mockResolvedValue({ data: { session: null } })
   jest.spyOn(Alert, 'alert').mockImplementation(() => {})
 })
 

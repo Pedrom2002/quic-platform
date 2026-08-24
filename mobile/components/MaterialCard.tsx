@@ -11,10 +11,12 @@ export function MaterialCard({
   material,
   categoryName,
   index = 0,
+  onAdd,
 }: {
   material: CatalogMaterial
   categoryName: string
   index?: number
+  onAdd?: (materialName: string) => void
 }) {
   const { addItem } = useCart()
   const [justAdded, setJustAdded] = useState(false)
@@ -23,6 +25,7 @@ export function MaterialCard({
   function handleAdd() {
     addItem({ materialId: material.id, name: material.name, unit: material.unit })
     setJustAdded(true)
+    onAdd?.(material.name)
     if (timeout.current) clearTimeout(timeout.current)
     timeout.current = setTimeout(() => setJustAdded(false), 1000)
   }
@@ -41,10 +44,12 @@ export function MaterialCard({
       >
         <Ionicons name={justAdded ? 'checkmark' : 'add'} size={18} color={colors.white} />
       </Pressable>
+      <View style={[styles.availabilityStripe, material.available ? styles.stripeAvailable : styles.stripeUnavailable]} />
       <View style={styles.content}>
         <Text style={styles.category}>{categoryName}</Text>
         <Text style={styles.name} numberOfLines={2}>{material.name}</Text>
         <View style={[styles.badge, material.available ? styles.badgeAvailable : styles.badgeUnavailable]}>
+          <View style={[styles.badgeDot, material.available ? styles.dotAvailable : styles.dotUnavailable]} />
           <Text style={[styles.badgeText, material.available ? styles.badgeTextAvailable : styles.badgeTextUnavailable]}>
             {material.available ? 'Disponível' : 'Sob consulta'}
           </Text>
@@ -69,11 +74,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: { padding: 12, gap: 4 },
+  availabilityStripe: { position: 'absolute', top: 0, left: 0, bottom: 0, width: 3 },
+  stripeAvailable: { backgroundColor: colors.success },
+  stripeUnavailable: { backgroundColor: colors.gray300 },
   category: { fontSize: 10, color: colors.gray400, textTransform: 'uppercase', letterSpacing: 1 },
   name: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
-  badge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, marginTop: 4 },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, marginTop: 4 },
   badgeAvailable: { backgroundColor: colors.successBackground },
   badgeUnavailable: { backgroundColor: '#e7e5e4' },
+  badgeDot: { width: 6, height: 6, borderRadius: 3 },
+  dotAvailable: { backgroundColor: colors.success },
+  dotUnavailable: { backgroundColor: colors.gray400 },
   badgeText: { fontSize: 10, fontWeight: '600' },
   badgeTextAvailable: { color: colors.successText },
   badgeTextUnavailable: { color: colors.gray500 },

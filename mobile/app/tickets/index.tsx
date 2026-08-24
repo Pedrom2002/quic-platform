@@ -13,6 +13,10 @@ const STATUS_LABELS: Record<string, string> = {
   refunded: 'Reembolsado',
 }
 
+function formatTicketDate(iso: string): string {
+  return new Date(iso).toLocaleString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
 function Header() {
   return <BannerHeader source={require('../../assets/banners/tickets.png')} />
 }
@@ -50,6 +54,10 @@ export default function MyTicketsScreen() {
       ListHeaderComponent={Header}
       renderItem={({ item }) => (
         <View style={styles.card}>
+          {item.event_name && <Text style={styles.eventName}>{item.event_name}</Text>}
+          {item.event_start_datetime && (
+            <Text style={styles.eventDate}>{formatTicketDate(item.event_start_datetime)}</Text>
+          )}
           <QRCode value={item.qr_code} size={160} />
           <Text style={styles.status}>{STATUS_LABELS[item.status] ?? item.status}</Text>
         </View>
@@ -64,5 +72,7 @@ const styles = StyleSheet.create({
   emptyIcon: { marginTop: 24, marginBottom: 8 },
   emptyText: { color: colors.gray500, fontSize: 14 },
   card: { backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 6, padding: 20, alignItems: 'center', gap: 12, marginHorizontal: 16, marginBottom: 12 },
+  eventName: { fontSize: 16, fontWeight: '700', color: colors.gray900, textAlign: 'center' },
+  eventDate: { fontSize: 12, color: colors.gray500, marginTop: -8 },
   status: { fontSize: 12, color: colors.gray500, textTransform: 'uppercase', letterSpacing: 1, fontWeight: '600' },
 })

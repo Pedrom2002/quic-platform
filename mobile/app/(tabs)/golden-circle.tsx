@@ -1,7 +1,8 @@
 // mobile/app/(tabs)/golden-circle.tsx
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { View, Text, Pressable, StyleSheet, ScrollView, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native'
+import { View, Text, Pressable, StyleSheet, ScrollView, Linking, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native'
 import { useVideoPlayer, VideoView } from 'expo-video'
+import { LinearGradient } from 'expo-linear-gradient'
 import { useFocusEffect } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { BannerHeader } from '../../components/BannerHeader'
@@ -31,34 +32,43 @@ const GOLD = colors.gold
 
 function TopNav({ active, onPress }: { active: SectionId; onPress: (id: SectionId) => void }) {
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={topNavStyles.container}
-    >
-      {SECTIONS.map(section => (
-        <Pressable
-          key={section.id}
-          onPress={() => onPress(section.id)}
-          style={({ pressed }) => [
-            topNavStyles.tab,
-            active === section.id && topNavStyles.tabActive,
-            pressed && topNavStyles.tabPressed,
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel={section.label}
-        >
-          <Ionicons
-            name={section.icon}
-            size={14}
-            color={active === section.id ? GOLD : colors.gray400}
-          />
-          <Text style={[topNavStyles.tabText, active === section.id && topNavStyles.tabTextActive]}>
-            {section.label}
-          </Text>
-        </Pressable>
-      ))}
-    </ScrollView>
+    <View style={topNavStyles.wrapper}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={topNavStyles.container}
+      >
+        {SECTIONS.map(section => (
+          <Pressable
+            key={section.id}
+            onPress={() => onPress(section.id)}
+            style={({ pressed }) => [
+              topNavStyles.tab,
+              active === section.id && topNavStyles.tabActive,
+              pressed && topNavStyles.tabPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={section.label}
+          >
+            <Ionicons
+              name={section.icon}
+              size={14}
+              color={active === section.id ? GOLD : colors.gray400}
+            />
+            <Text style={[topNavStyles.tabText, active === section.id && topNavStyles.tabTextActive]}>
+              {section.label}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+      <LinearGradient
+        colors={['transparent', '#ffffff']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={topNavStyles.fadeEdge}
+        pointerEvents="none"
+      />
+    </View>
   )
 }
 
@@ -140,6 +150,10 @@ export default function GoldenCircleScreen() {
   function scrollToSection(id: SectionId) {
     const y = offsets.current.get(id)
     if (y != null) scrollRef.current?.scrollTo({ y: y - 8, animated: true })
+  }
+
+  function handleApply() {
+    Linking.openURL(`${process.env.EXPO_PUBLIC_APP_URL}/investors/signup`)
   }
 
   function handleScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
@@ -286,11 +300,24 @@ export default function GoldenCircleScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      {role?.role !== 'investor' && (
+        <Pressable
+          style={({ pressed }) => [styles.applyButton, pressed && styles.applyButtonPressed]}
+          onPress={handleApply}
+          accessibilityRole="button"
+          accessibilityLabel="Pedir acesso ao Golden Circle"
+        >
+          <Text style={styles.applyButtonText}>Pedir acesso ao Golden Circle</Text>
+        </Pressable>
+      )}
     </View>
   )
 }
 
 const topNavStyles = StyleSheet.create({
+  wrapper: { position: 'relative' },
+  fadeEdge: { position: 'absolute', top: 0, right: 0, bottom: 0, width: 24 },
   container: { paddingHorizontal: 16, gap: 8, borderBottomWidth: 1, borderBottomColor: colors.gray200 },
   tab: {
     flexDirection: 'row',
@@ -309,7 +336,19 @@ const topNavStyles = StyleSheet.create({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
-  scrollBody: { paddingBottom: 32 },
+  scrollBody: { paddingBottom: 96 },
+  applyButton: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 16,
+    backgroundColor: GOLD,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  applyButtonPressed: { opacity: 0.85 },
+  applyButtonText: { color: '#0d0c0d', fontSize: 15, fontWeight: '700' },
   section: { padding: 16, gap: 16 },
   sectionHeadingRow: { borderBottomWidth: 1, borderBottomColor: colors.gray900, paddingBottom: 12, marginBottom: 4 },
   sectionHeadingRowDark: { borderBottomColor: 'rgba(255,255,255,0.1)' },

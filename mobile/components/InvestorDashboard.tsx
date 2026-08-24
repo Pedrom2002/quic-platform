@@ -26,11 +26,11 @@ function buildEvolutionSeries(estimatedValueCents: number) {
   }))
 }
 
-function MetricCard({ label, value, caption }: { label: string; value: string; caption: string }) {
+function MetricCard({ label, value, caption, valueColor }: { label: string; value: string; caption: string; valueColor?: string }) {
   return (
     <View style={styles.card}>
       <Text style={styles.cardLabel}>{label}</Text>
-      <Text style={styles.cardValue}>{value}</Text>
+      <Text style={[styles.cardValue, valueColor ? { color: valueColor } : null]}>{value}</Text>
       <Text style={styles.cardCaption}>{caption}</Text>
     </View>
   )
@@ -72,6 +72,7 @@ export function InvestorDashboard({ stats }: { stats: InvestorDashboardStats }) 
           label="Retorno estimado"
           value={`${projectedReturnPercentage >= 0 ? '+' : ''}${projectedReturnPercentage.toFixed(1)}%`}
           caption={`${formatCents(stats.projectedReturnCents)} sobre o capital`}
+          valueColor={projectedReturnPercentage >= 0 ? colors.success : colors.danger}
         />
       </View>
 

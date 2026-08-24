@@ -11,11 +11,15 @@ export default function TabsLayout() {
   const { session } = useSession()
   const [isArtist, setIsArtist] = useState(false)
   const [clientPortalToken, setClientPortalToken] = useState<string | null>(null)
+  const [showGoldenCircle, setShowGoldenCircle] = useState(true)
 
   useEffect(() => {
     resolveUserRole(supabase, session).then(role => {
       setIsArtist(role.role === 'artist')
       setClientPortalToken(role.role === 'client' ? role.portalToken : null)
+      // Golden Circle é área de investidores: staff e artistas não têm uso
+      // para a tab, clientes/investidores mantêm (podem querer pedir acesso).
+      setShowGoldenCircle(role.role !== 'staff' && role.role !== 'artist')
 
       if (role.role === 'client' && session?.access_token) {
         registerForPushNotifications(process.env.EXPO_PUBLIC_APP_URL!, session.access_token)
@@ -64,6 +68,7 @@ export default function TabsLayout() {
         name="golden-circle"
         options={{
           title: 'Golden',
+          href: showGoldenCircle ? undefined : null,
           tabBarAccessibilityLabel: 'Golden Circle',
           tabBarIcon: ({ color, size }) => <Ionicons name="star-outline" size={size} color={color} />,
         }}

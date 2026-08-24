@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator, FlatList, Pressable, Linking, StyleSheet
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { BannerHeader } from '../../components/BannerHeader'
+import { ActionRow } from '../../components/ActionRow'
 import { useSession } from '../../hooks/useSession'
 import { displayArtistName } from '../../lib/artistName'
 import { resolveUserRole, type UserRole } from '../../lib/role'
@@ -85,16 +86,13 @@ function ClippingTab({ clippings }: { clippings: ClippingLike[] }) {
   return (
     <View style={styles.tabContent}>
       {clippings.map(clipping => (
-        <Pressable
+        <ActionRow
           key={clipping.id}
-          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          title={clipping.title}
+          subtitle={clipping.source ?? undefined}
           onPress={() => Linking.openURL(clipping.url)}
           accessibilityRole="link"
-          accessibilityLabel={clipping.title}
-        >
-          <Text style={styles.cardTitle}>{clipping.title}</Text>
-          {clipping.source && <Text style={styles.cardSubtitle}>{clipping.source}</Text>}
-        </Pressable>
+        />
       ))}
     </View>
   )
@@ -107,19 +105,16 @@ function AssetListTab({ assets, emptyMessage }: { assets: ArtistAsset[]; emptyMe
   return (
     <View style={styles.tabContent}>
       {assets.map(asset => (
-        <Pressable
+        <ActionRow
           key={asset.id}
-          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          title={asset.title}
+          subtitle={formatDate(asset.created_at)}
           onPress={() => {
             const url = asset.external_url ?? asset.blob_url
             if (url) Linking.openURL(url)
           }}
           accessibilityRole="link"
-          accessibilityLabel={asset.title}
-        >
-          <Text style={styles.cardTitle}>{asset.title}</Text>
-          <Text style={styles.cardSubtitle}>{formatDate(asset.created_at)}</Text>
-        </Pressable>
+        />
       ))}
     </View>
   )
@@ -205,27 +200,21 @@ function DocumentsAndReportsTab({ reports, eventFiles }: { reports: PortalReport
   return (
     <View style={styles.tabContent}>
       {reports.map(report => (
-        <Pressable
+        <ActionRow
           key={report.id}
-          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          title={report.title}
+          subtitle={formatDate(report.created_at)}
           onPress={() => Linking.openURL(report.blob_url)}
           accessibilityRole="link"
-          accessibilityLabel={report.title}
-        >
-          <Text style={styles.cardTitle}>{report.title}</Text>
-          <Text style={styles.cardSubtitle}>{formatDate(report.created_at)}</Text>
-        </Pressable>
+        />
       ))}
       {eventFiles.map(file => (
-        <Pressable
+        <ActionRow
           key={file.id}
-          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          title={file.file_name}
           onPress={() => Linking.openURL(file.blob_url)}
           accessibilityRole="link"
-          accessibilityLabel={file.file_name}
-        >
-          <Text style={styles.cardTitle}>{file.file_name}</Text>
-        </Pressable>
+        />
       ))}
     </View>
   )
@@ -404,7 +393,6 @@ const styles = StyleSheet.create({
   pastTogglePressed: { opacity: 0.6 },
   pastToggleText: { fontSize: 12, color: colors.gray400, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1 },
   card: { backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 6, padding: 14 },
-  cardPressed: { backgroundColor: colors.gray100 },
   cardMeta: { fontSize: 11, color: colors.gray400, marginBottom: 4 },
   cardTitle: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
   cardSubtitle: { fontSize: 12, color: colors.gray500, marginTop: 2 },

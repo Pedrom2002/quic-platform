@@ -1,5 +1,5 @@
 // mobile/components/ProfileTab.tsx
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, QUIC_MAGENTA } from '../lib/theme'
@@ -29,6 +29,13 @@ export function ProfileTab({ investorId, email, status }: { investorId: string; 
   const [phone, setPhone] = useState('')
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const successTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (successTimeout.current) clearTimeout(successTimeout.current)
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -54,6 +61,8 @@ export function ProfileTab({ investorId, email, status }: { investorId: string; 
       setErrorMessage(result.error)
     } else {
       setSaveState('success')
+      if (successTimeout.current) clearTimeout(successTimeout.current)
+      successTimeout.current = setTimeout(() => setSaveState('idle'), 3000)
     }
   }
 

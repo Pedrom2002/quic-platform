@@ -8,6 +8,7 @@ import { CategoryPicker } from '../../components/CategoryPicker'
 import { MaterialCard } from '../../components/MaterialCard'
 import { MaterialCardSkeleton } from '../../components/MaterialCardSkeleton'
 import { BannerHeader } from '../../components/BannerHeader'
+import { Toast } from '../../components/Toast'
 import { useCart } from '../../hooks/useCart'
 import { QUIC_MAGENTA, colors } from '../../lib/theme'
 
@@ -23,6 +24,7 @@ export default function CatalogoScreen() {
   const [search, setSearch] = useState('')
   const [materials, setMaterials] = useState<CatalogMaterial[] | null>(null)
   const [page, setPage] = useState(0)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   useEffect(() => {
     fetchCategories(supabase).then(setCategories)
@@ -104,6 +106,7 @@ export default function CatalogoScreen() {
               material={item}
               categoryName={item.category_id ? (categoryNames.get(item.category_id) ?? 'Outros') : 'Outros'}
               index={index}
+              onAdd={name => setToastMessage(`+1 ${name}`)}
             />
           )}
         />
@@ -118,6 +121,8 @@ export default function CatalogoScreen() {
           <Text style={styles.fabText}>Pedir orçamento ({totalQty})</Text>
         </Pressable>
       )}
+
+      {toastMessage && <Toast message={toastMessage} onHide={() => setToastMessage(null)} />}
     </View>
   )
 }

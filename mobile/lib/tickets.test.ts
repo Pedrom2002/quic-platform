@@ -1,5 +1,5 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals'
-import { fetchTicketTypes, fetchMyTickets, createCheckoutSession, type TicketType, type MyTicket } from './tickets'
+import { fetchTicketTypes, fetchMyTickets, createCheckoutSession, type TicketType } from './tickets'
 
 describe('fetchTicketTypes', () => {
   it('queries active ticket types for an event', async () => {
@@ -38,9 +38,15 @@ describe('fetchTicketTypes', () => {
 describe('fetchMyTickets', () => {
   it('queries tickets for the current buyer', async () => {
     const order = jest
-      .fn<() => Promise<{ data: MyTicket[] | null; error: { message: string } | null }>>()
+      .fn<() => Promise<{ data: unknown[] | null; error: { message: string } | null }>>()
       .mockResolvedValue({
-        data: [{ id: 't1', qr_code: 'qr-1', status: 'valid', event_id: 'event-1' }],
+        data: [{
+          id: 't1',
+          qr_code: 'qr-1',
+          status: 'valid',
+          event_id: 'event-1',
+          events: { name: 'Show X', start_datetime: '2026-08-01T20:00:00.000Z' },
+        }],
         error: null,
       })
     const eq = jest.fn(() => ({ order }))
@@ -54,6 +60,8 @@ describe('fetchMyTickets', () => {
 
     expect(eq).toHaveBeenCalledWith('buyer_auth_user_id', 'user-1')
     expect(result).toHaveLength(1)
+    expect(result[0].event_name).toBe('Show X')
+    expect(result[0].event_start_datetime).toBe('2026-08-01T20:00:00.000Z')
   })
 
   it('returns empty array when there is no session', async () => {

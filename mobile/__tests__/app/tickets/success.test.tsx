@@ -33,7 +33,7 @@ describe('TicketPurchaseSuccessScreen', () => {
 
   it('shows confirmation once a ticket for this session appears', async () => {
     mockFetchTicketsBySession.mockResolvedValue({
-      tickets: [{ id: 't1', qr_code: 'qr-abc', status: 'valid', event_id: 'event-1' }],
+      tickets: [{ id: 't1', qr_code: 'qr-abc', status: 'valid', event_id: 'event-1', event_name: null, event_start_datetime: null }],
       error: false,
     })
     const { getByText } = render(<TicketPurchaseSuccessScreen />)
@@ -46,7 +46,7 @@ describe('TicketPurchaseSuccessScreen', () => {
 
   it('navigates to my tickets when the confirmation button is pressed', async () => {
     mockFetchTicketsBySession.mockResolvedValue({
-      tickets: [{ id: 't1', qr_code: 'qr-abc', status: 'valid', event_id: 'event-1' }],
+      tickets: [{ id: 't1', qr_code: 'qr-abc', status: 'valid', event_id: 'event-1', event_name: null, event_start_datetime: null }],
       error: false,
     })
     const { getByText } = render(<TicketPurchaseSuccessScreen />)
