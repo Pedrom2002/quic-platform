@@ -207,6 +207,6 @@ const styles = StyleSheet.create({
   phaseBadgeText: { fontSize: 11, fontWeight: '600', color: colors.gray700 },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: colors.gray200, paddingTop: 8 },
   cardFooterRight: { alignItems: 'flex-end' },
-  cardLabel: { color: colors.gray400, fontSize: 10 },
+  cardLabel: { color: colors.gray500, fontSize: 10 },
   cardValue: { color: colors.gray900, fontSize: 13, fontWeight: '600' },
 })

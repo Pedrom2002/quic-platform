@@ -123,7 +123,7 @@ const tabBarStyles = StyleSheet.create({
   },
   tabActive: { borderBottomColor: GOLD },
   tabPressed: { opacity: 0.6 },
-  tabText: { fontSize: 12, color: colors.gray400, fontWeight: '500' },
+  tabText: { fontSize: 12, color: colors.gray500, fontWeight: '500' },
   tabTextActive: { color: colors.gray900 },
 })
 

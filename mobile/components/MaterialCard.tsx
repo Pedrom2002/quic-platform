@@ -41,6 +41,7 @@ export function MaterialCard({
         style={styles.addButton}
         accessibilityRole="button"
         accessibilityLabel={`Adicionar ${material.name} ao pedido`}
+        hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
       >
         <Ionicons name={justAdded ? 'checkmark' : 'add'} size={18} color={colors.white} />
       </Pressable>
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
   availabilityStripe: { position: 'absolute', top: 0, left: 0, bottom: 0, width: 3 },
   stripeAvailable: { backgroundColor: colors.success },
   stripeUnavailable: { backgroundColor: colors.gray300 },
-  category: { fontSize: 10, color: colors.gray400, textTransform: 'uppercase', letterSpacing: 1 },
+  category: { fontSize: 10, color: colors.gray500, textTransform: 'uppercase', letterSpacing: 1 },
   name: { fontSize: 14, fontWeight: '600', color: colors.gray900 },
   badge: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, marginTop: 4 },
   badgeAvailable: { backgroundColor: colors.successBackground },

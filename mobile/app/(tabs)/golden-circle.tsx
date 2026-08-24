@@ -330,7 +330,7 @@ const topNavStyles = StyleSheet.create({
   },
   tabActive: { borderBottomColor: GOLD },
   tabPressed: { opacity: 0.6 },
-  tabText: { fontSize: 12, color: colors.gray400, fontWeight: '500' },
+  tabText: { fontSize: 12, color: colors.gray500, fontWeight: '500' },
   tabTextActive: { color: colors.gray900 },
 })
 
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   cardTitle: { color: colors.gray900, fontSize: 14, fontWeight: '600' },
   cardBody: { color: colors.gray500, fontSize: 12, lineHeight: 18 },
   stepRow: { flexDirection: 'row', gap: 12 },
-  stepNum: { color: colors.gray400, fontSize: 11, fontWeight: '600', width: 20 },
+  stepNum: { color: colors.gray500, fontSize: 11, fontWeight: '600', width: 20 },
   stepBody: { flex: 1, gap: 4 },
   loginBox: {
     backgroundColor: colors.gray50,

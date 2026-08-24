@@ -9,6 +9,7 @@ export function AuthTextInput(props: TextInputProps) {
       style={[styles.input, focused && styles.inputFocused]}
       autoCapitalize="none"
       autoCorrect={false}
+      accessibilityLabel={typeof props.placeholder === 'string' ? props.placeholder : undefined}
       onFocus={e => {
         setFocused(true)
         props.onFocus?.(e)

@@ -49,6 +49,7 @@ export function CategoryPicker({
                 onPress={() => setVisible(false)}
                 accessibilityRole="button"
                 accessibilityLabel="Fechar"
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Ionicons name="close" size={24} color={colors.gray900} />
               </Pressable>

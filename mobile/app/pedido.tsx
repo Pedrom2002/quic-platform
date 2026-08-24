@@ -107,6 +107,7 @@ export default function PedidoScreen() {
               onPress={() => setQty(item.materialId, item.qty - 1)}
               accessibilityRole="button"
               accessibilityLabel={`Diminuir quantidade de ${item.name}`}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
             >
               <Text style={styles.qtyButtonText}>−</Text>
             </Pressable>
@@ -116,6 +117,7 @@ export default function PedidoScreen() {
               onPress={() => setQty(item.materialId, item.qty + 1)}
               accessibilityRole="button"
               accessibilityLabel={`Aumentar quantidade de ${item.name}`}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
             >
               <Text style={styles.qtyButtonText}>+</Text>
             </Pressable>
@@ -124,6 +126,7 @@ export default function PedidoScreen() {
               onPress={() => handleRemove(item)}
               accessibilityRole="button"
               accessibilityLabel={`Remover ${item.name}`}
+              hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
             >
               <Text style={styles.removeButtonText}>Remover</Text>
             </Pressable>
@@ -131,11 +134,11 @@ export default function PedidoScreen() {
         ))}
 
         <Text style={styles.sectionLabel}>Os teus dados</Text>
-        <TextInput style={styles.input} placeholder="Nome *" placeholderTextColor={colors.gray400} value={name} onChangeText={setName} />
-        <TextInput style={styles.input} placeholder="Email *" placeholderTextColor={colors.gray400} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-        <TextInput style={styles.input} placeholder="Telefone (opcional)" placeholderTextColor={colors.gray400} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-        <TextInput style={styles.input} placeholder="Data do evento (AAAA-MM-DD, opcional)" placeholderTextColor={colors.gray400} value={eventDate} onChangeText={setEventDate} />
-        <TextInput style={[styles.input, styles.messageInput]} placeholder="Mensagem (opcional)" placeholderTextColor={colors.gray400} value={message} onChangeText={setMessage} multiline />
+        <TextInput style={styles.input} placeholder="Nome *" placeholderTextColor={colors.gray400} value={name} onChangeText={setName} accessibilityLabel="Nome" maxLength={200} />
+        <TextInput style={styles.input} placeholder="Email *" placeholderTextColor={colors.gray400} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" accessibilityLabel="Email" maxLength={200} />
+        <TextInput style={styles.input} placeholder="Telefone (opcional)" placeholderTextColor={colors.gray400} value={phone} onChangeText={setPhone} keyboardType="phone-pad" accessibilityLabel="Telefone" maxLength={30} />
+        <TextInput style={styles.input} placeholder="Data do evento (AAAA-MM-DD, opcional)" placeholderTextColor={colors.gray400} value={eventDate} onChangeText={setEventDate} accessibilityLabel="Data do evento" maxLength={10} />
+        <TextInput style={[styles.input, styles.messageInput]} placeholder="Mensagem (opcional)" placeholderTextColor={colors.gray400} value={message} onChangeText={setMessage} multiline accessibilityLabel="Mensagem" maxLength={1000} />
 
         {error && <Text style={styles.error}>{error}</Text>}
 
@@ -164,7 +167,7 @@ export default function PedidoScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
   heading: { fontSize: 24, fontWeight: '800', color: colors.gray900, paddingHorizontal: 20, paddingTop: 20 },
-  sectionLabel: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, color: colors.gray400, paddingHorizontal: 20, marginTop: 20, marginBottom: 8 },
+  sectionLabel: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, color: colors.gray500, paddingHorizontal: 20, marginTop: 20, marginBottom: 8 },
   itemRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 8 },
   itemInfo: { flex: 1 },
   itemName: { fontSize: 14, fontWeight: '600', color: colors.gray900 },

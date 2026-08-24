@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   name: { fontSize: 28, fontWeight: '700', color: colors.gray900, marginBottom: 8 },
   date: { fontSize: 14, color: colors.gray500, marginBottom: 4 },
   venue: { fontSize: 14, color: colors.gray900, fontWeight: '500' },
-  address: { fontSize: 13, color: colors.gray400, marginTop: 2 },
+  address: { fontSize: 13, color: colors.gray500, marginTop: 2 },
   description: { fontSize: 14, color: colors.gray700, marginTop: 16, lineHeight: 20 },
   notFound: { flex: 1, backgroundColor: colors.white, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
   notFoundIcon: { marginBottom: 8 },

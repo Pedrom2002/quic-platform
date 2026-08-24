@@ -88,8 +88,8 @@ export function InvestorDashboard({ stats }: { stats: InvestorDashboardStats }) 
           endOpacity={0}
           thickness={2}
           hideRules
-          yAxisTextStyle={{ color: colors.gray400, fontSize: 10 }}
-          xAxisLabelTextStyle={{ color: colors.gray400, fontSize: 10 }}
+          yAxisTextStyle={{ color: colors.gray500, fontSize: 10 }}
+          xAxisLabelTextStyle={{ color: colors.gray500, fontSize: 10 }}
           noOfSections={3}
           height={160}
         />
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   },
   cardLabel: { color: colors.gray500, fontSize: 11 },
   cardValue: { color: colors.gray900, fontSize: 16, fontWeight: '700' },
-  cardCaption: { color: colors.gray400, fontSize: 10 },
+  cardCaption: { color: colors.gray500, fontSize: 10 },
   chartBlock: {
     backgroundColor: colors.gray50,
     borderRadius: 12,
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chartTitle: { color: colors.gray900, fontSize: 14, fontWeight: '600' },
-  chartNote: { color: colors.gray400, fontSize: 10 },
+  chartNote: { color: colors.gray500, fontSize: 10 },
   donutRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   donutCenterText: { fontSize: 11, fontWeight: '700', color: colors.gray900 },
   legend: { flex: 1, gap: 6 },
