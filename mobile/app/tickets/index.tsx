@@ -38,10 +38,12 @@ export default function MyTicketsScreen() {
 
   if (tickets.length === 0) {
     return (
-      <View style={styles.empty}>
+      <View style={styles.container}>
         <Header />
-        <Ionicons name="ticket-outline" size={48} color={colors.gray200} style={styles.emptyIcon} />
-        <Text style={styles.emptyText}>Ainda não tens bilhetes.</Text>
+        <View style={styles.empty}>
+          <Ionicons name="ticket-outline" size={48} color={colors.gray200} style={styles.emptyIcon} />
+          <Text style={styles.emptyText}>Ainda não tens bilhetes.</Text>
+        </View>
       </View>
     )
   }
@@ -68,7 +70,8 @@ export default function MyTicketsScreen() {
 
 const styles = StyleSheet.create({
   list: { paddingBottom: 16, gap: 12 },
-  empty: { flex: 1, backgroundColor: colors.white, justifyContent: 'center', alignItems: 'center' },
+  container: { flex: 1, backgroundColor: colors.white },
+  empty: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyIcon: { marginTop: 24, marginBottom: 8 },
   emptyText: { color: colors.gray500, fontSize: 14 },
   card: { backgroundColor: colors.gray50, borderWidth: 1, borderColor: colors.gray100, borderRadius: 6, padding: 20, alignItems: 'center', gap: 12, marginHorizontal: 16, marginBottom: 12 },

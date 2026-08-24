@@ -36,10 +36,12 @@ export default function InicioScreen() {
 
   if (events.length === 0) {
     return (
-      <View style={styles.empty}>
+      <View style={styles.container}>
         <Header />
-        <Ionicons name="calendar-outline" size={48} color={colors.gray200} style={styles.emptyIcon} />
-        <Text style={styles.emptyText}>Sem eventos agendados.</Text>
+        <View style={styles.empty}>
+          <Ionicons name="calendar-outline" size={48} color={colors.gray200} style={styles.emptyIcon} />
+          <Text style={styles.emptyText}>Sem eventos agendados.</Text>
+        </View>
       </View>
     )
   }
@@ -63,7 +65,8 @@ export default function InicioScreen() {
 
 const styles = StyleSheet.create({
   list: { paddingBottom: 16 },
-  empty: { flex: 1, backgroundColor: colors.white, justifyContent: 'center', alignItems: 'center' },
+  container: { flex: 1, backgroundColor: colors.white },
+  empty: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyIcon: { marginTop: 24, marginBottom: 8 },
   emptyText: { color: colors.gray500, fontSize: 14 },
   sectionTitle: {

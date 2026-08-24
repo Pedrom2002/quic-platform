@@ -103,7 +103,6 @@ function SectionHeading({ title, dark }: { title: string; dark?: boolean }) {
 
 export default function GoldenCircleScreen() {
   const [active, setActive] = useState<SectionId>('golden-circle')
-  const [controlsVisible, setControlsVisible] = useState(false)
   const scrollRef = useRef<ScrollView>(null)
   const offsets = useRef<Map<SectionId, number>>(new Map())
 
@@ -223,19 +222,12 @@ export default function GoldenCircleScreen() {
             privilegiado a oportunidades de investimento em produções de eventos e concertos de grande escala,
             com relatórios de desempenho transparentes e acompanhamento direto da equipa fundadora.
           </Text>
-          <Pressable
-            onPress={() => setControlsVisible(true)}
-            style={styles.videoWrapper}
-            accessibilityRole="button"
-            accessibilityLabel="Mostrar controlos do vídeo"
-          >
-            <VideoView
-              style={styles.video}
-              player={player}
-              nativeControls={controlsVisible}
-              contentFit="cover"
-            />
-          </Pressable>
+          <VideoView
+            style={styles.video}
+            player={player}
+            nativeControls
+            contentFit="cover"
+          />
         </View>
 
         <View onLayout={e => handleSectionLayout('opportunities', e)} style={styles.section}>
@@ -356,7 +348,6 @@ const styles = StyleSheet.create({
   sectionTitleDark: { color: '#ffffff' },
   paragraph: { color: colors.gray500, fontSize: 13, lineHeight: 20 },
   paragraphDark: { color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 20 },
-  videoWrapper: { width: '100%' },
   video: { width: '100%', aspectRatio: 16 / 9, borderRadius: 8, backgroundColor: colors.gray100 },
   card: {
     backgroundColor: colors.gray50,
