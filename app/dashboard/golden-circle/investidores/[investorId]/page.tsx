@@ -13,6 +13,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { formatCents } from '@/lib/format-money'
+import { InvestorEditForm } from './investor-edit-form'
+import { DocumentCreateDialog } from '../../documentos/document-create-dialog'
 
 const dateFormatter = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })
 
@@ -20,6 +22,13 @@ const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendente',
   approved: 'Aprovado',
   rejected: 'Rejeitado',
+}
+
+const DOCUMENT_TYPE_LABELS: Record<string, string> = {
+  contract: 'Contrato',
+  report: 'Relatório',
+  tax: 'Fiscal',
+  presentation: 'Apresentação',
 }
 
 export default async function GoldenCircleInvestorDetailPage({
@@ -41,6 +50,13 @@ export default async function GoldenCircleInvestorDetailPage({
     .order('invested_at', { ascending: false })
   const investments = investmentsData ?? []
 
+  const { data: documentsData } = await supabase
+    .from('investor_documents')
+    .select('id, title, type, file_url, uploaded_at')
+    .eq('investor_id', investorId)
+    .order('uploaded_at', { ascending: false })
+  const documents = documentsData ?? []
+
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -57,6 +73,7 @@ export default async function GoldenCircleInvestorDetailPage({
           {investor.approved_at && (
             <p>Aprovado em: {dateFormatter.format(new Date(investor.approved_at))}</p>
           )}
+          <InvestorEditForm investorId={investor.id} fullName={investor.full_name} phone={investor.phone} />
         </CardContent>
       </Card>
 
@@ -89,6 +106,45 @@ export default async function GoldenCircleInvestorDetailPage({
                 <TableCell>
                   {inv.projected_return_cents != null ? formatCents(inv.projected_return_cents) : '-'}
                 </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold">Documentos</h2>
+          <DocumentCreateDialog
+            investors={[{ id: investor.id, full_name: investor.full_name }]}
+            projects={[]}
+          />
+        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Título</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead>Data</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {documents.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center text-muted-foreground">
+                  Sem documentos.
+                </TableCell>
+              </TableRow>
+            )}
+            {documents.map((doc) => (
+              <TableRow key={doc.id}>
+                <TableCell>
+                  <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                    {doc.title}
+                  </a>
+                </TableCell>
+                <TableCell>{DOCUMENT_TYPE_LABELS[doc.type] ?? doc.type}</TableCell>
+                <TableCell>{dateFormatter.format(new Date(doc.uploaded_at))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
