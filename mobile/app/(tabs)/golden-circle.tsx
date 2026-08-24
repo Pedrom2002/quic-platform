@@ -1,17 +1,24 @@
 // mobile/app/(tabs)/golden-circle.tsx
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { View, Text, Pressable, StyleSheet, ScrollView, Linking, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native'
+import { View, Text, Pressable, StyleSheet, ScrollView, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useFocusEffect } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { BannerHeader } from '../../components/BannerHeader'
+import { GoldenCircleApplyModal } from '../../components/GoldenCircleApplyModal'
 import { colors } from '../../lib/theme'
 import { useSession } from '../../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
 import { fetchInvestorDashboardStats, type DashboardFetchState } from '../../lib/investorDashboard'
 import { InvestorArea } from '../../components/InvestorArea'
+
+function defaultFullNameFor(role: UserRole | null): string {
+  if (role?.role === 'artist') return role.artist.name
+  if (role?.role === 'staff') return role.member.full_name
+  return ''
+}
 
 type SectionId =
   | 'golden-circle'
@@ -103,6 +110,7 @@ function SectionHeading({ title, dark }: { title: string; dark?: boolean }) {
 
 export default function GoldenCircleScreen() {
   const [active, setActive] = useState<SectionId>('golden-circle')
+  const [applyModalVisible, setApplyModalVisible] = useState(false)
   const scrollRef = useRef<ScrollView>(null)
   const offsets = useRef<Map<SectionId, number>>(new Map())
 
@@ -149,10 +157,6 @@ export default function GoldenCircleScreen() {
   function scrollToSection(id: SectionId) {
     const y = offsets.current.get(id)
     if (y != null) scrollRef.current?.scrollTo({ y: y - 8, animated: true })
-  }
-
-  function handleApply() {
-    Linking.openURL(`${process.env.EXPO_PUBLIC_APP_URL}/investors/signup`)
   }
 
   function handleScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
@@ -296,12 +300,22 @@ export default function GoldenCircleScreen() {
       {role?.role !== 'investor' && (
         <Pressable
           style={({ pressed }) => [styles.applyButton, pressed && styles.applyButtonPressed]}
-          onPress={handleApply}
+          onPress={() => setApplyModalVisible(true)}
           accessibilityRole="button"
           accessibilityLabel="Pedir acesso ao Golden Circle"
         >
           <Text style={styles.applyButtonText}>Pedir acesso ao Golden Circle</Text>
         </Pressable>
+      )}
+
+      {session?.user && (
+        <GoldenCircleApplyModal
+          visible={applyModalVisible}
+          onClose={() => setApplyModalVisible(false)}
+          authUserId={session.user.id}
+          email={session.user.email ?? ''}
+          defaultFullName={defaultFullNameFor(role)}
+        />
       )}
     </View>
   )
