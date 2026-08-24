@@ -8,6 +8,12 @@ export default defineConfig({
     // Cópias locais de git worktrees também têm __tests__/ — nunca as correr
     exclude: [...configDefaults.exclude, '**/.worktrees/**', '**/.claude/**', 'mobile/**'],
     setupFiles: ['__tests__/setup.ts'],
+    // A suite tem 1000+ testes; com o numero de workers por omissao (cpus-1),
+    // alguns testes individualmente mais pesados (polling IMAP mockado, hooks
+    // crypto, waitFor loops) competem por CPU e excedem o testTimeout de 5s
+    // por pura contencao, nao por bug (confirmado: passam sempre isolados).
+    // Limitar workers da mais CPU a cada teste em troca de tempo total maior.
+    maxForks: 8,
     coverage: {
       provider: 'v8',
       include: [
