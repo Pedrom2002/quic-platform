@@ -5,7 +5,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useSession } from '../hooks/useSession'
 import { CartProvider } from '../hooks/useCart'
 import { registerPushNotificationTapHandler } from '../lib/pushNavigation'
-import { initSentry } from '../lib/sentry'
+import { initSentry, Sentry } from '../lib/sentry'
+import { AppErrorFallback } from '../components/AppErrorFallback'
 
 initSentry()
 
@@ -40,7 +41,9 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <CartProvider>
-        <Slot />
+        <Sentry.ErrorBoundary fallback={({ resetError }) => <AppErrorFallback resetError={resetError} />}>
+          <Slot />
+        </Sentry.ErrorBoundary>
       </CartProvider>
     </SafeAreaProvider>
   )

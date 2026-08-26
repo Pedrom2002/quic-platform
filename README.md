@@ -142,6 +142,18 @@ Gestão de artistas agenciados (`/dashboard/artists`) com portal privado por art
 
 Tabelas: `artists`, `artist_agenda_items`, `artist_clippings`, `artist_assets` (RLS por organização via `get_user_org_id()`; portal lê com service role após validar o token). Migração `0040_artists_init.sql`. Download de ficheiros do portal via `/api/artist-portal/download` com validação de token e ownership (anti open-proxy).
 
+### Golden Circle (área de investidores)
+
+Área de investimento em produções de eventos, com página de apresentação pública (`/golden-circle`), autenticação própria de investidor (`/investors/(public)/login`, `/investors/(public)/signup`) e dashboard gated (`/investors/(gated)/dashboard`, `/portfolio`, `/opportunities`, `/documents`, `/insights`, `/track-record`, `/profile`).
+
+- **Candidatura**: signup cria conta Supabase Auth + registo `investors` com `status = 'pending'` (`POST /api/investors/signup`); aprovação/rejeição é feita pela equipa em `/dashboard/golden-circle/investidores`
+- **Projetos de investimento**: produções abertas a investimento (`investment_projects`), com meta de financiamento, prazo e estado (`coming_soon`/`open`/`closed`/`completed`), geridas em `/dashboard/golden-circle/projetos`
+- **Investimentos**: cada projeto lista os investidores associados (`investments`), com montante, estado (`active`/`returned`/`written_off`) e retorno projetado/realizado editável pela equipa a partir da página de detalhe do projeto
+- **Documentos**: contratos, relatórios, dados fiscais e apresentações por investidor ou por projeto (`investor_documents`)
+- **App mobile**: mesma área replicada em `mobile/app/(tabs)/golden-circle.tsx` (página de apresentação para não-investidores com pedido de acesso in-app; dashboard completo para investidores aprovados)
+
+Tabelas: `investors`, `investment_projects`, `investments`, `investor_documents` (RLS: investidor vê/atualiza o próprio perfil; equipa gere tudo via `get_user_org_id()`). Migração `0066_investor_auth_and_data_model.sql`. Organização fixa (`FIXED_ORG_ID` em `lib/investors/constants.ts`) — ainda não multi-tenant para investidores.
+
 ### App mobile (`mobile/`)
 
 App companion em Expo/React Native (Expo Router, iOS + Android), autenticação própria via Supabase (email/password), usada por staff em produção de eventos:
