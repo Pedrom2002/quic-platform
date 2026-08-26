@@ -43,6 +43,8 @@ Edita `.env.local` com as tuas credenciais (ver `.env.example` para descrição 
 | `CRON_SECRET` | Bearer token para os cron jobs (mín. 32 chars, `openssl rand -hex 32`) |
 | `NEXT_PUBLIC_APP_URL` | URL base da app (ex: `https://app.quic.pt`) |
 | `BLOB_READ_WRITE_TOKEN` | Token Vercel Blob |
+| `STRIPE_SECRET_KEY` | Chave secreta Stripe (checkout de bilhetes) |
+| `STRIPE_WEBHOOK_SECRET` | Segredo de assinatura do webhook Stripe (`whsec_...`) |
 
 Todas as outras variáveis são opcionais com degradação graciosa (ver `.env.example`).
 

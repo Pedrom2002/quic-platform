@@ -41,7 +41,7 @@ function makeUpdateSupabase(
     select: vi.fn().mockReturnValue(investmentsSelectChain),
     update: vi.fn((payload: unknown) => {
       calls.update.push(payload)
-      return { eq: vi.fn().mockResolvedValue({ error: null }) }
+      return { eq: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }) }
     }),
   }
   return {

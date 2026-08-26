@@ -122,6 +122,7 @@ export async function updateInvestment(
       realized_return_cents: parsed.data.realized_return_cents,
     })
     .eq('id', investmentIdParsed.data)
+    .eq('project_id', projectIdParsed.data)
   if (error) return { error: 'Erro ao atualizar investimento' }
 
   revalidatePath(`/dashboard/golden-circle/projetos/${projectIdParsed.data}`)
