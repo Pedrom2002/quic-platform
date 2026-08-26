@@ -7,24 +7,18 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://zzxgumtzehfkxzqyjqjf.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6eGd1bXR6ZWhma3h6cXlqcWpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NDc3OTAsImV4cCI6MjA5MzAyMzc5MH0.VDqCImQre8_uVxYwwzCRrQtnbCfIleCRzKDkGFAhZpY",
         "EXPO_PUBLIC_APP_URL": "https://app.quic.pt"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://zzxgumtzehfkxzqyjqjf.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6eGd1bXR6ZWhma3h6cXlqcWpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NDc3OTAsImV4cCI6MjA5MzAyMzc5MH0.VDqCImQre8_uVxYwwzCRrQtnbCfIleCRzKDkGFAhZpY",
         "EXPO_PUBLIC_APP_URL": "https://app.quic.pt"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://zzxgumtzehfkxzqyjqjf.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6eGd1bXR6ZWhma3h6cXlqcWpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NDc3OTAsImV4cCI6MjA5MzAyMzc5MH0.VDqCImQre8_uVxYwwzCRrQtnbCfIleCRzKDkGFAhZpY",
         "EXPO_PUBLIC_APP_URL": "https://app.quic.pt"
       }
     }
