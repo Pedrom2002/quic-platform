@@ -117,6 +117,8 @@ export default function CatalogoScreen() {
           style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
           onPress={() => router.push('/pedido')}
           accessibilityRole="button"
+          accessibilityLabel={`Pedir orçamento, ${totalQty} ${totalQty === 1 ? 'item' : 'itens'}`}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Text style={styles.fabText}>Pedir orçamento ({totalQty})</Text>
         </Pressable>

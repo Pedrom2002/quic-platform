@@ -68,7 +68,9 @@ export default function LoginScreen() {
             onPress={handleLogin}
             disabled={loading}
             accessibilityRole="button"
+            accessibilityLabel="Entrar"
             accessibilityState={{ disabled: loading, busy: loading }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Text style={styles.buttonText}>{loading ? 'A entrar...' : 'Entrar'}</Text>
           </Pressable>
