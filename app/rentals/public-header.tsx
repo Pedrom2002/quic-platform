@@ -27,7 +27,7 @@ export function PublicHeader() {
             href="/rentals/pedido"
             variant="outline"
             size="sm"
-            className="border-white/30 text-white hover:bg-white/10 hover:text-white"
+            className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
           >
             <ShoppingCartIcon className="size-4" />
             <span className="hidden sm:inline">Pedido</span>
