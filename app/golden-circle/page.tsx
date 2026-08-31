@@ -336,7 +336,7 @@ export default function GoldenCirclePublicPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-[#d18cc5]" />
             Golden Circle
           </p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl min-h-[1.5em]">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl" style={{ height: '1.35em' }}>
             {title || HERO_PHRASES[0]}
           </h1>
           <button
