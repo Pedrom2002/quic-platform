@@ -503,14 +503,14 @@ export default function GoldenCirclePublicPage() {
                 </p>
                 <p className="text-sm text-stone-500 leading-relaxed mb-6">
                   Se é investidor qualificado e pretende informações sobre o Golden Circle,
-                  contacte-nos para iniciar o processo de candidatura e qualificação.
+                  preencha o formulário para iniciar o processo de candidatura e qualificação.
                 </p>
                 <a
-                  href="mailto:goldencircle@quic.pt?subject=Solicitar%20Convite%20Golden%20Circle"
+                  href="/golden-circle/apply"
                   className="inline-flex items-center gap-2 rounded-full border border-[var(--quic-magenta)] text-[var(--quic-magenta)] px-6 py-3 text-sm font-semibold transition-colors hover:bg-[var(--quic-magenta)] hover:text-white"
                 >
                   <Mail className="w-4 h-4" />
-                  goldencircle@quic.pt
+                  Solicitar Acesso
                 </a>
               </div>
             </div>
@@ -543,23 +543,65 @@ export default function GoldenCirclePublicPage() {
       </section>
 
       {/* ── Legal Notice ── */}
-      <section className="bg-amber-50 border-y border-amber-200">
-        <div className="max-w-6xl mx-auto px-6 md:px-12 py-8">
+      <section className="bg-red-50 border-y border-red-300">
+        <div className="max-w-6xl mx-auto px-6 md:px-12 py-10">
           <div className="flex gap-4 items-start">
-            <AlertCircle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-            <div className="text-sm text-amber-900">
-              <p className="font-semibold mb-2">Aviso Legal</p>
-              <p className="leading-relaxed mb-3">
-                Este espaço é destinado apenas a fins informativos. O Golden Circle é uma estrutura de investimento
-                não regulada que oferece oportunidades de investimento em produções de entretenimento. Investimentos
-                nesta estrutura envolvem riscos significativos, incluindo perda parcial ou total do capital investido.
-              </p>
-              <p className="leading-relaxed">
-                Todos os membros aprovados devem assinar um Acordo de Confidencialidade (NDA) e completar
-                verificação de conformidade KYC/AML de acordo com regulação portuguesa. Relatórios financeiros,
-                documentação contratual e dados de desempenho são fornecidos apenas mediante qualificação prévia
-                e aprovação pela Quic.
-              </p>
+            <AlertCircle className="w-6 h-6 text-red-700 shrink-0 mt-0.5" />
+            <div className="text-sm text-red-900">
+              <p className="font-semibold text-base mb-3">⚠️ Aviso Legal e Isenção de Responsabilidade</p>
+
+              <div className="space-y-3">
+                <div>
+                  <p className="font-semibold mb-1">Estrutura de Investimento Não Regulada</p>
+                  <p className="leading-relaxed">
+                    O Golden Circle não é um fundo de investimento regulado e não está registado em qualquer organismo
+                    regulador financeiro português ou europeu. Não oferece as proteções legais associadas a investimentos regulados.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-semibold mb-1">Riscos Significativos</p>
+                  <p className="leading-relaxed">
+                    Investimentos em produções de entretenimento envolvem riscos elevados, incluindo:
+                    perda parcial ou total do capital investido, incapacidade de recuperar investimento, volatilidade de retornos,
+                    dependência de desempenho artístico e comercial, risco de insolvência do produtor.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-semibold mb-1">Conformidade Obrigatória</p>
+                  <p className="leading-relaxed">
+                    Todos os membros aprovados devem:
+                    (1) Assinar um Acordo de Confidencialidade (NDA) irrevogável;
+                    (2) Completar processo de Conhecimento do Cliente (KYC) e Anti-Lavagem de Dinheiro (AML) de acordo com lei portuguesa;
+                    (3) Ser investidor qualificado ou profissional, conforme critérios da Quic.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-semibold mb-1">Sem Garantias de Retorno</p>
+                  <p className="leading-relaxed">
+                    A Quic não garante retornos, lucros ou liquidez. O valor do investimento pode diminuir significativamente.
+                    Recomenda-se consultar profissionais de investimento independentes antes de comprometer capital.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-semibold mb-1">Divulgação Informativa</p>
+                  <p className="leading-relaxed">
+                    Dados apresentados nesta página (Track Record, estatísticas) são indicativos e comprovados internamente.
+                    Informação financeira detalhada, contratual e de desempenho é fornecida apenas a membros aprovados.
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-red-300">
+                  <p className="text-xs leading-relaxed">
+                    <strong>Contacto:</strong> <a href="mailto:goldencircle@quic.pt" className="underline">goldencircle@quic.pt</a><br/>
+                    <strong>Consulta também:</strong> <a href="/privacy-policy" className="underline">Política de Privacidade</a> |
+                    <a href="/terms" className="underline ml-1">Termos de Serviço</a>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
