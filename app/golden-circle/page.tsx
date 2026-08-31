@@ -455,20 +455,73 @@ export default function GoldenCirclePublicPage() {
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
               <h2 className="text-2xl font-bold tracking-tight text-stone-900">Sobre</h2>
             </div>
-            <p className="text-sm text-stone-500 leading-relaxed mb-6 max-w-2xl">
-              A Quic é uma produtora de entretenimento com tecnologia própria para bilhética, gestão de eventos
-              e coordenação de produções de concertos. Com 8 anos de atividade, executámos 40+ produções,
-              vendemos 250k+ bilhetes e trabalhamos com 15+ artistas em Portugal.
-            </p>
-            <blockquote className="border-l-2 border-[var(--quic-magenta)] pl-6 py-1 my-8 max-w-2xl">
-              <p className="text-lg md:text-xl font-medium italic tracking-tight text-stone-800 leading-snug">
-                &ldquo;O Golden Circle nasce da vontade de partilhar o crescimento da empresa com um grupo
-                restrito de parceiros alinhados com a nossa visão de longo prazo.&rdquo;
-              </p>
-            </blockquote>
-            <p className="text-sm text-stone-500 leading-relaxed max-w-2xl">
-              Para mais informações sobre a equipa fundadora e a missão da Quic, contacte-nos diretamente.
-            </p>
+
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-stone-900 mb-3">Quem Somos</h3>
+                <p className="text-sm text-stone-500 leading-relaxed">
+                  A Quic é uma produtora de entretenimento portuguesa com tecnologia própria. Atuamos em três áreas
+                  complementares: bilhética integrada, gestão de eventos e coordenação de grandes produções de concertos.
+                  Somos um agente diferenciador no mercado português de eventos ao vivo.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <h3 className="text-lg font-semibold text-stone-900 mb-3">Experiência Comprovada</h3>
+                  <ul className="text-sm text-stone-500 leading-relaxed space-y-2">
+                    <li className="flex gap-3">
+                      <span className="text-[var(--quic-magenta)] font-bold shrink-0">40+</span>
+                      <span>Produções executadas com sucesso</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-[var(--quic-magenta)] font-bold shrink-0">250k+</span>
+                      <span>Bilhetes comercializados</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-[var(--quic-magenta)] font-bold shrink-0">15+</span>
+                      <span>Artistas em carteira</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-[var(--quic-magenta)] font-bold shrink-0">8</span>
+                      <span>Anos de operação contínua</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-stone-900 mb-3">O Que Oferecemos</h3>
+                  <ul className="text-sm text-stone-500 leading-relaxed space-y-2 list-disc list-inside">
+                    <li>Bilhética integrada com analytics em tempo real</li>
+                    <li>Gestão operacional completa de eventos</li>
+                    <li>Coordenação de produção de concertos de grande escala</li>
+                    <li>Acesso a artistas curados da equipa</li>
+                    <li>Relatórios de desempenho transparentes</li>
+                  </ul>
+                </div>
+              </div>
+
+              <blockquote className="border-l-4 border-[var(--quic-magenta)] pl-6 py-2 bg-stone-50 rounded-r-lg">
+                <p className="text-base md:text-lg font-medium italic text-stone-800">
+                  &ldquo;O Golden Circle nasce da vontade de partilhar o crescimento da empresa com um grupo
+                  restrito de parceiros que compreendem o valor da produção de qualidade e estão alinhados com a nossa
+                  visão de longo prazo no mercado de eventos em Portugal.&rdquo;
+                </p>
+              </blockquote>
+
+              <div className="bg-stone-50 border border-stone-200 rounded-lg p-6">
+                <h3 className="text-base font-semibold text-stone-900 mb-3">Por Que Golden Circle?</h3>
+                <p className="text-sm text-stone-600 leading-relaxed mb-4">
+                  Convidamos investidores qualificados a fazer parte de uma estrutura exclusiva que combina:
+                </p>
+                <ul className="text-sm text-stone-600 space-y-2 list-disc list-inside">
+                  <li><strong>Transparência:</strong> Acesso a dados operacionais, financeiros e de mercado</li>
+                  <li><strong>Alinhamento:</strong> Participação em decisões estratégicas de produção</li>
+                  <li><strong>Retorno:</strong> Distribuição de lucros diretos vinculada ao desempenho</li>
+                  <li><strong>Acesso:</strong> Convites exclusivos a eventos, previews e networking</li>
+                </ul>
+              </div>
+            </div>
           </section>
 
           <section
