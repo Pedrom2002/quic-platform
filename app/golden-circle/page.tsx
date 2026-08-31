@@ -194,14 +194,14 @@ function revealClass(revealed: boolean): string {
 
 function SideNav({ active }: { active: SectionId }) {
   return (
-    <nav className="hidden md:block md:sticky md:top-8 md:self-start md:w-48 shrink-0">
+    <nav className="hidden md:block md:sticky md:top-8 md:self-start md:w-48 shrink-0" aria-label="Navegação principal">
       <ul className="space-y-1">
         {SECTIONS.map(section => (
           <li key={section.id}>
             <button
               onClick={() => scrollToSection(section.id)}
-              aria-current={active === section.id ? 'true' : undefined}
-              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm rounded-lg text-left transition-colors ${
+              aria-current={active === section.id ? 'page' : undefined}
+              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm rounded-lg text-left transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--quic-magenta)] ${
                 active === section.id
                   ? 'bg-[var(--quic-magenta)] text-white font-medium'
                   : 'text-stone-500 hover:bg-stone-50 hover:text-stone-900'
@@ -220,15 +220,15 @@ function SideNav({ active }: { active: SectionId }) {
 function TopNav({ active }: { active: SectionId }) {
   return (
     <div className="md:hidden sticky top-0 z-20 bg-white border-b border-stone-100">
-      <nav className="flex overflow-x-auto px-4" style={{ scrollbarWidth: 'none' }}>
+      <nav className="flex overflow-x-auto px-4" style={{ scrollbarWidth: 'none' }} aria-label="Navegação principal">
         {SECTIONS.map(section => (
           <button
             key={section.id}
             onClick={() => scrollToSection(section.id)}
-            aria-current={active === section.id ? 'true' : undefined}
-            className={`flex items-center gap-1.5 px-3 py-3 text-xs whitespace-nowrap border-b-2 transition-colors ${
+            aria-current={active === section.id ? 'page' : undefined}
+            className={`flex items-center gap-1.5 px-3 py-3 text-xs whitespace-nowrap border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--quic-magenta)] ${
               active === section.id
-                ? 'border-amber-400 text-stone-900 font-medium'
+                ? 'border-[var(--quic-magenta)] text-stone-900 font-medium'
                 : 'border-transparent text-stone-400'
             }`}
           >
@@ -332,21 +332,16 @@ export default function GoldenCirclePublicPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-[#d18cc5]" />
             Golden Circle
           </p>
-          <h1 className="grid text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl">
-            {/* Reserva sempre o espaco da frase mais longa, para nenhuma
-                palavra "saltar" de linha a meio da animacao de escrita. */}
-            <span aria-hidden="true" className="invisible [grid-area:1/1]">
-              {LONGEST_HERO_PHRASE}
-            </span>
-            <span aria-hidden="true" className="[grid-area:1/1]">{title}</span>
-            <span className="sr-only">{HERO_PHRASES.join(' ')}</span>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl min-h-[1.5em]">
+            {title || HERO_PHRASES[0]}
           </h1>
           <button
             onClick={() => scrollToSection('golden-circle')}
-            className="mt-12 flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-white/40 hover:text-white/70 transition-colors"
+            aria-label="Ir para Golden Circle — Saiba mais sobre oportunidades de investimento"
+            className="mt-12 flex items-center gap-3 px-4 py-2.5 text-xs font-semibold tracking-[0.2em] uppercase text-white bg-[var(--quic-magenta)] rounded-full hover:bg-[var(--quic-magenta-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
           >
             Descobrir
-            <span className="block w-px h-8 bg-gradient-to-b from-white/40 to-transparent" />
+            <span className="block w-px h-6 bg-white/40" />
           </button>
         </div>
       </header>
@@ -371,16 +366,22 @@ export default function GoldenCirclePublicPage() {
               privilegiado a oportunidades de investimento em produções de eventos e concertos de grande escala,
               com relatórios de desempenho transparentes e acompanhamento direto da equipa fundadora.
             </p>
-            <video
-              controls
-              playsInline
-              preload="metadata"
-              poster="/golden.png"
-              src="/golden-circle.mp4"
-              className="w-full max-w-3xl rounded-lg shadow-md mb-8"
-            >
-              O seu navegador não suporta reprodução de vídeo.
-            </video>
+            <figure className="w-full max-w-3xl mb-8">
+              <video
+                controls
+                playsInline
+                preload="metadata"
+                poster="/golden.png"
+                src="/golden-circle.mp4"
+                className="w-full rounded-lg shadow-md"
+              >
+                O seu navegador não suporta reprodução de vídeo.
+              </video>
+              <figcaption className="text-sm text-stone-500 mt-3 text-center">
+                Vídeo introdutório sobre o Golden Circle: investimento em produções de eventos reais,
+                relatórios transparentes e acesso a oportunidades qualificadas.
+              </figcaption>
+            </figure>
           </section>
 
           <section
