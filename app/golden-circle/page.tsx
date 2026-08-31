@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import {
-  Star, TrendingUp, Layers, BarChart3, Info, KeyRound, Mail, AlertCircle,
+  Star, TrendingUp, Layers, BarChart3, Info, KeyRound, Mail,
 } from 'lucide-react'
 
 type SectionId =
@@ -595,70 +595,6 @@ export default function GoldenCirclePublicPage() {
         </div>
       </section>
 
-      {/* ── Legal Notice ── */}
-      <section className="bg-red-50 border-y border-red-300">
-        <div className="max-w-6xl mx-auto px-6 md:px-12 py-10">
-          <div className="flex gap-4 items-start">
-            <AlertCircle className="w-6 h-6 text-red-700 shrink-0 mt-0.5" />
-            <div className="text-sm text-red-900">
-              <p className="font-semibold text-base mb-3">⚠️ Aviso Legal e Isenção de Responsabilidade</p>
-
-              <div className="space-y-3">
-                <div>
-                  <p className="font-semibold mb-1">Estrutura de Investimento Não Regulada</p>
-                  <p className="leading-relaxed">
-                    O Golden Circle não é um fundo de investimento regulado e não está registado em qualquer organismo
-                    regulador financeiro português ou europeu. Não oferece as proteções legais associadas a investimentos regulados.
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-semibold mb-1">Riscos Significativos</p>
-                  <p className="leading-relaxed">
-                    Investimentos em produções de entretenimento envolvem riscos elevados, incluindo:
-                    perda parcial ou total do capital investido, incapacidade de recuperar investimento, volatilidade de retornos,
-                    dependência de desempenho artístico e comercial, risco de insolvência do produtor.
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-semibold mb-1">Conformidade Obrigatória</p>
-                  <p className="leading-relaxed">
-                    Todos os membros aprovados devem:
-                    (1) Assinar um Acordo de Confidencialidade (NDA) irrevogável;
-                    (2) Completar processo de Conhecimento do Cliente (KYC) e Anti-Lavagem de Dinheiro (AML) de acordo com lei portuguesa;
-                    (3) Ser investidor qualificado ou profissional, conforme critérios da Quic.
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-semibold mb-1">Sem Garantias de Retorno</p>
-                  <p className="leading-relaxed">
-                    A Quic não garante retornos, lucros ou liquidez. O valor do investimento pode diminuir significativamente.
-                    Recomenda-se consultar profissionais de investimento independentes antes de comprometer capital.
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-semibold mb-1">Divulgação Informativa</p>
-                  <p className="leading-relaxed">
-                    Dados apresentados nesta página (Track Record, estatísticas) são indicativos e comprovados internamente.
-                    Informação financeira detalhada, contratual e de desempenho é fornecida apenas a membros aprovados.
-                  </p>
-                </div>
-
-                <div className="pt-2 border-t border-red-300">
-                  <p className="text-xs leading-relaxed">
-                    <strong>Contacto:</strong> <a href="mailto:goldencircle@quic.pt" className="underline">goldencircle@quic.pt</a><br/>
-                    <strong>Consulta também:</strong> <a href="/privacy-policy" className="underline">Política de Privacidade</a> |
-                    <a href="/terms" className="underline ml-1">Termos de Serviço</a>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ── Footer ── */}
       <footer style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}>
