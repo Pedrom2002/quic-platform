@@ -581,7 +581,6 @@ export default function GoldenCirclePublicPage() {
               <ul className="space-y-1.5">
                 <li><a href="/privacy-policy" className="text-white/70 hover:text-white">Política de Privacidade</a></li>
                 <li><a href="/terms" className="text-white/70 hover:text-white">Termos de Serviço</a></li>
-                <li><a href="/legal" className="text-white/70 hover:text-white">Informação Societária</a></li>
               </ul>
             </div>
           </div>
