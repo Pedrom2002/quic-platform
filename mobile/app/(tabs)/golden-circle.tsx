@@ -22,17 +22,17 @@ function defaultFullNameFor(role: UserRole | null): string {
 
 type SectionId =
   | 'golden-circle'
-  | 'opportunities'
-  | 'how-it-works'
-  | 'about'
+  | 'oportunidades'
+  | 'como-funciona'
+  | 'sobre'
   | 'track-record'
 
 const SECTIONS: { id: SectionId; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { id: 'golden-circle', label: 'Golden Circle', icon: 'star-outline' },
-  { id: 'opportunities', label: 'Opportunities', icon: 'trending-up-outline' },
-  { id: 'how-it-works', label: 'How It Works', icon: 'layers-outline' },
-  { id: 'about', label: 'About', icon: 'information-circle-outline' },
-  { id: 'track-record', label: 'Track Record', icon: 'bar-chart-outline' },
+  { id: 'oportunidades', label: 'Oportunidades', icon: 'trending-up-outline' },
+  { id: 'como-funciona', label: 'Como Funciona', icon: 'layers-outline' },
+  { id: 'sobre', label: 'Sobre', icon: 'information-circle-outline' },
+  { id: 'track-record', label: 'Histórico', icon: 'bar-chart-outline' },
 ]
 
 const GOLD = colors.gold
