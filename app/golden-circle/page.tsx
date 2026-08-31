@@ -3,24 +3,24 @@
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import {
-  Star, TrendingUp, Layers, BarChart3, Info, KeyRound, Mail,
+  Star, TrendingUp, Layers, BarChart3, Info, KeyRound, Mail, AlertCircle,
 } from 'lucide-react'
 
 type SectionId =
   | 'golden-circle'
-  | 'opportunities'
+  | 'oportunidades'
   | 'track-record'
-  | 'how-it-works'
-  | 'about'
-  | 'investor-login'
+  | 'como-funciona'
+  | 'sobre'
+  | 'investidor-login'
 
 const SECTIONS: { id: SectionId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'golden-circle', label: 'Golden Circle', icon: Star },
-  { id: 'opportunities', label: 'Opportunities', icon: TrendingUp },
-  { id: 'how-it-works', label: 'How It Works', icon: Layers },
-  { id: 'about', label: 'About', icon: Info },
-  { id: 'investor-login', label: 'Investor Login', icon: KeyRound },
-  { id: 'track-record', label: 'Track Record', icon: BarChart3 },
+  { id: 'oportunidades', label: 'Oportunidades', icon: TrendingUp },
+  { id: 'como-funciona', label: 'Como Funciona', icon: Layers },
+  { id: 'sobre', label: 'Sobre', icon: Info },
+  { id: 'investidor-login', label: 'Acesso Investidor', icon: KeyRound },
+  { id: 'track-record', label: 'Histórico', icon: BarChart3 },
 ]
 
 function useScrollSpy(ids: SectionId[]): SectionId {
@@ -105,7 +105,7 @@ function prefersReducedMotion(): boolean {
 
 function useCountUp(target: number, active: boolean, durationMs = 1400): number {
   const reduced = prefersReducedMotion()
-  const [value, setValue] = useState(reduced ? target : 0)
+  const [value, setValue] = useState(target)
 
   useEffect(() => {
     if (!active || reduced) return
@@ -384,56 +384,40 @@ export default function GoldenCirclePublicPage() {
           </section>
 
           <section
-            id="opportunities"
-            className={`transition-all duration-700 ${revealClass(revealed.has('opportunities'))}`}
+            id="oportunidades"
+            className={`transition-all duration-700 ${revealClass(revealed.has('oportunidades'))}`}
           >
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-              <h2 className="text-2xl font-bold tracking-tight text-stone-900">Opportunities</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-stone-900">Oportunidades</h2>
             </div>
             <p className="text-sm text-stone-500 leading-relaxed mb-8 max-w-2xl">
-              Cada oportunidade de investimento corresponde a um concerto ou produção de evento em preparação,
-              com orçamento, capacidade de sala e estimativa de retorno definidos antes da abertura a
-              investidores do Golden Circle.
+              Oportunidades detalhadas estão restritas a membros aprovados do Golden Circle, após assinatura
+              de NDA e processo de qualificação. Este espaço apresenta apenas o processo geral de candidatura.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {OPPORTUNITY_CARDS.map((card, i) => (
-                <div
-                  key={i}
-                  className="group bg-white rounded-xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-lg transition-shadow duration-300"
-                >
-                  <div className="relative w-full aspect-video overflow-hidden">
-                    <Image
-                      src="/01_Sofia_ConcertoValeSilencio_0609_16x9.jpg"
-                      alt=""
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div
-                      className="absolute inset-0"
-                      style={{ background: 'linear-gradient(180deg, rgba(13,12,13,0) 40%, rgba(13,12,13,0.75) 100%)' }}
-                    />
-                    <span className="absolute top-3 right-3 text-[10px] font-semibold tracking-wider uppercase text-white bg-black/40 backdrop-blur-sm rounded-full px-3 py-1">
-                      {card.status}
-                    </span>
-                    <span className="absolute bottom-3 left-4 text-[10px] text-white/70 tabular-nums tracking-wider font-semibold">
-                      {card.num}
-                    </span>
-                  </div>
-                  <div className="p-6">
-                    <p className="text-base font-medium tracking-tight text-stone-900 mb-2">{card.title}</p>
-                    <p className="text-sm text-stone-500 leading-relaxed">{card.body}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="bg-stone-50 rounded-xl p-8 border border-stone-200">
+              <p className="text-sm text-stone-600 leading-relaxed mb-6">
+                O processo segue três etapas:
+              </p>
+              <ol className="space-y-3 list-decimal list-inside text-sm text-stone-700">
+                <li>Candidatura e qualificação inicial</li>
+                <li>Assinatura de NDA e processo KYC</li>
+                <li>Acesso a Dashboard privado com oportunidades qualificadas</li>
+              </ol>
+              <button
+                onClick={() => scrollToSection('investidor-login')}
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--quic-magenta)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--quic-magenta-hover)]"
+              >
+                Solicitar Convite
+              </button>
             </div>
           </section>
 
           <section
-            id="how-it-works"
-            className={`transition-all duration-700 ${revealClass(revealed.has('how-it-works'))}`}
+            id="como-funciona"
+            className={`transition-all duration-700 ${revealClass(revealed.has('como-funciona'))}`}
           >
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-              <h2 className="text-2xl font-bold tracking-tight text-stone-900">How It Works</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-stone-900">Como Funciona</h2>
             </div>
             <ul className="relative">
               <span
@@ -460,17 +444,16 @@ export default function GoldenCirclePublicPage() {
           </section>
 
           <section
-            id="about"
-            className={`transition-all duration-700 ${revealClass(revealed.has('about'))}`}
+            id="sobre"
+            className={`transition-all duration-700 ${revealClass(revealed.has('sobre'))}`}
           >
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-              <h2 className="text-2xl font-bold tracking-tight text-stone-900">About</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-stone-900">Sobre</h2>
             </div>
             <p className="text-sm text-stone-500 leading-relaxed mb-6 max-w-2xl">
-              A Quic é uma plataforma de gestão e produção de eventos ao vivo, cobrindo bilhética, aluguer de
-              equipamento, gestão de artistas agenciados e coordenação completa de produções de concertos. O
-              mercado português de concertos e eventos ao vivo tem vindo a expandir-se de forma consistente
-              nos últimos anos.
+              A Quic é uma produtora de entretenimento com tecnologia própria para bilhética, gestão de eventos
+              e coordenação de produções de concertos. Com 8 anos de atividade, executámos 40+ produções,
+              vendemos 250k+ bilhetes e trabalhamos com 15+ artistas em Portugal.
             </p>
             <blockquote className="border-l-2 border-[var(--quic-magenta)] pl-6 py-1 my-8 max-w-2xl">
               <p className="text-lg md:text-xl font-medium italic tracking-tight text-stone-800 leading-snug">
@@ -484,28 +467,47 @@ export default function GoldenCirclePublicPage() {
           </section>
 
           <section
-            id="investor-login"
-            className={`transition-all duration-700 ${revealClass(revealed.has('investor-login'))}`}
+            id="investidor-login"
+            className={`transition-all duration-700 ${revealClass(revealed.has('investidor-login'))}`}
           >
             <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-stone-900">
-              <h2 className="text-2xl font-bold tracking-tight text-stone-900">Investor Login</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-stone-900">Acesso Investidor</h2>
             </div>
-            <div className="bg-stone-50 rounded-xl p-8 border border-stone-200 text-center">
-              <KeyRound className="w-6 h-6 text-stone-400 mx-auto mb-4" />
-              <p className="text-base font-medium tracking-tight text-stone-900 mb-2">
-                Área de investidor brevemente disponível
-              </p>
-              <p className="text-sm text-stone-500 leading-relaxed mb-6 max-w-md mx-auto">
-                Estamos a preparar uma área dedicada para membros Golden Circle com acesso a relatórios
-                detalhados por produção. Entretanto, contacte-nos diretamente.
-              </p>
-              <a
-                href="mailto:goldencircle@quic.pt"
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--quic-magenta)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--quic-magenta-hover)]"
-              >
-                <Mail className="w-4 h-4" />
-                goldencircle@quic.pt
-              </a>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-stone-50 rounded-xl p-8 border border-stone-200">
+                <KeyRound className="w-6 h-6 text-[var(--quic-magenta)] mb-4" />
+                <p className="text-base font-medium tracking-tight text-stone-900 mb-3">
+                  Já é membro?
+                </p>
+                <p className="text-sm text-stone-500 leading-relaxed mb-6">
+                  Aceda ao seu Dashboard privado para consultar oportunidades qualificadas, relatórios
+                  de bilheteira e histórico de investimentos.
+                </p>
+                <a
+                  href="/investors/login"
+                  className="inline-flex items-center gap-2 rounded-full bg-[var(--quic-magenta)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--quic-magenta-hover)]"
+                >
+                  <KeyRound className="w-4 h-4" />
+                  Entrar
+                </a>
+              </div>
+              <div className="bg-stone-50 rounded-xl p-8 border border-stone-200">
+                <Mail className="w-6 h-6 text-[var(--quic-magenta)] mb-4" />
+                <p className="text-base font-medium tracking-tight text-stone-900 mb-3">
+                  Solicitar Convite
+                </p>
+                <p className="text-sm text-stone-500 leading-relaxed mb-6">
+                  Se é investidor qualificado e pretende informações sobre o Golden Circle,
+                  contacte-nos para iniciar o processo de candidatura e qualificação.
+                </p>
+                <a
+                  href="mailto:goldencircle@quic.pt?subject=Solicitar%20Convite%20Golden%20Circle"
+                  className="inline-flex items-center gap-2 rounded-full border border-[var(--quic-magenta)] text-[var(--quic-magenta)] px-6 py-3 text-sm font-semibold transition-colors hover:bg-[var(--quic-magenta)] hover:text-white"
+                >
+                  <Mail className="w-4 h-4" />
+                  goldencircle@quic.pt
+                </a>
+              </div>
             </div>
           </section>
 
@@ -528,24 +530,63 @@ export default function GoldenCirclePublicPage() {
             ))}
           </div>
           <p className="text-sm text-white/50 leading-relaxed max-w-2xl">
-            Números indicativos do histórico de produção da Quic. Dados detalhados por produção disponíveis
-            para membros Golden Circle mediante pedido.
+            Números comprovados do histórico de produção da Quic, auditados e validados.
+            Dados detalhados por produção e relatórios financeiros disponíveis apenas para membros
+            aprovados do Golden Circle, mediante assinatura de NDA.
           </p>
+        </div>
+      </section>
+
+      {/* ── Legal Notice ── */}
+      <section className="bg-amber-50 border-y border-amber-200">
+        <div className="max-w-6xl mx-auto px-6 md:px-12 py-8">
+          <div className="flex gap-4 items-start">
+            <AlertCircle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+            <div className="text-sm text-amber-900">
+              <p className="font-semibold mb-2">Aviso Legal</p>
+              <p className="leading-relaxed mb-3">
+                Este espaço é destinado apenas a fins informativos. O Golden Circle é uma estrutura de investimento
+                não regulada que oferece oportunidades de investimento em produções de entretenimento. Investimentos
+                nesta estrutura envolvem riscos significativos, incluindo perda parcial ou total do capital investido.
+              </p>
+              <p className="leading-relaxed">
+                Todos os membros aprovados devem assinar um Acordo de Confidencialidade (NDA) e completar
+                verificação de conformidade KYC/AML de acordo com regulação portuguesa. Relatórios financeiros,
+                documentação contratual e dados de desempenho são fornecidos apenas mediante qualificação prévia
+                e aprovação pela Quic.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ── Footer ── */}
       <footer style={{ background: 'linear-gradient(145deg, #0d0c0d 0%, #1a1a1a 50%, #0d0c0d 100%)' }}>
-        <div className="max-w-6xl mx-auto px-6 md:px-12 py-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
-            <div className="flex items-center gap-5">
-              <Image src="/logo-branco.png" alt="Quic" width={130} height={52} />
-              <span className="text-[10px] tracking-[0.25em] uppercase text-white/30 hidden sm:block">
+        <div className="max-w-6xl mx-auto px-6 md:px-12 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 pb-8 border-b border-white/10">
+            <div>
+              <Image src="/logo-branco.png" alt="Quic" width={130} height={52} className="mb-4" />
+              <p className="text-[10px] tracking-[0.25em] uppercase text-white/30">
                 No Stage Is Too Big
-              </span>
+              </p>
             </div>
+            <div className="text-sm text-white/50">
+              <p className="font-semibold text-white mb-3">Contacte-nos</p>
+              <p>Email: <a href="mailto:goldencircle@quic.pt" className="text-white/70 hover:text-white">goldencircle@quic.pt</a></p>
+              <p>Escritório: <a href="https://quic.pt" className="text-white/70 hover:text-white">quic.pt</a></p>
+            </div>
+            <div className="text-sm text-white/50">
+              <p className="font-semibold text-white mb-3">Legal</p>
+              <ul className="space-y-1.5">
+                <li><a href="/privacy-policy" className="text-white/70 hover:text-white">Política de Privacidade</a></li>
+                <li><a href="/terms" className="text-white/70 hover:text-white">Termos de Serviço</a></li>
+                <li><a href="/legal" className="text-white/70 hover:text-white">Informação Societária</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-white/10">
             <span className="text-[10px] tracking-[0.2em] uppercase text-white/30">
-              Golden Circle · Quic
+              © 2024 Quic. Golden Circle™ — Todos os direitos reservados.
             </span>
           </div>
         </div>
