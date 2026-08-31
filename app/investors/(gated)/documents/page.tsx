@@ -35,7 +35,7 @@ export default async function InvestorDocumentsPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-semibold text-zinc-900 mb-6">Documents</h1>
+      <h1 className="text-2xl font-semibold text-zinc-900 mb-6">Documentos</h1>
       {documents.length === 0 ? (
         <p className="text-zinc-500">Ainda não tens documentos disponíveis.</p>
       ) : (

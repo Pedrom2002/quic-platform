@@ -35,7 +35,7 @@ export default async function InvestorProfilePage() {
 
   return (
     <div className="p-8 max-w-lg">
-      <h1 className="text-2xl font-semibold text-zinc-900 mb-6">Profile / KYC</h1>
+      <h1 className="text-2xl font-semibold text-zinc-900 mb-6">Perfil / KYC</h1>
       <div className="border border-zinc-200 bg-zinc-50 rounded-lg p-5 mb-6 grid grid-cols-2 gap-4">
         <div>
           <p className="text-xs text-zinc-500 mb-1">Email</p>

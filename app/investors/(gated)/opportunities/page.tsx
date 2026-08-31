@@ -17,7 +17,7 @@ export default async function InvestorOpportunitiesPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-semibold text-zinc-900 mb-6">Opportunities</h1>
+      <h1 className="text-2xl font-semibold text-zinc-900 mb-6">Oportunidades</h1>
       {projects.length === 0 ? (
         <p className="text-zinc-500">Sem oportunidades disponíveis de momento.</p>
       ) : (
