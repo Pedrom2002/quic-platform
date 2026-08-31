@@ -192,8 +192,8 @@ function scrollToSection(id: SectionId) {
 
 function revealClass(revealed: boolean): string {
   return revealed
-    ? 'opacity-100 translate-y-0'
-    : 'opacity-0 translate-y-4'
+    ? 'opacity-100'
+    : 'opacity-0'
 }
 
 function SideNav({ active }: { active: SectionId }) {
