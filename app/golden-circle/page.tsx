@@ -44,7 +44,7 @@ function useScrollSpy(ids: SectionId[]): SectionId {
         }
         if (bestRatio > 0) setActive(bestId)
       },
-      { threshold: [0, 0.25, 0.5, 0.75, 1], rootMargin: '-80px 0px -60% 0px' }
+      { threshold: [0.2], rootMargin: '-100px 0px -50% 0px' }
     )
 
     for (const id of ids) {
@@ -183,7 +183,11 @@ function useTypewriterLoop(phrases: string[]): string {
 }
 
 function scrollToSection(id: SectionId) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const el = document.getElementById(id)
+  if (!el) return
+  const offset = 100
+  const top = el.getBoundingClientRect().top + window.scrollY - offset
+  window.scrollTo({ top, behavior: 'smooth' })
 }
 
 function revealClass(revealed: boolean): string {
