@@ -61,16 +61,16 @@ describe('GoldenCircleScreen', () => {
     // Todas as seccoes tem de estar montadas em simultaneo (scroll unico),
     // nao trocadas por uma tab ativa como na versao anterior. Cada label
     // aparece 2x: uma vez no TopNav e uma vez como titulo da seccao.
-    expect(getAllByText('Opportunities').length).toBeGreaterThanOrEqual(2)
-    expect(getAllByText('How It Works').length).toBeGreaterThanOrEqual(2)
-    expect(getAllByText('About').length).toBeGreaterThanOrEqual(2)
-    expect(getAllByText('Track Record').length).toBeGreaterThanOrEqual(2)
+    expect(getAllByText('Oportunidades').length).toBeGreaterThanOrEqual(2)
+    expect(getAllByText('Como Funciona').length).toBeGreaterThanOrEqual(2)
+    expect(getAllByText('Sobre').length).toBeGreaterThanOrEqual(2)
+    expect(getAllByText('Histórico').length).toBeGreaterThanOrEqual(2)
   })
 
-  it('renders the opportunities list', () => {
+  it('renders the opportunities application process', () => {
     const { getByText } = render(<GoldenCircleScreen />)
 
-    expect(getByText('Concerto Sala Tejo — Nov 2026')).toBeTruthy()
+    expect(getByText('O processo segue três etapas:')).toBeTruthy()
   })
 
   it('renders the track record stats', () => {
@@ -86,7 +86,7 @@ describe('GoldenCircleScreen — investor role', () => {
     const { findAllByText, findByText } = render(<GoldenCircleScreen />)
 
     expect((await findAllByText('Golden Circle')).length).toBeGreaterThanOrEqual(2)
-    expect(await findByText('Concerto Sala Tejo — Nov 2026')).toBeTruthy()
+    expect(await findByText('O processo segue três etapas:')).toBeTruthy()
   })
 
   it('renders a pending state message when investor status is pending', async () => {

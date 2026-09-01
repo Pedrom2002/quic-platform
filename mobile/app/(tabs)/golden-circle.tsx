@@ -79,13 +79,6 @@ function TopNav({ active, onPress }: { active: SectionId; onPress: (id: SectionI
   )
 }
 
-const OPPORTUNITIES = [
-  { num: '01', title: 'Concerto Sala Tejo — Nov 2026', body: 'Produção de médio porte, capacidade 4.000 lugares. Ronda de investimento em preparação.' },
-  { num: '02', title: 'Digressão Nacional — Q1 2027', body: 'Digressão de 6 datas em 4 cidades. Estrutura de investimento por data ou pacote completo.' },
-  { num: '03', title: 'Festival de Verão — 2027', body: 'Produção de grande escala, múltiplos palcos. Oportunidade em fase de estruturação.' },
-  { num: '04', title: 'Novas oportunidades', body: 'Novas produções são adicionadas regularmente. Investidores Golden Circle têm acesso antecipado.' },
-]
-
 const HOW_IT_WORKS_STEPS = [
   { num: '01', title: 'Torna-te membro Golden Circle', desc: 'Após aprovação, tens acesso à lista de oportunidades de investimento ativas e ao histórico de produções anteriores.' },
   { num: '02', title: 'Escolhes a oportunidade', desc: 'Cada produção tem orçamento, capacidade e retorno estimado definidos. Investes no valor e na produção que preferires.' },
@@ -234,24 +227,22 @@ export default function GoldenCircleScreen() {
           />
         </View>
 
-        <View onLayout={e => handleSectionLayout('opportunities', e)} style={styles.section}>
-          <SectionHeading title="Opportunities" />
+        <View onLayout={e => handleSectionLayout('oportunidades', e)} style={styles.section}>
+          <SectionHeading title="Oportunidades" />
           <Text style={styles.paragraph}>
-            Cada oportunidade de investimento corresponde a um concerto ou produção de evento em preparação,
-            com orçamento, capacidade de sala e estimativa de retorno definidos antes da abertura a
-            investidores do Golden Circle.
+            Oportunidades detalhadas estão restritas a membros aprovados do Golden Circle, após assinatura
+            de NDA e processo de qualificação. Este espaço apresenta apenas o processo geral de candidatura.
           </Text>
-          {OPPORTUNITIES.map(item => (
-            <View key={item.num} style={styles.card}>
-              <Text style={styles.cardNum}>{item.num}</Text>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardBody}>{item.body}</Text>
-            </View>
-          ))}
+          <View style={styles.card}>
+            <Text style={styles.cardBody}>O processo segue três etapas:</Text>
+            <Text style={styles.cardBody}>1. Candidatura e qualificação inicial</Text>
+            <Text style={styles.cardBody}>2. Assinatura de NDA e processo KYC</Text>
+            <Text style={styles.cardBody}>3. Acesso a Dashboard privado com oportunidades qualificadas</Text>
+          </View>
         </View>
 
-        <View onLayout={e => handleSectionLayout('how-it-works', e)} style={styles.section}>
-          <SectionHeading title="How It Works" />
+        <View onLayout={e => handleSectionLayout('como-funciona', e)} style={styles.section}>
+          <SectionHeading title="Como Funciona" />
           {HOW_IT_WORKS_STEPS.map(step => (
             <View key={step.num} style={styles.stepRow}>
               <Text style={styles.stepNum}>{step.num}</Text>
@@ -263,17 +254,21 @@ export default function GoldenCircleScreen() {
           ))}
         </View>
 
-        <View onLayout={e => handleSectionLayout('about', e)} style={styles.section}>
-          <SectionHeading title="About" />
+        <View onLayout={e => handleSectionLayout('sobre', e)} style={styles.section}>
+          <SectionHeading title="Sobre" />
           <Text style={styles.paragraph}>
-            A Quic é uma plataforma de gestão e produção de eventos ao vivo, cobrindo bilhética, aluguer de
-            equipamento, gestão de artistas agenciados e coordenação completa de produções de concertos. O
-            mercado português de concertos e eventos ao vivo tem vindo a expandir-se de forma consistente
-            nos últimos anos.
+            A Quic é uma produtora de entretenimento portuguesa com tecnologia própria. Atuamos em três áreas
+            complementares: bilhética integrada, gestão de eventos e coordenação de grandes produções de concertos.
+            Somos um agente diferenciador no mercado português de eventos ao vivo.
+          </Text>
+          <Text style={styles.paragraph}>
+            Com 8 anos de atividade, executámos 40+ produções, vendemos 250k+ bilhetes e trabalhamos com
+            15+ artistas em Portugal.
           </Text>
           <Text style={styles.paragraph}>
             O Golden Circle nasce da vontade de partilhar o crescimento da empresa com um grupo restrito de
-            parceiros e investidores alinhados com a visão de longo prazo da marca.
+            parceiros que compreendem o valor da produção de qualidade e estão alinhados com a nossa visão
+            de longo prazo no mercado de eventos em Portugal.
           </Text>
         </View>
 
@@ -281,7 +276,7 @@ export default function GoldenCircleScreen() {
           onLayout={e => handleSectionLayout('track-record', e)}
           style={[styles.section, styles.trackRecordSection]}
         >
-          <SectionHeading title="Track Record" dark />
+          <SectionHeading title="Histórico" dark />
           <View style={styles.statsGrid}>
             {TRACK_RECORD_STATS.map(stat => (
               <View key={stat.label} style={styles.statBox}>
@@ -291,8 +286,9 @@ export default function GoldenCircleScreen() {
             ))}
           </View>
           <Text style={styles.paragraphDark}>
-            Números indicativos do histórico de produção da Quic. Dados detalhados disponíveis para membros
-            Golden Circle mediante pedido.
+            Números comprovados do histórico de produção da Quic, auditados e validados. Dados detalhados
+            por produção e relatórios financeiros disponíveis apenas para membros aprovados do Golden Circle,
+            mediante assinatura de NDA.
           </Text>
         </View>
       </ScrollView>
