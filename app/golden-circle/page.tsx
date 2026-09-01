@@ -370,14 +370,20 @@ export default function GoldenCirclePublicPage() {
               privilegiado a oportunidades de investimento em produções de eventos e concertos de grande escala,
               com relatórios de desempenho transparentes e acompanhamento direto da equipa fundadora.
             </p>
-            <figure className="w-full max-w-3xl mb-8">
+            <figure className="w-full max-w-3xl mb-8 relative">
+              <img
+                src="/logo-positivonegativo.png"
+                alt="Golden Circle"
+                className="w-full rounded-lg shadow-md"
+                style={{ aspectRatio: '16/9', objectFit: 'cover' }}
+              />
               <video
                 controls
                 playsInline
                 preload="none"
                 poster="/logo-positivonegativo.png"
                 src="/golden-circle.mp4"
-                className="w-full rounded-lg shadow-md"
+                className="absolute inset-0 w-full h-full rounded-lg"
                 style={{ aspectRatio: '16/9' }}
               >
                 <source src="/golden-circle.mp4" type="video/mp4" />
