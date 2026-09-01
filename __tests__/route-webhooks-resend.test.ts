@@ -59,8 +59,16 @@ function makeRequest(body: string, sig: string, id = 'msg-1', ts = '1700000000')
   })
 }
 
+// Os pedidos de teste usam svix-timestamp fixo (1700000000). A rota rejeita
+// timestamps fora de uma janela de +-5min, por isso o relogio fica congelado
+// nesse instante — o teste de replay abaixo avanca-o de proposito.
+const FROZEN_NOW_SECONDS = 1_700_000_000
+
 describe('POST /api/webhooks/resend', () => {
   beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(FROZEN_NOW_SECONDS * 1000)
+
     // Initialize mocks
     mockMaybeSingle = vi.fn().mockResolvedValue({ data: null })
     mockInsert = vi.fn().mockResolvedValue({ error: null })
@@ -84,7 +92,29 @@ describe('POST /api/webhooks/resend', () => {
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     delete process.env.RESEND_WEBHOOK_SECRET
+  })
+
+  it('returns 401 when a valid signature is replayed outside the tolerance window', async () => {
+    const body = '{"type":"email.sent","data":{}}'
+    const ts = String(FROZEN_NOW_SECONDS)
+    const sig = buildValidSig('msg-replay', ts, body)
+
+    // Mesma assinatura, mas capturada e reenviada 10 minutos depois.
+    vi.setSystemTime((FROZEN_NOW_SECONDS + 10 * 60) * 1000)
+
+    const res = await POST(makeRequest(body, sig, 'msg-replay', ts))
+    expect(res.status).toBe(401)
+    expect(mockInsert).not.toHaveBeenCalled()
+  })
+
+  it('returns 401 for a non-numeric timestamp', async () => {
+    const body = '{"type":"email.sent","data":{}}'
+    const sig = buildValidSig('msg-nan', 'not-a-number', body)
+    const res = await POST(makeRequest(body, sig, 'msg-nan', 'not-a-number'))
+    expect(res.status).toBe(401)
+    expect(mockInsert).not.toHaveBeenCalled()
   })
 
   it('returns 503 when RESEND_WEBHOOK_SECRET not set', async () => {

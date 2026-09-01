@@ -12,6 +12,19 @@ export async function POST(request: Request) {
   // Verificar assinatura HMAC do Resend — obrigatório
   const secret = getEnv().RESEND_WEBHOOK_SECRET
   if (!secret) return NextResponse.json({ error: 'Webhook não configurado' }, { status: 503 })
+
+  // Janela de tolerancia (convencao svix): sem isto, uma assinatura valida
+  // capturada uma vez pode ser reenviada indefinidamente, duplicando eventos
+  // em webhook_events.
+  const TOLERANCE_SECONDS = 5 * 60
+  const tsSeconds = Number(timestamp)
+  if (!Number.isFinite(tsSeconds)) {
+    return NextResponse.json({ error: 'Timestamp inválido' }, { status: 401 })
+  }
+  if (Math.abs(Date.now() / 1000 - tsSeconds) > TOLERANCE_SECONDS) {
+    return NextResponse.json({ error: 'Timestamp fora da janela' }, { status: 401 })
+  }
+
   const toSign = `${id}.${timestamp}.${body}`
   const [, secretBytes] = secret.split('_')
   const key = Buffer.from(secretBytes ?? secret, 'base64')
