@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
+import type { Route } from 'next'
 import {
   Star, TrendingUp, Layers, BarChart3, Info, KeyRound, Mail,
 } from 'lucide-react'
@@ -541,13 +543,13 @@ export default function GoldenCirclePublicPage() {
                   Aceda ao seu Dashboard privado para consultar oportunidades qualificadas, relatórios
                   de bilheteira e histórico de investimentos.
                 </p>
-                <a
+                <Link
                   href="/investors/login"
                   className="inline-flex items-center gap-2 rounded-full bg-[var(--quic-magenta)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--quic-magenta-hover)]"
                 >
                   <KeyRound className="w-4 h-4" />
                   Entrar
-                </a>
+                </Link>
               </div>
               <div className="bg-stone-50 rounded-xl p-8 border border-stone-200">
                 <Mail className="w-6 h-6 text-[var(--quic-magenta)] mb-4" />
@@ -558,13 +560,13 @@ export default function GoldenCirclePublicPage() {
                   Se é investidor qualificado e pretende informações sobre o Golden Circle,
                   preencha o formulário para iniciar o processo de candidatura e qualificação.
                 </p>
-                <a
-                  href="/golden-circle/apply"
+                <Link
+                  href={'/golden-circle/apply' as Route}
                   className="inline-flex items-center gap-2 rounded-full border border-[var(--quic-magenta)] text-[var(--quic-magenta)] px-6 py-3 text-sm font-semibold transition-colors hover:bg-[var(--quic-magenta)] hover:text-white"
                 >
                   <Mail className="w-4 h-4" />
                   Solicitar Acesso
-                </a>
+                </Link>
               </div>
             </div>
           </section>
@@ -614,8 +616,8 @@ export default function GoldenCirclePublicPage() {
             <div className="text-sm text-white/50">
               <p className="font-semibold text-white mb-3">Legal</p>
               <ul className="space-y-1.5">
-                <li><a href="/privacy-policy" className="text-white/70 hover:text-white">Política de Privacidade</a></li>
-                <li><a href="/terms" className="text-white/70 hover:text-white">Termos de Serviço</a></li>
+                <li><Link href="/privacy-policy" className="text-white/70 hover:text-white">Política de Privacidade</Link></li>
+                <li><Link href="/terms" className="text-white/70 hover:text-white">Termos de Serviço</Link></li>
               </ul>
             </div>
           </div>

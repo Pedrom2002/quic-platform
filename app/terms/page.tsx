@@ -9,8 +9,8 @@ export default function TermsPage() {
 
         <h2 className="text-xl font-semibold text-stone-900 mt-6 mb-3">1. Definições</h2>
         <p>
-          "Utilizadores" são visitantes do website. "Conteúdo" inclui todos os materiais publicados.
-          "Contas" permitem acesso a certas áreas da plataforma.
+          &ldquo;Utilizadores&rdquo; são visitantes do website. &ldquo;Conteúdo&rdquo; inclui todos os
+          materiais publicados. &ldquo;Contas&rdquo; permitem acesso a certas áreas da plataforma.
         </p>
 
         <h2 className="text-xl font-semibold text-stone-900 mt-6 mb-3">2. Uso Responsável</h2>

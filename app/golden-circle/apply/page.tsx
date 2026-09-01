@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Mail, Check, AlertCircle } from 'lucide-react'
 
 export default function GoldenCircleApplyPage() {
@@ -161,7 +162,7 @@ export default function GoldenCircleApplyPage() {
               <p className="text-xs text-stone-600 leading-relaxed">
                 <strong>Privacidade:</strong> Os teus dados serão utilizados exclusivamente para avaliação da candidatura
                 e conformidade KYC/AML. Está obrigado a assinar um NDA antes de receber acesso a informações confidenciais.
-                Consulta a nossa <a href="/privacy-policy" className="text-[var(--quic-magenta)] hover:underline">Política de Privacidade</a>.
+                Consulta a nossa <Link href="/privacy-policy" className="text-[var(--quic-magenta)] hover:underline">Política de Privacidade</Link>.
               </p>
             </div>
 
