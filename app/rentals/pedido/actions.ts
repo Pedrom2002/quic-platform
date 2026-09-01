@@ -24,8 +24,10 @@ function emptyToUndefined(value: unknown): unknown {
   return typeof value === 'string' && value.trim() === '' ? undefined : value
 }
 
-// Ação anónima: NÃO verifica auth. O cliente server sem sessão atua como
-// anon e as políticas RLS de INSERT para anon aplicam-se.
+// Ação anónima: NÃO verifica auth. O cliente server atua como anon, que não
+// tem qualquer policy RLS sobre stock_quote_requests/items (a 0038 removeu o
+// insert direto). A escrita passa obrigatoriamente pela RPC security definer
+// stock_submit_quote, que concentra rate-limit e validação — ver abaixo.
 export async function submitQuoteRequest(
   input: QuoteRequestPayload
 ): Promise<QuoteActionResult> {
