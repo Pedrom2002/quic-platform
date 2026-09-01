@@ -375,7 +375,7 @@ export default function GoldenCirclePublicPage() {
                 controls
                 playsInline
                 preload="metadata"
-                poster="/logo positivonegativo (7).png"
+                poster="/logo-positivonegativo.png"
                 src="/golden-circle.mp4"
                 className="w-full rounded-lg shadow-md"
               >
