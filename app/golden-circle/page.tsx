@@ -374,11 +374,13 @@ export default function GoldenCirclePublicPage() {
               <video
                 controls
                 playsInline
-                preload="metadata"
+                preload="none"
                 poster="/logo-positivonegativo.png"
                 src="/golden-circle.mp4"
                 className="w-full rounded-lg shadow-md"
+                style={{ aspectRatio: '16/9' }}
               >
+                <source src="/golden-circle.mp4" type="video/mp4" />
                 O seu navegador não suporta reprodução de vídeo.
               </video>
               <figcaption className="text-sm text-stone-500 mt-3 text-center">
