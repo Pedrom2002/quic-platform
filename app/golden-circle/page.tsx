@@ -105,31 +105,6 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-function useCountUp(target: number, active: boolean, durationMs = 1400): number {
-  const reduced = prefersReducedMotion()
-  const [value, setValue] = useState(target)
-
-  useEffect(() => {
-    if (!active || reduced) return
-
-    const start = performance.now()
-    let frameId: number
-
-    function tick(now: number) {
-      const progress = Math.min((now - start) / durationMs, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setValue(Math.round(target * eased))
-      if (progress < 1) frameId = requestAnimationFrame(tick)
-    }
-
-    frameId = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frameId)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active])
-
-  return value
-}
-
 function useTypewriterLoop(phrases: string[]): string {
   // `reduced` e lido uma vez no mount (nao dentro do efeito), por isso um
   // toggle do reduced-motion do SO a meio da sessao nao para a animacao ja
@@ -247,12 +222,11 @@ function TopNav({ active }: { active: SectionId }) {
   )
 }
 
-function TrackRecordStat({ target, suffix, label, active }: { target: number; suffix: string; label: string; active: boolean }) {
-  const value = useCountUp(target, active)
+function TrackRecordStat({ prefix, value, label }: { prefix: string; value: string; label: string }) {
   return (
     <div className="p-6 text-center" style={{ background: '#141318' }}>
       <p className="text-5xl sm:text-6xl font-bold tracking-tight text-[var(--quic-magenta)] mb-1 tabular-nums">
-        {value}{suffix}
+        {prefix}{value}
       </p>
       <p className="text-xs text-white/50">{label}</p>
     </div>
@@ -260,23 +234,15 @@ function TrackRecordStat({ target, suffix, label, active }: { target: number; su
 }
 
 const TRACK_RECORD_STATS = [
-  { target: 40, suffix: '+', label: 'Concertos produzidos' },
-  { target: 250, suffix: 'k+', label: 'Bilhetes vendidos' },
-  { target: 15, suffix: '', label: 'Artistas geridos' },
-  { target: 8, suffix: '', label: 'Anos de atividade' },
-]
-
-const OPPORTUNITY_CARDS = [
-  { num: '01', title: 'Concerto Sala Tejo — Nov 2026', body: 'Produção de médio porte, capacidade 4.000 lugares. Ronda de investimento em preparação.', status: 'Em preparação' },
-  { num: '02', title: 'Digressão Nacional — Q1 2027', body: 'Digressão de 6 datas em 4 cidades. Estrutura de investimento por data ou pacote completo.', status: 'Em preparação' },
-  { num: '03', title: 'Festival de Verão — 2027', body: 'Produção de grande escala, múltiplos palcos. Oportunidade em fase de estruturação.', status: 'Em estruturação' },
-  { num: '04', title: 'Novas oportunidades', body: 'Novas produções são adicionadas regularmente. Investidores Golden Circle têm acesso antecipado.', status: 'Em breve' },
+  { prefix: '+', value: '1000', label: 'Concertos produzidos' },
+  { prefix: '+', value: '1,5M', label: 'Pessoas nos eventos QUIC' },
+  { prefix: '+', value: '15', label: 'Anos de experiência no setor' },
 ]
 
 const HERO_PHRASES = [
-  'O futuro dos concertos em Portugal.',
-  'Investe em produções reais.',
-  'Junta-te ao Golden Circle.',
+  'Os maiores artistas globais em Portugal.',
+  'Em concertos de grande impacto económico e social.',
+  'Experiências únicas e irrepetíveis.',
 ]
 
 const LONGEST_HERO_PHRASE = HERO_PHRASES.reduce((a, b) => (b.length > a.length ? b : a))
@@ -338,8 +304,13 @@ export default function GoldenCirclePublicPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-[#d18cc5]" />
             Golden Circle
           </p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl" style={{ height: '1.35em' }}>
-            {title || HERO_PHRASES[0]}
+          {/* Reserva o espaco da frase mais longa: sem isto, o texto a ser
+              escrito muda a altura do H1 e empurra o resto da pagina. */}
+          <h1 className="grid text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl">
+            <span aria-hidden="true" className="invisible [grid-area:1/1]">
+              {LONGEST_HERO_PHRASE}
+            </span>
+            <span className="[grid-area:1/1]">{title || HERO_PHRASES[0]}</span>
           </h1>
           <button
             onClick={() => scrollToSection('golden-circle')}
@@ -473,20 +444,16 @@ export default function GoldenCirclePublicPage() {
                   <h3 className="text-lg font-semibold text-stone-900 mb-3">Experiência Comprovada</h3>
                   <ul className="text-sm text-stone-500 leading-relaxed space-y-2">
                     <li className="flex gap-3">
-                      <span className="text-[var(--quic-magenta)] font-bold shrink-0">40+</span>
-                      <span>Produções executadas com sucesso</span>
+                      <span className="text-[var(--quic-magenta)] font-bold shrink-0">+1000</span>
+                      <span>Concertos produzidos</span>
                     </li>
                     <li className="flex gap-3">
-                      <span className="text-[var(--quic-magenta)] font-bold shrink-0">250k+</span>
-                      <span>Bilhetes comercializados</span>
+                      <span className="text-[var(--quic-magenta)] font-bold shrink-0">+1,5M</span>
+                      <span>Pessoas nos eventos QUIC</span>
                     </li>
                     <li className="flex gap-3">
-                      <span className="text-[var(--quic-magenta)] font-bold shrink-0">15+</span>
-                      <span>Artistas em carteira</span>
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="text-[var(--quic-magenta)] font-bold shrink-0">8</span>
-                      <span>Anos de operação contínua</span>
+                      <span className="text-[var(--quic-magenta)] font-bold shrink-0">+15</span>
+                      <span>Anos de experiência no setor</span>
                     </li>
                   </ul>
                 </div>
@@ -584,9 +551,9 @@ export default function GoldenCirclePublicPage() {
           <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-white/10">
             <h2 className="text-2xl font-bold tracking-tight text-white">Track Record</h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/10 rounded-xl overflow-hidden mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-white/10 rounded-xl overflow-hidden mb-8">
             {TRACK_RECORD_STATS.map((stat, i) => (
-              <TrackRecordStat key={i} target={stat.target} suffix={stat.suffix} label={stat.label} active={revealed.has('track-record')} />
+              <TrackRecordStat key={i} prefix={stat.prefix} value={stat.value} label={stat.label} />
             ))}
           </div>
           <p className="text-sm text-white/50 leading-relaxed max-w-2xl">

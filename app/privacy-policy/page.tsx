@@ -2,55 +2,64 @@ export default function PrivacyPolicyPage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
       <h1 className="text-3xl font-bold mb-6">Política de Privacidade</h1>
+
       <div className="prose prose-sm max-w-none text-stone-600 space-y-4">
         <p>
-          A Quic recolhe informações de conta (nome, email, palavra-passe), preferências de utilizador,
-          dados de pagamento e registos de comunicação. Estas informações são utilizadas para otimizar a experiência
-          do utilizador, personalizando conteúdos e funcionalidades, e para envio de atualizações sobre a plataforma.
+          Esta política descreve como a QUIC NATION, LDA reúne, utiliza e protege as informações dos
+          utilizadores do site.
         </p>
 
-        <h2 className="text-xl font-semibold text-stone-900 mt-6 mb-3">Dados Recolhidos</h2>
+        <h2 className="text-xl font-semibold text-stone-900 mt-8 mb-3">Informações que recolhemos</h2>
         <ul className="list-disc list-inside space-y-2">
-          <li>Informações de conta (nome, email, palavra-passe)</li>
-          <li>Preferências de utilizador</li>
-          <li>Dados de pagamento (processados por terceiros especializados)</li>
-          <li>Registos de comunicação</li>
-          <li>Informações de qualificação (KYC/AML) para Golden Circle</li>
+          <li><strong>Dados de conta:</strong> nome, endereço de email e palavra-passe.</li>
+          <li><strong>Perfil e preferências:</strong> informação que o utilizador escolhe fornecer.</li>
+          <li><strong>Dados de pagamento:</strong> processados através de terceiros de confiança.</li>
+          <li><strong>Comunicações:</strong> registo das trocas de mensagens com o site.</li>
         </ul>
 
-        <h2 className="text-xl font-semibold text-stone-900 mt-6 mb-3">Como Usamos os Seus Dados</h2>
-        <p>
-          Os dados são utilizados para:
-        </p>
+        <h2 className="text-xl font-semibold text-stone-900 mt-8 mb-3">Como utilizamos as informações</h2>
+        <p>As informações recolhidas são utilizadas para:</p>
         <ul className="list-disc list-inside space-y-2">
-          <li>Otimizar a experiência do utilizador</li>
-          <li>Personalizar conteúdos e funcionalidades</li>
-          <li>Enviar atualizações sobre a plataforma</li>
-          <li>Conformidade legal e regulatória</li>
-          <li>Avaliação de candidatura ao Golden Circle</li>
+          <li>Melhorar e otimizar os serviços prestados;</li>
+          <li>Enviar comunicações sobre a plataforma e ofertas;</li>
+          <li>Prestar suporte ao cliente.</li>
         </ul>
-
-        <h2 className="text-xl font-semibold text-stone-900 mt-6 mb-3">Segurança</h2>
         <p>
-          A Quic implementa medidas de segurança apropriadas e restringe o acesso apenas a funcionários autorizados.
-          As informações podem ser partilhadas com processadores de pagamento, estritamente para fornecer serviços essenciais,
-          ou conforme exigido por lei.
+          O seu endereço de email não será utilizado para qualquer outra ação que não tenha como objeto a
+          promoção das atividades da QUIC NATION, LDA.
         </p>
 
-        <h2 className="text-xl font-semibold text-stone-900 mt-6 mb-3">Cookies</h2>
+        <h2 className="text-xl font-semibold text-stone-900 mt-8 mb-3">Proteção das informações</h2>
         <p>
-          O website utiliza cookies para melhorar a experiência do utilizador. Pode aceitar ou recusar cookies através
-          das definições do seu navegador.
+          Implementamos medidas de segurança para proteger as informações dos utilizadores, restringindo o
+          acesso apenas a funcionários autorizados.
         </p>
 
-        <h2 className="text-xl font-semibold text-stone-900 mt-6 mb-3">Atualizações</h2>
+        <h2 className="text-xl font-semibold text-stone-900 mt-8 mb-3">Partilha de informações</h2>
         <p>
-          Esta política pode ser atualizada periodicamente. Os utilizadores serão informados de alterações significativas.
+          As informações podem ser partilhadas com terceiros de confiança, como processadores de pagamento,
+          estritamente para prestar os serviços essenciais, ou sempre que exigido por lei.
+        </p>
+
+        <h2 className="text-xl font-semibold text-stone-900 mt-8 mb-3">Cookies</h2>
+        <p>
+          Utilizamos cookies para melhorar a experiência de utilização. O utilizador pode controlar ou
+          desativar os cookies através das definições do seu navegador.
+        </p>
+
+        <h2 className="text-xl font-semibold text-stone-900 mt-8 mb-3">Alterações a esta política</h2>
+        <p>
+          Esta política pode ser atualizada periodicamente. Os utilizadores serão informados sobre alterações
+          significativas.
+        </p>
+
+        <p className="mt-8">
+          Se tiver dúvidas sobre esta Política de Privacidade, entre em contacto connosco em{' '}
+          <a href="mailto:geral@quic.pt" className="text-[var(--quic-magenta)] hover:underline">geral@quic.pt</a>.
         </p>
 
         <p className="text-sm text-stone-500 mt-8 pt-4 border-t border-stone-200">
-          <strong>Contacto:</strong> <a href="mailto:[email protected]" className="text-[var(--quic-magenta)] hover:underline">[email protected]</a><br/>
-          <strong>Golden Circle:</strong> <a href="mailto:goldencircle@quic.pt" className="text-[var(--quic-magenta)] hover:underline">goldencircle@quic.pt</a>
+          Data de atualização: 28/04/2026
         </p>
       </div>
     </div>

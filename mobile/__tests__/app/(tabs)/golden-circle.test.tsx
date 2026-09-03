@@ -76,7 +76,7 @@ describe('GoldenCircleScreen', () => {
   it('renders the track record stats', () => {
     const { getByText } = render(<GoldenCircleScreen />)
 
-    expect(getByText('40+')).toBeTruthy()
+    expect(getByText('+1000')).toBeTruthy()
     expect(getByText('Concertos produzidos')).toBeTruthy()
   })
 })

@@ -87,10 +87,9 @@ const HOW_IT_WORKS_STEPS = [
 ]
 
 const TRACK_RECORD_STATS = [
-  { value: '40+', label: 'Concertos produzidos' },
-  { value: '250k+', label: 'Bilhetes vendidos' },
-  { value: '15', label: 'Artistas geridos' },
-  { value: '8', label: 'Anos de atividade' },
+  { value: '+1000', label: 'Concertos produzidos' },
+  { value: '+1,5M', label: 'Pessoas nos eventos QUIC' },
+  { value: '+15', label: 'Anos de experiência no setor' },
 ]
 
 function SectionHeading({ title, dark }: { title: string; dark?: boolean }) {
@@ -262,8 +261,8 @@ export default function GoldenCircleScreen() {
             Somos um agente diferenciador no mercado português de eventos ao vivo.
           </Text>
           <Text style={styles.paragraph}>
-            Com 8 anos de atividade, executámos 40+ produções, vendemos 250k+ bilhetes e trabalhamos com
-            15+ artistas em Portugal.
+            Com mais de 15 anos de experiência no setor, produzimos mais de 1000 concertos e recebemos mais
+            de 1,5 milhões de pessoas nos eventos QUIC.
           </Text>
           <Text style={styles.paragraph}>
             O Golden Circle nasce da vontade de partilhar o crescimento da empresa com um grupo restrito de
@@ -390,9 +389,10 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     marginTop: 8,
   },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  // Uma coluna: com 3 stats, uma grelha de 2 deixava um cartao orfao na
+  // ultima linha.
+  statsGrid: { gap: 8 },
   statBox: {
-    flexBasis: '47%',
     backgroundColor: '#141318',
     borderRadius: 12,
     padding: 16,
