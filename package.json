@@ -24,7 +24,7 @@
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
     "@sentry/nextjs": "^10.69.0",
-    "@supabase/ssr": "^0.10.3",
+    "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.105.4",
     "@tiptap/core": "^3.31.2",
     "@tiptap/extension-placeholder": "^3.31.2",
