@@ -272,7 +272,7 @@ export default function GoldenCirclePublicPage() {
           loop
           playsInline
           preload="auto"
-          src="/Video Golden Circle com Logo Novo.mp4"
+          src="/golden-circle.mp4"
           className="absolute inset-0 w-full h-full object-cover opacity-60"
         />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, rgba(13,12,13,0.55) 0%, rgba(26,26,26,0.45) 50%, rgba(13,12,13,0.55) 100%)' }} />
@@ -310,7 +310,11 @@ export default function GoldenCirclePublicPage() {
             <span aria-hidden="true" className="invisible [grid-area:1/1]">
               {LONGEST_HERO_PHRASE}
             </span>
-            <span className="[grid-area:1/1]">{title || HERO_PHRASES[0]}</span>
+            {/* Sem fallback para a frase completa: o hook devolve '' no
+                primeiro render enquanto anima (e a frase inteira so quando o
+                utilizador tem reduced-motion). Um `|| phrases[0]` aqui fazia
+                a frase toda piscar antes de a escrita comecar. */}
+            <span className="[grid-area:1/1]">{title}</span>
           </h1>
           <button
             onClick={() => scrollToSection('golden-circle')}
