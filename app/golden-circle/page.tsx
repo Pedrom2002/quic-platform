@@ -272,7 +272,7 @@ export default function GoldenCirclePublicPage() {
           loop
           playsInline
           preload="auto"
-          src="/hero-golden-circle.mp4"
+          src="/pb_pedro.mp4"
           className="absolute inset-0 w-full h-full object-cover opacity-60"
         />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, rgba(13,12,13,0.55) 0%, rgba(26,26,26,0.45) 50%, rgba(13,12,13,0.55) 100%)' }} />
@@ -353,7 +353,7 @@ export default function GoldenCirclePublicPage() {
                 playsInline
                 preload="metadata"
                 poster="/logo-positivonegativo.png"
-                src="/golden-circle.mp4"
+                src="/golden-circle-logo-novo.mp4"
                 className="w-full rounded-lg shadow-md"
               >
                 O seu navegador não suporta reprodução de vídeo.
