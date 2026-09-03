@@ -31,7 +31,7 @@
     "@tiptap/pm": "^3.31.2",
     "@tiptap/react": "^3.31.2",
     "@tiptap/starter-kit": "^3.31.2",
-    "@upstash/qstash": "^2.11.0",
+    "@upstash/qstash": "^2.11.3",
     "@vercel/blob": "^2.3.3",
     "@zxing/browser": "^0.2.0",
     "class-variance-authority": "^0.7.1",
