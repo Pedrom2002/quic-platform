@@ -105,12 +105,19 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-function useTypewriterLoop(phrases: string[]): string {
+// Devolve a frase INTEIRA mais o numero de letras ja escritas, em vez do texto
+// cortado. O H1 precisa de renderizar a frase completa (com o resto invisivel)
+// para o browser calcular a quebra de linha uma unica vez — senao uma palavra
+// comeca a ser escrita no fim de uma linha e salta para a seguinte quando
+// deixa de caber.
+function useTypewriterLoop(phrases: string[]): { phrase: string; chars: number } {
   // `reduced` e lido uma vez no mount (nao dentro do efeito), por isso um
   // toggle do reduced-motion do SO a meio da sessao nao para a animacao ja
   // em curso — tradeoff aceitavel para o alcance desta pagina.
   const reduced = prefersReducedMotion()
-  const [display, setDisplay] = useState(reduced ? phrases[0] : '')
+  const [state, setState] = useState(() =>
+    reduced ? { phrase: phrases[0], chars: phrases[0].length } : { phrase: phrases[0], chars: 0 }
+  )
 
   useEffect(() => {
     if (reduced) return
@@ -130,7 +137,7 @@ function useTypewriterLoop(phrases: string[]): string {
 
       if (mode === 'typing') {
         charIndex++
-        setDisplay(current.slice(0, charIndex))
+        setState({ phrase: current, chars: charIndex })
         if (charIndex >= current.length) {
           mode = 'pausing'
           timeoutId = window.setTimeout(step, HOLD_MS)
@@ -148,7 +155,7 @@ function useTypewriterLoop(phrases: string[]): string {
 
       // deleting
       charIndex--
-      setDisplay(current.slice(0, charIndex))
+      setState({ phrase: current, chars: charIndex })
       if (charIndex <= 0) {
         phraseIndex = (phraseIndex + 1) % phrases.length
         mode = 'typing'
@@ -161,7 +168,7 @@ function useTypewriterLoop(phrases: string[]): string {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  return display
+  return state
 }
 
 function scrollToSection(id: SectionId) {
@@ -255,7 +262,7 @@ const LONGEST_HERO_PHRASE = HERO_PHRASES.reduce((a, b) => (b.length > a.length ?
 export default function GoldenCirclePublicPage() {
   const active = useScrollSpy(SECTIONS.map(s => s.id))
   const revealed = useRevealOnScroll(SECTIONS.map(s => s.id))
-  const title = useTypewriterLoop(HERO_PHRASES)
+  const hero = useTypewriterLoop(HERO_PHRASES)
 
   return (
     <div className="min-h-screen bg-white overflow-x-clip">
@@ -309,17 +316,22 @@ export default function GoldenCirclePublicPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-[#d18cc5]" />
             Golden Circle
           </p>
-          {/* Reserva o espaco da frase mais longa: sem isto, o texto a ser
-              escrito muda a altura do H1 e empurra o resto da pagina. */}
+          {/* A frase mais longa fica sempre no layout (invisivel) a reservar a
+              altura do bloco, para o texto a ser escrito nao empurrar a pagina.
+
+              Por cima, a frase ATUAL e renderizada inteira: a parte ja escrita
+              visivel e o resto a opacity-0. Como o browser ve sempre o texto
+              completo, calcula a quebra de linha uma so vez — cada palavra
+              nasce ja na linha definitiva, em vez de comecar no fim de uma
+              linha e saltar para a seguinte quando deixa de caber. */}
           <h1 className="grid text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] max-w-3xl">
             <span aria-hidden="true" className="invisible [grid-area:1/1]">
               {LONGEST_HERO_PHRASE}
             </span>
-            {/* Sem fallback para a frase completa: o hook devolve '' no
-                primeiro render enquanto anima (e a frase inteira so quando o
-                utilizador tem reduced-motion). Um `|| phrases[0]` aqui fazia
-                a frase toda piscar antes de a escrita comecar. */}
-            <span className="[grid-area:1/1]">{title}</span>
+            <span className="[grid-area:1/1]" aria-label={hero.phrase}>
+              <span aria-hidden="true">{hero.phrase.slice(0, hero.chars)}</span>
+              <span aria-hidden="true" className="opacity-0">{hero.phrase.slice(hero.chars)}</span>
+            </span>
           </h1>
           <button
             onClick={() => scrollToSection('golden-circle')}
