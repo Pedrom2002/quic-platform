@@ -115,6 +115,11 @@ function useTypewriterLoop(phrases: string[]): string {
   useEffect(() => {
     if (reduced) return
 
+    // Ritmo da animacao, em ms.
+    const TYPE_MS = 65      // por letra a escrever
+    const DELETE_MS = 30    // por letra a apagar (mais rapido: apagar nao se le)
+    const HOLD_MS = 1800    // pausa com a frase completa no ecra
+
     let phraseIndex = 0
     let charIndex = 0
     let mode: 'typing' | 'pausing' | 'deleting' = 'typing'
@@ -128,16 +133,16 @@ function useTypewriterLoop(phrases: string[]): string {
         setDisplay(current.slice(0, charIndex))
         if (charIndex >= current.length) {
           mode = 'pausing'
-          timeoutId = window.setTimeout(step, 1500)
+          timeoutId = window.setTimeout(step, HOLD_MS)
           return
         }
-        timeoutId = window.setTimeout(step, 35)
+        timeoutId = window.setTimeout(step, TYPE_MS)
         return
       }
 
       if (mode === 'pausing') {
         mode = 'deleting'
-        timeoutId = window.setTimeout(step, 35)
+        timeoutId = window.setTimeout(step, DELETE_MS)
         return
       }
 
@@ -148,10 +153,10 @@ function useTypewriterLoop(phrases: string[]): string {
         phraseIndex = (phraseIndex + 1) % phrases.length
         mode = 'typing'
       }
-      timeoutId = window.setTimeout(step, 25)
+      timeoutId = window.setTimeout(step, DELETE_MS)
     }
 
-    timeoutId = window.setTimeout(step, 35)
+    timeoutId = window.setTimeout(step, TYPE_MS)
     return () => window.clearTimeout(timeoutId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -240,9 +245,9 @@ const TRACK_RECORD_STATS = [
 ]
 
 const HERO_PHRASES = [
-  'Os maiores artistas globais em Portugal.',
-  'Em concertos de grande impacto económico e social.',
-  'Experiências únicas e irrepetíveis.',
+  'Os maiores artistas globais em Portugal',
+  'Em concertos de grande impacto económico e social',
+  'Experiências únicas e irrepetíveis',
 ]
 
 const LONGEST_HERO_PHRASE = HERO_PHRASES.reduce((a, b) => (b.length > a.length ? b : a))
