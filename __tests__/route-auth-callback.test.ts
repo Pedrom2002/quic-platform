@@ -63,4 +63,16 @@ describe('GET /auth/callback', () => {
     const res = await GET(req)
     expect((res as unknown as { redirectUrl: string }).redirectUrl).toBe('http://localhost/auth/login?error=auth_callback_failed')
   })
+
+  it('propagates origin as a query param on the redirect', async () => {
+    const req = new Request('http://localhost/auth/callback?code=abc&next=/reset-password&origin=mobile')
+    const res = await GET(req)
+    expect((res as unknown as { redirectUrl: string }).redirectUrl).toBe('http://localhost/reset-password?origin=mobile')
+  })
+
+  it('does not add an origin query param when origin is absent', async () => {
+    const req = new Request('http://localhost/auth/callback?code=abc&next=/reset-password')
+    const res = await GET(req)
+    expect((res as unknown as { redirectUrl: string }).redirectUrl).toBe('http://localhost/reset-password')
+  })
 })
