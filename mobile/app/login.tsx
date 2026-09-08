@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, Pressable, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native'
 import { useRouter, Link } from 'expo-router'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -39,6 +39,21 @@ export default function LoginScreen() {
     }
   }
 
+  async function handleForgotPassword() {
+    if (!email.trim()) {
+      Alert.alert('Erro', 'Introduz o teu email primeiro.')
+      return
+    }
+    try {
+      await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${process.env.EXPO_PUBLIC_APP_URL}/auth/callback?next=/reset-password&origin=mobile`,
+      })
+    } catch {
+      // Ignorado de propósito — mesma mensagem de sucesso sempre.
+    }
+    Alert.alert('Verifica o teu email', 'Se esse email existir, vais receber um link para repor a password.')
+  }
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -73,6 +88,14 @@ export default function LoginScreen() {
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Text style={styles.buttonText}>{loading ? 'A entrar...' : 'Entrar'}</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={handleForgotPassword}
+            accessibilityRole="button"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.linkText}>Esqueci-me da password</Text>
           </Pressable>
 
           <Link href="/signup" style={styles.link} accessibilityRole="link">

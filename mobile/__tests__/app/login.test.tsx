@@ -1,5 +1,6 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
+import { Alert } from 'react-native'
 jest.mock('expo-video', () => ({
   useVideoPlayer: () => ({ loop: false, muted: false, play: jest.fn() }),
   VideoView: () => null,
@@ -15,10 +16,18 @@ import LoginScreen from '../../app/login'
 const mockSignInWithPassword = jest.fn<
   (...args: unknown[]) => Promise<{ error: { message: string } | null }>
 >()
+const mockResetPasswordForEmail = jest.fn<
+  (...args: unknown[]) => Promise<{ error: { message: string } | null }>
+>()
 const mockReplace = jest.fn()
 
 jest.mock('../../lib/supabase', () => ({
-  supabase: { auth: { signInWithPassword: (...args: unknown[]) => mockSignInWithPassword(...args) } },
+  supabase: {
+    auth: {
+      signInWithPassword: (...args: unknown[]) => mockSignInWithPassword(...args),
+      resetPasswordForEmail: (...args: unknown[]) => mockResetPasswordForEmail(...args),
+    },
+  },
 }))
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
@@ -27,7 +36,9 @@ jest.mock('expo-router', () => ({
 
 beforeEach(() => {
   mockSignInWithPassword.mockReset()
+  mockResetPasswordForEmail.mockReset()
   mockReplace.mockReset()
+  jest.spyOn(Alert, 'alert').mockImplementation(() => {})
 })
 
 describe('LoginScreen', () => {
@@ -56,5 +67,38 @@ describe('LoginScreen', () => {
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/(tabs)')
     })
+  })
+})
+
+describe('LoginScreen — forgot password', () => {
+  it('calls resetPasswordForEmail with the mobile redirectTo and shows a confirmation alert', async () => {
+    mockResetPasswordForEmail.mockResolvedValue({ error: null })
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {})
+
+    const { getByText, getByPlaceholderText } = render(<LoginScreen />)
+    fireEvent.changeText(getByPlaceholderText('Email'), 'user@quic.pt')
+    fireEvent.press(getByText('Esqueci-me da password'))
+
+    await waitFor(() => {
+      expect(mockResetPasswordForEmail).toHaveBeenCalledWith('user@quic.pt', {
+        redirectTo: expect.stringContaining('/auth/callback?next=/reset-password&origin=mobile'),
+      })
+    })
+    expect(alertSpy).toHaveBeenCalledWith(
+      'Verifica o teu email',
+      'Se esse email existir, vais receber um link para repor a password.'
+    )
+  })
+
+  it('shows the same confirmation alert even when the email field is empty', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {})
+
+    const { getByText } = render(<LoginScreen />)
+    fireEvent.press(getByText('Esqueci-me da password'))
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Erro', 'Introduz o teu email primeiro.')
+    })
+    expect(mockResetPasswordForEmail).not.toHaveBeenCalled()
   })
 })
