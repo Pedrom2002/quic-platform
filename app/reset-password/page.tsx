@@ -83,9 +83,17 @@ export default function ResetPasswordPage() {
             )}
 
             {status === 'expired' && (
-              <p role="alert" className="text-sm text-red-400 bg-red-950/30 border border-red-900 rounded-md px-3 py-2">
-                Este link expirou ou já foi usado. Pede um novo link para repor a password.
-              </p>
+              <div className="space-y-4">
+                <p role="alert" className="text-sm text-red-400 bg-red-950/30 border border-red-900 rounded-md px-3 py-2">
+                  Este link expirou ou já foi usado. Pede um novo link para repor a password.
+                </p>
+                <Link
+                  href={loginHrefFor(origin)}
+                  className="block text-center text-sm text-zinc-400 hover:text-zinc-300"
+                >
+                  Voltar ao login
+                </Link>
+              </div>
             )}
 
             {status === 'ready' && (
