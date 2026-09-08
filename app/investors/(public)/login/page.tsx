@@ -5,17 +5,22 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Route } from 'next'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
+type Mode = 'login' | 'forgot'
+
 export default function InvestorLoginPage() {
   const router = useRouter()
+  const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -44,6 +49,21 @@ export default function InvestorLoginPage() {
     }
   }
 
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      const supabase = createClient()
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/reset-password&origin=investor`,
+      })
+    } catch {
+      // Ignorado de propósito — mesma mensagem de sucesso sempre.
+    }
+    setResetSent(true)
+    setLoading(false)
+  }
+
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
@@ -54,51 +74,94 @@ export default function InvestorLoginPage() {
 
         <Card className="border-zinc-800 bg-zinc-900">
           <CardHeader>
-            <CardTitle className="text-white">Entrar</CardTitle>
+            <CardTitle className="text-white">{mode === 'login' ? 'Entrar' : 'Repor password'}</CardTitle>
             <CardDescription className="text-zinc-400">
-              Acesso à área de investidor
+              {mode === 'login' ? 'Acesso à área de investidor' : 'Enviamos um link para o teu email'}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-zinc-300">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
-                />
-              </div>
+            {mode === 'login' ? (
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-zinc-300">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+                  />
+                </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="password" className="text-zinc-300">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
-                />
-              </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="password" className="text-zinc-300">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                    className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+                  />
+                </div>
 
-              {error && (
-                <p role="alert" className="text-sm text-red-400 bg-red-950/30 border border-red-900 rounded-md px-3 py-2">
-                  {error}
+                {error && (
+                  <p role="alert" className="text-sm text-red-400 bg-red-950/30 border border-red-900 rounded-md px-3 py-2">
+                    {error}
+                  </p>
+                )}
+
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'A entrar...' : 'Entrar'}
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => { setMode('forgot'); setError(null) }}
+                  className="w-full text-center text-sm text-zinc-500 hover:text-zinc-300"
+                >
+                  Esqueci-me da password
+                </button>
+
+                <p className="text-center text-sm text-zinc-500">
+                  Ainda não tens conta? <Link href="/investors/signup" className="text-[var(--quic-magenta)] hover:underline">Criar conta</Link>
                 </p>
-              )}
+              </form>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                {resetSent ? (
+                  <p className="text-sm text-emerald-400 bg-emerald-950/30 border border-emerald-900 rounded-md px-3 py-2">
+                    Se esse email existir, vais receber um link para repor a password.
+                  </p>
+                ) : (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="forgotEmail" className="text-zinc-300">Email</Label>
+                      <Input
+                        id="forgotEmail"
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        required
+                        className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+                      />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? 'A enviar...' : 'Enviar link'}
+                    </Button>
+                  </>
+                )}
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'A entrar...' : 'Entrar'}
-              </Button>
-
-              <p className="text-center text-sm text-zinc-500">
-                Ainda não tens conta? <Link href="/investors/signup" className="text-[var(--quic-magenta)] hover:underline">Criar conta</Link>
-              </p>
-            </form>
+                <button
+                  type="button"
+                  onClick={() => { setMode('login'); setResetSent(false); setError(null) }}
+                  className="w-full text-center text-sm text-zinc-500 hover:text-zinc-300"
+                >
+                  Voltar ao login
+                </button>
+              </form>
+            )}
           </CardContent>
         </Card>
       </div>
