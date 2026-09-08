@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -114,9 +115,17 @@ export default function ResetPasswordPage() {
                 </div>
 
                 {error && (
-                  <p role="alert" className="text-sm text-red-400 bg-red-950/30 border border-red-900 rounded-md px-3 py-2">
-                    {error}
-                  </p>
+                  <>
+                    <p role="alert" className="text-sm text-red-400 bg-red-950/30 border border-red-900 rounded-md px-3 py-2">
+                      {error}
+                    </p>
+                    <Link
+                      href={loginHrefFor(origin)}
+                      className="block text-center text-sm text-zinc-400 hover:text-zinc-300"
+                    >
+                      Voltar ao login
+                    </Link>
+                  </>
                 )}
 
                 <Button type="submit" className="w-full" disabled={loading}>
@@ -138,12 +147,12 @@ export default function ResetPasswordPage() {
                     Abrir a app
                   </a>
                 ) : (
-                  <a
+                  <Link
                     href={loginHrefFor(origin)}
                     className="block w-full text-center rounded-md bg-[var(--quic-magenta)] text-white py-2 text-sm font-medium hover:opacity-90"
                   >
                     Ir para o login
-                  </a>
+                  </Link>
                 )}
               </div>
             )}

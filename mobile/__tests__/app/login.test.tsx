@@ -90,7 +90,7 @@ describe('LoginScreen — forgot password', () => {
     )
   })
 
-  it('shows the same confirmation alert even when the email field is empty', async () => {
+  it('shows an error alert instead of calling resetPasswordForEmail when the email field is empty', async () => {
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {})
 
     const { getByText } = render(<LoginScreen />)

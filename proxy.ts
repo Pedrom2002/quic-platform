@@ -204,6 +204,10 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/artista/') ||
     pathname.startsWith('/auth/') ||
     pathname.startsWith('/api/auth/') ||
+    // /reset-password must stay public (unauthenticated "link expirado" state) but
+    // must NOT match the '/auth/' prefix below, or an authenticated recovery session
+    // (the success path) would be redirected away before the user can set a password.
+    pathname.startsWith('/reset-password') ||
     pathname.startsWith('/investors/login') ||
     pathname.startsWith('/investors/signup') ||
     pathname.startsWith('/api/investors/') ||

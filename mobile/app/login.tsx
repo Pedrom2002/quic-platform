@@ -15,6 +15,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [forgotLoading, setForgotLoading] = useState<boolean>(false)
 
   const player = useVideoPlayer(require('../assets/videos/intro_2_109.mp4'), p => {
     p.loop = true
@@ -40,8 +41,10 @@ export default function LoginScreen() {
   }
 
   async function handleForgotPassword() {
+    setForgotLoading(true)
     if (!email.trim()) {
       Alert.alert('Erro', 'Introduz o teu email primeiro.')
+      setForgotLoading(false)
       return
     }
     try {
@@ -50,8 +53,10 @@ export default function LoginScreen() {
       })
     } catch {
       // Ignorado de propósito — mesma mensagem de sucesso sempre.
+    } finally {
+      Alert.alert('Verifica o teu email', 'Se esse email existir, vais receber um link para repor a password.')
+      setForgotLoading(false)
     }
-    Alert.alert('Verifica o teu email', 'Se esse email existir, vais receber um link para repor a password.')
   }
 
   return (
@@ -91,11 +96,14 @@ export default function LoginScreen() {
           </Pressable>
 
           <Pressable
+            style={styles.link}
             onPress={handleForgotPassword}
+            disabled={forgotLoading}
             accessibilityRole="button"
+            accessibilityLabel="Esqueci-me da password"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={styles.linkText}>Esqueci-me da password</Text>
+            <Text style={styles.linkText}>{forgotLoading ? 'A enviar...' : 'Esqueci-me da password'}</Text>
           </Pressable>
 
           <Link href="/signup" style={styles.link} accessibilityRole="link">

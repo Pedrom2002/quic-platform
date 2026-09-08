@@ -20,6 +20,9 @@ export async function GET(request: Request) {
     }
   }
 
+  // Assume que `next` nunca tem query string propria — verdade para todos os usos atuais
+  // (sempre '/reset-password' sem query). Se algum dia `next` vier com '?', isto produziria
+  // uma URL malformada.
   const destination = requestOrigin
     ? `${siteOrigin}${next}?origin=${encodeURIComponent(requestOrigin)}`
     : `${siteOrigin}${next}`
