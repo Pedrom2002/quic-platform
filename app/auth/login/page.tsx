@@ -51,11 +51,18 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     // Mesma mensagem de sucesso quer o email exista ou não — evita
-    // confirmar/negar a existência de uma conta a quem pede o reset.
-    const supabase = createClient()
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/reset-password&origin=team`,
-    })
+    // confirmar/negar a existência de uma conta a quem pede o reset. Por
+    // isso o try/catch ignora o resultado (sucesso ou erro do Supabase):
+    // só protege contra a promise rejeitar (rede em baixo), que sem isto
+    // deixava o botão preso em "A enviar..." para sempre.
+    try {
+      const supabase = createClient()
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/reset-password&origin=team`,
+      })
+    } catch {
+      // Ignorado de propósito — ver comentário acima.
+    }
     setResetSent(true)
     setLoading(false)
   }
