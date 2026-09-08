@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "QUIC",
     "slug": "mobile",
     "version": "1.0.0",
     "scheme": "quicapp",
@@ -14,7 +14,10 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "pt.quic.app"
+      "bundleIdentifier": "pt.quic.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "pt.quic.app",
@@ -26,7 +29,9 @@
       },
       "predictiveBackGestureEnabled": false,
       "permissions": [
-        "android.permission.CAMERA",
+        "android.permission.CAMERA"
+      ],
+      "blockedPermissions": [
         "android.permission.RECORD_AUDIO"
       ]
     },
@@ -48,7 +53,7 @@
         "expo-camera",
         {
           "cameraPermission": "Precisamos de acesso à câmara para ler o código QR dos bilhetes.",
-          "microphonePermission": "Esta app não grava áudio. A permissão é pedida pela biblioteca de câmara mas nunca é usada."
+          "recordAudioAndroid": false
         }
       ],
       "expo-secure-store"
