@@ -1,6 +1,6 @@
 // mobile/app/(tabs)/mais.tsx
 import { useEffect, useState } from 'react'
-import { View, Text, ActivityIndicator, Pressable, Alert, StyleSheet, ScrollView } from 'react-native'
+import { View, Text, ActivityIndicator, Pressable, Alert, StyleSheet, ScrollView, Linking } from 'react-native'
 import Constants from 'expo-constants'
 import { useRouter } from 'expo-router'
 import { useSession } from '../../hooks/useSession'
@@ -9,6 +9,7 @@ import { resolveUserRole, type UserRole } from '../../lib/role'
 import { supabase } from '../../lib/supabase'
 import { QUIC_MAGENTA, colors } from '../../lib/theme'
 import { BannerHeader } from '../../components/BannerHeader'
+import { deleteOwnAccount } from '../../lib/accountDeletion'
 
 function roleLabel(role: UserRole): string {
   if (role.role === 'artist') return 'Artista'
@@ -44,6 +45,49 @@ function MaisContent({ role, email }: { role: UserRole; email: string }) {
         },
       },
     ])
+  }
+
+  function handleDeleteAccount() {
+    // Dupla confirmacao: eliminar conta e irreversivel (remove tambem o
+    // historico de bilhetes associado ao titular, ver 0067_account_deletion.sql).
+    Alert.alert(
+      'Eliminar conta',
+      'Esta ação é irreversível. Os teus dados pessoais serão apagados e não vais conseguir recuperar a conta.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Continuar',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Tens a certeza absoluta?',
+              'Vais perder o acesso à conta e aos bilhetes associados a ela.',
+              [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                  text: 'Eliminar conta',
+                  style: 'destructive',
+                  onPress: async () => {
+                    const { data } = await supabase.auth.getSession()
+                    const accessToken = data.session?.access_token
+                    if (!accessToken) {
+                      Alert.alert('Erro', 'Sessão inválida. Tenta iniciar sessão de novo.')
+                      return
+                    }
+                    const result = await deleteOwnAccount(process.env.EXPO_PUBLIC_APP_URL!, accessToken)
+                    if (!result.success) {
+                      Alert.alert('Erro', result.error)
+                      return
+                    }
+                    await supabase.auth.signOut()
+                  },
+                },
+              ]
+            )
+          },
+        },
+      ]
+    )
   }
 
   return (
@@ -91,12 +135,36 @@ function MaisContent({ role, email }: { role: UserRole; email: string }) {
           </View>
         </View>
 
+        <Text style={styles.sectionLabel}>Legal</Text>
+        <Pressable
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          onPress={() => Linking.openURL('https://quic.pt/privacy-policy')}
+          accessibilityRole="button"
+        >
+          <Text style={styles.cardTitle}>Política de Privacidade</Text>
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          onPress={() => Linking.openURL('https://quic.pt/terms')}
+          accessibilityRole="button"
+        >
+          <Text style={styles.cardTitle}>Termos e Condições</Text>
+        </Pressable>
+
         <Pressable
           style={({ pressed }) => [styles.logoutButton, pressed && styles.logoutButtonPressed]}
           onPress={handleSignOut}
           accessibilityRole="button"
         >
           <Text style={styles.logoutText}>Terminar sessão</Text>
+        </Pressable>
+
+        <Pressable
+          style={({ pressed }) => [styles.deleteAccountButton, pressed && styles.deleteAccountButtonPressed]}
+          onPress={handleDeleteAccount}
+          accessibilityRole="button"
+        >
+          <Text style={styles.deleteAccountText}>Eliminar conta</Text>
         </Pressable>
       </View>
     </ScrollView>
@@ -150,4 +218,7 @@ const styles = StyleSheet.create({
   },
   logoutButtonPressed: { backgroundColor: colors.dangerBorder },
   logoutText: { color: colors.danger, fontSize: 14, fontWeight: '600' },
+  deleteAccountButton: { marginTop: 10, padding: 14, alignItems: 'center' },
+  deleteAccountButtonPressed: { opacity: 0.6 },
+  deleteAccountText: { color: colors.gray500, fontSize: 13, textDecorationLine: 'underline' },
 })

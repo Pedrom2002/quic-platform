@@ -3248,6 +3248,13 @@ export type Database = {
         Returns: undefined
       }
       is_stock_team: { Args: never; Returns: boolean }
+      // Adicionada manualmente: existe em producao desde a migration 0067
+      // mas o types/database.ts nao foi regenerado desde entao (migracoes
+      // sao aplicadas manualmente, nao via `supabase db push`).
+      delete_own_account: {
+        Args: { p_auth_user_id: string }
+        Returns: Json
+      }
       // Adicionada manualmente: existe em producao desde a migration 0065
       // mas o types/database.ts nao foi regenerado desde entao (migracoes
       // sao aplicadas manualmente, nao via `supabase db push`).
