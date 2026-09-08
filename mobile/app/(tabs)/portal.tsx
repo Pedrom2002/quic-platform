@@ -327,17 +327,40 @@ function ClientPortalContent({ portalToken }: { portalToken: string }) {
 export default function PortalScreen() {
   const { session } = useSession()
   const [role, setRole] = useState<UserRole | null>(null)
+  const [roleError, setRoleError] = useState(false)
   const [data, setData] = useState<ArtistPortalData | null>(null)
+  const [dataError, setDataError] = useState(false)
 
   useEffect(() => {
-    resolveUserRole(supabase, session).then(setRole)
+    let cancelled = false
+    setRoleError(false)
+    resolveUserRole(supabase, session)
+      .then(r => { if (!cancelled) setRole(r) })
+      .catch(() => { if (!cancelled) setRoleError(true) })
+    return () => { cancelled = true }
   }, [session])
 
   useEffect(() => {
     if (role?.role === 'artist') {
-      fetchArtistPortalData(supabase, role.artist.id).then(setData)
+      let cancelled = false
+      setDataError(false)
+      fetchArtistPortalData(supabase, role.artist.id)
+        .then(d => { if (!cancelled) setData(d) })
+        .catch(() => { if (!cancelled) setDataError(true) })
+      return () => { cancelled = true }
     }
   }, [role])
+
+  // Sem estes catches, um erro de rede (nao apenas um resultado vazio)
+  // deixava o ecra preso no spinner para sempre — nenhum dos dois estados
+  // seguintes (!role / !data) tinha forma de sair do loading.
+  if (roleError) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.restricted}>Não foi possível carregar o teu perfil. Tenta novamente mais tarde.</Text>
+      </View>
+    )
+  }
 
   if (!role) {
     return (
@@ -348,6 +371,13 @@ export default function PortalScreen() {
   }
 
   if (role.role === 'artist') {
+    if (dataError) {
+      return (
+        <View style={styles.center}>
+          <Text style={styles.restricted}>Não foi possível carregar o teu portal. Tenta novamente mais tarde.</Text>
+        </View>
+      )
+    }
     if (!data) {
       return (
         <View style={styles.center}>

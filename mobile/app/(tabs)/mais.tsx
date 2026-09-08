@@ -183,10 +183,27 @@ function MaisContent({ role, email }: { role: UserRole; email: string }) {
 export default function MaisScreen() {
   const { session } = useSession()
   const [role, setRole] = useState<UserRole | null>(null)
+  const [roleError, setRoleError] = useState(false)
 
   useEffect(() => {
-    resolveUserRole(supabase, session).then(setRole)
+    let cancelled = false
+    setRoleError(false)
+    resolveUserRole(supabase, session)
+      .then(r => { if (!cancelled) setRole(r) })
+      .catch(() => { if (!cancelled) setRoleError(true) })
+    return () => { cancelled = true }
   }, [session])
+
+  // Sem isto, um erro de rede aqui (nao apenas um resultado vazio, que
+  // resolveUserRole ja trata como 'guest') deixava o ecra preso no spinner
+  // para sempre — nunca havia um catch para sair desse estado.
+  if (roleError) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.restricted}>Não foi possível carregar o teu perfil. Tenta novamente mais tarde.</Text>
+      </View>
+    )
+  }
 
   if (!role || !session) {
     return (
@@ -203,6 +220,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
   scrollContent: { flexGrow: 1 },
   center: { flex: 1, backgroundColor: colors.white, justifyContent: 'center', alignItems: 'center' },
+  restricted: { color: colors.gray600, fontSize: 14, textAlign: 'center', paddingHorizontal: 24 },
   nameBlock: { paddingHorizontal: 24, paddingVertical: 20 },
   name: { color: colors.gray900, fontSize: 20, fontWeight: 'bold' },
   subtitle: { color: colors.gray500, fontSize: 12, marginTop: 2 },

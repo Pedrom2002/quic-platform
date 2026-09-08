@@ -31,6 +31,32 @@ beforeEach(() => {
 })
 
 describe('PortalScreen', () => {
+  it('shows an error instead of spinning forever when loading the role fails', async () => {
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockRejectedValue(new Error('network down'))
+
+    const { getByText } = render(<PortalScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Não foi possível carregar o teu perfil. Tenta novamente mais tarde.')).toBeTruthy()
+    })
+  })
+
+  it('shows an error instead of spinning forever when loading artist portal data fails', async () => {
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({
+      role: 'artist',
+      artist: { id: 'a1', name: 'Maria Silva', photo_url: null, bio: null },
+    })
+    mockFetchArtistPortalData.mockRejectedValue(new Error('network down'))
+
+    const { getByText } = render(<PortalScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Não foi possível carregar o teu portal. Tenta novamente mais tarde.')).toBeTruthy()
+    })
+  })
+
   it('shows restricted message for staff role', async () => {
     mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
     mockResolveUserRole.mockResolvedValue({ role: 'staff', member: { id: 's1', full_name: 'Staffer', role: 'admin' } })

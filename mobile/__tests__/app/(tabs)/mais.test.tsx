@@ -42,6 +42,17 @@ beforeEach(() => {
 })
 
 describe('MaisScreen', () => {
+  it('shows an error instead of spinning forever when loading the role fails', async () => {
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1', email: 'a@x.com' } }, loading: false })
+    mockResolveUserRole.mockRejectedValue(new Error('network down'))
+
+    const { getByText } = render(<MaisScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Não foi possível carregar o teu perfil. Tenta novamente mais tarde.')).toBeTruthy()
+    })
+  })
+
   it('shows artist name, email and translated role', async () => {
     mockUseSession.mockReturnValue({ session: { user: { id: 'u1', email: 'artista@x.com' } }, loading: false })
     mockResolveUserRole.mockResolvedValue({
