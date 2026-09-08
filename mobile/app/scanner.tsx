@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, Pressable, Linking, StyleSheet } from 'react-native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { useSession } from '../hooks/useSession'
 import { resolveUserRole, type UserRole } from '../lib/role'
@@ -26,7 +26,11 @@ export default function ScannerScreen() {
   }, [session])
 
   useEffect(() => {
-    if (permission && !permission.granted) requestPermission()
+    // canAskAgain false = negada permanentemente (ex.: "Nao perguntar
+    // novamente" no Android): chamar requestPermission so voltaria a mostrar
+    // o mesmo estado, sem abrir o dialogo do SO. O ecra ja tem o botao
+    // "Abrir definicoes" para esse caso.
+    if (permission && !permission.granted && permission.canAskAgain) requestPermission()
   }, [permission, requestPermission])
 
   if (roleError) {
@@ -49,6 +53,29 @@ export default function ScannerScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.restricted}>Acesso reservado à equipa Quic</Text>
+      </View>
+    )
+  }
+
+  // Sem isto, recusar a permissao (ou nunca a conceder) deixava o ecra so com
+  // o fundo preto do container, sem imagem nem mensagem — nada que explique
+  // o que aconteceu ou como resolver.
+  if (!permission?.granted) {
+    const canAskAgain = permission?.canAskAgain ?? true
+    return (
+      <View style={styles.center}>
+        <Text style={styles.restricted}>
+          Precisamos de acesso à câmara para ler o código QR dos bilhetes.
+        </Text>
+        <Pressable
+          style={styles.permissionButton}
+          onPress={() => (canAskAgain ? requestPermission() : Linking.openSettings())}
+          accessibilityRole="button"
+        >
+          <Text style={styles.permissionButtonText}>
+            {canAskAgain ? 'Permitir câmara' : 'Abrir definições'}
+          </Text>
+        </Pressable>
       </View>
     )
   }
@@ -90,6 +117,8 @@ const styles = StyleSheet.create({
   camera: { flex: 1 },
   center: { flex: 1, backgroundColor: colors.white, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
   restricted: { color: '#57534e', fontSize: 14, textAlign: 'center' },
+  permissionButton: { marginTop: 16, backgroundColor: QUIC_MAGENTA, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 6 },
+  permissionButtonText: { color: colors.white, fontWeight: '600', fontSize: 14 },
   resultBanner: { position: 'absolute', bottom: 40, left: 24, right: 24, backgroundColor: QUIC_MAGENTA, padding: 16, borderRadius: 6 },
   resultText: { color: colors.white, textAlign: 'center', fontWeight: '600' },
 })

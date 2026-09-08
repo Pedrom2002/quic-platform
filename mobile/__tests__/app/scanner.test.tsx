@@ -1,5 +1,6 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals'
-import { render, waitFor } from '@testing-library/react-native'
+import { render, waitFor, fireEvent } from '@testing-library/react-native'
+import { Linking } from 'react-native'
 import ScannerScreen from '../../app/scanner'
 
 const mockUseSession = jest.fn()
@@ -12,6 +13,10 @@ const mockResolveUserRole = jest.fn<
 const mockCheckInTicket = jest.fn()
 
 let capturedOnBarcodeScanned: ((event: { data: string }) => void) | undefined
+const mockRequestPermission = jest.fn()
+// Mutavel por teste: o mock de useCameraPermissions le este valor a cada
+// render, para simular permissao concedida/negada sem reescrever o modulo.
+let mockPermissionState: { granted: boolean; canAskAgain: boolean } | null = { granted: true, canAskAgain: true }
 
 jest.mock('../../hooks/useSession', () => ({ useSession: () => mockUseSession() }))
 jest.mock('../../lib/role', () => ({ resolveUserRole: (...args: unknown[]) => mockResolveUserRole(...args) }))
@@ -22,14 +27,16 @@ jest.mock('expo-camera', () => ({
     capturedOnBarcodeScanned = props.onBarcodeScanned
     return null
   },
-  useCameraPermissions: () => [{ granted: true }, jest.fn()],
+  useCameraPermissions: () => [mockPermissionState, mockRequestPermission],
 }))
 
 beforeEach(() => {
   mockUseSession.mockReset()
   mockResolveUserRole.mockReset()
   mockCheckInTicket.mockReset()
+  mockRequestPermission.mockReset()
   capturedOnBarcodeScanned = undefined
+  mockPermissionState = { granted: true, canAskAgain: true }
 })
 
 describe('ScannerScreen', () => {
@@ -80,5 +87,46 @@ describe('ScannerScreen', () => {
     })
 
     resolveCheckIn({ success: true })
+  })
+
+  it('shows a request-permission prompt instead of a blank screen when denied', async () => {
+    mockPermissionState = { granted: false, canAskAgain: true }
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({ role: 'staff', member: { id: 'm1', full_name: 'João', role: 'manager' } })
+
+    const { getByText } = render(<ScannerScreen />)
+
+    await waitFor(() => {
+      expect(getByText('Permitir câmara')).toBeTruthy()
+    })
+  })
+
+  it('asks for permission again when the prompt button is pressed and it can still be asked', async () => {
+    mockPermissionState = { granted: false, canAskAgain: true }
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({ role: 'staff', member: { id: 'm1', full_name: 'João', role: 'manager' } })
+
+    const { getByText } = render(<ScannerScreen />)
+    await waitFor(() => expect(getByText('Permitir câmara')).toBeTruthy())
+
+    fireEvent.press(getByText('Permitir câmara'))
+
+    expect(mockRequestPermission).toHaveBeenCalled()
+  })
+
+  it('opens device settings when permission was permanently denied', async () => {
+    const openSettingsSpy = jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined)
+    mockPermissionState = { granted: false, canAskAgain: false }
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({ role: 'staff', member: { id: 'm1', full_name: 'João', role: 'manager' } })
+
+    const { getByText } = render(<ScannerScreen />)
+    await waitFor(() => expect(getByText('Abrir definições')).toBeTruthy())
+    mockRequestPermission.mockClear() // limpa a chamada feita pelo useEffect no mount
+
+    fireEvent.press(getByText('Abrir definições'))
+
+    expect(openSettingsSpy).toHaveBeenCalled()
+    expect(mockRequestPermission).not.toHaveBeenCalled()
   })
 })
