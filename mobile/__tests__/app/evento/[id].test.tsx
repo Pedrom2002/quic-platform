@@ -109,4 +109,31 @@ describe('EventDetailScreen', () => {
       expect(mockOpenURL).toHaveBeenCalledWith('https://checkout.stripe.com/session-abc')
     })
   })
+
+  it('shows an alert instead of failing silently when the session is missing', async () => {
+    mockGetSession.mockResolvedValue({ data: { session: null } })
+    mockFetchEventById.mockResolvedValue({
+      id: 'event-1',
+      name: 'Show X',
+      description: null,
+      venue_name: null,
+      venue_address: null,
+      start_datetime: '2026-08-01T20:00:00.000Z',
+      end_datetime: '2026-08-01T23:00:00.000Z',
+      cover_image_url: null,
+    })
+    mockFetchTicketTypes.mockResolvedValue([
+      { id: 'tt-1', name: 'Normal', price_cents: 2000, quantity_total: 100, quantity_sold: 0 },
+    ])
+
+    const { getByText } = render(<EventDetailScreen />)
+    await waitFor(() => expect(getByText('Normal')).toBeTruthy())
+
+    fireEvent.press(getByText('Normal'))
+
+    await waitFor(() => {
+      expect(mockAlert).toHaveBeenCalledWith('Sessão expirada', 'Inicia sessão de novo para comprar bilhetes.')
+    })
+    expect(mockCreateCheckoutSession).not.toHaveBeenCalled()
+  })
 })

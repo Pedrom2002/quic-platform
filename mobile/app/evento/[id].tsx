@@ -29,7 +29,12 @@ export default function EventDetailScreen() {
   async function openCheckout(ticketTypeId: string) {
     const { data: sessionData } = await supabase.auth.getSession()
     const accessToken = sessionData.session?.access_token
-    if (!accessToken) return
+    if (!accessToken) {
+      // Sem isto, tocar em "Comprar" com a sessao expirada nao fazia nada
+      // visivel — parecia um botao partido em vez de um pedido de login.
+      Alert.alert('Sessão expirada', 'Inicia sessão de novo para comprar bilhetes.')
+      return
+    }
     const url = await createCheckoutSession(process.env.EXPO_PUBLIC_APP_URL!, ticketTypeId, 1, accessToken)
     if (!url) {
       Alert.alert('Erro', 'Não foi possível iniciar o pagamento. Tenta novamente.')
