@@ -7,19 +7,25 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_APP_URL": "https://app.quic.pt"
+        "EXPO_PUBLIC_APP_URL": "https://app.quic.pt",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://zzxgumtzehfkxzqyjqjf.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_UgX89ZRwZYCPbHUAdgqX5Q_2qw1Hzrg"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_APP_URL": "https://app.quic.pt"
+        "EXPO_PUBLIC_APP_URL": "https://app.quic.pt",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://zzxgumtzehfkxzqyjqjf.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_UgX89ZRwZYCPbHUAdgqX5Q_2qw1Hzrg"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_APP_URL": "https://app.quic.pt"
+        "EXPO_PUBLIC_APP_URL": "https://app.quic.pt",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://zzxgumtzehfkxzqyjqjf.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_UgX89ZRwZYCPbHUAdgqX5Q_2qw1Hzrg"
       }
     }
   },

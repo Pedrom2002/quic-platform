@@ -135,6 +135,15 @@ function MaisContent({ role, email }: { role: UserRole; email: string }) {
           </View>
         </View>
 
+        <Text style={styles.sectionLabel}>Suporte</Text>
+        <Pressable
+          style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+          onPress={() => Linking.openURL('mailto:geral@quic.pt?subject=Suporte%20QUIC%20App')}
+          accessibilityRole="button"
+        >
+          <Text style={styles.cardTitle}>Contactar suporte</Text>
+        </Pressable>
+
         <Text style={styles.sectionLabel}>Legal</Text>
         <Pressable
           style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}

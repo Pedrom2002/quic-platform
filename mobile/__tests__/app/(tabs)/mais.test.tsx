@@ -154,6 +154,20 @@ describe('MaisScreen', () => {
     expect(openURLSpy).toHaveBeenCalledWith('https://quic.pt/terms')
   })
 
+  it('opens a mailto link when contacting support', async () => {
+    const { Linking } = require('react-native')
+    const openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined)
+    mockUseSession.mockReturnValue({ session: { user: { id: 'u1', email: 'a@x.com' } }, loading: false })
+    mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: null })
+
+    const { getByText } = render(<MaisScreen />)
+    await waitFor(() => expect(getByText('Contactar suporte')).toBeTruthy())
+
+    fireEvent.press(getByText('Contactar suporte'))
+
+    expect(openURLSpy).toHaveBeenCalledWith('mailto:geral@quic.pt?subject=Suporte%20QUIC%20App')
+  })
+
   it('requires two confirmations before deleting the account', async () => {
     mockUseSession.mockReturnValue({ session: { user: { id: 'u1', email: 'a@x.com' } }, loading: false })
     mockResolveUserRole.mockResolvedValue({ role: 'client', portalToken: null })
