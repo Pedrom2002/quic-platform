@@ -168,6 +168,15 @@ jobs:
           create or replace function auth.uid() returns uuid language sql stable as $$ select null::uuid $$;
           create or replace function auth.jwt() returns jsonb language sql stable as $$ select null::jsonb $$;
 
+          -- The supabase/postgres image ships auth.users, but built without
+          -- GoTrue actually bootstrapping it (that happens via the full
+          -- Supabase stack's own migrations at container start, not present
+          -- here) — some GoTrue-managed columns migration 0067 inserts into
+          -- can be missing. Same pattern as the storage.* backfill below.
+          alter table auth.users add column if not exists email_confirmed_at timestamptz;
+          alter table auth.users add column if not exists raw_app_meta_data jsonb;
+          alter table auth.users add column if not exists raw_user_meta_data jsonb;
+
           create schema if not exists storage;
           create table if not exists storage.buckets (
             id text primary key,
