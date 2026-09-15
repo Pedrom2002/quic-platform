@@ -345,7 +345,7 @@ const html = `<!doctype html>
 
   <div class="flow">
     <div class="flow-row"><span class="fi">01</span><span class="ft">Entra na app com a sua conta</span><span class="fd">A app reconhece automaticamente o evento associado ao seu email</span></div>
-    <div class="flow-row"><span class="fi">02</span><span class="ft">Acompanha a checklist</span><span class="fd">Vê só as etapas marcadas como visíveis, actualizadas ao vivo</span></div>
+    <div class="flow-row"><span class="fi">02</span><span class="ft">Acompanha a checklist</span><span class="fd">Vê só as etapas marcadas como visíveis, atualizadas ao vivo</span></div>
     <div class="flow-row"><span class="fi">03</span><span class="ft">Recebe notificações</span><span class="fd">Aviso automático sempre que a equipa conclui uma etapa relevante</span></div>
     <div class="flow-row"><span class="fi">04</span><span class="ft">Chega ao dia do evento</span><span class="fd">Checklist completa serve como confirmação de que tudo foi tratado</span></div>
   </div>

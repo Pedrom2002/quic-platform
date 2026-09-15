@@ -171,7 +171,7 @@ export function PortalVideoSettings({ eventId }: { eventId: string }) {
     setLoading(true)
     try {
       await updatePortalVideosAction(eventId, heroVideo, contentVideo)
-      toast.success('Vídeos do portal actualizados')
+      toast.success('Vídeos do portal atualizados')
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Erro ao guardar')
     } finally {

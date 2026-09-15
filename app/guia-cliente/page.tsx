@@ -163,7 +163,7 @@ export default function GuiaClientePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-stone-100 rounded-xl overflow-hidden border border-stone-100">
                   {[
                     { icon: Link2, num: '01', title: 'Acesso por link', body: 'Recebe um link pessoal por email. Não precisa de criar conta nem de se lembrar de passwords.' },
-                    { icon: CheckSquare, num: '02', title: 'Checklist em tempo real', body: 'Acompanha ao vivo o progresso do seu evento — cada etapa concluída aparece actualizada de imediato.' },
+                    { icon: CheckSquare, num: '02', title: 'Checklist em tempo real', body: 'Acompanha ao vivo o progresso do seu evento — cada etapa concluída aparece atualizada de imediato.' },
                     { icon: Mail, num: '03', title: 'Avisos automáticos', body: 'Recebe emails automáticos quando há novidades relevantes, sem precisar de verificar a plataforma.' },
                     { icon: Lock, num: '04', title: 'Acesso privado', body: 'O seu portal é exclusivo e só acessível através do seu link pessoal. Os dados são protegidos.' },
                   ].map((card, i) => (
@@ -178,7 +178,7 @@ export default function GuiaClientePage() {
                   ))}
                 </div>
                 <TipBox>
-                  <span className="font-semibold text-stone-800">Em resumo:</span> a equipa Quic gere tudo internamente e vai actualizando o estado do seu evento. O cliente acompanha tudo pelo portal e recebe notificações automáticas por email.
+                  <span className="font-semibold text-stone-800">Em resumo:</span> a equipa Quic gere tudo internamente e vai atualizando o estado do seu evento. O cliente acompanha tudo pelo portal e recebe notificações automáticas por email.
                 </TipBox>
               </div>
             )}
@@ -195,7 +195,7 @@ export default function GuiaClientePage() {
                   <div className="flex items-center gap-2 mb-5 pb-4 border-b border-stone-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                     <span className="text-xs font-medium tracking-widest uppercase text-stone-600">Portal — Casamento Silva &amp; Ferreira</span>
-                    <span className="ml-auto text-xs text-stone-400">actualizado agora</span>
+                    <span className="ml-auto text-xs text-stone-400">atualizado agora</span>
                   </div>
                   <ul className="space-y-2">
                     {[
@@ -229,7 +229,7 @@ export default function GuiaClientePage() {
                   { icon: MailOpen, num: '01', title: 'Recebe o link por email', desc: 'Logo após contratar os serviços Quic, recebe um email com o seu link de acesso pessoal e intransmissível.' },
                   { icon: Smartphone, num: '02', title: 'Abre em qualquer dispositivo', desc: 'O portal funciona no telemóvel, tablet ou computador — sem aplicação para instalar.' },
                   { icon: Eye, num: '03', title: 'Vê apenas o que lhe diz respeito', desc: 'Só aparecem as etapas marcadas como visíveis para o cliente — sem informação interna da equipa.' },
-                  { icon: RefreshCw, num: '04', title: 'Actualizações em tempo real', desc: 'Quando a equipa conclui uma etapa, o portal actualiza automaticamente. Não precisa de recarregar.' },
+                  { icon: RefreshCw, num: '04', title: 'Atualizações em tempo real', desc: 'Quando a equipa conclui uma etapa, o portal atualiza automaticamente. Não precisa de recarregar.' },
                 ]} />
               </div>
             )}
@@ -247,7 +247,7 @@ export default function GuiaClientePage() {
                   { icon: CheckCircle2, num: '04', title: 'Confirmação de entrega', desc: 'A plataforma regista automaticamente se o email chegou com sucesso. Em caso de problema, a equipa é alertada.' },
                 ]} />
                 <TipBox>
-                  <span className="font-semibold text-stone-800">Dica:</span> se não receber um email esperado, verifique a pasta de spam ou lixo electrónico. O remetente será sempre um endereço oficial da Quic.
+                  <span className="font-semibold text-stone-800">Dica:</span> se não receber um email esperado, verifique a pasta de spam ou lixo eletrónico. O remetente será sempre um endereço oficial da Quic.
                 </TipBox>
               </div>
             )}
@@ -262,9 +262,9 @@ export default function GuiaClientePage() {
                 <ul>
                   {[
                     { done: true, title: 'Contratação e configuração inicial', desc: 'A equipa cria o seu evento na plataforma, configura a checklist personalizada e envia-lhe o link do portal.', tag: 'Feito pela equipa' },
-                    { done: false, title: 'Acompanhamento activo', desc: 'À medida que os preparativos avançam, cada etapa é marcada como concluída. O portal reflecte o progresso em tempo real.', tag: 'Actualizações automáticas' },
-                    { done: false, title: 'Confirmações e fornecedores', desc: 'Quando fornecedores, menus ou detalhes logísticos são confirmados, a etapa correspondente é actualizada.', tag: 'Visível no portal' },
-                    { done: false, title: 'Coordenação final', desc: 'Nos dias anteriores ao evento, as últimas etapas ficam visíveis e o estado é actualizado conforme se conclui.', tag: 'Próxima etapa' },
+                    { done: false, title: 'Acompanhamento ativo', desc: 'À medida que os preparativos avançam, cada etapa é marcada como concluída. O portal reflete o progresso em tempo real.', tag: 'Atualizações automáticas' },
+                    { done: false, title: 'Confirmações e fornecedores', desc: 'Quando fornecedores, menus ou detalhes logísticos são confirmados, a etapa correspondente é atualizada.', tag: 'Visível no portal' },
+                    { done: false, title: 'Coordenação final', desc: 'Nos dias anteriores ao evento, as últimas etapas ficam visíveis e o estado é atualizado conforme se conclui.', tag: 'Próxima etapa' },
                     { done: false, title: 'Dia do evento', desc: 'A checklist estará completa e o portal serve como confirmação de que tudo foi tratado. A equipa coordena tudo no terreno.', tag: 'Evento realizado' },
                   ].map((step, i) => (
                     <li
@@ -306,8 +306,8 @@ export default function GuiaClientePage() {
                     { q: 'O link expira?', a: 'O link do portal não tem data de expiração. Pode aceder ao seu portal a qualquer momento enquanto o evento estiver ativo. Se perder o acesso, contacte a equipa Quic.' },
                     { q: 'Posso partilhar o link com alguém?', a: 'Tecnicamente é possível, mas o link é pessoal e dá acesso a informação privada do seu evento. Recomendamos que não o partilhe com terceiros fora do núcleo de organização.' },
                     { q: 'Porque é que não vejo todas as etapas?', a: 'A equipa Quic define quais as etapas visíveis para o cliente. Algumas etapas são internas e não aparecem no portal para não sobrecarregar a informação.' },
-                    { q: 'Não recebi o email de notificação, o que faço?', a: 'Verifique primeiro a pasta de spam ou promoções. Se o email continuar em falta, pode sempre ver o estado actualizado directamente no portal. Contacte a equipa se o problema persistir.' },
-                    { q: 'Posso fazer alterações ao evento pelo portal?', a: 'Não. O portal do cliente é de consulta. Para qualquer alteração ou pedido, deve contactar directamente a equipa Quic pelos canais habituais (email, telefone).' },
+                    { q: 'Não recebi o email de notificação, o que faço?', a: 'Verifique primeiro a pasta de spam ou promoções. Se o email continuar em falta, pode sempre ver o estado atualizado diretamente no portal. Contacte a equipa se o problema persistir.' },
+                    { q: 'Posso fazer alterações ao evento pelo portal?', a: 'Não. O portal do cliente é de consulta. Para qualquer alteração ou pedido, deve contactar diretamente a equipa Quic pelos canais habituais (email, telefone).' },
                     { q: 'A informação é segura?', a: 'Sim. O acesso é protegido por um token criptográfico único. Apenas quem tiver o seu link pessoal consegue aceder. A plataforma utiliza HTTPS e não armazena passwords.' },
                   ].map((item, i) => (
                     <div key={i}>

@@ -500,7 +500,7 @@ export default function GoldenCirclePublicPage() {
               </blockquote>
 
               <div className="bg-stone-50 border border-stone-200 rounded-lg p-6">
-                <h3 className="text-base font-semibold text-stone-900 mb-3">Por Que Golden Circle?</h3>
+                <h3 className="text-base font-semibold text-stone-900 mb-3">Porquê Golden Circle?</h3>
                 <p className="text-sm text-stone-600 leading-relaxed mb-4">
                   Convidamos investidores qualificados a fazer parte de uma estrutura exclusiva que combina:
                 </p>
