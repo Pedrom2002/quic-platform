@@ -599,7 +599,7 @@ export default function GoldenCirclePublicPage() {
             <div className="text-sm text-white/50">
               <p className="font-semibold text-white mb-3">Contacte-nos</p>
               <p>Email: <a href="mailto:goldencircle@quic.pt" className="text-white/70 hover:text-white">goldencircle@quic.pt</a></p>
-              <p>Escritório: <a href="https://quic.pt" className="text-white/70 hover:text-white">quic.pt</a></p>
+              <p>Site: <a href="https://quic.pt" className="text-white/70 hover:text-white">quic.pt</a></p>
             </div>
             <div className="text-sm text-white/50">
               <p className="font-semibold text-white mb-3">Legal</p>
@@ -611,7 +611,7 @@ export default function GoldenCirclePublicPage() {
           </div>
           <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-white/10">
             <span className="text-[10px] tracking-[0.2em] uppercase text-white/30">
-              © 2024 Quic. Golden Circle™ — Todos os direitos reservados.
+              © {new Date().getFullYear()} Quic. Golden Circle™ — Todos os direitos reservados.
             </span>
           </div>
         </div>
