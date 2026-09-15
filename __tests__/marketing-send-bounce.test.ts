@@ -109,7 +109,6 @@ const VALID_PAYLOAD = {
   campaign_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
   contact_id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
   sender_user_id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
-  is_followup: false,
 }
 
 // ─── POST /api/marketing/send ─────────────────────────────────────────────────
@@ -182,32 +181,6 @@ describe('POST /api/marketing/send', () => {
     const res = await POST(makeMockRequest(VALID_PAYLOAD))
     expect((res as { status: number }).status).toBe(200)
     expect(mockSendMarketingEmail).toHaveBeenCalledTimes(1)
-  })
-
-  it('sends followup with custom subject/body when is_followup=true', async () => {
-    const campaign = { id: 'camp-1', subject_template: 'Default', body_template: '<p>Default</p>' }
-    const contact = { id: 'c1', email: 'c@x.com', name: 'Maria', company: 'XYZ', role: null }
-    const smtpCreds = { host: 'smtp.x.com', port: 465, username: 'u', password_enc: 'e', from_name: 'S' }
-    const updateChain = makeUpdateChain()
-
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'marketing_campaigns') return makeSingleChain(campaign)
-      if (table === 'marketing_contacts') return makeSingleChain(contact)
-      if (table === 'team_smtp_credentials') return makeSingleChain(smtpCreds)
-      if (table === 'marketing_sends') return updateChain
-      return {}
-    })
-
-    const { POST } = await import('@/app/api/marketing/send/route')
-    const res = await POST(makeMockRequest({
-      ...VALID_PAYLOAD,
-      is_followup: true,
-      followup_subject: 'Follow-up para {{nome}}',
-      followup_body: '<p>Follow-up for {{nome}}</p>',
-    }))
-    expect((res as { status: number }).status).toBe(200)
-    const [callArgs] = mockSendMarketingEmail.mock.calls as [{ subject: string }][]
-    expect(callArgs[0].subject).toContain('Maria')
   })
 
   it('skips sending when the claim gate finds sent_at already set (duplicate QStash delivery)', async () => {

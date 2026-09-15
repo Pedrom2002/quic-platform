@@ -9,10 +9,6 @@ export const createCampaignSchema = z.object({
   ai_personalize: z.boolean().default(false),
   schedule_now: z.boolean().default(false),
   scheduled_at: z.string().optional(),
-  followup_enabled: z.boolean().default(false),
-  followup_days: z.number().int().min(1).max(30).default(3),
-  followup_subject: z.string().max(500).optional(),
-  followup_body: z.string().max(200000).optional(),
 })
 
 export type CreateCampaignInput = z.infer<typeof createCampaignSchema>

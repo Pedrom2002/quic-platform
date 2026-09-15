@@ -1999,11 +1999,6 @@ export type Database = {
           body_template: string
           created_at: string
           created_by: string
-          followup_body: string | null
-          followup_days: number
-          followup_enabled: boolean
-          followup_max: number
-          followup_subject: string | null
           id: string
           list_id: string
           name: string
@@ -2018,11 +2013,6 @@ export type Database = {
           body_template: string
           created_at?: string
           created_by: string
-          followup_body?: string | null
-          followup_days?: number
-          followup_enabled?: boolean
-          followup_max?: number
-          followup_subject?: string | null
           id?: string
           list_id: string
           name: string
@@ -2037,11 +2027,6 @@ export type Database = {
           body_template?: string
           created_at?: string
           created_by?: string
-          followup_body?: string | null
-          followup_days?: number
-          followup_enabled?: boolean
-          followup_max?: number
-          followup_subject?: string | null
           id?: string
           list_id?: string
           name?: string
@@ -2191,9 +2176,7 @@ export type Database = {
           clicked_at: string | null
           contact_id: string
           error: string | null
-          followup_count: number
           id: string
-          last_followup_at: string | null
           message_id: string | null
           opened_at: string | null
           organization_id: string
@@ -2212,9 +2195,7 @@ export type Database = {
           clicked_at?: string | null
           contact_id: string
           error?: string | null
-          followup_count?: number
           id?: string
-          last_followup_at?: string | null
           message_id?: string | null
           opened_at?: string | null
           organization_id: string
@@ -2233,9 +2214,7 @@ export type Database = {
           clicked_at?: string | null
           contact_id?: string
           error?: string | null
-          followup_count?: number
           id?: string
-          last_followup_at?: string | null
           message_id?: string | null
           opened_at?: string | null
           organization_id?: string

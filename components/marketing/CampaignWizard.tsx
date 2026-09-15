@@ -24,10 +24,6 @@ export function CampaignWizard({ lists, onSubmit }: Props) {
   const [aiPersonalize, setAiPersonalize] = useState(false)
   const [scheduleNow, setScheduleNow] = useState(true)
   const [scheduledAt, setScheduledAt] = useState('')
-  const [followupEnabled, setFollowupEnabled] = useState(false)
-  const [followupDays, setFollowupDays] = useState(3)
-  const [followupSubject, setFollowupSubject] = useState('')
-  const [followupBody, setFollowupBody] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -67,10 +63,6 @@ export function CampaignWizard({ lists, onSubmit }: Props) {
     fd.append('ai_personalize', String(aiPersonalize))
     fd.append('schedule_now', String(scheduleNow))
     if (!scheduleNow && scheduledAt) fd.append('scheduled_at', scheduledAt)
-    fd.append('followup_enabled', String(followupEnabled))
-    fd.append('followup_days', String(followupDays))
-    fd.append('followup_subject', followupSubject)
-    fd.append('followup_body', followupBody)
     await onSubmit(fd)
     setSubmitting(false)
   }
@@ -152,34 +144,6 @@ export function CampaignWizard({ lists, onSubmit }: Props) {
                 className="border rounded px-3 py-2 text-sm ml-6" />
             )}
           </div>
-          <div className="border rounded-lg p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <input type="checkbox" id="followup" checked={followupEnabled}
-                onChange={e => setFollowupEnabled(e.target.checked)} />
-              <label htmlFor="followup" className="text-sm font-medium">Ativar followup automático</label>
-            </div>
-            {followupEnabled && (
-              <div className="space-y-3 ml-6">
-                <div>
-                  <label className="block text-sm mb-1">Dias sem abertura antes de followup</label>
-                  <input type="number" value={followupDays} onChange={e => setFollowupDays(Number(e.target.value))}
-                    min={1} max={30} className="border rounded px-3 py-2 text-sm w-24" />
-                </div>
-                <div>
-                  <label className="block text-sm mb-1">Assunto do followup</label>
-                  <input value={followupSubject} onChange={e => setFollowupSubject(e.target.value)}
-                    className="w-full border rounded px-3 py-2 text-sm"
-                    placeholder="Re: {{empresa}} — ainda com interesse?" />
-                </div>
-                <div>
-                  <label className="block text-sm mb-1">Corpo do followup</label>
-                  <textarea value={followupBody} onChange={e => setFollowupBody(e.target.value)}
-                    className="w-full border rounded px-3 py-2 text-sm h-24"
-                    placeholder="Olá {{nome}}, queria apenas confirmar..." />
-                </div>
-              </div>
-            )}
-          </div>
           {selectedList && (
             <p className="text-xs text-zinc-500">
               Estimativa: ~{Math.ceil(selectedList.contact_count / 10)} min de envio (10 emails/min)
@@ -196,7 +160,6 @@ export function CampaignWizard({ lists, onSubmit }: Props) {
             <p><span className="font-medium">Lista:</span> {selectedList?.name} ({selectedList?.contact_count} contactos)</p>
             <p><span className="font-medium">Assunto:</span> {subject}</p>
             <p><span className="font-medium">Envio:</span> {scheduleNow ? 'Agora' : scheduledAt}</p>
-            <p><span className="font-medium">Followup:</span> {followupEnabled ? `Sim, após ${followupDays} dias` : 'Não'}</p>
           </div>
           <div className="border rounded-lg p-4 bg-zinc-50">
             <p className="text-xs font-medium mb-2 text-zinc-500">PREVIEW</p>

@@ -11,9 +11,6 @@ const payloadSchema = z.object({
   campaign_id: z.string().uuid(),
   contact_id: z.string().uuid(),
   sender_user_id: z.string().uuid(),
-  is_followup: z.boolean().optional().default(false),
-  followup_subject: z.string().nullable().optional(),
-  followup_body: z.string().nullable().optional(),
 })
 
 export async function POST(request: Request) {
@@ -27,7 +24,7 @@ export async function POST(request: Request) {
   const parsed = payloadSchema.safeParse(await clonedForBody.json())
   if (!parsed.success) return NextResponse.json({ error: 'Payload inválido' }, { status: 400 })
 
-  const { send_id, campaign_id, contact_id, sender_user_id, is_followup, followup_subject, followup_body } = parsed.data
+  const { send_id, campaign_id, contact_id, sender_user_id } = parsed.data
   const supabase = createAdminClient()
   const appUrl = getEnv().NEXT_PUBLIC_APP_URL
 
@@ -75,13 +72,9 @@ export async function POST(request: Request) {
       cargo: contact.role ?? '',
     }
 
-    const subject = is_followup && followup_subject
-      ? renderTemplate(followup_subject, vars)
-      : renderTemplate(campaign.subject_template, vars)
+    const subject = renderTemplate(campaign.subject_template, vars)
 
-    const bodyHtml = is_followup && followup_body
-      ? renderTemplate(followup_body, vars)
-      : renderTemplate(campaign.body_template, vars)
+    const bodyHtml = renderTemplate(campaign.body_template, vars)
 
     const htmlWithTracking = injectTracking(bodyHtml, send_id, appUrl)
 

@@ -100,8 +100,6 @@ Sistema completo de campanhas de email com:
 - **Envio via QStash**: cada email passa por `/api/marketing/send` com fila serverless
 - **SMTP warmup**: limite de envios diários por remetente, aumenta automaticamente com o tempo (`marketing_sender_warmup`)
 - **Tracking**: open tracking (pixel), click tracking (redirect), registo em `marketing_sends`
-- **Retry automático**: cron diário reprocessa envios falhados das últimas 24h (`/api/cron/marketing-retry`)
-- **Follow-up**: reenvio automatizado para quem não abriu ao fim de N dias
 - **Bounce e reply**: polling IMAP para detetar bounces e respostas, bot filtering com multi-pixel forensics
 - **Heatmap de engajamento**: visualização horária de opens/clicks
 - **DNS check**: valida SPF/DKIM/DMARC antes de enviar
@@ -234,10 +232,7 @@ POST /api/marketing/send (QStash worker)
 
 Crons diários:
     marketing-maintenance (07:00 UTC)
-        Follow-up para quem não abriu
         Polling IMAP de bounces + respostas
-    marketing-retry (09:00 UTC)
-        Reprocessa envios falhados das últimas 24h
 ```
 
 ### Crons (Vercel Cron — ver `vercel.json`)
@@ -247,10 +242,9 @@ Todos os crons são invocados por GET com `Authorization: Bearer ${CRON_SECRET}`
 | Path | Schedule | Função |
 |------|----------|--------|
 | `/api/cron/process-scheduled` | `0 6 * * *` | Envia notificações agendadas |
-| `/api/cron/marketing-maintenance` | `0 7 * * *` | Follow-ups + polling IMAP de bounces/replies |
-| `/api/cron/marketing-retry` | `0 9 * * *` | Reprocessa envios falhados das últimas 24h |
+| `/api/cron/marketing-maintenance` | `0 7 * * *` | Polling IMAP de bounces/replies |
 
-> O plano **Vercel Hobby** limita a **2 cron jobs, só diários**. Em **Pro** podes adicionar mais schedules. As rotas `/api/cron/marketing-followup` e `/api/marketing/bounce-poll` continuam a existir para invocação manual.
+> O plano **Vercel Hobby** limita a **2 cron jobs, só diários**. Em **Pro** podes adicionar mais schedules. A rota `/api/marketing/bounce-poll` continua a existir para invocação manual.
 
 `process-scheduled` reclama os jobs `queued` (passado o `scheduled_at`) através da função SQL `claim_notification_jobs`, que usa `FOR UPDATE SKIP LOCKED` — garante que execuções concorrentes nunca processam o mesmo job.
 
@@ -278,7 +272,7 @@ app/
   stock/             Catálogo público de materiais + pedido de orçamento
   api/
     ai/              Endpoints Gemini (resumo, tarefas, risco, insights, geração email)
-    cron/            Cron handlers (process-scheduled, marketing-maintenance, marketing-retry)
+    cron/            Cron handlers (process-scheduled, marketing-maintenance)
     events/          Checklist items, ficheiros
     artist-portal/   Download de ficheiros do portal do artista
     marketing/       Send worker, tracking, bounce-poll, reply-poll, unsubscribe, importação

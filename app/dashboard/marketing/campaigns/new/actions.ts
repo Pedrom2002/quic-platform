@@ -19,10 +19,6 @@ export async function createCampaign(formData: FormData) {
     ai_personalize: formData.get('ai_personalize') === 'true',
     schedule_now: formData.get('schedule_now') === 'true',
     scheduled_at: formData.get('scheduled_at') || undefined,
-    followup_enabled: formData.get('followup_enabled') === 'true',
-    followup_days: parseInt(formData.get('followup_days') as string || '3', 10),
-    followup_subject: formData.get('followup_subject') || undefined,
-    followup_body: formData.get('followup_body') || undefined,
   })
   if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? 'Dados inválidos')
   const data = parsed.data
@@ -48,10 +44,6 @@ export async function createCampaign(formData: FormData) {
     ai_personalize: data.ai_personalize,
     status: data.schedule_now ? 'sending' : 'scheduled',
     scheduled_at: data.schedule_now ? null : (data.scheduled_at || null),
-    followup_enabled: data.followup_enabled,
-    followup_days: data.followup_days,
-    followup_subject: data.followup_subject ?? null,
-    followup_body: data.followup_body ?? null,
   }).select().single()
 
   if (error || !campaign) throw new Error('Erro ao criar campanha')

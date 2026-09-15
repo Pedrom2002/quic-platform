@@ -1,16 +1,14 @@
 /**
  * Tests for GET /api/cron/marketing-maintenance
- * (bundles follow-ups + bounce polling into one daily Vercel-Hobby cron).
+ * (runs bounce polling as the single daily Vercel-Hobby cron).
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockFollowup, mockBounce } = vi.hoisted(() => ({
-  mockFollowup: vi.fn(),
+const { mockBounce } = vi.hoisted(() => ({
   mockBounce: vi.fn(),
 }))
 
 vi.mock('@/lib/marketing/maintenance', () => ({
-  runMarketingFollowup: mockFollowup,
   runBouncePoll: mockBounce,
 }))
 
@@ -29,7 +27,6 @@ function req(authHeader?: string) {
 
 beforeEach(() => {
   process.env.CRON_SECRET = CRON_SECRET
-  mockFollowup.mockReset().mockResolvedValue({ dispatched: 2 })
   mockBounce.mockReset().mockResolvedValue({ processed: 1 })
 })
 
@@ -38,7 +35,6 @@ describe('GET /api/cron/marketing-maintenance', () => {
     const { GET } = await import('@/app/api/cron/marketing-maintenance/route')
     const res = await GET(req())
     expect((res as { status: number }).status).toBe(401)
-    expect(mockFollowup).not.toHaveBeenCalled()
     expect(mockBounce).not.toHaveBeenCalled()
   })
 
@@ -48,14 +44,12 @@ describe('GET /api/cron/marketing-maintenance', () => {
     expect((res as { status: number }).status).toBe(401)
   })
 
-  it('runs both tasks and returns their combined result', async () => {
+  it('runs the bounce-poll task and returns its result', async () => {
     const { GET } = await import('@/app/api/cron/marketing-maintenance/route')
     const res = await GET(req(`Bearer ${CRON_SECRET}`))
     expect((res as { status: number }).status).toBe(200)
-    expect(mockFollowup).toHaveBeenCalledTimes(1)
     expect(mockBounce).toHaveBeenCalledTimes(1)
     expect((res as unknown as { body: unknown }).body).toEqual({
-      followup: { dispatched: 2 },
       bounce: { processed: 1 },
     })
   })
