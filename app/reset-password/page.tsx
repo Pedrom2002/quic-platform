@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import type { Route } from 'next'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 type Status = 'checking' | 'ready' | 'expired' | 'success'
 
-function loginHrefFor(origin: string | null): string {
+function loginHrefFor(origin: string | null): Route {
   return origin === 'investor' ? '/investors/login' : '/auth/login'
 }
 
