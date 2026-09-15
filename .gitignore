@@ -53,6 +53,10 @@ playwright-report/
 .superpowers/
 docs/superpowers/
 
+# manuais internos com dados reais de producao (nomes/emails de clientes,
+# valores de investimento) — nunca versionar, distribuir so localmente
+docs/manuais/
+
 # supabase CLI local state
 /supabase/.temp/
 /supabase/.branches/
