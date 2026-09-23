@@ -412,7 +412,7 @@ function ProgressTab({
             items={catItems}
             animatingOut={animatingOut}
             justCompleted={justCompleted}
-            initialOpen={false}
+            initialOpen={categoryOrder.length === 1}
             portalToken={portalToken}
           />
         )
