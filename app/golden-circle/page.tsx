@@ -578,7 +578,7 @@ export default function GoldenCirclePublicPage() {
             ))}
           </div>
           <p className="text-sm text-white/50 leading-relaxed max-w-2xl">
-            Números comprovados do histórico de produção da Quic, auditados e validados.
+            Números comprovados do histórico de produção da Quic.
             Dados detalhados por produção e relatórios financeiros disponíveis apenas para membros
             aprovados do Golden Circle, mediante assinatura de NDA.
           </p>
